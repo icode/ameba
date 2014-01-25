@@ -10,21 +10,19 @@ import java.util.UUID;
  */
 public class Viewables {
 
-    static final String USE_REQUEST_PATH_VIEWABLE_KEY_WORD = "/::USE::REQUEST::PATH::" + UUID.randomUUID().toString().toUpperCase() + "::/";
-
     private Viewables() {
     }
 
     public static Viewable newViewable() {
-        return new Viewable(USE_REQUEST_PATH_VIEWABLE_KEY_WORD);
+        return new Viewable("/");
     }
 
     public static Viewable newViewable(Object model) {
-        return new Viewable(USE_REQUEST_PATH_VIEWABLE_KEY_WORD, model);
+        return new Viewable("/", model);
     }
 
     public static Viewable newViewable(Object model, Class<?> resolvingClass) {
-        return new Viewable(USE_REQUEST_PATH_VIEWABLE_KEY_WORD, model, resolvingClass);
+        return new Viewable("/", model, resolvingClass);
     }
 
     public static Viewable newDefaultViewable() {

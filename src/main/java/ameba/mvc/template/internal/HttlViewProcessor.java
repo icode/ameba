@@ -3,7 +3,6 @@ package ameba.mvc.template.internal;
 import httl.Engine;
 import httl.Template;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.server.ContainerException;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.glassfish.jersey.server.mvc.spi.AbstractTemplateProcessor;
@@ -33,6 +32,8 @@ import java.util.Properties;
 @Singleton
 public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
 
+    public static final String CONFIG_SUFFIX = "httl";
+
     private static final Logger logger = LoggerFactory.getLogger(HttlViewProcessor.class);
     private Engine engine;
 
@@ -53,7 +54,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
      */
     @Inject
     public HttlViewProcessor(final Configuration config, @Optional final ServletContext servletContext) {
-        super(config, servletContext, "httl", getExtends(config));
+        super(config, servletContext, CONFIG_SUFFIX, getExtends(config));
         Properties properties = new Properties();
         Map<String, Object> map = config.getProperties();
 
@@ -99,6 +100,10 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
 
     @Override
     protected Template resolve(String templatePath, Reader reader) throws Exception {
+        String dir = (String) engine.getProperty("template.directory");
+        if (templatePath.startsWith(dir)) {
+            templatePath = templatePath.substring(dir.length());
+        }
         return engine.getTemplate(templatePath);
     }
 

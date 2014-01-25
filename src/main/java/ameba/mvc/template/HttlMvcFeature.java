@@ -8,6 +8,7 @@ import javax.ws.rs.ConstrainedTo;
 import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
+import java.util.Map;
 
 /**
  * @author 张立鑫 IntelligentCode
@@ -21,6 +22,9 @@ public class HttlMvcFeature implements Feature {
         if (!context.getConfiguration().isRegistered(MvcFeature.class)) {
             context.register(MvcFeature.class);
         }
+
+        context.property(MvcFeature.TEMPLATE_BASE_PATH + '.' + HttlViewProcessor.CONFIG_SUFFIX,
+                context.getConfiguration().getProperty("template.directory"));
 
         context.register(HttlViewProcessor.class);
         context.register(NotFoundForward.class);

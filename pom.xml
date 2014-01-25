@@ -166,13 +166,20 @@
             <groupId>org.glassfish.jersey.ext</groupId>
             <artifactId>jersey-bean-validation</artifactId>
             <version>${jersey.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>hibernate-validator</artifactId>
-                    <groupId>org.hibernate</groupId>
-                </exclusion>
-            </exclusions>
+            <!--<exclusions>-->
+            <!--<exclusion>-->
+            <!--<artifactId>hibernate-validator</artifactId>-->
+            <!--<groupId>org.hibernate</groupId>-->
+            <!--</exclusion>-->
+            <!--</exclusions>-->
         </dependency>
+
+        <!--<dependency>-->
+        <!--<groupId>org.hibernate</groupId>-->
+        <!--<artifactId>hibernate-validator</artifactId>-->
+        <!--<version>5.0.0.Final</version>-->
+        <!--</dependency>-->
+
         <!-- sse -->
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
@@ -192,11 +199,6 @@
             <version>3.2.1</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>5.1.0.Beta1</version>
-        </dependency>
 
         <!-- Cache -->
         <dependency>
