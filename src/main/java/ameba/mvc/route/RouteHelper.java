@@ -7,7 +7,12 @@ import org.glassfish.jersey.server.model.Resource;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Context;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -19,6 +24,25 @@ import java.util.List;
 @Singleton
 @Path("route")
 public class RouteHelper {
+
+    private static final ThreadLocal<ContainerRequestContext> reqLocal = new ThreadLocal<ContainerRequestContext>();
+
+    public static class RouteRequestFilter implements ContainerRequestFilter, ContainerResponseFilter {
+
+        @Override
+        public void filter(ContainerRequestContext requestContext) throws IOException {
+            reqLocal.set(requestContext);
+        }
+
+        @Override
+        public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+            reqLocal.remove();
+        }
+    }
+
+    public static ContainerRequestContext getCurrentRequestContext() {
+        return reqLocal.get();
+    }
 
     @Context
     private ExtendedResourceContext resourceContext;

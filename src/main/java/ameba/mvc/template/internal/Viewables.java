@@ -1,5 +1,6 @@
 package ameba.mvc.template.internal;
 
+import ameba.mvc.route.RouteHelper;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 import java.util.UUID;
@@ -14,15 +15,15 @@ public class Viewables {
     }
 
     public static Viewable newViewable() {
-        return new Viewable("/");
+        return new Viewable(RouteHelper.getCurrentRequestContext().getUriInfo().getPath());
     }
 
     public static Viewable newViewable(Object model) {
-        return new Viewable("/", model);
+        return new Viewable(RouteHelper.getCurrentRequestContext().getUriInfo().getPath(), model);
     }
 
     public static Viewable newViewable(Object model, Class<?> resolvingClass) {
-        return new Viewable("/", model, resolvingClass);
+        return new Viewable(RouteHelper.getCurrentRequestContext().getUriInfo().getPath(), model, resolvingClass);
     }
 
     public static Viewable newDefaultViewable() {

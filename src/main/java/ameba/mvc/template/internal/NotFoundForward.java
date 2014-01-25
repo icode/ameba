@@ -1,9 +1,18 @@
 package ameba.mvc.template.internal;
 
+import ameba.mvc.route.RouteHelper;
+
+import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
+import javax.ws.rs.ext.WriterInterceptor;
+import javax.ws.rs.ext.WriterInterceptorContext;
 import java.io.IOException;
 
 /**
@@ -12,16 +21,16 @@ import java.io.IOException;
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-27
  */
-public class NotFoundForward implements ContainerResponseFilter {
+@Provider
+public class NotFoundForward implements ExceptionMapper<NotFoundException> {
+
+    @Inject
+    private UriInfo uriInfo;
+
     @Override
-    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        if (responseContext.getStatus() == Response.Status.NOT_FOUND.getStatusCode() || responseContext.getStatus() == Response.Status.METHOD_NOT_ALLOWED.getStatusCode()) {
-            String path = requestContext.getUriInfo().getPath();
-            if (!path.startsWith("/")) {
-                path = "/" + path;
-            }
-            responseContext.setStatus(Response.Status.OK.getStatusCode());
-            responseContext.setEntity(Viewables.newDefaultViewable(path.equals("/") ? "/index" : path));
-        }
+    public Response toResponse(NotFoundException exception) {
+        String path = uriInfo.getPath();
+        return Response.ok(Viewables.newDefaultViewable(path.equals("/") ? "/index" : path)).build();
     }
+
 }

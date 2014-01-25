@@ -41,6 +41,7 @@ public class RouteFeature implements Feature {
                 return subResourceModel;
             }
         });
+        context.register(RouteHelper.RouteRequestFilter.class);
         return true;
     }
 }
