@@ -1,19 +1,12 @@
 package ameba.mvc.template.internal;
 
-import ameba.mvc.route.RouteHelper;
-
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import javax.ws.rs.ext.WriterInterceptor;
-import javax.ws.rs.ext.WriterInterceptorContext;
-import java.io.IOException;
 
 /**
  * 404 跳转到模板
@@ -30,7 +23,8 @@ public class NotFoundForward implements ExceptionMapper<NotFoundException> {
     @Override
     public Response toResponse(NotFoundException exception) {
         String path = uriInfo.getPath();
-        return Response.ok(Viewables.newDefaultViewable(path.equals("/") ? "/index" : path)).build();
+        path = path.equals("/") ? "/index" : path;
+        return Response.ok(Viewables.newDefaultViewable(path)).build();
     }
 
 }
