@@ -1,12 +1,21 @@
 package ameba.mvc.template.internal;
 
+import org.glassfish.jersey.server.mvc.Viewable;
+import org.glassfish.jersey.server.mvc.spi.AbstractTemplateProcessor;
+import org.jvnet.hk2.annotations.Optional;
+
 import javax.inject.Inject;
+import javax.servlet.ServletContext;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Reader;
 
 /**
  * 404 跳转到模板
@@ -20,11 +29,36 @@ public class NotFoundForward implements ExceptionMapper<NotFoundException> {
     @Inject
     private UriInfo uriInfo;
 
+    private AbstractTemplateProcessor<Boolean> templateProcessor;
+
+    @Inject
+    public NotFoundForward(final Configuration config, @Optional final ServletContext servletContext) {
+        this.templateProcessor = new AbstractTemplateProcessor<Boolean>(config, servletContext, HttlViewProcessor.CONFIG_SUFFIX, HttlViewProcessor.getExtends(config)) {
+            @Override
+            protected Boolean resolve(String templatePath, Reader reader) throws Exception {
+                return true;
+            }
+
+            @Override
+            public void writeTo(Boolean templateReference, Viewable viewable, MediaType mediaType, OutputStream out) throws IOException {
+
+            }
+        };
+        ;
+    }
+
     @Override
     public Response toResponse(NotFoundException exception) {
         String path = uriInfo.getPath();
         path = path.equals("/") ? "/index" : path;
-        return Response.ok(Viewables.newDefaultViewable(path)).build();
+        try {
+            if (templateProcessor.resolve(path, (MediaType) null)) {
+                return Response.ok(Viewables.newDefaultViewable(path)).build();
+            }
+        } catch (Exception e) {
+            //noop
+        }
+        return exception.getResponse();
     }
 
 }

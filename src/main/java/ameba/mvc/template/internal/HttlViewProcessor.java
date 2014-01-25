@@ -37,7 +37,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
     private static final Logger logger = LoggerFactory.getLogger(HttlViewProcessor.class);
     private Engine engine;
 
-    private static String[] getExtends(Configuration config) {
+    static String[] getExtends(Configuration config) {
         Map<String, Object> map = config.getProperties();
         String extension = (String) map.get("template.suffix");
 
