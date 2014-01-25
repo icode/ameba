@@ -20,6 +20,7 @@ public class NotFoundForward implements ContainerResponseFilter {
             if (!path.startsWith("/")) {
                 path = "/" + path;
             }
+            responseContext.setStatus(Response.Status.OK.getStatusCode());
             responseContext.setEntity(Viewables.newDefaultViewable(path.equals("/") ? "/index" : path));
         }
     }
