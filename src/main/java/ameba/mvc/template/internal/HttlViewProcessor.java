@@ -15,6 +15,7 @@ import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -83,22 +84,6 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
     }
 
     @Override
-    public void writeTo(Template templateReference, final Viewable viewable, MediaType mediaType, OutputStream out) throws IOException {
-        try {
-            Object model = viewable.getModel();
-            if (!(model instanceof Map)) {
-                model = new HashMap<String, Object>() {{
-                    put("model", viewable.getModel());
-                }};
-            }
-            templateReference.render(model, out);
-        } catch (ParseException e) {
-            logger.error("Parse template error", e);
-            throw new ContainerException("Parse template error", e);
-        }
-    }
-
-    @Override
     protected Template resolve(String templatePath, Reader reader) throws Exception {
         String dir = (String) engine.getProperty("template.directory");
         if (templatePath.startsWith(dir)) {
@@ -107,4 +92,19 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
         return engine.getTemplate(templatePath);
     }
 
+    @Override
+    public void writeTo(Template template, final Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> stringObjectMultivaluedMap, OutputStream outputStream) throws IOException {
+        try {
+            Object model = viewable.getModel();
+            if (!(model instanceof Map)) {
+                model = new HashMap<String, Object>() {{
+                    put("model", viewable.getModel());
+                }};
+            }
+            template.render(model, outputStream);
+        } catch (ParseException e) {
+            logger.error("Parse template error", e);
+            throw new ContainerException("Parse template error", e);
+        }
+    }
 }

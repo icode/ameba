@@ -22,10 +22,6 @@ public class Viewables {
         return new Viewable(RouteHelper.getCurrentRequestContext().getUriInfo().getPath(), model);
     }
 
-    public static Viewable newViewable(Object model, Class<?> resolvingClass) {
-        return new Viewable(RouteHelper.getCurrentRequestContext().getUriInfo().getPath(), model, resolvingClass);
-    }
-
     public static Viewable newDefaultViewable() {
         return new Viewable("");
     }
@@ -40,10 +36,6 @@ public class Viewables {
 
     public static Viewable newDefaultViewable(String templateName, Object model) {
         return new Viewable(templateName, model);
-    }
-
-    public static Viewable newDefaultViewable(String templateName, Object model, Class<?> resolvingClass) {
-        return new Viewable(templateName, model, resolvingClass);
     }
 
 }

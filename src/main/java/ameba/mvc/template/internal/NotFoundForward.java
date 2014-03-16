@@ -7,10 +7,7 @@ import org.jvnet.hk2.annotations.Optional;
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Configuration;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
@@ -40,7 +37,7 @@ public class NotFoundForward implements ExceptionMapper<NotFoundException> {
             }
 
             @Override
-            public void writeTo(Boolean templateReference, Viewable viewable, MediaType mediaType, OutputStream out) throws IOException {
+            public void writeTo(Boolean aBoolean, Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> stringObjectMultivaluedMap, OutputStream outputStream) throws IOException {
 
             }
         };
