@@ -6,7 +6,7 @@
     <groupId>ameba</groupId>
     <artifactId>ameba</artifactId>
     <packaging>jar</packaging>
-    <version>0.1.2</version>
+    <version>0.1.3</version>
     <name>Ameba-Framework</name>
 
     <dependencyManagement>
@@ -56,11 +56,17 @@
             <groupId>org.avaje</groupId>
             <artifactId>ebean</artifactId>
             <version>${ebean.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>persistence-api</artifactId>
+                    <groupId>javax.persistence</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.avaje</groupId>
-            <artifactId>ebean-jaxrs</artifactId>
-            <version>${ebean.version}</version>
+            <artifactId>persistence-api</artifactId>
+            <groupId>javax.persistence</groupId>
+            <version>${persistence.version}</version>
         </dependency>
         <!-- 类字节码修改器 -->
         <dependency>
@@ -285,6 +291,7 @@
         <ehcache.version>2.8.1</ehcache.version>
         <grizzly.version>2.3.11</grizzly.version>
         <guava.version>16.0.1</guava.version>
+        <persistence.version>1.0.2</persistence.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 </project>
