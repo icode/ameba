@@ -7,6 +7,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.http.server.NetworkListener;
+import org.glassfish.grizzly.spdy.SpdyAddOn;
+import org.glassfish.grizzly.ssl.SSLContextConfigurator;
+import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.filter.LoggingFilter;
@@ -32,8 +36,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
-import static ameba.util.IOUtils.getResource;
-import static ameba.util.IOUtils.getResourceAsStream;
+import static ameba.util.IOUtils.*;
 
 /**
  * 应用程序启动配置
@@ -44,16 +47,32 @@ import static ameba.util.IOUtils.getResourceAsStream;
 @Singleton
 public class Application extends ResourceConfig {
     public static final Logger logger = LoggerFactory.getLogger(Application.class);
-    private URI     httpServerBaseUri;
-    private String  mode;
-    private String  domain;
-    private String  host;
+    private URI httpServerBaseUri;
+    private String mode;
+    private String domain;
+    private String host;
+    private boolean secure;
     private Integer port;
+    private boolean sslClientMode;
+    private boolean sslNeedClientAuth;
+    private boolean sslWantClientAuth;
+    private String sslKeyPassword;
+    private byte[] sslKeyStoreFile;
+    private String sslKeyStoreType;
+    private String sslKeyStorePassword;
+
+    private String sslTrustPassword;
+    private byte[] sslTrustStoreFile;
+    private String sslTrustStorePassword;
+    private String sslTrustStoreType;
+
+    private boolean sslConfigReady;
 
     public Application() {
         this("conf/application.conf");
     }
 
+    @SuppressWarnings("unchecked")
     public Application(String confFile) {
 
         //property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
@@ -87,6 +106,40 @@ public class Application extends ResourceConfig {
 
         //获取应用程序模式
         mode = properties.getProperty("app.mode");
+        //设置ssl相关
+        secure = Boolean.parseBoolean(properties.getProperty("ssl.enabled", "false"));
+        sslClientMode = Boolean.parseBoolean(properties.getProperty("ssl.clientMode", "false"));
+        sslNeedClientAuth = Boolean.parseBoolean(properties.getProperty("ssl.needClientAuth", "false"));
+        sslWantClientAuth = Boolean.parseBoolean(properties.getProperty("ssl.wantClientAuth", "false"));
+
+        sslKeyPassword = properties.getProperty("ssl.key.password");
+        String keyStoreFile = properties.getProperty("ssl.key.store.file");
+        if (StringUtils.isNotBlank(keyStoreFile))
+            try {
+                sslKeyStoreFile = readByteArrayFromResource(keyStoreFile);
+            } catch (IOException e) {
+                logger.error("读取sslKeyStoreFile出错", e);
+            }
+        sslKeyStoreType = properties.getProperty("ssl.key.store.type");
+        sslKeyStorePassword = properties.getProperty("ssl.key.store.password");
+
+        sslTrustPassword = properties.getProperty("ssl.trust.password");
+        String trustStoreFile = properties.getProperty("ssl.trust.store.file");
+        if (StringUtils.isNotBlank(trustStoreFile))
+            try {
+                sslTrustStoreFile = readByteArrayFromResource(trustStoreFile);
+            } catch (IOException e) {
+                logger.error("读取sslTrustStoreFile出错", e);
+            }
+        sslTrustStoreType = properties.getProperty("ssl.trust.store.type");
+        sslTrustStorePassword = properties.getProperty("ssl.trust.store.password");
+
+        if (StringUtils.isNotBlank(sslKeyPassword) &&
+                StringUtils.isNotBlank(sslKeyStorePassword) &&
+                StringUtils.isNotBlank(sslTrustPassword) &&
+                StringUtils.isNotBlank(sslTrustStorePassword)) {
+            sslConfigReady = true;
+        }
 
         Properties modeProperties = new Properties();
 
@@ -184,11 +237,7 @@ public class Application extends ResourceConfig {
                             continue;
                         }
                         method.invoke(this, clazz);
-                    } catch (IllegalAccessException e) {
-                        logger.error("获取注册器失败", e);
-                    } catch (InvocationTargetException e) {
-                        logger.error("获取注册器失败", e);
-                    } catch (ClassNotFoundException e) {
+                    } catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException e) {
                         logger.error("获取注册器失败", e);
                     }
                 }
@@ -207,17 +256,7 @@ public class Application extends ResourceConfig {
                                 continue;
                             }
                             method.invoke(this, clazz);
-                        } catch (IllegalAccessException e) {
-                            if (!name.startsWith("default."))
-                                logger.error("获取注册器失败", e);
-                            else
-                                logger.warn("未找到系统默认特性[" + className + "]", e);
-                        } catch (InvocationTargetException e) {
-                            if (!name.startsWith("default."))
-                                logger.error("获取注册器失败", e);
-                            else
-                                logger.warn("未找到系统默认特性[" + className + "]", e);
-                        } catch (ClassNotFoundException e) {
+                        } catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException e) {
                             if (!name.startsWith("default."))
                                 logger.error("获取注册器失败", e);
                             else
@@ -259,7 +298,34 @@ public class Application extends ResourceConfig {
     public static HttpServer createHttpServer() {
 
         final Application app = new Application();
-        HttpServer server = GrizzlyHttpServerFactory.createHttpServer(app.httpServerBaseUri, app, false);
+        SSLEngineConfigurator sslEngineConfigurator = null;
+        if (app.isSslConfigReady()) {
+            SSLContextConfigurator sslContextConfiguration = new SSLContextConfigurator();
+            sslContextConfiguration.setKeyPass(app.getSslKeyPassword());
+
+            sslContextConfiguration.setKeyStoreBytes(app.getSslKeyStoreFile());
+            sslContextConfiguration.setKeyStorePass(app.getSslKeyStorePassword());
+            if (StringUtils.isNotBlank(app.getSslKeyStoreType()))
+                sslContextConfiguration.setKeyStoreType(app.getSslKeyStoreType());
+
+            sslContextConfiguration.setTrustStoreBytes(app.getSslTrustStoreFile());
+            sslContextConfiguration.setTrustStorePass(app.getSslTrustStorePassword());
+            if (StringUtils.isNotBlank(app.getSslTrustStoreType()))
+                sslContextConfiguration.setTrustStoreType(app.getSslTrustStoreType());
+
+            sslEngineConfigurator = new SSLEngineConfigurator(sslContextConfiguration,
+                    app.isSslClientMode(), app.isSslNeedClientAuth(), app.isSslWantClientAuth());
+        }
+
+        HttpServer server = GrizzlyHttpServerFactory.createHttpServer(app.httpServerBaseUri, app, app.isSecure(), sslEngineConfigurator, false);
+
+        if (app.isSecure()) {
+            NetworkListener listener = server.getListener("grizzly");
+            if (listener != null) {
+                SpdyAddOn spdyAddon = new SpdyAddOn();
+                listener.registerAddOn(spdyAddon);
+            }
+        }
 
         server.getServerConfiguration().setSendFileEnabled(true);
         return server;
@@ -283,6 +349,58 @@ public class Application extends ResourceConfig {
 
     public URI getHttpServerBaseUri() {
         return httpServerBaseUri;
+    }
+
+    public boolean isSecure() {
+        return secure;
+    }
+
+    public boolean isSslClientMode() {
+        return sslClientMode;
+    }
+
+    public boolean isSslNeedClientAuth() {
+        return sslNeedClientAuth;
+    }
+
+    public boolean isSslWantClientAuth() {
+        return sslWantClientAuth;
+    }
+
+    public String getSslKeyPassword() {
+        return sslKeyPassword;
+    }
+
+    public byte[] getSslKeyStoreFile() {
+        return sslKeyStoreFile;
+    }
+
+    public String getSslKeyStoreType() {
+        return sslKeyStoreType;
+    }
+
+    public String getSslKeyStorePassword() {
+        return sslKeyStorePassword;
+    }
+
+    public String getSslTrustPassword() {
+        return sslTrustPassword;
+    }
+
+    public byte[] getSslTrustStoreFile() {
+        return sslTrustStoreFile;
+    }
+
+    public String getSslTrustStorePassword() {
+        return sslTrustStorePassword;
+    }
+
+    public String getSslTrustStoreType() {
+        return sslTrustStoreType;
+    }
+
+    public boolean isSslConfigReady() {
+        return sslConfigReady;
     }
 
     /**
