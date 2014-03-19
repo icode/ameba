@@ -156,6 +156,11 @@
             <artifactId>jersey-declarative-linking</artifactId>
             <version>${jersey.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-entity-filtering</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
 
 
         <dependency>
