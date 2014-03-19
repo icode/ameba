@@ -53,6 +53,7 @@ public class Application extends ResourceConfig {
     private String host;
     private boolean secure;
     private Integer port;
+    private String sslProtocol;
     private boolean sslClientMode;
     private boolean sslNeedClientAuth;
     private boolean sslWantClientAuth;
@@ -60,11 +61,15 @@ public class Application extends ResourceConfig {
     private byte[] sslKeyStoreFile;
     private String sslKeyStoreType;
     private String sslKeyStorePassword;
+    private String sslKeyStoreProvider;
+    private String sslKeyManagerFactoryAlgorithm;
 
     private String sslTrustPassword;
     private byte[] sslTrustStoreFile;
     private String sslTrustStorePassword;
     private String sslTrustStoreType;
+    private String sslTrustStoreProvider;
+    private String sslTrustManagerFactoryAlgorithm;
 
     private boolean sslConfigReady;
 
@@ -108,11 +113,14 @@ public class Application extends ResourceConfig {
         mode = properties.getProperty("app.mode");
         //设置ssl相关
         secure = Boolean.parseBoolean(properties.getProperty("ssl.enabled", "false"));
+        sslProtocol = properties.getProperty("ssl.protocol");
         sslClientMode = Boolean.parseBoolean(properties.getProperty("ssl.clientMode", "false"));
         sslNeedClientAuth = Boolean.parseBoolean(properties.getProperty("ssl.needClientAuth", "false"));
         sslWantClientAuth = Boolean.parseBoolean(properties.getProperty("ssl.wantClientAuth", "false"));
 
+        sslKeyManagerFactoryAlgorithm = properties.getProperty("ssl.key.manager.factory.algorithm");
         sslKeyPassword = properties.getProperty("ssl.key.password");
+        sslKeyStoreProvider = properties.getProperty("ssl.key.store.provider");
         String keyStoreFile = properties.getProperty("ssl.key.store.file");
         if (StringUtils.isNotBlank(keyStoreFile))
             try {
@@ -123,7 +131,9 @@ public class Application extends ResourceConfig {
         sslKeyStoreType = properties.getProperty("ssl.key.store.type");
         sslKeyStorePassword = properties.getProperty("ssl.key.store.password");
 
+        sslTrustManagerFactoryAlgorithm = properties.getProperty("ssl.Trust.manager.factory.algorithm");
         sslTrustPassword = properties.getProperty("ssl.trust.password");
+        sslTrustStoreProvider = properties.getProperty("ssl.trust.store.provider");
         String trustStoreFile = properties.getProperty("ssl.trust.store.file");
         if (StringUtils.isNotBlank(trustStoreFile))
             try {
@@ -134,10 +144,9 @@ public class Application extends ResourceConfig {
         sslTrustStoreType = properties.getProperty("ssl.trust.store.type");
         sslTrustStorePassword = properties.getProperty("ssl.trust.store.password");
 
-        if (StringUtils.isNotBlank(sslKeyPassword) &&
-                StringUtils.isNotBlank(sslKeyStorePassword) &&
-                StringUtils.isNotBlank(sslTrustPassword) &&
-                StringUtils.isNotBlank(sslTrustStorePassword)) {
+        if (sslKeyStoreFile != null &&
+                StringUtils.isNotBlank(sslKeyPassword) &&
+                StringUtils.isNotBlank(sslKeyStorePassword)) {
             sslConfigReady = true;
         }
 
@@ -302,16 +311,19 @@ public class Application extends ResourceConfig {
         if (app.isSslConfigReady()) {
             SSLContextConfigurator sslContextConfiguration = new SSLContextConfigurator();
             sslContextConfiguration.setKeyPass(app.getSslKeyPassword());
+            sslContextConfiguration.setSecurityProtocol(app.getSslProtocol());
 
             sslContextConfiguration.setKeyStoreBytes(app.getSslKeyStoreFile());
             sslContextConfiguration.setKeyStorePass(app.getSslKeyStorePassword());
-            if (StringUtils.isNotBlank(app.getSslKeyStoreType()))
-                sslContextConfiguration.setKeyStoreType(app.getSslKeyStoreType());
+            sslContextConfiguration.setKeyStoreProvider(app.getSslKeyStoreProvider());
+            sslContextConfiguration.setKeyStoreType(app.getSslKeyStoreType());
+            sslContextConfiguration.setKeyManagerFactoryAlgorithm(app.getSslKeyManagerFactoryAlgorithm());
 
             sslContextConfiguration.setTrustStoreBytes(app.getSslTrustStoreFile());
             sslContextConfiguration.setTrustStorePass(app.getSslTrustStorePassword());
-            if (StringUtils.isNotBlank(app.getSslTrustStoreType()))
-                sslContextConfiguration.setTrustStoreType(app.getSslTrustStoreType());
+            sslContextConfiguration.setTrustStoreType(app.getSslTrustStoreType());
+            sslContextConfiguration.setTrustStoreProvider(app.getSslTrustStoreProvider());
+            sslContextConfiguration.setTrustManagerFactoryAlgorithm(app.getSslTrustManagerFactoryAlgorithm());
 
             sslEngineConfigurator = new SSLEngineConfigurator(sslContextConfiguration,
                     app.isSslClientMode(), app.isSslNeedClientAuth(), app.isSslWantClientAuth());
@@ -401,6 +413,26 @@ public class Application extends ResourceConfig {
 
     public boolean isSslConfigReady() {
         return sslConfigReady;
+    }
+
+    public String getSslProtocol() {
+        return sslProtocol;
+    }
+
+    public String getSslKeyStoreProvider() {
+        return sslKeyStoreProvider;
+    }
+
+    public String getSslTrustStoreProvider() {
+        return sslTrustStoreProvider;
+    }
+
+    public String getSslKeyManagerFactoryAlgorithm() {
+        return sslKeyManagerFactoryAlgorithm;
+    }
+
+    public String getSslTrustManagerFactoryAlgorithm() {
+        return sslTrustManagerFactoryAlgorithm;
     }
 
     /**
