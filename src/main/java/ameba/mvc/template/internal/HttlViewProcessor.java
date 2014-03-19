@@ -38,16 +38,6 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
     private static final Logger logger = LoggerFactory.getLogger(HttlViewProcessor.class);
     private Engine engine;
 
-    static String[] getExtends(Configuration config) {
-        Map<String, Object> map = config.getProperties();
-        String extension = (String) map.get("template.suffix");
-
-        if (StringUtils.isBlank(extension)) {
-            return new String[]{".html"};
-        }
-        return extension.split(",");
-    }
-
     /**
      * Creates an instance of {@link org.glassfish.jersey.server.mvc.internal.DefaultTemplateProcessor}.
      *
@@ -83,6 +73,16 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
         this.engine = Engine.getEngine(properties);
     }
 
+    static String[] getExtends(Configuration config) {
+        Map<String, Object> map = config.getProperties();
+        String extension = (String) map.get("template.suffix");
+
+        if (StringUtils.isBlank(extension)) {
+            return new String[]{".html"};
+        }
+        return extension.split(",");
+    }
+
     @Override
     protected Template resolve(String templatePath, Reader reader) throws Exception {
         String dir = (String) engine.getProperty("template.directory");
@@ -93,7 +93,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
     }
 
     @Override
-    public void writeTo(Template template, final Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> stringObjectMultivaluedMap, OutputStream outputStream) throws IOException {
+    public void writeTo(Template template, final Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream outputStream) throws IOException {
         try {
             Object model = viewable.getModel();
             if (!(model instanceof Map)) {
@@ -101,6 +101,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
                     put("model", viewable.getModel());
                 }};
             }
+            setContentType(mediaType.equals(MediaType.WILDCARD_TYPE) ? MediaType.TEXT_HTML_TYPE : mediaType, httpHeaders);
             template.render(model, outputStream);
         } catch (ParseException e) {
             logger.error("Parse template error", e);
