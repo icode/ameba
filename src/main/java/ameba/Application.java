@@ -144,7 +144,7 @@ public class Application extends ResourceConfig {
         sslTrustStoreType = properties.getProperty("ssl.trust.store.type");
         sslTrustStorePassword = properties.getProperty("ssl.trust.store.password");
 
-        if (sslKeyStoreFile != null &&
+        if (secure && sslKeyStoreFile != null &&
                 StringUtils.isNotBlank(sslKeyPassword) &&
                 StringUtils.isNotBlank(sslKeyStorePassword)) {
             sslConfigReady = true;
@@ -320,7 +320,8 @@ public class Application extends ResourceConfig {
             sslContextConfiguration.setKeyManagerFactoryAlgorithm(app.getSslKeyManagerFactoryAlgorithm());
 
             sslContextConfiguration.setTrustStoreBytes(app.getSslTrustStoreFile());
-            sslContextConfiguration.setTrustStorePass(app.getSslTrustStorePassword());
+            if (StringUtils.isNotBlank(app.getSslTrustStorePassword()))
+                sslContextConfiguration.setTrustStorePass(app.getSslTrustStorePassword());
             sslContextConfiguration.setTrustStoreType(app.getSslTrustStoreType());
             sslContextConfiguration.setTrustStoreProvider(app.getSslTrustStoreProvider());
             sslContextConfiguration.setTrustManagerFactoryAlgorithm(app.getSslTrustManagerFactoryAlgorithm());
