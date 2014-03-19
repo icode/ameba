@@ -6,6 +6,7 @@ import ch.qos.logback.classic.gaffer.GafferUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.grizzly.http.ajp.AjpAddOn;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.spdy.SpdyAddOn;
@@ -51,6 +52,7 @@ public class Application extends ResourceConfig {
     private String mode;
     private String domain;
     private String host;
+    private boolean ajpEnabled;
     private boolean secure;
     private Integer port;
     private String sslProtocol;
@@ -149,6 +151,8 @@ public class Application extends ResourceConfig {
                 StringUtils.isNotBlank(sslKeyStorePassword)) {
             sslConfigReady = true;
         }
+
+        ajpEnabled = Boolean.parseBoolean(properties.getProperty("http.ajp.enabled", "false"));
 
         Properties modeProperties = new Properties();
 
@@ -332,11 +336,17 @@ public class Application extends ResourceConfig {
 
         HttpServer server = GrizzlyHttpServerFactory.createHttpServer(app.httpServerBaseUri, app, app.isSecure(), sslEngineConfigurator, false);
 
-        if (app.isSecure()) {
-            NetworkListener listener = server.getListener("grizzly");
-            if (listener != null) {
+        NetworkListener listener = server.getListener("grizzly");
+        if (listener != null) {
+            if (app.isSecure() && !app.isAjpEnabled()) {
                 SpdyAddOn spdyAddon = new SpdyAddOn();
                 listener.registerAddOn(spdyAddon);
+            } else if (app.isSecure()) {
+                logger.warn("AJP模式开启，不启动SPDY支持");
+            }
+            if (app.isAjpEnabled()) {
+                AjpAddOn ajpAddon = new AjpAddOn();
+                listener.registerAddOn(ajpAddon);
             }
         }
 
@@ -434,6 +444,10 @@ public class Application extends ResourceConfig {
 
     public String getSslTrustManagerFactoryAlgorithm() {
         return sslTrustManagerFactoryAlgorithm;
+    }
+
+    public boolean isAjpEnabled() {
+        return ajpEnabled;
     }
 
     /**
