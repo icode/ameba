@@ -16,7 +16,7 @@ public class MD5Utils {
     /**
      * 默认的密码字符串组合，apache校验下载的文件的正确性用的就是默认的这个组合
      */
-    protected static char          hexDigits[]   = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    protected static char hexDigits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     protected static MessageDigest messagedigest = null;
 
     static {

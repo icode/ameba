@@ -1,6 +1,5 @@
 package ameba.mvc.assets;
 
-import ameba.mvc.route.RouteHelper;
 import ameba.util.IOUtils;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;

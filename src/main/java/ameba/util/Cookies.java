@@ -2,7 +2,6 @@ package ameba.util;
 
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
-import java.util.Date;
 
 /**
  * @author: ICode

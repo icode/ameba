@@ -19,9 +19,9 @@ public class Model {
     // -- Magic to dynamically access the @Id property
 
     @Transient
-    private PropertyDescriptor _idGetSet      = null;
+    private PropertyDescriptor _idGetSet = null;
     @Transient
-    private Field              _idPublicField = null;
+    private Field _idPublicField = null;
 
     private void _findIdAccessors() {
         if (_idGetSet == null && _idPublicField == null) {
@@ -230,7 +230,7 @@ public class Model {
 
         private final Class<I> idType;
         private final Class<T> type;
-        private final String   serverName;
+        private final String serverName;
 
         /**
          * Creates a finder for entity of type <code>T</code> with ID of type <code>I</code>.

@@ -1,7 +1,6 @@
 package ameba.feature.ds;
 
 import ameba.feature.exception.ThrowableExceptionMapper;
-import ameba.util.IOUtils;
 import com.alibaba.druid.stat.DruidStatService;
 import com.alibaba.druid.util.Utils;
 import com.google.common.collect.Maps;
@@ -34,33 +33,33 @@ import java.util.UUID;
  * @since: 13-8-14 下午7:49
  */
 public class StatViewFeature implements Feature {
-    public static final  String                PARAM_NAME_RESET_ENABLE = "ds.resetEnable";
-    public static final  String                PARAM_NAME_USERNAME     = "ds.loginUsername";
-    public static final  String                PARAM_NAME_PASSWORD     = "ds.loginPassword";
-    public static final  String                SESSION_USER_KEY        = "SVST";//stat view session token
-    public static final  String                PARAM_NAME_JMX_URL      = "ds.jmxUrl";
-    public static final  String                PARAM_NAME_JMX_USERNAME = "ds.jmxUsername";
-    public static final  String                PARAM_NAME_JMX_PASSWORD = "ds.jmxPassword";
-    private static final Logger                logger                  = LoggerFactory.getLogger(StatViewFeature.class);
-    private final static String                RESOURCE_PATH           = "support/http/resources";
-    private static       String                username                = null;
-    private static       String                password                = "";
-    private static       String                authorizeToken          = null;
+    public static final String PARAM_NAME_RESET_ENABLE = "ds.resetEnable";
+    public static final String PARAM_NAME_USERNAME = "ds.loginUsername";
+    public static final String PARAM_NAME_PASSWORD = "ds.loginPassword";
+    public static final String SESSION_USER_KEY = "SVST";//stat view session token
+    public static final String PARAM_NAME_JMX_URL = "ds.jmxUrl";
+    public static final String PARAM_NAME_JMX_USERNAME = "ds.jmxUsername";
+    public static final String PARAM_NAME_JMX_PASSWORD = "ds.jmxPassword";
+    private static final Logger logger = LoggerFactory.getLogger(StatViewFeature.class);
+    private final static String RESOURCE_PATH = "support/http/resources";
+    private static String username = null;
+    private static String password = "";
+    private static String authorizeToken = null;
     /**
      * web.xml中配置的jmx的连接地址
      */
-    private static       String                jmxUrl                  = null;
+    private static String jmxUrl = null;
     /**
      * web.xml中配置的jmx的用户名
      */
-    private static       String                jmxUsername             = null;
+    private static String jmxUsername = null;
     /**
      * web.xml中配置的jmx的密码
      */
-    private static       String                jmxPassword             = null;
-    private static       MBeanServerConnection conn                    = null;
-    private static       DruidStatService      statService             = DruidStatService.getInstance();
-    private static       String                dsPath                  = "/ds";
+    private static String jmxPassword = null;
+    private static MBeanServerConnection conn = null;
+    private static DruidStatService statService = DruidStatService.getInstance();
+    private static String dsPath = "/ds";
 
     private static void init(Configuration configuration) {
         initAuthEnv(configuration);

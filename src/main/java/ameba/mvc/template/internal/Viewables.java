@@ -3,8 +3,6 @@ package ameba.mvc.template.internal;
 import ameba.mvc.route.RouteHelper;
 import org.glassfish.jersey.server.mvc.Viewable;
 
-import java.util.UUID;
-
 /**
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-20

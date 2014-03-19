@@ -26,7 +26,7 @@ import java.util.Set;
 public class DataSourceFeature implements Feature {
 
     private static final Map<String, DataSource> dataSourceMap = Maps.newHashMap();
-    private static final Logger                  logger        = LoggerFactory.getLogger(DataSourceFeature.class);
+    private static final Logger logger = LoggerFactory.getLogger(DataSourceFeature.class);
 
     /**
      * 根据数据源名称获取数据源

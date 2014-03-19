@@ -18,7 +18,7 @@ public class EmailFeature implements Feature {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailFeature.class);
     //    mail.host.name=
-    private static String  hostName;
+    private static String hostName;
     //    mail.smtp.port=
     private static Integer smtpPort;
     //    mail.ssl.enable=true

@@ -1,8 +1,8 @@
 package ameba.util;
 
+import ameba.feature.EmailFeature;
 import httl.Engine;
 import httl.Template;
-import ameba.feature.EmailFeature;
 import org.apache.commons.mail.*;
 
 import java.io.IOException;

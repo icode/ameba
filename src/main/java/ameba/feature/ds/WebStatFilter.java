@@ -2,11 +2,13 @@ package ameba.feature.ds;
 
 import com.alibaba.druid.filter.stat.StatFilterContext;
 import com.alibaba.druid.filter.stat.StatFilterContextListenerAdapter;
-import com.alibaba.druid.support.http.stat.*;
+import com.alibaba.druid.support.http.stat.WebAppStat;
+import com.alibaba.druid.support.http.stat.WebAppStatManager;
+import com.alibaba.druid.support.http.stat.WebRequestStat;
+import com.alibaba.druid.support.http.stat.WebURIStat;
 import com.alibaba.druid.support.profile.ProfileEntryKey;
 import com.alibaba.druid.support.profile.ProfileEntryReqStat;
 import com.alibaba.druid.support.profile.Profiler;
-import com.alibaba.druid.util.DruidWebUtils;
 import com.alibaba.druid.util.PatternMatcher;
 import com.alibaba.druid.util.ServletPathMatcher;
 import groovy.lang.Singleton;
@@ -20,7 +22,6 @@ import javax.ws.rs.container.*;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -37,25 +38,25 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(WebStatFilter.class);
 
-    public final static String PARAM_NAME_PORFILE_ENABLE         = "ds.profileEnable";
+    public final static String PARAM_NAME_PORFILE_ENABLE = "ds.profileEnable";
     public final static String PARAM_NAME_SESSION_STAT_MAX_COUNT = "ds.sessionStatMaxCount";
-    public static final String PARAM_NAME_EXCLUSIONS             = "ds.exclusions";
-    public static final String PARAM_NAME_PRINCIPAL_COOKIE_NAME  = "ds.principalCookieName";
-    public static final String PARAM_NAME_REAL_IP_HEADER         = "ds.realIpHeader";
+    public static final String PARAM_NAME_EXCLUSIONS = "ds.exclusions";
+    public static final String PARAM_NAME_PRINCIPAL_COOKIE_NAME = "ds.principalCookieName";
+    public static final String PARAM_NAME_REAL_IP_HEADER = "ds.realIpHeader";
 
     public final static int DEFAULT_MAX_STAT_SESSION_COUNT = 1000 * 100;
 
-    private static   WebAppStat                   webAppStat                = null;
-    private static   WebStatFilterContextListener statFilterContextListener = new WebStatFilterContextListener();
+    private static WebAppStat webAppStat = null;
+    private static WebStatFilterContextListener statFilterContextListener = new WebStatFilterContextListener();
     /**
      * PatternMatcher used in determining which paths to react to for a given request.
      */
-    protected static PatternMatcher               pathMatcher               = new ServletPathMatcher();
+    protected static PatternMatcher pathMatcher = new ServletPathMatcher();
 
     private static Set<String> excludesPattern;
 
-    private static int     sessionStatMaxCount = DEFAULT_MAX_STAT_SESSION_COUNT;
-    private static boolean profileEnable       = false;
+    private static int sessionStatMaxCount = DEFAULT_MAX_STAT_SESSION_COUNT;
+    private static boolean profileEnable = false;
 
     private static String contextPath;
 

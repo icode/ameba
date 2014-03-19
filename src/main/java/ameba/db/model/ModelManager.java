@@ -24,9 +24,9 @@ import static java.util.Locale.ENGLISH;
  * @since: 13-8-18 上午10:39
  */
 public class ModelManager {
-    public static final Logger                    logger         = LoggerFactory.getLogger(ModelManager.class);
-    public static final Map<String, ModelManager> managerMap     = Maps.newHashMap();
-    private             List<Class>               modelClassList = Lists.newArrayList();
+    public static final Logger logger = LoggerFactory.getLogger(ModelManager.class);
+    public static final Map<String, ModelManager> managerMap = Maps.newHashMap();
+    private List<Class> modelClassList = Lists.newArrayList();
     private String[] packages;
 
     private ModelManager(String[] packages) {

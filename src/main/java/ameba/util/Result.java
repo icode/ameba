@@ -6,7 +6,7 @@ package ameba.util;
  */
 public class Result {
     private boolean success;
-    private String  message;
+    private String message;
     private Integer code;
 
     public Result(boolean success) {
