@@ -172,19 +172,16 @@
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-framework-monitoring</artifactId>
             <version>${grizzly.version}</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-http-monitoring</artifactId>
             <version>${grizzly.version}</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-http-server-monitoring</artifactId>
             <version>${grizzly.version}</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
@@ -208,6 +205,20 @@
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-memcached</artifactId>
             <version>${grizzly.ext.memcached.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>grizzly-framework</artifactId>
+                    <groupId>org.glassfish.grizzly</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j</artifactId>
+                    <groupId>log4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>zookeeper</artifactId>
+                    <groupId>org.apache.zookeeper</groupId>
+                </exclusion>
+            </exclusions>
             <optional>true</optional>
         </dependency>
         <!-- XML/JSON support -->

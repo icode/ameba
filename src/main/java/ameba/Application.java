@@ -9,13 +9,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.http.ajp.AjpAddOn;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
+import org.glassfish.grizzly.http.server.ServerConfiguration;
 import org.glassfish.grizzly.spdy.SpdyAddOn;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.filter.LoggingFilter;
-import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
+import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.slf4j.Logger;
@@ -23,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.inject.Singleton;
+import javax.ws.rs.ProcessingException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -47,13 +50,17 @@ import static ameba.util.IOUtils.*;
  */
 @Singleton
 public class Application extends ResourceConfig {
-    public static final Logger logger = LoggerFactory.getLogger(Application.class);
+    public static final String DEFAULT_NETWORK_LISTENER_NAME = "grizzly";
+    public static final String HTTP_KEEP_LIVE_JMX_MANAGEMENT_NAME = "grizzly_http_keep_live_jmx_management";
+    public static final String HTTP_CODEC_JMX_MANAGEMENT_NAME = "grizzly_http_codec_management_object";
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private URI httpServerBaseUri;
     private String mode;
     private String domain;
     private String host;
     private boolean ajpEnabled;
-    private boolean secure;
+    private boolean secureEnabled;
+    private boolean jmxEnabled;
     private Integer port;
     private String sslProtocol;
     private boolean sslClientMode;
@@ -114,7 +121,7 @@ public class Application extends ResourceConfig {
         //获取应用程序模式
         mode = properties.getProperty("app.mode");
         //设置ssl相关
-        secure = Boolean.parseBoolean(properties.getProperty("ssl.enabled", "false"));
+        secureEnabled = Boolean.parseBoolean(properties.getProperty("ssl.enabled", "false"));
         sslProtocol = properties.getProperty("ssl.protocol");
         sslClientMode = Boolean.parseBoolean(properties.getProperty("ssl.clientMode", "false"));
         sslNeedClientAuth = Boolean.parseBoolean(properties.getProperty("ssl.needClientAuth", "false"));
@@ -146,13 +153,14 @@ public class Application extends ResourceConfig {
         sslTrustStoreType = properties.getProperty("ssl.trust.store.type");
         sslTrustStorePassword = properties.getProperty("ssl.trust.store.password");
 
-        if (secure && sslKeyStoreFile != null &&
+        if (secureEnabled && sslKeyStoreFile != null &&
                 StringUtils.isNotBlank(sslKeyPassword) &&
                 StringUtils.isNotBlank(sslKeyStorePassword)) {
             sslConfigReady = true;
         }
 
-        ajpEnabled = Boolean.parseBoolean(properties.getProperty("http.ajp.enabled", "false"));
+        ajpEnabled = Boolean.parseBoolean(properties.getProperty("http.server.ajp.enabled", "false"));
+        jmxEnabled = Boolean.parseBoolean(properties.getProperty("app.jmx.enabled", "false"));
 
         Properties modeProperties = new Properties();
 
@@ -334,23 +342,108 @@ public class Application extends ResourceConfig {
                     app.isSslClientMode(), app.isSslNeedClientAuth(), app.isSslWantClientAuth());
         }
 
-        HttpServer server = GrizzlyHttpServerFactory.createHttpServer(app.httpServerBaseUri, app, app.isSecure(), sslEngineConfigurator, false);
+        HttpServer server = createHttpServer(app.httpServerBaseUri, app,
+                app.isSecureEnabled(), app.isAjpEnabled(), app.isJmxEnabled(), sslEngineConfigurator, false);
 
-        NetworkListener listener = server.getListener("grizzly");
-        if (listener != null) {
-            if (app.isSecure() && !app.isAjpEnabled()) {
+        server.getServerConfiguration().setSendFileEnabled(true);
+        return server;
+    }
+
+
+    /**
+     * Creates HttpServer instance.
+     *
+     * @param uri                   URI on which the Jersey web application will be deployed. Only first path segment
+     *                              will be used as context path, the rest will be ignored.
+     * @param configuration         web application configuration.
+     * @param secure                used for call {@link NetworkListener#setSecure(boolean)}.
+     * @param ajpEnabled            used for call {@link NetworkListener#registerAddOn(org.glassfish.grizzly.http.server.AddOn)}
+     *                              {@link org.glassfish.grizzly.spdy.SpdyAddOn}.
+     * @param jmxEnabled            {@link org.glassfish.grizzly.http.server.ServerConfiguration#setJmxEnabled(boolean)}.
+     * @param sslEngineConfigurator Ssl settings to be passed to {@link NetworkListener#setSSLEngineConfig(org.glassfish.grizzly.ssl.SSLEngineConfigurator)}.
+     * @param start                 if set to false, server will not get started, which allows to configure the
+     *                              underlying transport, see above for details.
+     * @return newly created {@link HttpServer}.
+     */
+    public static HttpServer createHttpServer(final URI uri,
+                                              final ResourceConfig configuration,
+                                              final boolean secure,
+                                              final boolean ajpEnabled,
+                                              final boolean jmxEnabled,
+                                              final SSLEngineConfigurator sslEngineConfigurator,
+                                              final boolean start) {
+        return createHttpServer(uri, ContainerFactory.createContainer(GrizzlyHttpContainer.class, configuration),
+                secure, ajpEnabled, jmxEnabled, sslEngineConfigurator, start);
+    }
+
+    /**
+     * Creates HttpServer instance.
+     *
+     * @param uri                   uri on which the {@link org.glassfish.jersey.server.ApplicationHandler} will be deployed. Only first path
+     *                              segment will be used as context path, the rest will be ignored.
+     * @param handler               {@link org.glassfish.grizzly.http.server.HttpHandler} instance.
+     * @param secure                used for call {@link NetworkListener#setSecure(boolean)}.
+     * @param ajpEnabled            used for call {@link NetworkListener#registerAddOn(org.glassfish.grizzly.http.server.AddOn)}
+     *                              {@link org.glassfish.grizzly.spdy.SpdyAddOn}.
+     * @param jmxEnabled            {@link org.glassfish.grizzly.http.server.ServerConfiguration#setJmxEnabled(boolean)}.
+     * @param sslEngineConfigurator Ssl settings to be passed to {@link NetworkListener#setSSLEngineConfig(org.glassfish.grizzly.ssl.SSLEngineConfigurator)}.
+     * @param start                 if set to false, server will not get started, this allows end users to set
+     *                              additional properties on the underlying listener.
+     * @return newly created {@link HttpServer}.
+     * @throws javax.ws.rs.ProcessingException
+     * @see GrizzlyHttpContainer
+     */
+    public static HttpServer createHttpServer(final URI uri,
+                                              final GrizzlyHttpContainer handler,
+                                              final boolean secure,
+                                              final boolean ajpEnabled,
+                                              final boolean jmxEnabled,
+                                              final SSLEngineConfigurator sslEngineConfigurator,
+                                              final boolean start)
+            throws ProcessingException {
+        final String host = (uri.getHost() == null) ? NetworkListener.DEFAULT_NETWORK_HOST
+                : uri.getHost();
+        final int port = (uri.getPort() == -1) ? 80 : uri.getPort();
+        final HttpServer server = new HttpServer();
+        final NetworkListener listener = new NetworkListener(DEFAULT_NETWORK_LISTENER_NAME, host, port);
+        listener.setSecure(secure);
+        if (sslEngineConfigurator != null) {
+            listener.setSSLEngineConfig(sslEngineConfigurator);
+
+            if (secure && !ajpEnabled) {
                 SpdyAddOn spdyAddon = new SpdyAddOn();
                 listener.registerAddOn(spdyAddon);
-            } else if (app.isSecure()) {
+            } else if (secure) {
                 logger.warn("AJP模式开启，不启动SPDY支持");
-            }
-            if (app.isAjpEnabled()) {
-                AjpAddOn ajpAddon = new AjpAddOn();
-                listener.registerAddOn(ajpAddon);
             }
         }
 
-        server.getServerConfiguration().setSendFileEnabled(true);
+        if (ajpEnabled) {
+            AjpAddOn ajpAddon = new AjpAddOn();
+            listener.registerAddOn(ajpAddon);
+        }
+
+        server.getServerConfiguration().setJmxEnabled(jmxEnabled);
+
+        server.addListener(listener);
+
+        // Map the path to the processor.
+        final ServerConfiguration config = server.getServerConfiguration();
+        if (handler != null) {
+            config.addHttpHandler(handler, uri.getPath());
+        }
+
+        config.setPassTraceRequest(true);
+
+        if (start) {
+            try {
+                // Start the server.
+                server.start();
+            } catch (IOException ex) {
+                throw new ProcessingException("IOException thrown when trying to start grizzly server", ex);
+            }
+        }
+
         return server;
     }
 
@@ -374,8 +467,8 @@ public class Application extends ResourceConfig {
         return httpServerBaseUri;
     }
 
-    public boolean isSecure() {
-        return secure;
+    public boolean isSecureEnabled() {
+        return secureEnabled;
     }
 
     public boolean isSslClientMode() {
@@ -448,6 +541,10 @@ public class Application extends ResourceConfig {
 
     public boolean isAjpEnabled() {
         return ajpEnabled;
+    }
+
+    public boolean isJmxEnabled() {
+        return jmxEnabled;
     }
 
     /**
