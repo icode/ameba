@@ -318,7 +318,12 @@ public class Application extends ResourceConfig {
 
     public static HttpServer createHttpServer() {
 
-        final Application app = new Application();
+        Application app = new Application();
+
+        return createHttpServer(app);
+    }
+
+    public static HttpServer createHttpServer(Application app) {
         SSLEngineConfigurator sslEngineConfigurator = null;
         if (app.isSslConfigReady()) {
             SSLContextConfigurator sslContextConfiguration = new SSLContextConfigurator();
