@@ -139,6 +139,17 @@
             <groupId>org.glassfish.jersey.ext</groupId>
             <artifactId>jersey-bean-validation</artifactId>
             <version>${jersey.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>hibernate-validator</artifactId>
+                    <groupId>org.hibernate</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${bean.validator.version}</version>
         </dependency>
         <!-- sse -->
         <dependency>
@@ -384,6 +395,7 @@
         <grizzly.ext.memcached.version>1.3.7</grizzly.ext.memcached.version>
         <guava.version>16.0.1</guava.version>
         <persistence.version>1.0.2</persistence.version>
+        <bean.validator.version>5.1.0.Final</bean.validator.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 </project>
