@@ -6,7 +6,9 @@ import ch.qos.logback.classic.gaffer.GafferUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.grizzly.http.CompressionConfig;
 import org.glassfish.grizzly.http.ajp.AjpAddOn;
+import org.glassfish.grizzly.http.server.ErrorPageGenerator;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
@@ -28,11 +30,13 @@ import javax.inject.Singleton;
 import javax.ws.rs.ProcessingException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -51,13 +55,12 @@ import static ameba.util.IOUtils.*;
 @Singleton
 public class Application extends ResourceConfig {
     public static final String DEFAULT_NETWORK_LISTENER_NAME = "grizzly";
-    public static final String HTTP_KEEP_LIVE_JMX_MANAGEMENT_NAME = "grizzly_http_keep_live_jmx_management";
-    public static final String HTTP_CODEC_JMX_MANAGEMENT_NAME = "grizzly_http_codec_management_object";
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private URI httpServerBaseUri;
     private String mode;
     private String domain;
     private String host;
+    private String applicationVersion;
     private boolean ajpEnabled;
     private boolean secureEnabled;
     private boolean jmxEnabled;
@@ -224,6 +227,7 @@ public class Application extends ResourceConfig {
 
         //设置应用程序名称
         setApplicationName((String) getProperty("app.name"));
+        applicationVersion = (String) getProperty("app.version");
 
         //配置日志器
         loggerConfigure();
@@ -323,6 +327,7 @@ public class Application extends ResourceConfig {
         return createHttpServer(app);
     }
 
+    @SuppressWarnings("unchecked")
     public static HttpServer createHttpServer(Application app) {
         SSLEngineConfigurator sslEngineConfigurator = null;
         if (app.isSslConfigReady()) {
@@ -347,10 +352,80 @@ public class Application extends ResourceConfig {
                     app.isSslClientMode(), app.isSslNeedClientAuth(), app.isSslWantClientAuth());
         }
 
-        HttpServer server = createHttpServer(app.httpServerBaseUri, app,
-                app.isSecureEnabled(), app.isAjpEnabled(), app.isJmxEnabled(), sslEngineConfigurator, false);
+        CompressionConfig compressionConfig = new CompressionConfig();
 
-        server.getServerConfiguration().setSendFileEnabled(true);
+
+        String modeStr = (String) app.getProperty("http.compression.mode");
+        if (StringUtils.isNotBlank(modeStr) && ((modeStr = modeStr.toUpperCase()).equals("ON") || modeStr.equals("FORCE"))) {
+
+            String minSizeStr = (String) app.getProperty("http.compression.minSize");
+            String mimeTypesStr = (String) app.getProperty("http.compression.mimeTypes");
+            String userAgentsStr = (String) app.getProperty("http.compression.ignore.userAgents");
+
+            compressionConfig.setCompressionMode(CompressionConfig.CompressionMode.fromString(modeStr)); // the mode
+            if (StringUtils.isNotBlank(minSizeStr))
+                try {
+                    compressionConfig.setCompressionMinSize(Integer.parseInt(minSizeStr)); // the min amount of bytes to compress
+                } catch (Exception e) {
+                    logger.error("parse http.compression.minSize error", e);
+                }
+            if (StringUtils.isNotBlank(mimeTypesStr))
+                compressionConfig.setCompressableMimeTypes(mimeTypesStr.split(",")); // the mime types to compress
+            if (StringUtils.isNotBlank(userAgentsStr))
+                compressionConfig.setNoCompressionUserAgents(userAgentsStr.split(","));
+        }
+
+        HttpServer server = createHttpServer(
+                app.httpServerBaseUri,
+                app,
+                compressionConfig,
+                app.isSecureEnabled(),
+                app.isAjpEnabled(),
+                app.isJmxEnabled(),
+                sslEngineConfigurator,
+                false);
+
+        ServerConfiguration serverConfiguration = server.getServerConfiguration();
+        serverConfiguration.setHttpServerName(app.getApplicationName());
+        serverConfiguration.setHttpServerVersion(app.getApplicationVersion());
+        serverConfiguration.setName("HttpServer-" + app.getApplicationName());
+        HashMap<Integer, String> errorMap = Maps.newHashMap();
+        Map<String, Object> config = app.getConfiguration().getProperties();
+        String defaultTemplate = null;
+        String generatorClass = (String) config.get("http.error.page.generator");
+        if (StringUtils.isNotBlank(generatorClass)) {
+            try {
+                Class generatorClazz = Class.forName(generatorClass);
+                for (String key : config.keySet()) {
+                    if (StringUtils.isNotBlank(key) && key.startsWith("http.error.page.")) {
+                        int startIndex = key.lastIndexOf(".");
+                        String statusCodeStr = key.substring(startIndex + 1);
+                        if (StringUtils.isNotBlank(statusCodeStr)) {
+                            if (statusCodeStr.toLowerCase().equals("default")) {
+                                defaultTemplate = (String) config.get(key);
+                            } else if (!statusCodeStr.toLowerCase().equals("generator")) {
+                                try {
+                                    String va = (String) config.get(key);
+                                    int statusCode = Integer.parseInt(statusCodeStr);
+                                    if (StringUtils.isNotBlank(va))
+                                        errorMap.put(statusCode, va);
+                                } catch (Exception e) {
+                                    logger.error("parse http.compression.minSize error", e);
+                                }
+                            }
+                        }
+                    }
+                }
+                Constructor constructor = generatorClazz.getConstructor(HashMap.class, String.class);
+                serverConfiguration.setDefaultErrorPageGenerator((ErrorPageGenerator) constructor.newInstance(errorMap, defaultTemplate));
+            } catch (ClassNotFoundException e) {
+                logger.error("http.error.page.generator class not found", e);
+            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+                logger.error("http.error.page.generator class constructor not found", e);
+            }
+        }
+        serverConfiguration.setSendFileEnabled(true);
+        serverConfiguration.setPassTraceRequest(true);
         return server;
     }
 
@@ -361,6 +436,7 @@ public class Application extends ResourceConfig {
      * @param uri                   URI on which the Jersey web application will be deployed. Only first path segment
      *                              will be used as context path, the rest will be ignored.
      * @param configuration         web application configuration.
+     * @param compressionCfg        {@link org.glassfish.grizzly.http.CompressionConfig} instance.
      * @param secure                used for call {@link NetworkListener#setSecure(boolean)}.
      * @param ajpEnabled            used for call {@link NetworkListener#registerAddOn(org.glassfish.grizzly.http.server.AddOn)}
      *                              {@link org.glassfish.grizzly.spdy.SpdyAddOn}.
@@ -372,13 +448,14 @@ public class Application extends ResourceConfig {
      */
     public static HttpServer createHttpServer(final URI uri,
                                               final ResourceConfig configuration,
+                                              final CompressionConfig compressionCfg,
                                               final boolean secure,
                                               final boolean ajpEnabled,
                                               final boolean jmxEnabled,
                                               final SSLEngineConfigurator sslEngineConfigurator,
                                               final boolean start) {
         return createHttpServer(uri, ContainerFactory.createContainer(GrizzlyHttpContainer.class, configuration),
-                secure, ajpEnabled, jmxEnabled, sslEngineConfigurator, start);
+                compressionCfg, secure, ajpEnabled, jmxEnabled, sslEngineConfigurator, start);
     }
 
     /**
@@ -386,6 +463,7 @@ public class Application extends ResourceConfig {
      *
      * @param uri                   uri on which the {@link org.glassfish.jersey.server.ApplicationHandler} will be deployed. Only first path
      *                              segment will be used as context path, the rest will be ignored.
+     * @param compressionCfg        {@link org.glassfish.grizzly.http.CompressionConfig} instance.
      * @param handler               {@link org.glassfish.grizzly.http.server.HttpHandler} instance.
      * @param secure                used for call {@link NetworkListener#setSecure(boolean)}.
      * @param ajpEnabled            used for call {@link NetworkListener#registerAddOn(org.glassfish.grizzly.http.server.AddOn)}
@@ -400,6 +478,7 @@ public class Application extends ResourceConfig {
      */
     public static HttpServer createHttpServer(final URI uri,
                                               final GrizzlyHttpContainer handler,
+                                              final CompressionConfig compressionCfg,
                                               final boolean secure,
                                               final boolean ajpEnabled,
                                               final boolean jmxEnabled,
@@ -431,6 +510,10 @@ public class Application extends ResourceConfig {
         server.getServerConfiguration().setJmxEnabled(jmxEnabled);
 
         server.addListener(listener);
+        CompressionConfig compressionConfig = listener.getCompressionConfig();
+        if (compressionCfg != null) {
+            compressionConfig.set(compressionCfg);
+        }
 
         // Map the path to the processor.
         final ServerConfiguration config = server.getServerConfiguration();
@@ -550,6 +633,10 @@ public class Application extends ResourceConfig {
 
     public boolean isJmxEnabled() {
         return jmxEnabled;
+    }
+
+    public String getApplicationVersion() {
+        return applicationVersion;
     }
 
     /**

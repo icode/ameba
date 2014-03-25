@@ -38,11 +38,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
     private static final Logger logger = LoggerFactory.getLogger(HttlViewProcessor.class);
     private Engine engine;
 
-    /**
-     * Creates an instance of {@link org.glassfish.jersey.server.mvc.internal.DefaultTemplateProcessor}.
-     *
-     * @param configuration {@code non-null} configuration to obtain properties from.
-     */
+
     @Inject
     public HttlViewProcessor(final Configuration config, @Optional final ServletContext servletContext) {
         super(config, servletContext, CONFIG_SUFFIX, getExtends(config));
@@ -101,7 +97,8 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
                     put("model", viewable.getModel());
                 }};
             }
-            setContentType(mediaType.equals(MediaType.WILDCARD_TYPE) ? MediaType.TEXT_HTML_TYPE : mediaType, httpHeaders);
+            if (httpHeaders != null)
+                setContentType(mediaType.equals(MediaType.WILDCARD_TYPE) ? MediaType.TEXT_HTML_TYPE : mediaType, httpHeaders);
             template.render(model, outputStream);
         } catch (ParseException e) {
             logger.error("Parse template error", e);
