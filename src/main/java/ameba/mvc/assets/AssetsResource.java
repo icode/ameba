@@ -20,12 +20,9 @@ import java.net.URI;
 @Singleton
 public class AssetsResource {
 
-    @Context
-    public UriInfo uriInfo;
-
     @GET
     @Path("{file:.*}")
-    public Response getResource(@PathParam("file") String file) {
+    public Response getResource(@PathParam("file") String file, @Context UriInfo uriInfo) {
 
         InputStream in = AssetsFeature.findAsset(uriInfo.getPath().replace(file, ""), file);
 

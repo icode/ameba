@@ -413,21 +413,7 @@ public class Application extends ResourceConfig {
             }
         }
         serverConfiguration.setSendFileEnabled(true);
-
-        String assClzz = (String) app.getProperty("app.register.default.feature.mvc.assets");
-        boolean isEnableAssetsSource = false;
-
-        if (StringUtils.isNotBlank(assClzz)) {
-            try {
-                Class clazz = Class.forName(assClzz);
-                if (app.isRegistered(clazz)) {
-                    isEnableAssetsSource = true;
-                }
-            } catch (ClassNotFoundException e) {
-                //noop
-            }
-        }
-        if (!isEnableAssetsSource) {
+        if (!app.isRegistered(AssetsFeature.class)) {
             Map<String, String[]> assetMap = AssetsFeature.getAssetMap(app);
             Set<String> mapKey = assetMap.keySet();
             for (String key : mapKey) {
