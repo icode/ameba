@@ -1,7 +1,6 @@
 package ameba.mvc.template;
 
 import ameba.mvc.template.internal.HttlViewProcessor;
-import ameba.mvc.template.internal.NotFoundForward;
 import org.glassfish.jersey.server.mvc.MvcFeature;
 
 import javax.ws.rs.ConstrainedTo;
@@ -25,8 +24,7 @@ public class HttlMvcFeature implements Feature {
         context.property(MvcFeature.TEMPLATE_BASE_PATH + '.' + HttlViewProcessor.CONFIG_SUFFIX,
                 context.getConfiguration().getProperty("template.directory"));
 
-        context.register(HttlViewProcessor.class)
-                .register(NotFoundForward.class);
+        context.register(HttlViewProcessor.class);
         return true;
     }
 }
