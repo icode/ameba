@@ -1,5 +1,6 @@
 package ameba;
 
+import ameba.mvc.assets.AssetsFeature;
 import ameba.util.LinkedProperties;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.gaffer.GafferUtil;
@@ -8,10 +9,7 @@ import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.http.CompressionConfig;
 import org.glassfish.grizzly.http.ajp.AjpAddOn;
-import org.glassfish.grizzly.http.server.ErrorPageGenerator;
-import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.grizzly.http.server.NetworkListener;
-import org.glassfish.grizzly.http.server.ServerConfiguration;
+import org.glassfish.grizzly.http.server.*;
 import org.glassfish.grizzly.spdy.SpdyAddOn;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
@@ -30,16 +28,11 @@ import javax.inject.Singleton;
 import javax.ws.rs.ProcessingException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -241,52 +234,45 @@ public class Application extends ResourceConfig {
             register(LoggingFilter.class);
         }
 
-        logger.info("装载注册器");
-        java.lang.reflect.Method method = null;
-        try {
-            method = this.getClass().getMethod("register", Class.class);
-        } catch (NoSuchMethodException e) {
-            logger.error("获取注册器失败", e);
-        }
-        if (method != null) {
-            String registerStr = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("app.registers"), ""));
-            String[] registers = null;
-            if (StringUtils.isNotBlank(registerStr)) {
-                registers = registerStr.split(",");
-                for (String register : registers) {
-                    try {
-                        logger.debug("安装注册器[{}]", register);
-                        Class clazz = Class.forName(register);
-                        if (isRegistered(clazz)) {
-                            logger.debug("并安装注册器[{}]，因为该注册器已存在", register);
-                            continue;
-                        }
-                        method.invoke(this, clazz);
-                    } catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException e) {
-                        logger.error("获取注册器失败", e);
+        logger.info("装载特性");
+
+        String registerStr = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("app.registers"), ""));
+        String[] registers = null;
+        if (StringUtils.isNotBlank(registerStr)) {
+            registers = registerStr.split(",");
+            for (String register : registers) {
+                try {
+                    logger.debug("安装特性[{}]", register);
+                    Class clazz = Class.forName(register);
+                    if (isRegistered(clazz)) {
+                        logger.debug("并安装特性[{}]，因为该特性已存在", register);
+                        continue;
                     }
+                    register(clazz);
+                } catch (ClassNotFoundException e) {
+                    logger.error("获取特性失败", e);
                 }
             }
+        }
 
-            for (String key : configMap.keySet()) {
-                if (key.startsWith("app.register.")) {
-                    String className = (String) getProperty(key);
-                    if (StringUtils.isNotBlank(className)) {
-                        String name = key.replaceFirst("^app\\.register\\.", "");
-                        try {
-                            logger.debug("安装注册器[{}({})]", name, className);
-                            Class clazz = Class.forName(className);
-                            if (isRegistered(clazz)) {
-                                logger.debug("并安装注册器[{}({})]，因为该注册器已存在", name, clazz);
-                                continue;
-                            }
-                            method.invoke(this, clazz);
-                        } catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException e) {
-                            if (!name.startsWith("default."))
-                                logger.error("获取注册器失败", e);
-                            else
-                                logger.warn("未找到系统默认特性[" + className + "]", e);
+        for (String key : configMap.keySet()) {
+            if (key.startsWith("app.register.")) {
+                String className = (String) getProperty(key);
+                if (StringUtils.isNotBlank(className)) {
+                    String name = key.replaceFirst("^app\\.register\\.", "");
+                    try {
+                        logger.debug("安装特性[{}({})]", name, className);
+                        Class clazz = Class.forName(className);
+                        if (isRegistered(clazz)) {
+                            logger.debug("并安装特性[{}({})]，因为该特性已存在", name, clazz);
+                            continue;
                         }
+                        register(clazz);
+                    } catch (ClassNotFoundException e) {
+                        if (!name.startsWith("default."))
+                            logger.error("获取特性失败", e);
+                        else
+                            logger.warn("未找到系统默认特性[" + className + "]", e);
                     }
                 }
             }
@@ -375,6 +361,7 @@ public class Application extends ResourceConfig {
                 compressionConfig.setNoCompressionUserAgents(userAgentsStr.split(","));
         }
 
+
         HttpServer server = createHttpServer(
                 app.httpServerBaseUri,
                 app,
@@ -416,16 +403,38 @@ public class Application extends ResourceConfig {
                         }
                     }
                 }
-                Constructor constructor = generatorClazz.getConstructor(HashMap.class, String.class);
-                serverConfiguration.setDefaultErrorPageGenerator((ErrorPageGenerator) constructor.newInstance(errorMap, defaultTemplate));
+                ameba.mvc.ErrorPageGenerator.setDefaultErrorTemplate(defaultTemplate);
+                ameba.mvc.ErrorPageGenerator.pushAllErrorMap(errorMap);
+                serverConfiguration.setDefaultErrorPageGenerator((ErrorPageGenerator) generatorClazz.newInstance());
             } catch (ClassNotFoundException e) {
                 logger.error("http.error.page.generator class not found", e);
-            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 logger.error("http.error.page.generator class constructor not found", e);
             }
         }
         serverConfiguration.setSendFileEnabled(true);
-        serverConfiguration.setPassTraceRequest(true);
+
+        String assClzz = (String) app.getProperty("app.register.default.feature.mvc.assets");
+        boolean isEnableAssetsSource = false;
+
+        if (StringUtils.isNotBlank(assClzz)) {
+            try {
+                Class clazz = Class.forName(assClzz);
+                if (app.isRegistered(clazz)) {
+                    isEnableAssetsSource = true;
+                }
+            } catch (ClassNotFoundException e) {
+                //noop
+            }
+        }
+        if (!isEnableAssetsSource) {
+            Map<String, String[]> assetMap = AssetsFeature.getAssetMap(app);
+            Set<String> mapKey = assetMap.keySet();
+            for (String key : mapKey) {
+                serverConfiguration.addHttpHandler(new CLStaticHttpHandler(Application.class.getClassLoader(), key + "/"),
+                        assetMap.get(key));
+            }
+        }
         return server;
     }
 
@@ -477,7 +486,7 @@ public class Application extends ResourceConfig {
      * @see GrizzlyHttpContainer
      */
     public static HttpServer createHttpServer(final URI uri,
-                                              final GrizzlyHttpContainer handler,
+                                              final HttpHandler handler,
                                               final CompressionConfig compressionCfg,
                                               final boolean secure,
                                               final boolean ajpEnabled,

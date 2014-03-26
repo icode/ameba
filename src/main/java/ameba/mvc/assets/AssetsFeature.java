@@ -1,6 +1,7 @@
 package ameba.mvc.assets;
 
 import ameba.util.IOUtils;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.model.ModelProcessor;
@@ -13,6 +14,7 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,11 +26,8 @@ public class AssetsFeature implements Feature {
 
     private static final Map<String, String[]> assetsMap = Maps.newLinkedHashMap();
 
-    @Override
-    public boolean configure(FeatureContext context) {
-
-        Configuration configuration = context.getConfiguration();
-
+    public static Map<String, String[]> getAssetMap(Configuration configuration) {
+        Map<String, String[]> assetsMap = Maps.newLinkedHashMap();
         for (String key : configuration.getPropertyNames()) {
             if (key.startsWith("resource.assets.") || key.equals("resource.assets")) {
                 String routePath = key.replaceFirst("^resource\\.assets", "");
@@ -43,10 +42,24 @@ public class AssetsFeature implements Feature {
                 }
 
                 String value = (String) configuration.getProperty(key);
+                String[] uris = value.split(",");
+                List<String> uriList = Lists.newArrayList();
+                for (String uri : uris) {
+                    uriList.add(uri.startsWith("/") ? uri : "/" + uri);
+                }
                 if (StringUtils.isNotBlank(value))
-                    assetsMap.put(routePath, value.split(","));
+                    assetsMap.put(routePath, uriList.toArray(uris));
             }
         }
+        return assetsMap;
+    }
+
+    @Override
+    public boolean configure(FeatureContext context) {
+
+        Configuration configuration = context.getConfiguration();
+
+        assetsMap.putAll(getAssetMap(configuration));
 
         context.register(new ModelProcessor() {
             @Override
