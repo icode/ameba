@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.jaxrs.base.JsonParseExceptionMapper;
 import com.fasterxml.jackson.jaxrs.cfg.Annotations;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.jaxrs.xml.JacksonJaxbXMLProvider;
-import com.fasterxml.jackson.jaxrs.xml.JsonParseExceptionMapper;
 import org.glassfish.jersey.CommonProperties;
 
 import javax.ws.rs.core.Feature;
