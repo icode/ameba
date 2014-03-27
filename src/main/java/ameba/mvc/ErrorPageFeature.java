@@ -26,7 +26,7 @@ public class ErrorPageFeature implements Feature {
     @Inject
     public ErrorPageFeature(ServiceLocator locator) {
         this.locator = locator;
-        httlViewProcessor = locator.create(HttlViewProcessor.class);
+        httlViewProcessor = locator.createAndInitialize(HttlViewProcessor.class);
     }
 
     @Override
