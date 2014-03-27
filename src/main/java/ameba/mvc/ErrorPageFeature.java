@@ -21,9 +21,11 @@ public class ErrorPageFeature implements Feature {
     private static final Logger logger = LoggerFactory.getLogger(ErrorPageFeature.class);
 
     private HttlViewProcessor httlViewProcessor;
+    private ServiceLocator locator;
 
     @Inject
     public ErrorPageFeature(ServiceLocator locator) {
+        this.locator = locator;
         httlViewProcessor = locator.create(HttlViewProcessor.class);
     }
 
@@ -34,8 +36,9 @@ public class ErrorPageFeature implements Feature {
             try {
                 Class generatorClazz = Class.forName(generatorClass);
                 ErrorPageGenerator.setTemplateProcessor(httlViewProcessor);
-                featureContext.register(generatorClazz);
-
+                ErrorPageGenerator generator = (ErrorPageGenerator) locator.create(generatorClazz);
+                ErrorPageGenerator.setInstance(generator);
+                featureContext.register(generator);
             } catch (ClassNotFoundException e) {
                 logger.error("获取 http.error.page.generator 类失败", e);
             }

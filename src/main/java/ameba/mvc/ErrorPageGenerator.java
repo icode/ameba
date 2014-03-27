@@ -25,9 +25,19 @@ import java.util.HashMap;
  */
 @Singleton
 public abstract class ErrorPageGenerator extends DefaultErrorPageGenerator implements ExceptionMapper<Exception> {
-    private static final Logger logger = LoggerFactory.getLogger(ErrorPageGenerator.class);
     private static final HashMap<Integer, String> errorTemplateMap = Maps.newHashMap();
     private static String defaultErrorTemplate;
+
+    private static ErrorPageGenerator instance;
+
+    public static ErrorPageGenerator getInstance() {
+        return instance;
+    }
+
+    public static void setInstance(ErrorPageGenerator ins) {
+        instance = ins;
+    }
+
 
     private static AbstractTemplateProcessor templateProcessor;
 
@@ -89,14 +99,21 @@ public abstract class ErrorPageGenerator extends DefaultErrorPageGenerator imple
         } else {
             builder = Response.status(status)
                     .type(MediaType.TEXT_HTML_TYPE)
-                    .encoding(StringUtils.defaultIfBlank((String) app.getProperty("app.encoding"), "utf-8"));
+                    .encoding(getResponseEncoding());
         }
 
         return builder.entity(cont).build();
     }
 
+    private String getResponseEncoding() {
+        return StringUtils.defaultIfBlank((String) app.getProperty("app.encoding"), "utf-8");
+    }
+
     @Override
     public String generate(Request request, int status, String reasonPhrase, String description, Throwable exception) {
+        if (request != null) {
+            request.getResponse().setCharacterEncoding(getResponseEncoding());
+        }
         return generate(request, null, status, reasonPhrase, description, exception);
     }
 

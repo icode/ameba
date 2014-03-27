@@ -382,38 +382,33 @@ public class Application extends ResourceConfig {
         String defaultTemplate = null;
         String generatorClass = (String) config.get("http.error.page.generator");
         if (StringUtils.isNotBlank(generatorClass)) {
-            try {
-                Class generatorClazz = Class.forName(generatorClass);
-                for (String key : config.keySet()) {
-                    if (StringUtils.isNotBlank(key) && key.startsWith("http.error.page.")) {
-                        int startIndex = key.lastIndexOf(".");
-                        String statusCodeStr = key.substring(startIndex + 1);
-                        if (StringUtils.isNotBlank(statusCodeStr)) {
-                            if (statusCodeStr.toLowerCase().equals("default")) {
-                                defaultTemplate = (String) config.get(key);
-                                defaultTemplate = defaultTemplate.startsWith("/") ? defaultTemplate :
-                                        "/" + defaultTemplate;
-                            } else if (!statusCodeStr.toLowerCase().equals("generator")) {
-                                try {
-                                    String va = (String) config.get(key);
-                                    int statusCode = Integer.parseInt(statusCodeStr);
-                                    if (StringUtils.isNotBlank(va))
-                                        errorMap.put(statusCode, va.startsWith("/") ? va : "/" + va);
-                                } catch (Exception e) {
-                                    logger.error("parse http.compression.minSize error", e);
-                                }
+            for (String key : config.keySet()) {
+                if (StringUtils.isNotBlank(key) && key.startsWith("http.error.page.")) {
+                    int startIndex = key.lastIndexOf(".");
+                    String statusCodeStr = key.substring(startIndex + 1);
+                    if (StringUtils.isNotBlank(statusCodeStr)) {
+                        if (statusCodeStr.toLowerCase().equals("default")) {
+                            defaultTemplate = (String) config.get(key);
+                            defaultTemplate = defaultTemplate.startsWith("/") ? defaultTemplate :
+                                    "/" + defaultTemplate;
+                        } else if (!statusCodeStr.toLowerCase().equals("generator")) {
+                            try {
+                                String va = (String) config.get(key);
+                                int statusCode = Integer.parseInt(statusCodeStr);
+                                if (StringUtils.isNotBlank(va))
+                                    errorMap.put(statusCode, va.startsWith("/") ? va : "/" + va);
+                            } catch (Exception e) {
+                                logger.error("parse http.compression.minSize error", e);
                             }
                         }
                     }
                 }
-                ameba.mvc.ErrorPageGenerator.setDefaultErrorTemplate(defaultTemplate);
-                ameba.mvc.ErrorPageGenerator.pushAllErrorMap(errorMap);
-                serverConfiguration.setDefaultErrorPageGenerator((ErrorPageGenerator) generatorClazz.newInstance());
-            } catch (ClassNotFoundException e) {
-                logger.error("http.error.page.generator class not found", e);
-            } catch (InstantiationException | IllegalAccessException e) {
-                logger.error("http.error.page.generator class constructor not found", e);
             }
+            ameba.mvc.ErrorPageGenerator.setDefaultErrorTemplate(defaultTemplate);
+            ameba.mvc.ErrorPageGenerator.pushAllErrorMap(errorMap);
+            ameba.mvc.ErrorPageGenerator generator = ameba.mvc.ErrorPageGenerator.getInstance();
+            if (generator != null)
+                serverConfiguration.setDefaultErrorPageGenerator(generator);
         }
         String charset = StringUtils.defaultIfBlank((String) app.getProperty("app.encoding"), "utf-8");
         serverConfiguration.setSendFileEnabled(true);
