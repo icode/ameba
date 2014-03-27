@@ -20,13 +20,11 @@ import javax.ws.rs.core.FeatureContext;
 public class ErrorPageFeature implements Feature {
     private static final Logger logger = LoggerFactory.getLogger(ErrorPageFeature.class);
 
-    private HttlViewProcessor httlViewProcessor;
     private ServiceLocator locator;
 
     @Inject
     public ErrorPageFeature(ServiceLocator locator) {
         this.locator = locator;
-        httlViewProcessor = locator.createAndInitialize(HttlViewProcessor.class);
     }
 
     @Override
@@ -35,6 +33,7 @@ public class ErrorPageFeature implements Feature {
         if (StringUtils.isNotBlank(generatorClass)) {
             try {
                 Class generatorClazz = Class.forName(generatorClass);
+                HttlViewProcessor httlViewProcessor = locator.createAndInitialize(HttlViewProcessor.class);
                 ErrorPageGenerator.setTemplateProcessor(httlViewProcessor);
                 ErrorPageGenerator generator = (ErrorPageGenerator) locator.create(generatorClazz);
                 ErrorPageGenerator.setInstance(generator);
