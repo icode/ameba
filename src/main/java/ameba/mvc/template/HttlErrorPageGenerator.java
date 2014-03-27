@@ -20,13 +20,13 @@ public class HttlErrorPageGenerator extends ErrorPageGenerator {
     private static final Logger logger = LoggerFactory.getLogger(HttlErrorPageGenerator.class);
 
     @Override
-    protected String processTemplate(String tplName, Request request,
+    protected String processTemplate(String tplName,
                                      MultivaluedMap<String, Object> httpHeaders,
                                      int status, String reasonPhrase,
                                      String description, Throwable exception) {
 
         Template template = (Template) getTemplateProcessor().resolve(tplName, MediaType.TEXT_HTML_TYPE);
-        Error error = new Error(request, status, reasonPhrase, description, exception);
+        Error error = new Error(status, reasonPhrase, description, exception);
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             getTemplateProcessor().writeTo(template, new Viewable(tplName, error), MediaType.TEXT_HTML_TYPE, httpHeaders, outputStream);
             return outputStream.toString();

@@ -61,6 +61,7 @@ public abstract class ErrorPageGenerator extends DefaultErrorPageGenerator imple
     @Override
     public Response toResponse(Exception e) {
         int status = 500;
+        Request request = Request.create();
         if (e instanceof WebApplicationException) {
             WebApplicationException ex = (WebApplicationException) e;
             Response response = ex.getResponse();
@@ -68,7 +69,7 @@ public abstract class ErrorPageGenerator extends DefaultErrorPageGenerator imple
         }
 
         return Response.status(status)
-                .entity(generate(Request.create(),
+                .entity(generate(request,
                         status,
                         e.getMessage(),
                         StringUtils.join(e.getStackTrace(), "\n"),
@@ -91,25 +92,23 @@ public abstract class ErrorPageGenerator extends DefaultErrorPageGenerator imple
             }
         }
 
-        return processTemplate(tplName, request,
+        return processTemplate(tplName,
                 (response != null ? response.getHeaders() : new MultivaluedHashMap<String, Object>()),
                 status, reasonPhrase, description, exception);
     }
 
-    protected abstract String processTemplate(String tplName, Request request,
+    protected abstract String processTemplate(String tplName,
                                               MultivaluedMap<String, Object> httpHeaders,
                                               int status, String reasonPhrase,
                                               String description, Throwable exception);
 
     public static class Error {
-        public Request request;
         public int status;
         public String reasonPhrase;
         public String description;
         public Throwable exception;
 
-        public Error(Request request, int status, String reasonPhrase, String description, Throwable exception) {
-            this.request = request;
+        public Error(int status, String reasonPhrase, String description, Throwable exception) {
             this.status = status;
             this.reasonPhrase = reasonPhrase;
             this.description = description;
