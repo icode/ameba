@@ -1,5 +1,6 @@
 package ameba.mvc;
 
+import ameba.Application;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.http.server.DefaultErrorPageGenerator;
@@ -8,8 +9,10 @@ import org.glassfish.jersey.server.mvc.spi.AbstractTemplateProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -57,24 +60,39 @@ public abstract class ErrorPageGenerator extends DefaultErrorPageGenerator imple
         defaultErrorTemplate = template;
     }
 
+    @Inject
+    private Application app;
+
 
     @Override
     public Response toResponse(Exception e) {
         int status = 500;
         Request request = Request.create();
+        Response response = null;
+        Response.ResponseBuilder builder;
         if (e instanceof WebApplicationException) {
             WebApplicationException ex = (WebApplicationException) e;
-            Response response = ex.getResponse();
+            response = ex.getResponse();
             status = response.getStatus();
         }
 
-        return Response.status(status)
-                .entity(generate(request,
-                        status,
-                        e.getMessage(),
-                        StringUtils.join(e.getStackTrace(), "\n"),
-                        e
-                )).build();
+        String cont = generate(request,
+                response,
+                status,
+                e.getMessage(),
+                StringUtils.join(e.getStackTrace(), "\n"),
+                e
+        );
+
+        if (response != null) {
+            builder = Response.fromResponse(response);
+        } else {
+            builder = Response.status(status)
+                    .type(MediaType.TEXT_HTML_TYPE)
+                    .encoding(StringUtils.defaultIfBlank((String) app.getProperty("app.encoding"), "utf-8"));
+        }
+
+        return builder.entity(cont).build();
     }
 
     @Override

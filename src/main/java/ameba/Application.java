@@ -415,15 +415,21 @@ public class Application extends ResourceConfig {
                 logger.error("http.error.page.generator class constructor not found", e);
             }
         }
+        String charset = StringUtils.defaultIfBlank((String) app.getProperty("app.encoding"), "utf-8");
         serverConfiguration.setSendFileEnabled(true);
         if (!app.isRegistered(AssetsFeature.class)) {
             Map<String, String[]> assetMap = AssetsFeature.getAssetMap(app);
             Set<String> mapKey = assetMap.keySet();
             for (String key : mapKey) {
-                serverConfiguration.addHttpHandler(new CLStaticHttpHandler(Application.class.getClassLoader(), key + "/"),
+                HttpHandler httpHandler = new CLStaticHttpHandler(Application.class.getClassLoader(), key + "/");
+                httpHandler.setRequestURIEncoding(charset);
+                serverConfiguration.addHttpHandler(httpHandler,
                         assetMap.get(key));
             }
         }
+
+        server.getServerConfiguration().setDefaultQueryEncoding(Charset.forName(charset));
+
         return server;
     }
 
@@ -508,7 +514,6 @@ public class Application extends ResourceConfig {
         server.getServerConfiguration().setJmxEnabled(jmxEnabled);
 
         server.addListener(listener);
-        server.getServerConfiguration().setDefaultQueryEncoding(Charset.forName("utf-8"));
         CompressionConfig compressionConfig = listener.getCompressionConfig();
         if (compressionCfg != null) {
             compressionConfig.set(compressionCfg);
