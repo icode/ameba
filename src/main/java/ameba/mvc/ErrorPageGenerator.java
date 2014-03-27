@@ -1,55 +1,87 @@
 package ameba.mvc;
 
-import ameba.mvc.template.internal.HttlViewProcessor;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.http.server.DefaultErrorPageGenerator;
 import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.jersey.server.mvc.spi.AbstractTemplateProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
 import java.util.HashMap;
 
 /**
  * 错误处理页面配置
  * Created by icode on 14-3-25.
  */
-public abstract class ErrorPageGenerator extends DefaultErrorPageGenerator {
+@Singleton
+public abstract class ErrorPageGenerator extends DefaultErrorPageGenerator implements ExceptionMapper<Exception> {
     private static final Logger logger = LoggerFactory.getLogger(ErrorPageGenerator.class);
-    private HashMap<Integer, String> errorTemplateMap;
-    private String defaultErrorTemplate;
+    private static final HashMap<Integer, String> errorTemplateMap = Maps.newHashMap();
+    private static String defaultErrorTemplate;
 
-    public ErrorPageGenerator(HashMap<Integer, String> errorTemplateMap) {
-        this.errorTemplateMap = errorTemplateMap;
+    private static AbstractTemplateProcessor templateProcessor;
+
+    public static void setTemplateProcessor(AbstractTemplateProcessor templateProcessor) {
+        ErrorPageGenerator.templateProcessor = templateProcessor;
     }
 
-    public ErrorPageGenerator(HashMap<Integer, String> errorTemplateMap, String defaultErrorTemplate) {
-        this.errorTemplateMap = errorTemplateMap;
-        this.defaultErrorTemplate = defaultErrorTemplate;
+    public static AbstractTemplateProcessor getTemplateProcessor() {
+        return templateProcessor;
     }
 
-    public HashMap<Integer, String> getErrorTemplateMap() {
+    public static void pushErrorMap(int status, String tpl) {
+        errorTemplateMap.put(status, tpl);
+    }
+
+    public static void pushAllErrorMap(HashMap<Integer, String> map) {
+        errorTemplateMap.putAll(map);
+    }
+
+
+    public static HashMap<Integer, String> getErrorTemplateMap() {
         return errorTemplateMap;
     }
 
-    public void setErrorTemplateMap(HashMap<Integer, String> errorTemplateMap) {
-        this.errorTemplateMap = errorTemplateMap;
-    }
-
-    public String getDefaultErrorTemplate() {
+    public static String getDefaultErrorTemplate() {
         return defaultErrorTemplate;
     }
 
-    public void setDefaultErrorTemplate(String defaultErrorTemplate) {
-        this.defaultErrorTemplate = defaultErrorTemplate;
+    public static void setDefaultErrorTemplate(String template) {
+        defaultErrorTemplate = template;
     }
 
 
-    @Inject
-    private HttlViewProcessor templateProcessor;
+    @Override
+    public Response toResponse(Exception e) {
+        int status = 500;
+        if (e instanceof WebApplicationException) {
+            WebApplicationException ex = (WebApplicationException) e;
+            Response response = ex.getResponse();
+            status = response.getStatus();
+        }
+
+        return Response.status(status)
+                .entity(generate(Request.create(),
+                        status,
+                        e.getMessage(),
+                        StringUtils.join(e.getStackTrace(), "\n"),
+                        e
+                )).build();
+    }
 
     @Override
     public String generate(Request request, int status, String reasonPhrase, String description, Throwable exception) {
+        return generate(request, null, status, reasonPhrase, description, exception);
+    }
+
+    public String generate(Request request, Response response, int status, String reasonPhrase, String description, Throwable exception) {
         String tplName = errorTemplateMap.get(status);
         if (StringUtils.isBlank(tplName)) {
             if (StringUtils.isBlank(defaultErrorTemplate)) {
@@ -59,10 +91,14 @@ public abstract class ErrorPageGenerator extends DefaultErrorPageGenerator {
             }
         }
 
-        return processTemplate(tplName, request, status, reasonPhrase, description, exception);
+        return processTemplate(tplName, request,
+                (response != null ? response.getHeaders() : new MultivaluedHashMap<String, Object>()),
+                status, reasonPhrase, description, exception);
     }
 
-    protected abstract String processTemplate(String tplName, Request request, int status, String reasonPhrase,
+    protected abstract String processTemplate(String tplName, Request request,
+                                              MultivaluedMap<String, Object> httpHeaders,
+                                              int status, String reasonPhrase,
                                               String description, Throwable exception);
 
     public static class Error {

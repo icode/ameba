@@ -390,12 +390,14 @@ public class Application extends ResourceConfig {
                         if (StringUtils.isNotBlank(statusCodeStr)) {
                             if (statusCodeStr.toLowerCase().equals("default")) {
                                 defaultTemplate = (String) config.get(key);
+                                defaultTemplate = defaultTemplate.startsWith("/") ? defaultTemplate :
+                                        "/" + defaultTemplate;
                             } else if (!statusCodeStr.toLowerCase().equals("generator")) {
                                 try {
                                     String va = (String) config.get(key);
                                     int statusCode = Integer.parseInt(statusCodeStr);
                                     if (StringUtils.isNotBlank(va))
-                                        errorMap.put(statusCode, va);
+                                        errorMap.put(statusCode, va.startsWith("/") ? va : "/" + va);
                                 } catch (Exception e) {
                                     logger.error("parse http.compression.minSize error", e);
                                 }
