@@ -38,9 +38,8 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
     private static final Logger logger = LoggerFactory.getLogger(HttlViewProcessor.class);
     private Engine engine;
 
-
     @Inject
-    public HttlViewProcessor(final Configuration config, @Optional final ServletContext servletContext) {
+    public HttlViewProcessor(Configuration config, @Optional ServletContext servletContext) {
         super(config, servletContext, CONFIG_SUFFIX, getExtends(config));
         Properties properties = new Properties();
         Map<String, Object> map = config.getProperties();
