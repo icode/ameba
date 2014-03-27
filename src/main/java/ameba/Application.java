@@ -32,6 +32,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -507,6 +508,7 @@ public class Application extends ResourceConfig {
         server.getServerConfiguration().setJmxEnabled(jmxEnabled);
 
         server.addListener(listener);
+        server.getServerConfiguration().setDefaultQueryEncoding(Charset.forName("utf-8"));
         CompressionConfig compressionConfig = listener.getCompressionConfig();
         if (compressionCfg != null) {
             compressionConfig.set(compressionCfg);
