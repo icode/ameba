@@ -5,7 +5,8 @@ import ch.qos.logback.core.rolling.RollingFileAppender
 import ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy
 
-import static ch.qos.logback.classic.Level.ERROR
+import static ch.qos.logback.classic.Level.INFO
+import static ch.qos.logback.classic.Level.WARN
 
 appender("CONSOLE", ConsoleAppender) {
     encoder(PatternLayoutEncoder) {
@@ -13,13 +14,14 @@ appender("CONSOLE", ConsoleAppender) {
     }
 }
 
+String appName = context.getProperty("appName");
 appender("FILE", RollingFileAppender) {
-    file = "logs/" + context.getProperty("appName") + ".log"
+    file = "logs/" + appName + ".log"
     rollingPolicy(TimeBasedRollingPolicy) {
-        fileNamePattern = "logs/" + context.getProperty("appName") + ".%d{yyyy-MM-dd}-%i.log"
+        fileNamePattern = "logs/" + appName + ".%d{yyyy-MM-dd}-%i.log"
         maxHistory = 30
         timeBasedFileNamingAndTriggeringPolicy(SizeAndTimeBasedFNATP) {
-            maxFileSize = "50MB"
+            maxFileSize = "200MB"
         }
     }
     encoder(PatternLayoutEncoder) {
@@ -27,4 +29,9 @@ appender("FILE", RollingFileAppender) {
     }
 }
 
-root(ERROR, ["CONSOLE", "FILE"])
+String appPackage = context.getProperty("appPackage");
+
+if (appPackage != null)
+    logger(appPackage, INFO)
+logger("ameba", INFO)
+root(WARN, ["CONSOLE", "FILE"])

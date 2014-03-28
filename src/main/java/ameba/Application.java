@@ -227,7 +227,7 @@ public class Application extends ResourceConfig {
         loggerConfigure();
 
         String[] packages = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("resource.packages"), "")).split(",");
-        logger.info("设置RESEful [resource扫描包({})]", getProperty("resource.packages"));
+        logger.info("设置 RESTful resource 扫描包:[{}]", getProperty("resource.packages"));
         packages(packages);
 
         if ("dev".equals(mode)) {
@@ -654,6 +654,8 @@ public class Application extends ResourceConfig {
             LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
             context.reset();
             context.putProperty("appName", getApplicationName());
+            String appPackage = (String) getProperty("app.package");
+            context.putProperty("appPackage", appPackage);
             GafferUtil.runGafferConfiguratorOn(context, this, loggerConfigFile);
         }
 
