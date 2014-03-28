@@ -231,7 +231,7 @@ public class Application extends ResourceConfig {
         packages(packages);
 
         if ("dev".equals(mode)) {
-            logger.info("注册日志过滤器");
+            logger.debug("注册日志过滤器");
             register(LoggingFilter.class);
         }
 
@@ -246,7 +246,7 @@ public class Application extends ResourceConfig {
                     logger.debug("安装特性[{}]", register);
                     Class clazz = Class.forName(register);
                     if (isRegistered(clazz)) {
-                        logger.debug("并安装特性[{}]，因为该特性已存在", register);
+                        logger.debug("并未安装特性[{}]，因为该特性已存在", register);
                         continue;
                     }
                     register(clazz);

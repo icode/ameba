@@ -12,9 +12,7 @@ appender("CONSOLE", ConsoleAppender) {
 }
 
 logger("org.glassfish.jersey", TRACE)
-logger("org.glassfish.jersey.server.model.Parameter", ERROR)
 logger("org.glassfish.grizzly", TRACE)
-logger("org.glassfish.grizzly.nio.transport", ERROR)
 logger("org.avaje.ebean", TRACE)
 logger("httl", TRACE)
 logger("ameba", TRACE)

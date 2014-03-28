@@ -14,7 +14,6 @@ public class Main {
 
 
     public static void main(String[] args) {
-        logger.info("启动服务...");
         final HttpServer server = Application.createHttpServer();
         // register shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
