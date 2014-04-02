@@ -5,6 +5,8 @@ import org.glassfish.grizzly.http.server.HttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * Main class.
  */
@@ -21,18 +23,12 @@ public class Main {
             public void run() {
                 logger.info("关闭服务器..");
                 GrizzlyFuture<HttpServer> future = server.shutdown();
-
-                while (true) {
-                    if (future.isDone()){
-                        logger.info("服务器已关闭.");
-                        break;
-                    }
-                    try {
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        logger.error("关闭服务器出现错误.", e);
-                    }
+                try {
+                    future.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    logger.error("服务器关闭出错.", e);
                 }
+                logger.info("服务器已关闭.");
             }
         }, "shutdownHook"));
 
