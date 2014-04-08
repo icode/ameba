@@ -52,9 +52,15 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>2.5.0</version>
+            <groupId>com.dyuproject.protostuff</groupId>
+            <artifactId>protostuff-runtime</artifactId>
+            <version>${protostuff.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.dyuproject.protostuff</groupId>
+            <artifactId>protostuff-core</artifactId>
+            <version>${protostuff.version}</version>
             <optional>true</optional>
         </dependency>
 
@@ -394,6 +400,7 @@
     </build>
 
     <properties>
+        <protostuff.version>1.0.8</protostuff.version>
         <jersey.version>2.7</jersey.version>
         <slf4j.version>1.7.6</slf4j.version>
         <logback.version>1.1.1</logback.version>

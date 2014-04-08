@@ -1,7 +1,8 @@
 package ameba.message.internal.protobuf;
 
-import com.google.protobuf.GeneratedMessage;
-import com.google.protobuf.Message;
+import com.dyuproject.protostuff.ProtobufIOUtil;
+import com.dyuproject.protostuff.Schema;
+import com.dyuproject.protostuff.runtime.RuntimeSchema;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.WebApplicationException;
@@ -12,28 +13,36 @@ import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.List;
 
 /**
  * Created by icode on 14-4-8.
  */
 @Provider
 @Consumes("application/x-protobuf")
-public class ProtobufMessageBodyReader implements MessageBodyReader<Message> {
-    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return Message.class.isAssignableFrom(type);
+public class ProtobufMessageBodyReader extends AbstractProtobufProvider implements MessageBodyReader<Object> {
+
+    @Override
+    public boolean isReadable(Class aClass, Type type, Annotation[] annotations, MediaType mediaType) {
+        return true;
     }
 
-    public Message readFrom(Class<Message> type, Type genericType, Annotation[] annotations,
-                            MediaType mediaType, MultivaluedMap<String, String> httpHeaders,
-                            InputStream entityStream) throws IOException, WebApplicationException {
-        try {
-            Method newBuilder = type.getMethod("newBuilder");
-            GeneratedMessage.Builder builder = (GeneratedMessage.Builder) newBuilder.invoke(type);
-            return builder.mergeFrom(entityStream).build();
-        } catch (Exception e) {
-            throw new WebApplicationException(e);
+    @Override
+    public Object readFrom(Class<Object> type, Type genericType, Annotation[] annotations,
+                           MediaType mediaType, MultivaluedMap<String, String> httpHeaders,
+                           InputStream entityStream) throws IOException, WebApplicationException {
+        if (List.class.isAssignableFrom(type)) {
+            Schema schema = RuntimeSchema.getSchema(getListGenericType((List) null, genericType));
+            return ProtobufIOUtil.parseListFrom(entityStream, schema);
+        } else {
+            Schema schema = RuntimeSchema.getSchema(type);
+            try {
+                ProtobufIOUtil.mergeFrom(entityStream, type.newInstance(), schema);
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new WebApplicationException(e);
+            }
         }
+        return null;
     }
 }
