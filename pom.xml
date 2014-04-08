@@ -6,7 +6,7 @@
     <groupId>ameba</groupId>
     <artifactId>ameba</artifactId>
     <packaging>jar</packaging>
-    <version>0.1.4</version>
+    <version>0.1.5</version>
     <name>Ameba-Framework</name>
 
     <dependencyManagement>
@@ -49,6 +49,13 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <version>${groovy.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>2.5.0</version>
+            <optional>true</optional>
         </dependency>
 
         <!-- Ebean -->
