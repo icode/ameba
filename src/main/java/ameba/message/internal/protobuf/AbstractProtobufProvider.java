@@ -15,6 +15,7 @@ public class AbstractProtobufProvider {
             ParameterizedType listType = (ParameterizedType) genericType;
             return (Class<?>) listType.getActualTypeArguments()[0];
         } else if (list != null) {
+            if (list.size() == 0) return Object.class;
             for (Object o : list) {
                 if (o != null) {
                     return o.getClass();
