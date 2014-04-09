@@ -12,8 +12,7 @@ public class AbstractProtobufProvider {
 
     protected Class getListGenericType(List list, Type genericType) throws IOException {
         if (genericType instanceof ParameterizedType) {
-            ParameterizedType listType = (ParameterizedType) genericType;
-            return (Class<?>) listType.getActualTypeArguments()[0];
+            return (Class<?>) ((ParameterizedType) genericType).getActualTypeArguments()[0];
         } else if (list != null) {
             if (list.size() == 0) return Object.class;
 
@@ -22,7 +21,7 @@ public class AbstractProtobufProvider {
                     return o.getClass();
                 }
             }
-            
+
             return Object.class;
         }
         throw new IOException("Not found list generic type");
