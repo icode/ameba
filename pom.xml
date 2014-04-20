@@ -410,7 +410,7 @@
         <httl.version>1.0.11</httl.version>
         <jasypt.version>1.9.2</jasypt.version>
         <javassist.version>3.18.1-GA</javassist.version>
-        <jackson.core.version>2.3.2</jackson.core.version>
+        <jackson.core.version>2.3.3</jackson.core.version>
         <jackson.provider.version>${jackson.core.version}</jackson.provider.version>
         <xmemcached.version>1.4.3</xmemcached.version>
         <commons.lang3.version>3.3</commons.lang3.version>
