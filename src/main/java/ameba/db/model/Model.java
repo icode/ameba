@@ -53,20 +53,20 @@ public abstract class Model implements Serializable {
         return finderConstructor;
     }
 
-    protected static void putFinderCache(Class clzz, Finder finder) {
-        FinderMap.put(clzz, finder);
+    protected static void putFinderCache(Class clazz, Finder finder) {
+        FinderMap.put(clazz, finder);
     }
 
-    protected static Finder getFinderCache(Class clzz) {
-        return FinderMap.get(clzz);
+    protected static Finder getFinderCache(Class clazz) {
+        return FinderMap.get(clazz);
     }
 
-    protected static Persister getPersisterCache(Class clzz) {
-        return PersisterMap.get(clzz);
+    protected static Persister getPersisterCache(Class clazz) {
+        return PersisterMap.get(clazz);
     }
 
-    protected static void putPersisterCache(Class clzz, Persister persister) {
-        PersisterMap.put(clzz, persister);
+    protected static void putPersisterCache(Class clazz, Persister persister) {
+        PersisterMap.put(clazz, persister);
     }
 
     @SuppressWarnings("unchecked")
