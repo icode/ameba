@@ -62,29 +62,29 @@ public class EmailFeature implements Feature {
     @Override
     public boolean configure(FeatureContext context) {
         Map<String, Object> configuration = context.getConfiguration().getProperties();
-        hostName = PropertiesHelper.getValue(configuration, "mail.host.name", String.class);
+        hostName = PropertiesHelper.getValue(configuration, "mail.host.name", String.class, null);
         if (StringUtils.isBlank(hostName)) {
             logger.warn("mail.host.name未设置");
         }
 
-        smtpPort = PropertiesHelper.getValue(configuration, "mail.smtp.port", Integer.class);
+        smtpPort = PropertiesHelper.getValue(configuration, "mail.smtp.port", Integer.class, null);
         if (smtpPort == null) {
             logger.warn("mail.smtp.port未设置");
         }
 
-        SSLEnabled = PropertiesHelper.getValue(configuration, "mail.ssl.enable", Boolean.class);
+        SSLEnabled = PropertiesHelper.getValue(configuration, "mail.ssl.enable", Boolean.class, null);
 
-        userName = PropertiesHelper.getValue(configuration, "mail.user.name", String.class);
+        userName = PropertiesHelper.getValue(configuration, "mail.user.name", String.class, null);
         if (StringUtils.isBlank(userName)) {
             logger.warn("mail.user.name未设置");
         }
 
-        userPassword = PropertiesHelper.getValue(configuration, "mail.user.password", String.class);
+        userPassword = PropertiesHelper.getValue(configuration, "mail.user.password", String.class, null);
         if (StringUtils.isBlank(userPassword)) {
             logger.warn("mail.user.password未设置");
         }
 
-        from = PropertiesHelper.getValue(configuration, "mail.from", String.class);
+        from = PropertiesHelper.getValue(configuration, "mail.from", String.class, null);
         if (StringUtils.isBlank(from)) {
             logger.warn("mail.from未设置");
         }

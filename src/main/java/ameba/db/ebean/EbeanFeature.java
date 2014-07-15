@@ -3,6 +3,7 @@ package ameba.db.ebean;
 import ameba.db.DataSourceFeature;
 import ameba.db.TransactionFeature;
 import ameba.db.ebean.transaction.EbeanTransactional;
+import ameba.db.model.Model;
 import ameba.db.model.ModelManager;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
@@ -23,6 +24,10 @@ import javax.ws.rs.core.FeatureContext;
  */
 @ConstrainedTo(RuntimeType.SERVER)
 public class EbeanFeature extends TransactionFeature {
+
+    public EbeanFeature() {
+        super(EbeanFinder.class, EbeanPersister.class);
+    }
 
     /**
      * Helper method that generates the required evolution to properly run Ebean.
@@ -94,7 +99,7 @@ public class EbeanFeature extends TransactionFeature {
             }
 
             config.setDataSource(DataSourceFeature.getDataSource(name));//设置为druid数据源
-            if (name.equals("default")) {
+            if (name.equals(Model.DEFAULT_SERVER_NAME)) {
                 config.setDefaultServer(true);
             }
 

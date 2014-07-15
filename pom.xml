@@ -6,7 +6,7 @@
     <groupId>ameba</groupId>
     <artifactId>ameba</artifactId>
     <packaging>jar</packaging>
-    <version>0.1.5</version>
+    <version>0.1.6</version>
     <name>Ameba-Framework</name>
 
     <dependencyManagement>
@@ -328,19 +328,6 @@
 
         <!-- Cache -->
         <dependency>
-            <groupId>com.googlecode.xmemcached</groupId>
-            <artifactId>xmemcached</artifactId>
-            <version>${xmemcached.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
             <groupId>net.sf.ehcache.internal</groupId>
             <artifactId>ehcache-core</artifactId>
             <version>${ehcache.version}</version>
@@ -401,26 +388,25 @@
 
     <properties>
         <protostuff.version>1.0.8</protostuff.version>
-        <jersey.version>2.7</jersey.version>
-        <slf4j.version>1.7.6</slf4j.version>
-        <logback.version>1.1.1</logback.version>
+        <jersey.version>2.10.1</jersey.version>
+        <slf4j.version>1.7.7</slf4j.version>
+        <logback.version>1.1.2</logback.version>
         <ebean.version>2.8.1</ebean.version>
-        <druid.version>1.0.4</druid.version>
-        <groovy.version>2.2.2</groovy.version>
+        <druid.version>1.0.7</druid.version>
+        <groovy.version>2.3.4</groovy.version>
         <httl.version>1.0.11</httl.version>
         <jasypt.version>1.9.2</jasypt.version>
-        <javassist.version>3.18.1-GA</javassist.version>
-        <jackson.core.version>2.3.3</jackson.core.version>
+        <javassist.version>3.18.2-GA</javassist.version>
+        <jackson.core.version>2.4.1</jackson.core.version>
         <jackson.provider.version>${jackson.core.version}</jackson.provider.version>
-        <xmemcached.version>1.4.3</xmemcached.version>
-        <commons.lang3.version>3.3</commons.lang3.version>
-        <commons.email.version>1.3.2</commons.email.version>
-        <ehcache.version>2.8.1</ehcache.version>
-        <grizzly.version>2.3.11</grizzly.version>
-        <grizzly.ext.memcached.version>1.3.7</grizzly.ext.memcached.version>
-        <guava.version>16.0.1</guava.version>
+        <commons.lang3.version>3.3.2</commons.lang3.version>
+        <commons.email.version>1.3.3</commons.email.version>
+        <ehcache.version>2.8.3</ehcache.version>
+        <grizzly.version>2.3.16</grizzly.version>
+        <grizzly.ext.memcached.version>1.3.10</grizzly.ext.memcached.version>
+        <guava.version>17.0</guava.version>
         <persistence.version>1.0.2</persistence.version>
-        <bean.validator.version>5.1.0.Final</bean.validator.version>
+        <bean.validator.version>5.1.1.Final</bean.validator.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 </project>

@@ -13,11 +13,11 @@ public class Viewables {
     }
 
     public static Viewable newViewable() {
-        return new Viewable(RouteHelper.getCurrentRequestContext().getUriInfo().getPath());
+        return new Viewable("/" + RouteHelper.getCurrentRequestContext().getUriInfo().getPath());
     }
 
     public static Viewable newViewable(Object model) {
-        return new Viewable(RouteHelper.getCurrentRequestContext().getUriInfo().getPath(), model);
+        return new Viewable("/" + RouteHelper.getCurrentRequestContext().getUriInfo().getPath(), model);
     }
 
     public static Viewable newDefaultViewable() {
