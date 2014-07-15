@@ -54,7 +54,7 @@ public abstract class Model implements Serializable {
     @Transient
     @SuppressWarnings("unchecked")
     public static <ID, T> Finder<ID, T> getFinder(String server) {
-        Finder finder = _getFinder(server);
+        Finder<ID, T> finder = _getFinder(server);
         if (finder == null) {
             throw new NotFinderFindException();
         }
@@ -62,9 +62,8 @@ public abstract class Model implements Serializable {
     }
 
     @Transient
-    @SuppressWarnings("unchecked")
     public static <ID, T> Finder<ID, T> getFinder() {
-        return (Finder<ID, T>) getFinder(DEFAULT_SERVER_NAME);
+        return getFinder(DEFAULT_SERVER_NAME);
     }
 
     @Transient
