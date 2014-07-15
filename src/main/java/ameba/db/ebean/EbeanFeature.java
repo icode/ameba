@@ -42,8 +42,7 @@ public class EbeanFeature extends TransactionFeature {
         }
 
         return (
-                "# --- Created by Ebean DDL\n" +
-                        "# To stop Ebean DDL generation, remove this comment and start using Evolutions\n" +
+                "# --- Created by Ameba DDL\n" +
                         "\n" +
                         "# --- !Ups\n" +
                         "\n" +
