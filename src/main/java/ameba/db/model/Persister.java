@@ -44,11 +44,11 @@ public abstract class Persister<M extends Model> {
     @SuppressWarnings("unchecked")
     public Persister<M> on(String server) {
         try {
-            return (Persister<M>) this.getClass().getConstructor(String.class, Object.class).newInstance(server, model);
+            return (Persister<M>) this.getClass().getConstructor(String.class, Model.class).newInstance(server, model);
         } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            logger.error("Finder.on(server) error", e);
+            logger.error("Persister.on(server) error", e);
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     /**

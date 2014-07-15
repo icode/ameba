@@ -61,8 +61,8 @@ public abstract class Finder<ID, T> implements Query<T> {
             return this.getClass().getConstructor(String.class, Class.class, Class.class).newInstance(server, idType, modelType);
         } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             logger.error("Finder.on(server) error", e);
+            throw new RuntimeException(e);
         }
-        return null;
     }
 
     /**
