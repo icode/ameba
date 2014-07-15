@@ -1,6 +1,7 @@
 package ameba.db.model;
 
 import ameba.db.TransactionFeature;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.NotImplementedException;
 
 import javax.persistence.MappedSuperclass;
@@ -9,6 +10,7 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 
 /**
  * Created by ICode on 14-3-6.
@@ -28,6 +30,11 @@ public abstract class Model implements Serializable {
     private Method _idGetter = null;
     @Transient
     private Method _idSetter = null;
+    @Transient
+    private static final HashMap<Class, Finder> FinderMap = Maps.newHashMap();
+    @Transient
+    private static final HashMap<Class, Persister> PersisterMap = Maps.newHashMap();
+
 
     @Transient
     protected static Constructor<? extends Finder> getFinderConstructor() {
@@ -44,6 +51,22 @@ public abstract class Model implements Serializable {
                     }
             }
         return finderConstructor;
+    }
+
+    protected static void putFinderCache(Class clzz, Finder finder) {
+        FinderMap.put(clzz, finder);
+    }
+
+    protected static Finder getFinderCache(Class clzz) {
+        return FinderMap.get(clzz);
+    }
+
+    protected static Persister getPersisterCache(Class clzz) {
+        return PersisterMap.get(clzz);
+    }
+
+    protected static void putPersisterCache(Class clzz, Persister persister) {
+        PersisterMap.put(clzz, persister);
     }
 
     @SuppressWarnings("unchecked")
@@ -124,11 +147,15 @@ public abstract class Model implements Serializable {
 
     @SuppressWarnings("unchecked")
     protected <M extends Model> Persister<M> _getPersister(String server) {
-        try {
-            return getPersisterConstructor().newInstance(server, this);
-        } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        Persister persister = getPersisterCache(this.getClass());
+        if (persister == null)
+            try {
+                persister = getPersisterConstructor().newInstance(server, this);
+                putPersisterCache(this.getClass(), persister);
+            } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        return persister;
     }
 
     @Transient

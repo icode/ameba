@@ -147,9 +147,11 @@ public class ModelManager {
                                     new CtClass[]{pool.get(String.class.getName())},
                                     clazz);
                             _getFinder.setModifiers(Modifier.setPublic(Modifier.STATIC));
-                            _getFinder.setBody("{Finder finder = null;" +
+                            _getFinder.setBody("{Finder finder = getFinderCache(" + mClazz.getSimpleName() + ".class);" +
+                                    "if(finder == null)" +
                                     "try {" +
                                     "   finder = (Finder) getFinderConstructor().newInstance(new Object[]{$1," + fieldType.getSimpleName() + ".class," + mClazz.getSimpleName() + ".class});" +
+                                    "   putFinderCache(" + mClazz.getSimpleName() + ".class , finder);" +
                                     "} catch (Exception e) {" +
                                     "    throw new RuntimeException(e);" +
                                     "}" +
