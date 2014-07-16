@@ -110,7 +110,6 @@ public abstract class Persister<M extends Model> {
      */
     public abstract int delete(Class<?> beanType, Object id);
 
-
     /**
      * Delete several beans given their type and id values.
      */
@@ -130,5 +129,35 @@ public abstract class Persister<M extends Model> {
      * Refreshes this entity from the database.
      */
     public abstract void refresh();
+
+
+    /**
+     * Marks the entity bean as dirty.
+     * <p>
+     * This is used so that when a bean that is otherwise unmodified is updated the version
+     * property is updated.
+     * <p>
+     * An unmodified bean that is saved or updated is normally skipped and this marks the bean as
+     * dirty so that it is not skipped.
+     *
+     * <pre class="code">
+     *
+     * Customer customer = Customer.find.byId(id);
+     *
+     * // mark the bean as dirty so that a save() or update() will
+     * // increment the version property
+     * customer.markAsDirty();
+     * customer.save();
+     *
+     * </pre>
+     */
+    public abstract void markAsDirty();
+
+
+    /**
+     * Insert this entity.
+     */
+    public abstract void insert();
+
 
 }

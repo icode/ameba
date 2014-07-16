@@ -19,6 +19,7 @@ import java.util.HashMap;
 public abstract class Model implements Serializable {
     @Transient
     public static final String DEFAULT_SERVER_NAME = "default";
+    @Transient
     private static final long serialVersionUID = 1L;
     @Transient
     private static Constructor<? extends Finder> finderConstructor = null;
@@ -53,22 +54,27 @@ public abstract class Model implements Serializable {
         return finderConstructor;
     }
 
+    @Transient
     protected static void putFinderCache(Class clzz, Finder finder) {
         FinderMap.put(clzz, finder);
     }
 
+    @Transient
     protected static Finder getFinderCache(Class clzz) {
         return FinderMap.get(clzz);
     }
 
+    @Transient
     protected static Persister getPersisterCache(Class clzz) {
         return PersisterMap.get(clzz);
     }
 
+    @Transient
     protected static void putPersisterCache(Class clzz, Persister persister) {
         PersisterMap.put(clzz, persister);
     }
 
+    @Transient
     @SuppressWarnings("unchecked")
     protected static <ID, T> Finder<ID, T> _getFinder(String server) {
         throw new NotImplementedException("model not enhanced!");
@@ -106,6 +112,7 @@ public abstract class Model implements Serializable {
         return persisterConstructor;
     }
 
+    @Transient
     private Method _getIdGetter() throws NoSuchMethodException {
         if (_idGetter == null)
             synchronized (lock) {
@@ -115,6 +122,7 @@ public abstract class Model implements Serializable {
         return _idGetter;
     }
 
+    @Transient
     private Method _getIdSetter() throws NoSuchMethodException {
         if (_idSetter == null)
             synchronized (lock) {
@@ -125,6 +133,7 @@ public abstract class Model implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
+    @Transient
     <R> R _getId() {
         try {
             return (R) _getIdGetter().invoke(this);
@@ -135,6 +144,7 @@ public abstract class Model implements Serializable {
         }
     }
 
+    @Transient
     void _setId(Object id) {
         try {
             _getIdSetter().invoke(this, id);
@@ -145,6 +155,8 @@ public abstract class Model implements Serializable {
         }
     }
 
+
+    @Transient
     @SuppressWarnings("unchecked")
     protected <M extends Model> Persister<M> _getPersister(String server) {
         Persister persister = getPersisterCache(this.getClass());

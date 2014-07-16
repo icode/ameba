@@ -27,7 +27,8 @@ public class ModelManager {
     public static final String ID_SETTER_NAME = "__setId__";
     public static final String ID_GETTER_NAME = "__getId__";
     public static final String GET_FINDER_M_NAME = "getFinder";
-    private List<Class> modelClassList = Lists.newArrayList();
+    private List<ModelDescription> modelClassesDescList = Lists.newArrayList();
+
     private String[] packages;
 
     private ModelManager(String[] packages) {
@@ -35,9 +36,9 @@ public class ModelManager {
         ResourceFinder scanner = new PackageNamesScanner(packages, true);
         while (scanner.hasNext()) {
             scanner.next();
-            Class clazz = enhanceModel(scanner.open());
-            if (clazz != null)
-                modelClassList.add(clazz);
+            ModelDescription desc = enhanceModel(scanner.open());
+            if (desc != null)
+                modelClassesDescList.add(desc);
         }
     }
 
@@ -62,15 +63,14 @@ public class ModelManager {
         return Arrays.copyOf(packages, packages.length);
     }
 
-    public List<Class> getModelClasses() {
-        return Lists.newArrayList(modelClassList);
+    public List<ModelDescription> getModelClassesDesc() {
+        return Lists.newArrayList(modelClassesDescList);
     }
 
-    private Class<?> enhanceModel(InputStream in) {
+    private ModelDescription enhanceModel(InputStream in) {
         try {
             ClassPool pool = ClassPool.getDefault();
-            pool.importPackage(Model.class.getName());
-            pool.importPackage(Finder.class.getName());
+            pool.importPackage("ameba.db.model");
             CtClass clazz = pool.makeClass(in);
             if (!clazz.hasAnnotation(Entity.class)) {
                 return null;
@@ -176,12 +176,16 @@ public class ModelManager {
                     }
                 }
                 clazz = clazz.getSuperclass();
-                if (clazz != null && clazz.getName().equals(Model.class.getName())) {
+                if (clazz != null && !clazz.getName().equals("ameba.db.model.Model")) {
                     clazz = clazz.getSuperclass();
                 }
             }
             try {
-                return mClazz.toClass();
+                ModelDescription desc = new ModelDescription();
+                desc.classFile = mClazz.getURL().toExternalForm();
+                desc.classSimpleName = mClazz.getSimpleName();
+                desc.className = mClazz.getName();
+                return desc;
             } finally {
                 mClazz.detach();
             }

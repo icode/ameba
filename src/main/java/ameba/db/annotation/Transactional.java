@@ -11,4 +11,5 @@ import java.lang.annotation.*;
 @Inherited
 @NameBinding
 public @interface Transactional {
+
 }

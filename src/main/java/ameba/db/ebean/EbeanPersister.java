@@ -77,4 +77,14 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
     public void refresh() {
         server.refresh(getModel());
     }
+
+    @Override
+    public void markAsDirty() {
+        server.markAsDirty(getModel());
+    }
+
+    @Override
+    public void insert() {
+        server.insert(getModel());
+    }
 }
