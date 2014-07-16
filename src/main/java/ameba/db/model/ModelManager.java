@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.Entity;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +29,7 @@ public class ModelManager {
     public static final String ID_GETTER_NAME = "__getId__";
     public static final String GET_FINDER_M_NAME = "getFinder";
     private List<ModelDescription> modelClassesDescList = Lists.newArrayList();
+    private final ClassPool pool = ClassPool.getDefault();
 
     private String[] packages;
 
@@ -36,9 +38,13 @@ public class ModelManager {
         ResourceFinder scanner = new PackageNamesScanner(packages, true);
         while (scanner.hasNext()) {
             scanner.next();
-            ModelDescription desc = enhanceModel(scanner.open());
-            if (desc != null)
-                modelClassesDescList.add(desc);
+            try (InputStream in = scanner.open()) {
+                ModelDescription desc = enhanceModel(in);
+                if (desc != null)
+                    modelClassesDescList.add(desc);
+            } catch (IOException e) {
+                logger.error("close class file input stream error", e);
+            }
         }
     }
 
@@ -69,7 +75,6 @@ public class ModelManager {
 
     private ModelDescription enhanceModel(InputStream in) {
         try {
-            ClassPool pool = ClassPool.getDefault();
             pool.importPackage("ameba.db.model");
             CtClass clazz = pool.makeClass(in);
             if (!clazz.hasAnnotation(Entity.class)) {
@@ -185,6 +190,7 @@ public class ModelManager {
                 desc.classFile = mClazz.getURL().toExternalForm();
                 desc.classSimpleName = mClazz.getSimpleName();
                 desc.className = mClazz.getName();
+                desc.classBytecode = mClazz.toBytecode();
                 return desc;
             } finally {
                 mClazz.detach();

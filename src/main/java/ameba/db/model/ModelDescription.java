@@ -7,6 +7,11 @@ public class ModelDescription {
     String className;
     String classFile;
     String classSimpleName;
+    byte[] classBytecode;
+
+    public byte[] getClassBytecode() {
+        return classBytecode;
+    }
 
     public String getClassName() {
         return className;

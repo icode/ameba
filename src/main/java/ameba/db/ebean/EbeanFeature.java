@@ -6,7 +6,6 @@ import ameba.db.ebean.transaction.EbeanTransactional;
 import ameba.db.model.Model;
 import ameba.db.model.ModelDescription;
 import ameba.db.model.ModelManager;
-import ameba.util.ByteArrayClassLoader;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
@@ -16,6 +15,8 @@ import com.avaje.ebean.enhance.agent.InputStreamTransform;
 import com.avaje.ebean.enhance.agent.Transformer;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
+import javassist.CannotCompileException;
+import javassist.ClassPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,9 @@ import javax.ws.rs.ConstrainedTo;
 import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.FeatureContext;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
@@ -38,8 +41,9 @@ import java.nio.file.Paths;
 @ConstrainedTo(RuntimeType.SERVER)
 public class EbeanFeature extends TransactionFeature {
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
-    private static final ByteArrayClassLoader modelClassLoader = new ByteArrayClassLoader();
-    public EbeanFeature() throws IllegalClassFormatException, IOException, URISyntaxException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    private final ClassPool pool = ClassPool.getDefault();
+
+    public EbeanFeature() throws IllegalClassFormatException, IOException, URISyntaxException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, CannotCompileException {
         super(EbeanFinder.class, EbeanPersister.class);
         ehModel(new ModelDescription() {
             @Override
@@ -109,6 +113,9 @@ public class EbeanFeature extends TransactionFeature {
 
         for (String name : DataSourceFeature.getDataSourceNames()) {
             ServerConfig config = new ServerConfig();
+            config.setPackages(null);
+            config.setJars(null);
+
             //config.loadFromProperties();//设置默认配置
             config.setName(name);
             boolean isProd = "product".equals(appConfig.getProperty("app.mode"));
@@ -129,9 +136,8 @@ public class EbeanFeature extends TransactionFeature {
 
             for (ModelDescription desc : manager.getModelClassesDesc()) {
                 try {
-                    ehModel(desc);
-                    config.addClass(modelClassLoader.loadClass(desc.getClassName()));
-                } catch (IOException | URISyntaxException | IllegalClassFormatException | ClassNotFoundException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+                    config.addClass(ehModel(desc));
+                } catch (IOException | CannotCompileException | URISyntaxException | IllegalClassFormatException | ClassNotFoundException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -186,10 +192,28 @@ public class EbeanFeature extends TransactionFeature {
         return true;
     }
 
-    private void ehModel(ModelDescription desc) throws URISyntaxException, IOException, IllegalClassFormatException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    private Class ehModel(ModelDescription desc) throws URISyntaxException, IOException, IllegalClassFormatException,
+            ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
+            InvocationTargetException, CannotCompileException {
         Transformer transformer = new Transformer("", "debug=5");
         InputStreamTransform streamTransform = new InputStreamTransform(transformer, ClassLoader.getSystemClassLoader());
-        byte[] result = streamTransform.transform(desc.getClassSimpleName(), new URL(desc.getClassFile()).openStream());
-        modelClassLoader.defineClass(desc.getClassName(), result);
+        InputStream in = null;
+        if (desc.getClassBytecode() != null) {
+            in = new ByteArrayInputStream(desc.getClassBytecode());
+        } else {
+            in = new URL(desc.getClassFile()).openStream();
+        }
+        byte[] result = null;
+        try {
+            result = streamTransform.transform(desc.getClassSimpleName(), in);
+        } finally {
+            in.close();
+        }
+        if (result == null) {
+            throw new CannotCompileException("ebean enhance model fail!");
+        }
+        try (InputStream rIn = new ByteArrayInputStream(result)) {
+            return pool.makeClass(rIn).toClass();
+        }
     }
 }
