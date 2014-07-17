@@ -6,6 +6,7 @@ import ameba.db.ebean.transaction.EbeanTransactional;
 import ameba.db.model.DefaultProperties;
 import ameba.db.model.ModelDescription;
 import ameba.db.model.ModelManager;
+import ameba.util.IOUtils;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
@@ -153,14 +154,10 @@ public class EbeanFeature extends TransactionFeature {
 
             ModelManager manager = ModelManager.getManager(name);
 
-            String value = (String) appConfig.getProperty("db." + name + ".ddl.generate");
-            if (null != value)
-                config.setDdlGenerate(Boolean.valueOf(value));
-            value = (String) appConfig.getProperty("db." + name + ".ddl.run");
-            if (null != value)
-                config.setDdlRun(Boolean.valueOf(value));
+            config.setDdlGenerate(false);
+            config.setDdlRun(false);
 
-            value = (String) appConfig.getProperty("db." + name + ".ddl.generate");
+            String value = (String) appConfig.getProperty("db." + name + ".ddl.generate");
             boolean genDdl = false;
             if (null != value)
                 genDdl = Boolean.valueOf(value);
@@ -227,7 +224,7 @@ public class EbeanFeature extends TransactionFeature {
                 // DDL
                 if (!isProd) {
                     if (config.isDdlGenerate()) {
-                        final String basePath = "conf/evolutions/" + server.getName() + "/";
+                        final String basePath = IOUtils.getResource("").getFile() + "conf/evolutions/" + server.getName() + "/";
                         DdlGenerator ddl = new DdlGenerator() {
                             @Override
                             protected String getDropFileName() {
@@ -241,13 +238,13 @@ public class EbeanFeature extends TransactionFeature {
 
                             @Override
                             public String generateDropDdl() {
-                                return "# --- Generated Drop DDL by Ameba\n" +
+                                return "# --- Generated Drop Table DDL By Ameba ---\n" +
                                         super.generateDropDdl();
                             }
 
                             @Override
                             public String generateCreateDdl() {
-                                return "# --- Generated Create DDL by Ameba\n" +
+                                return "# --- Generated Create Table DDL By Ameba ---\n" +
                                         super.generateCreateDdl();
                             }
 
@@ -265,7 +262,6 @@ public class EbeanFeature extends TransactionFeature {
                                     try {
                                         runScript(true, readFile(getDropFileName()));
                                         runScript(false, readFile(getCreateFileName()));
-
                                     } catch (IOException e) {
                                         String msg = "Error reading drop/create script from file system";
                                         throw new RuntimeException(msg, e);
