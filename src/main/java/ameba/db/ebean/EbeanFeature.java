@@ -88,23 +88,23 @@ public class EbeanFeature extends TransactionFeature {
      */
     public static String generateEvolutionScript(EbeanServer server, ServerConfig config, DdlGenerator ddl) {
         ddl.setup((SpiEbeanServer) server, config.getDatabasePlatform(), config);
-        String ups = ddl.generateCreateDdl();
-        String downs = ddl.generateDropDdl();
+        String create = ddl.generateCreateDdl();
+        String drop = ddl.generateDropDdl();
 
-        if (ups == null || ups.trim().isEmpty()) {
+        if (create == null || create.trim().isEmpty()) {
             return null;
         }
 
         return (
-                "# --- Created by Ameba DDL\n" +
+                "/*--- Created by Ameba DDL */\n" +
                         "\n" +
-                        "# --- !Ups\n" +
+                        "/*--- !Drop */\n" +
                         "\n" +
-                        ups +
+                        drop +
                         "\n" +
-                        "# --- !Downs\n" +
+                        "/*--- !Create */\n" +
                         "\n" +
-                        downs
+                        create
         );
     }
 
@@ -223,7 +223,7 @@ public class EbeanFeature extends TransactionFeature {
                 EbeanServer server = EbeanServerFactory.create(config);
                 // DDL
                 if (!isProd) {
-                    if (config.isDdlGenerate()) {
+                    if (genDdl) {
                         final String basePath = IOUtils.getResource("").getFile() + "conf/evolutions/" + server.getName() + "/";
                         DdlGenerator ddl = new DdlGenerator() {
                             @Override
@@ -238,13 +238,13 @@ public class EbeanFeature extends TransactionFeature {
 
                             @Override
                             public String generateDropDdl() {
-                                return "# --- Generated Drop Table DDL By Ameba ---\n" +
+                                return "/* Generated Drop Table DDL By Ameba */\n\n" +
                                         super.generateDropDdl();
                             }
 
                             @Override
                             public String generateCreateDdl() {
-                                return "# --- Generated Create Table DDL By Ameba ---\n" +
+                                return "/* Generated Create Table DDL By Ameba */\n\n" +
                                         super.generateCreateDdl();
                             }
 
