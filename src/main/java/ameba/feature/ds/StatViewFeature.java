@@ -59,7 +59,7 @@ public class StatViewFeature implements Feature {
     private static String jmxPassword = null;
     private static MBeanServerConnection conn = null;
     private static DruidStatService statService = DruidStatService.getInstance();
-    private static String dsPath = "/ds";
+    private static String dsPath = "/__ds";
 
     private static void init(Configuration configuration) {
         initAuthEnv(configuration);
