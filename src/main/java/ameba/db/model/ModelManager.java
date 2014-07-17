@@ -1,5 +1,6 @@
 package ameba.db.model;
 
+import ameba.util.ByteArrayClassLoader;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import javassist.*;
@@ -10,11 +11,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.Entity;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 模型管理器
@@ -28,13 +32,56 @@ public class ModelManager {
     public static final String ID_SETTER_NAME = "__setId__";
     public static final String ID_GETTER_NAME = "__getId__";
     public static final String GET_FINDER_M_NAME = "getFinder";
+    private static final Map<String, ModelDescription> descCache = Maps.newHashMap();
     private List<ModelDescription> modelClassesDescList = Lists.newArrayList();
-    private final ClassPool pool = ClassPool.getDefault();
+    private List<ModelEventListener> listeners = Lists.newArrayList();
+    private static final ClassPool pool = ClassPool.getDefault();
+    private static ByteArrayClassLoader classLoader = new ByteArrayClassLoader();
 
     private String[] packages;
 
     private ModelManager(String[] packages) {
         this.packages = packages;
+    }
+
+    public static abstract class ModelEventListener {
+        protected abstract byte[] enhancing(ModelDescription desc);
+
+        protected abstract void loaded(Class clazz, ModelDescription desc, int index, int size);
+    }
+
+    public void addModelLoadedListener(Class<? extends ModelEventListener> listener, Class[] types, Object... args) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        if (listener != null) {
+            listeners.add((ModelEventListener) classLoader.loadClass(listener.getName()).getConstructor(types).newInstance(args));
+        }
+    }
+
+    private void fireModelLoaded(Class clazz, ModelDescription desc, int index, int size) {
+        for (ModelEventListener listener : listeners) {
+            listener.loaded(clazz, desc, index, size);
+        }
+    }
+
+    private void fireModelEnhancing(ModelDescription desc) {
+        for (ModelEventListener listener : listeners) {
+            desc.classBytecode = listener.enhancing(desc);
+        }
+    }
+
+    public static ModelManager create(String name, String[] packages) {
+        ModelManager manager = getManager(name);
+        if (manager == null) {
+            synchronized (managerMap) {
+                if (getManager(name) == null) {
+                    manager = new ModelManager(packages);
+                    managerMap.put(name, manager);
+                }
+            }
+        }
+        return manager;
+    }
+
+    private void loadClass() {
         ResourceFinder scanner = new PackageNamesScanner(packages, true);
         while (scanner.hasNext()) {
             scanner.next();
@@ -48,17 +95,40 @@ public class ModelManager {
         }
     }
 
-    public static ModelManager create(String name, String[] packages) {
+    public static void loadAndClearDesc(String name) {
         ModelManager manager = getManager(name);
-        if (manager == null) {
-            synchronized (managerMap) {
-                if (manager == null) {
-                    manager = new ModelManager(packages);
-                    managerMap.put(name, manager);
+        if (manager != null) {
+            manager.loadClass();
+            int size = manager.modelClassesDescList.size();
+            int index = 0;
+            for (ModelDescription desc : manager.modelClassesDescList) {
+                if (desc.clazz == null) {
+                    try (InputStream in = new ByteArrayInputStream(desc.classBytecode)) {
+                        logger.info("load {} model manager class {}", name, desc.classFile);
+                        desc.clazz = pool.makeClass(in).toClass();
+                        manager.fireModelLoaded(desc.clazz, desc, index, size);
+                    } catch (IOException | CannotCompileException e) {
+                        logger.warn("load model class file [" + desc.classFile + "] error", e);
+                    } finally {
+                        index++;
+                    }
+                } else {
+                    manager.fireModelLoaded(desc.clazz, desc, index, size);
+                    index++;
                 }
+                logger.info("clear {} model manager class {} desc", name, desc.classFile);
+                desc.classBytecode = null;
             }
         }
-        return manager;
+    }
+
+    public static void loadAndClearDesc() {
+        Set<String> keys = managerMap.keySet();
+        for (String key : keys) {
+            loadAndClearDesc(key);
+        }
+        descCache.clear();
+        classLoader = null;
     }
 
     public static ModelManager getManager(String name) {
@@ -75,13 +145,23 @@ public class ModelManager {
 
     private ModelDescription enhanceModel(InputStream in) {
         try {
-            pool.importPackage("ameba.db.model");
+            pool.importPackage(BASE_MODEL_PKG);
             CtClass clazz = pool.makeClass(in);
+            ModelDescription cache = descCache.get(clazz.getURL().toExternalForm());
+            if (cache != null) {
+                return cache;
+            }
             if (!clazz.hasAnnotation(Entity.class)) {
                 return null;
             }
             logger.info("增强模型类[{}]", clazz.getName());
             CtClass mClazz = clazz;
+
+            cache = new ModelDescription();
+            cache.classFile = mClazz.getURL().toExternalForm();
+            cache.classSimpleName = mClazz.getSimpleName();
+            cache.className = mClazz.getName();
+
             boolean idGetSetFixed = false;
             while (clazz != null) {
                 for (CtField field : clazz.getDeclaredFields()) {
@@ -152,18 +232,22 @@ public class ModelManager {
                                     new CtClass[]{pool.get(String.class.getName())},
                                     clazz);
                             _getFinder.setModifiers(Modifier.setPublic(Modifier.STATIC));
-                            _getFinder.setBody("{Finder finder = getFinderCache(" + mClazz.getSimpleName() + ".class);" +
-                                    "if(finder == null)" +
-                                    "try {" +
-                                    "   finder = (Finder) getFinderConstructor().newInstance(new Object[]{$1," + fieldType.getSimpleName() + ".class," + mClazz.getSimpleName() + ".class});" +
-                                    "   putFinderCache(" + mClazz.getSimpleName() + ".class , finder);" +
-                                    "} catch (Exception e) {" +
-                                    "    throw new RuntimeException(e);" +
-                                    "}" +
-                                    "if (finder == null) {\n" +
-                                    "    throw new ameba.db.model.Model.NotFinderFindException();\n" +
-                                    "}" +
-                                    "return finder;}");
+                            try {
+                                _getFinder.setBody("{Finder finder = getFinderCache(" + mClazz.getSimpleName() + ".class);" +
+                                        "if(finder == null)" +
+                                        "try {" +
+                                        "   finder = (Finder) getFinderConstructor().newInstance(new Object[]{$1," + fieldType.getSimpleName() + ".class," + mClazz.getSimpleName() + ".class});" +
+                                        "   putFinderCache(" + mClazz.getSimpleName() + ".class , finder);" +
+                                        "} catch (Exception e) {" +
+                                        "    throw new RuntimeException(e);" +
+                                        "}" +
+                                        "if (finder == null) {\n" +
+                                        "    throw new ameba.db.model.Model.NotFinderFindException();\n" +
+                                        "}" +
+                                        "return finder;}");
+                            } catch (CannotCompileException e) {
+                                throw new CannotCompileException("Entity Model must be extends ameba.db.model.Model", e);
+                            }
                             clazz.addMethod(_getFinder);
                             _getFinder = new CtMethod(pool.get(Finder.class.getName()),
                                     GET_FINDER_M_NAME,
@@ -171,7 +255,7 @@ public class ModelManager {
                                     clazz);
 
                             _getFinder.setModifiers(Modifier.setPublic(Modifier.STATIC));
-                            _getFinder.setBody("{return (Finder) getFinder(Model.DEFAULT_SERVER_NAME);}");
+                            _getFinder.setBody("{return (Finder) getFinder(DefaultProperties.DB_DEFAULT_SERVER_NAME);}");
                             clazz.addMethod(_getFinder);
 //                            CtField finderField = new CtField(pool.get(Finder.class.getName()), ID_TYPE_FIELD_NAME, clazz);
 //                            finderField.setModifiers(Modifier.STATIC | Modifier.PUBLIC | Modifier.FINAL);
@@ -181,17 +265,18 @@ public class ModelManager {
                     }
                 }
                 clazz = clazz.getSuperclass();
-                if (clazz != null && !clazz.getName().equals("ameba.db.model.Model")) {
-                    clazz = clazz.getSuperclass();
+                if (clazz != null && clazz.getName().equals(BASE_MODEL_NAME)) {
+                    break;
                 }
             }
+
+            cache.classBytecode = mClazz.toBytecode();
+
+            fireModelEnhancing(cache);
+
             try {
-                ModelDescription desc = new ModelDescription();
-                desc.classFile = mClazz.getURL().toExternalForm();
-                desc.classSimpleName = mClazz.getSimpleName();
-                desc.className = mClazz.getName();
-                desc.classBytecode = mClazz.toBytecode();
-                return desc;
+                descCache.put(cache.classFile, cache);
+                return cache;
             } finally {
                 mClazz.detach();
             }
@@ -199,6 +284,10 @@ public class ModelManager {
             throw new RuntimeException(e);
         }
     }
+
+    public final static String BASE_MODEL_PKG = "ameba.db.model";
+    public final static String BASE_MODEL_SIMPLE_NAME = "Model";
+    public final static String BASE_MODEL_NAME = BASE_MODEL_PKG + "." + BASE_MODEL_SIMPLE_NAME;
 
     private CtMethod createSetter(CtClass clazz, String methodName, CtClass[] args, CtField field) throws CannotCompileException {
         CtMethod setter = new CtMethod(CtClass.voidType,

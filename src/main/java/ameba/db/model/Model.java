@@ -18,8 +18,6 @@ import java.util.HashMap;
 @MappedSuperclass
 public abstract class Model implements Serializable {
     @Transient
-    public static final String DEFAULT_SERVER_NAME = "default";
-    @Transient
     private static final long serialVersionUID = 1L;
     @Transient
     private static Constructor<? extends Finder> finderConstructor = null;
@@ -92,7 +90,7 @@ public abstract class Model implements Serializable {
 
     @Transient
     public static <ID, T> Finder<ID, T> getFinder() {
-        return getFinder(DEFAULT_SERVER_NAME);
+        return getFinder(DefaultProperties.DB_DEFAULT_SERVER_NAME);
     }
 
     @Transient
@@ -182,7 +180,7 @@ public abstract class Model implements Serializable {
 
     @Transient
     public <M extends Model> Persister<M> getPersister() {
-        return getPersister(DEFAULT_SERVER_NAME);
+        return getPersister(DefaultProperties.DB_DEFAULT_SERVER_NAME);
     }
 
     public static class NotPersisterFindException extends RuntimeException {

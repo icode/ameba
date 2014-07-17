@@ -35,4 +35,13 @@ public class EnhanceModelFeature implements Feature {
         }
         return true;
     }
+
+    public static class Do implements Feature {
+
+        @Override
+        public boolean configure(FeatureContext context) {
+            ModelManager.loadAndClearDesc();
+            return true;
+        }
+    }
 }

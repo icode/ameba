@@ -1,5 +1,6 @@
 package ameba;
 
+import ameba.db.model.EnhanceModelFeature;
 import ameba.mvc.assets.AssetsFeature;
 import ameba.util.LinkedProperties;
 import ch.qos.logback.classic.LoggerContext;
@@ -300,6 +301,11 @@ public class Application extends ResourceConfig {
         this.port = Integer.valueOf(StringUtils.defaultIfBlank((String) getProperty("app.port"), "80"));
 
         register(new ApplicationProvider(this));
+
+
+        if (isRegistered(EnhanceModelFeature.class)) {
+            register(EnhanceModelFeature.Do.class, Integer.MIN_VALUE);
+        }
 
         //config server base uri
         httpServerBaseUri = URI.create("http://" + this.host

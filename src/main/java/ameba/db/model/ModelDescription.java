@@ -8,6 +8,7 @@ public class ModelDescription {
     String classFile;
     String classSimpleName;
     byte[] classBytecode;
+    Class clazz;
 
     public byte[] getClassBytecode() {
         return classBytecode;
@@ -24,4 +25,5 @@ public class ModelDescription {
     public String getClassSimpleName() {
         return classSimpleName;
     }
+
 }

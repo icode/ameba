@@ -3,7 +3,7 @@ package ameba.db.ebean;
 import ameba.db.DataSourceFeature;
 import ameba.db.TransactionFeature;
 import ameba.db.ebean.transaction.EbeanTransactional;
-import ameba.db.model.Model;
+import ameba.db.model.DefaultProperties;
 import ameba.db.model.ModelDescription;
 import ameba.db.model.ModelManager;
 import com.avaje.ebean.Ebean;
@@ -17,6 +17,7 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
+import javassist.CtClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,26 +42,44 @@ import java.nio.file.Paths;
 @ConstrainedTo(RuntimeType.SERVER)
 public class EbeanFeature extends TransactionFeature {
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
-    private final ClassPool pool = ClassPool.getDefault();
+    private static boolean baseModelEnhanced = false;
+    private static final ModelDescription BASE_MODEL_DESCRIPTION = new ModelDescription() {
+        byte[] bytecode;
 
-    public EbeanFeature() throws IllegalClassFormatException, IOException, URISyntaxException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, CannotCompileException {
+        {
+            try {
+                bytecode = ehModel(this);
+            } catch (URISyntaxException | IOException | IllegalClassFormatException
+                    | ClassNotFoundException | NoSuchMethodException
+                    | IllegalAccessException | InvocationTargetException
+                    | CannotCompileException e) {
+                throw new RuntimeException("get " + getClassFile() + " bytecode error", e);
+            }
+        }
+
+        @Override
+        public String getClassName() {
+            return ModelManager.BASE_MODEL_NAME;
+        }
+
+        @Override
+        public String getClassFile() {
+            return EbeanFeature.class.getResource("/" + getClassName().replaceAll("\\.", "/") + ".class").toExternalForm();
+        }
+
+        @Override
+        public String getClassSimpleName() {
+            return ModelManager.BASE_MODEL_SIMPLE_NAME;
+        }
+
+        @Override
+        public byte[] getClassBytecode() {
+            return bytecode;
+        }
+    };
+
+    public EbeanFeature() {
         super(EbeanFinder.class, EbeanPersister.class);
-        ehModel(new ModelDescription() {
-            @Override
-            public String getClassName() {
-                return "ameba.db.model.Model";
-            }
-
-            @Override
-            public String getClassFile() {
-                return EbeanFeature.class.getResource("/" + getClassName().replaceAll("\\.", "/") + ".class").toExternalForm();
-            }
-
-            @Override
-            public String getClassSimpleName() {
-                return "Model";
-            }
-        });
     }
 
     /**
@@ -102,7 +121,7 @@ public class EbeanFeature extends TransactionFeature {
         context.register(EbeanTransactional.class);
 
         //configure EBean
-        Configuration appConfig = context.getConfiguration();
+        final Configuration appConfig = context.getConfiguration();
         for (String key : appConfig.getPropertyNames()) {
             if (key.startsWith("model.")) {
                 Object value = appConfig.getProperty(key);
@@ -111,14 +130,14 @@ public class EbeanFeature extends TransactionFeature {
             }
         }
 
-        for (String name : DataSourceFeature.getDataSourceNames()) {
-            ServerConfig config = new ServerConfig();
+        for (final String name : DataSourceFeature.getDataSourceNames()) {
+            final ServerConfig config = new ServerConfig();
             config.setPackages(null);
             config.setJars(null);
 
             //config.loadFromProperties();//设置默认配置
             config.setName(name);
-            boolean isProd = "product".equals(appConfig.getProperty("app.mode"));
+            final boolean isProd = "product".equals(appConfig.getProperty("app.mode"));
             if (!isProd) {
                 //转化部分公用属性
                 /*"debug.lazyLoadSize"*/
@@ -128,74 +147,150 @@ public class EbeanFeature extends TransactionFeature {
             }
 
             config.setDataSource(DataSourceFeature.getDataSource(name));//设置为druid数据源
-            if (name.equals(Model.DEFAULT_SERVER_NAME)) {
+            if (name.equals(DefaultProperties.DB_DEFAULT_SERVER_NAME)) {
                 config.setDefaultServer(true);
             }
 
             ModelManager manager = ModelManager.getManager(name);
 
-            for (ModelDescription desc : manager.getModelClassesDesc()) {
-                try {
-                    config.addClass(ehModel(desc));
-                } catch (IOException | CannotCompileException | URISyntaxException | IllegalClassFormatException | ClassNotFoundException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
+            String value = (String) appConfig.getProperty("db." + name + ".ddl.generate");
+            if (null != value)
+                config.setDdlGenerate(Boolean.valueOf(value));
+            value = (String) appConfig.getProperty("db." + name + ".ddl.run");
+            if (null != value)
+                config.setDdlRun(Boolean.valueOf(value));
+
+            value = (String) appConfig.getProperty("db." + name + ".ddl.generate");
+            boolean genDdl = false;
+            if (null != value)
+                genDdl = Boolean.valueOf(value);
+            value = (String) appConfig.getProperty("db." + name + ".ddl.run");
+            boolean runDdl = false;
+            if (null != value)
+                runDdl = Boolean.valueOf(value);
+
+            try {
+                manager.addModelLoadedListener(ModelEventListener.class, new Class[]{
+                        ServerConfig.class, boolean.class, boolean.class, boolean.class
+                }, config, isProd, genDdl, runDdl);
+            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+                throw new RuntimeException("add model manager listener error", e);
             }
 
-            EbeanServer server = EbeanServerFactory.create(config);
-            // DDL
-            if (!isProd) {
-                String value = (String) appConfig.getProperty("db." + name + ".ddl.generate");
-                if (null != value)
-                    config.setDdlGenerate(Boolean.valueOf(value));
-                value = (String) appConfig.getProperty("db." + name + ".ddl.run");
-                if (null != value)
-                    config.setDdlRun(Boolean.valueOf(value));
-
-                if (config.isDdlGenerate()) {
-                    final String basePath = "conf/evolutions/" + server.getName() + "/";
-                    DdlGenerator ddl = new DdlGenerator() {
-                        @Override
-                        protected String getDropFileName() {
-                            return basePath + "drop.sql";
-                        }
-
-                        @Override
-                        protected String getCreateFileName() {
-                            return basePath + "create.sql";
-                        }
-
-                        @Override
-                        public String generateDropDdl() {
-                            return "# --- Generated Drop DDL by Ameba\n" +
-                                    super.generateDropDdl();
-                        }
-
-                        @Override
-                        public String generateCreateDdl() {
-                            return "# --- Generated Create DDL by Ameba\n" +
-                                    super.generateCreateDdl();
-                        }
-                    };
-                    ddl.setup((SpiEbeanServer) server, config.getDatabasePlatform(), config);
-                    try {
-                        Files.createDirectories(Paths.get(basePath));
-                        ddl.generateDdl();
-                        ddl.runDdl();
-                    } catch (IOException e) {
-                        logger.error("Create ddl error", e);
-                    }
-                }
-            }
         }
 
         return true;
     }
 
-    private Class ehModel(ModelDescription desc) throws URISyntaxException, IOException, IllegalClassFormatException,
+    public static class ModelEventListener extends ModelManager.ModelEventListener {
+
+        ServerConfig config;
+        boolean isProd;
+        boolean runDdl;
+        boolean genDdl;
+
+        public ModelEventListener(ServerConfig config, boolean isProd, boolean genDdl, boolean runDdl) {
+            this.config = config;
+            this.isProd = isProd;
+            this.runDdl = runDdl;
+            this.genDdl = genDdl;
+        }
+
+        @Override
+        protected byte[] enhancing(ModelDescription desc) {
+
+            if (!baseModelEnhanced) {
+                try (InputStream in = new ByteArrayInputStream(BASE_MODEL_DESCRIPTION.getClassBytecode())) {
+                    CtClass ctClass = ClassPool.getDefault().makeClass(in);
+                    ctClass.toClass();
+                    ctClass.detach();
+                } catch (IOException | CannotCompileException e) {
+                    throw new RuntimeException("make " + BASE_MODEL_DESCRIPTION.getClassFile() + " class input stream error", e);
+                } finally {
+                    baseModelEnhanced = true;
+                }
+            }
+
+            try {
+                return ehModel(desc);
+            } catch (IOException | CannotCompileException | URISyntaxException | IllegalClassFormatException | ClassNotFoundException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        protected void loaded(Class clazz, ModelDescription desc, int index, int size) {
+
+            config.addClass(clazz);
+            if (index == size - 1) {//最后一个model进行初始化ebean
+                EbeanServer server = EbeanServerFactory.create(config);
+                // DDL
+                if (!isProd) {
+                    if (config.isDdlGenerate()) {
+                        final String basePath = "conf/evolutions/" + server.getName() + "/";
+                        DdlGenerator ddl = new DdlGenerator() {
+                            @Override
+                            protected String getDropFileName() {
+                                return basePath + "drop.sql";
+                            }
+
+                            @Override
+                            protected String getCreateFileName() {
+                                return basePath + "create.sql";
+                            }
+
+                            @Override
+                            public String generateDropDdl() {
+                                return "# --- Generated Drop DDL by Ameba\n" +
+                                        super.generateDropDdl();
+                            }
+
+                            @Override
+                            public String generateCreateDdl() {
+                                return "# --- Generated Create DDL by Ameba\n" +
+                                        super.generateCreateDdl();
+                            }
+
+                            @Override
+                            public void generateDdl() {
+                                if (genDdl) {
+                                    writeDrop(getDropFileName());
+                                    writeCreate(getCreateFileName());
+                                }
+                            }
+
+                            @Override
+                            public void runDdl() {
+                                if (runDdl) {
+                                    try {
+                                        runScript(true, readFile(getDropFileName()));
+                                        runScript(false, readFile(getCreateFileName()));
+
+                                    } catch (IOException e) {
+                                        String msg = "Error reading drop/create script from file system";
+                                        throw new RuntimeException(msg, e);
+                                    }
+                                }
+                            }
+                        };
+                        ddl.setup((SpiEbeanServer) server, config.getDatabasePlatform(), config);
+                        try {
+                            Files.createDirectories(Paths.get(basePath));
+                            ddl.generateDdl();
+                            ddl.runDdl();
+                        } catch (IOException e) {
+                            logger.error("Create ddl error", e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static byte[] ehModel(ModelDescription desc) throws URISyntaxException, IOException, IllegalClassFormatException,
             ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
             InvocationTargetException, CannotCompileException {
-        Transformer transformer = new Transformer("", "debug=5");
+        Transformer transformer = new Transformer("", "debug=4");
         InputStreamTransform streamTransform = new InputStreamTransform(transformer, ClassLoader.getSystemClassLoader());
         InputStream in = null;
         if (desc.getClassBytecode() != null) {
@@ -212,8 +307,6 @@ public class EbeanFeature extends TransactionFeature {
         if (result == null) {
             throw new CannotCompileException("ebean enhance model fail!");
         }
-        try (InputStream rIn = new ByteArrayInputStream(result)) {
-            return pool.makeClass(rIn).toClass();
-        }
+        return result;
     }
 }
