@@ -1,12 +1,12 @@
 package ameba.message.internal.protobuf;
 
+import ameba.message.internal.MediaType;
 import com.dyuproject.protostuff.ProtobufIOUtil;
 import com.dyuproject.protostuff.Schema;
 import com.dyuproject.protostuff.runtime.RuntimeSchema;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
@@ -20,17 +20,17 @@ import java.util.List;
  * Created by icode on 14-4-8.
  */
 @Provider
-@Consumes("application/x-protobuf")
+@Consumes(MediaType.APPLICATION_PROTOBUF)
 public class ProtobufMessageBodyReader extends AbstractProtobufProvider implements MessageBodyReader<Object> {
 
     @Override
-    public boolean isReadable(Class aClass, Type type, Annotation[] annotations, MediaType mediaType) {
+    public boolean isReadable(Class aClass, Type type, Annotation[] annotations, javax.ws.rs.core.MediaType mediaType) {
         return true;
     }
 
     @Override
     public Object readFrom(Class<Object> type, Type genericType, Annotation[] annotations,
-                           MediaType mediaType, MultivaluedMap<String, String> httpHeaders,
+                           javax.ws.rs.core.MediaType mediaType, MultivaluedMap<String, String> httpHeaders,
                            InputStream entityStream) throws IOException, WebApplicationException {
         if (List.class.isAssignableFrom(type)) {
             Schema schema = RuntimeSchema.getSchema(getListGenericType((List) null, genericType));
