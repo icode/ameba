@@ -29,7 +29,7 @@ public class EnhanceModelFeature implements Feature {
             //db.default.models=reward.models
             String modelPackages = (String) config.getProperty("db." + name + ".models");
             if (StringUtils.isNotBlank(modelPackages)) {
-                logger.info("创建ModelManager，[{}:{}]", name, modelPackages);
+                logger.debug("创建ModelManager，[{}:{}]", name, modelPackages);
                 ModelManager.create(name, modelPackages.split(","));
             }
         }

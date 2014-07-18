@@ -101,7 +101,7 @@ public class ModelManager {
             for (ModelDescription desc : manager.modelClassesDescList) {
                 if (desc.clazz == null) {
                     try (InputStream in = new ByteArrayInputStream(desc.classBytecode)) {
-                        logger.info("load {} model manager class {}", name, desc.classFile);
+                        logger.debug("load {} model manager class {}", name, desc.classFile);
                         desc.clazz = pool.makeClass(in).toClass();
                         manager.fireModelLoaded(desc.clazz, desc, index, size);
                     } catch (IOException | CannotCompileException e) {
@@ -113,7 +113,7 @@ public class ModelManager {
                     manager.fireModelLoaded(desc.clazz, desc, index, size);
                     index++;
                 }
-                logger.info("clear {} model manager class {} desc", name, desc.classFile);
+                logger.debug("clear {} model manager class {} desc", name, desc.classFile);
                 desc.classBytecode = null;
             }
         }
@@ -150,7 +150,7 @@ public class ModelManager {
             if (!clazz.hasAnnotation(Entity.class)) {
                 return null;
             }
-            logger.info("增强模型类[{}]", clazz.getName());
+            logger.debug("增强模型类[{}]", clazz.getName());
             CtClass mClazz = clazz;
 
             cache = new ModelDescription();

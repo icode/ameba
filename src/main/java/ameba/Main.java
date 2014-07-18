@@ -21,23 +21,25 @@ public class Main {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                logger.info("关闭服务器..");
+                logger.info("关闭服务器...");
                 GrizzlyFuture<HttpServer> future = server.shutdown();
                 try {
                     future.get();
                 } catch (InterruptedException | ExecutionException e) {
-                    logger.error("服务器关闭出错.", e);
+                    logger.error("服务器关闭出错", e);
                 }
-                logger.info("服务器已关闭.");
+                logger.info("服务器已关闭");
             }
         }, "shutdownHook"));
 
         // run
         try {
+            logger.info("启动容器...");
             server.start();
+            logger.info("服务已启动");
             Thread.currentThread().join();
         } catch (Exception e) {
-            logger.error("启动服务器出现错误.", e);
+            logger.error("启动服务器出现错误", e);
         }
     }
 }

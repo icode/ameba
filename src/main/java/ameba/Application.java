@@ -34,7 +34,10 @@ import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -87,13 +90,14 @@ public class Application extends ResourceConfig {
     @SuppressWarnings("unchecked")
     public Application(String confFile) {
 
+        logger.info("初始化...");
         //property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
         //property(ServerProperties.BV_DISABLE_VALIDATE_ON_EXECUTABLE_OVERRIDE_CHECK, true);
 
         Map<String, Object> configMap = Maps.newLinkedHashMap();
 
         Properties properties = new LinkedProperties();
-
+        logger.info("读取系统默认配置...");
         //读取系统默认配置
         try {
             properties.load(getResourceAsStream("conf/default.conf"));
@@ -102,7 +106,7 @@ public class Application extends ResourceConfig {
         } catch (Exception e) {
             logger.warn("读取[conf/default.conf]出错", e);
         }
-
+        logger.info("读取应用自定义配置...");
         //读取应用程序配置
         InputStream in = getResourceAsStream(confFile);
         if (in != null) {
@@ -228,34 +232,42 @@ public class Application extends ResourceConfig {
         loggerConfigure();
 
         String[] packages = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("resource.packages"), "")).split(",");
-        logger.info("设置 RESTful resource 扫描包:[{}]", getProperty("resource.packages"));
+        logger.info("设置资源扫描包:[{}]", getProperty("resource.packages"));
         packages(packages);
 
-        if ("dev".equals(mode)) {
+        if ("dev".equals(mode) && !isRegistered(LoggingFilter.class)) {
             logger.debug("注册日志过滤器");
             register(LoggingFilter.class);
         }
 
-        logger.info("装载特性");
+        logger.info("注册特性");
 
         String registerStr = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("app.registers"), ""));
         String[] registers = null;
+        int suc = 0, fail = 0, beak = 0;
         if (StringUtils.isNotBlank(registerStr)) {
             registers = registerStr.split(",");
             for (String register : registers) {
                 try {
-                    logger.debug("安装特性[{}]", register);
+                    logger.debug("注册特性[{}]", register);
                     Class clazz = Class.forName(register);
                     if (isRegistered(clazz)) {
-                        logger.debug("并未安装特性[{}]，因为该特性已存在", register);
+                        beak++;
+                        logger.warn("并未注册特性[{}]，因为该特性已存在", register);
                         continue;
                     }
                     register(clazz);
+                    suc++;
                 } catch (ClassNotFoundException e) {
-                    logger.error("获取特性失败", e);
+                    fail++;
+                    if (!register.startsWith("default."))
+                        logger.error("获取特性失败", e);
+                    else
+                        logger.warn("未找到系统默认特性[" + register + "]", e);
                 }
             }
         }
+
 
         for (String key : configMap.keySet()) {
             if (key.startsWith("app.register.")) {
@@ -263,14 +275,17 @@ public class Application extends ResourceConfig {
                 if (StringUtils.isNotBlank(className)) {
                     String name = key.replaceFirst("^app\\.register\\.", "");
                     try {
-                        logger.debug("安装特性[{}({})]", name, className);
+                        logger.debug("注册特性[{}({})]", name, className);
                         Class clazz = Class.forName(className);
                         if (isRegistered(clazz)) {
-                            logger.debug("并安装特性[{}({})]，因为该特性已存在", name, clazz);
+                            beak++;
+                            logger.warn("并未注册装特性[{}({})]，因为该特性已存在", name, clazz);
                             continue;
                         }
                         register(clazz);
+                        suc++;
                     } catch (ClassNotFoundException e) {
+                        fail++;
                         if (!name.startsWith("default."))
                             logger.error("获取特性失败", e);
                         else
@@ -279,6 +294,7 @@ public class Application extends ResourceConfig {
                 }
             }
         }
+        logger.info("成功注册{}个特性，失败{}个，跳过{}个", suc, fail, beak);
 
         //清空转化的配置
         map.clear();
@@ -308,9 +324,10 @@ public class Application extends ResourceConfig {
         }
 
         //config server base uri
-        httpServerBaseUri = URI.create("http://" + this.host
+        httpServerBaseUri = URI.create("http" + (isSecureEnabled() ? "s" : "") + "://" + this.host
                 + ":" + this.port + "/");
-        logger.info("配置服务器监听地址绑定[{}]", httpServerBaseUri);
+        logger.info("配置服务器监听地址绑定到[{}]", httpServerBaseUri);
+        logger.info("装载特性...");
     }
 
     public static HttpServer createHttpServer() {
