@@ -1,6 +1,5 @@
 package ameba.db.model;
 
-import ameba.util.ByteArrayClassLoader;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import javassist.*;
@@ -14,7 +13,6 @@ import javax.persistence.Entity;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +34,6 @@ public class ModelManager {
     private List<ModelDescription> modelClassesDescList = Lists.newArrayList();
     private List<ModelEventListener> listeners = Lists.newArrayList();
     private static final ClassPool pool = ClassPool.getDefault();
-    private static ByteArrayClassLoader classLoader = new ByteArrayClassLoader();
 
     private String[] packages;
 
@@ -50,9 +47,9 @@ public class ModelManager {
         protected abstract void loaded(Class clazz, ModelDescription desc, int index, int size);
     }
 
-    public void addModelLoadedListener(Class<? extends ModelEventListener> listener, Class[] types, Object... args) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void addModelLoadedListener(ModelEventListener listener) {
         if (listener != null) {
-            listeners.add((ModelEventListener) classLoader.loadClass(listener.getName()).getConstructor(types).newInstance(args));
+            listeners.add(listener);
         }
     }
 
@@ -128,7 +125,6 @@ public class ModelManager {
             loadAndClearDesc(key);
         }
         descCache.clear();
-        classLoader = null;
     }
 
     public static ModelManager getManager(String name) {

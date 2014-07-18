@@ -165,14 +165,7 @@ public class EbeanFeature extends TransactionFeature {
             if (null != value)
                 runDdl = Boolean.valueOf(value);
 
-            try {
-                manager.addModelLoadedListener(ModelEventListener.class, new Class[]{
-                        ServerConfig.class, boolean.class, boolean.class, boolean.class
-                }, config, isProd, genDdl, runDdl);
-            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
-                throw new RuntimeException("add model manager listener error", e);
-            }
-
+            manager.addModelLoadedListener(new ModelEventListener(config, isProd, genDdl, runDdl));
         }
 
         return true;
@@ -288,8 +281,8 @@ public class EbeanFeature extends TransactionFeature {
             ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
             InvocationTargetException, CannotCompileException {
         Transformer transformer = new Transformer("", "debug=" + EBEAN_TRANSFORM_LOG_LEVEL);
-        InputStreamTransform streamTransform = new InputStreamTransform(transformer, ClassLoader.getSystemClassLoader());
-        InputStream in = null;
+        InputStreamTransform streamTransform = new InputStreamTransform(transformer, Ebean.class.getClassLoader());
+        InputStream in;
         if (desc.getClassBytecode() != null) {
             in = new ByteArrayInputStream(desc.getClassBytecode());
         } else {
