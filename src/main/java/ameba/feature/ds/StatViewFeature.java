@@ -1,6 +1,5 @@
 package ameba.feature.ds;
 
-import ameba.feature.exception.ThrowableExceptionMapper;
 import com.alibaba.druid.stat.DruidStatService;
 import com.alibaba.druid.util.Utils;
 import com.google.common.collect.Maps;
@@ -204,9 +203,6 @@ public class StatViewFeature implements Feature {
 
     @Override
     public boolean configure(final FeatureContext context) {
-
-        ThrowableExceptionMapper.init(context);
-
         Configuration configuration = context.getConfiguration();
 
         init(configuration);

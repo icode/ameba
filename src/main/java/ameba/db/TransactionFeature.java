@@ -2,10 +2,8 @@ package ameba.db;
 
 import ameba.db.model.Finder;
 import ameba.db.model.Persister;
-import ameba.feature.exception.ThrowableExceptionMapper;
 
 import javax.ws.rs.core.Feature;
-import javax.ws.rs.core.FeatureContext;
 import java.lang.reflect.Modifier;
 
 /**
@@ -25,12 +23,6 @@ public abstract class TransactionFeature implements Feature {
         }
         finderClass = finder;
         persisterClass = persister;
-    }
-
-    @Override
-    public boolean configure(FeatureContext context) {
-        ThrowableExceptionMapper.init(context);
-        return true;
     }
 
     public static Class<? extends Finder> getFinderClass() {

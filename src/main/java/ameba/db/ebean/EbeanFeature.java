@@ -118,7 +118,6 @@ public class EbeanFeature extends TransactionFeature {
 
     @Override
     public boolean configure(final FeatureContext context) {
-        super.configure(context);
         context.register(EbeanTransactional.class);
 
         //configure EBean
@@ -283,10 +282,12 @@ public class EbeanFeature extends TransactionFeature {
         }
     }
 
+    private static final int EBEAN_TRANSFORM_LOG_LEVEL = LoggerFactory.getLogger(Ebean.class).isDebugEnabled() ? 9 : 0;
+
     private static byte[] ehModel(ModelDescription desc) throws URISyntaxException, IOException, IllegalClassFormatException,
             ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
             InvocationTargetException, CannotCompileException {
-        Transformer transformer = new Transformer("", "debug=4");
+        Transformer transformer = new Transformer("", "debug=" + EBEAN_TRANSFORM_LOG_LEVEL);
         InputStreamTransform streamTransform = new InputStreamTransform(transformer, ClassLoader.getSystemClassLoader());
         InputStream in = null;
         if (desc.getClassBytecode() != null) {

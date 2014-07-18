@@ -383,39 +383,11 @@ public class Application extends ResourceConfig {
         serverConfiguration.setHttpServerName(app.getApplicationName());
         serverConfiguration.setHttpServerVersion(app.getApplicationVersion());
         serverConfiguration.setName("HttpServer-" + app.getApplicationName());
-        HashMap<Integer, String> errorMap = Maps.newHashMap();
-        Map<String, Object> config = app.getConfiguration().getProperties();
-        String defaultTemplate = null;
-        String generatorClass = (String) config.get("http.error.page.generator");
-        if (StringUtils.isNotBlank(generatorClass)) {
-            for (String key : config.keySet()) {
-                if (StringUtils.isNotBlank(key) && key.startsWith("http.error.page.")) {
-                    int startIndex = key.lastIndexOf(".");
-                    String statusCodeStr = key.substring(startIndex + 1);
-                    if (StringUtils.isNotBlank(statusCodeStr)) {
-                        if (statusCodeStr.toLowerCase().equals("default")) {
-                            defaultTemplate = (String) config.get(key);
-                            defaultTemplate = defaultTemplate.startsWith("/") ? defaultTemplate :
-                                    "/" + defaultTemplate;
-                        } else if (!statusCodeStr.toLowerCase().equals("generator")) {
-                            try {
-                                String va = (String) config.get(key);
-                                int statusCode = Integer.parseInt(statusCodeStr);
-                                if (StringUtils.isNotBlank(va))
-                                    errorMap.put(statusCode, va.startsWith("/") ? va : "/" + va);
-                            } catch (Exception e) {
-                                logger.error("parse http.compression.minSize error", e);
-                            }
-                        }
-                    }
-                }
-            }
-            ameba.mvc.ErrorPageGenerator.setDefaultErrorTemplate(defaultTemplate);
-            ameba.mvc.ErrorPageGenerator.pushAllErrorMap(errorMap);
-            ameba.mvc.ErrorPageGenerator generator = ameba.mvc.ErrorPageGenerator.getInstance();
-            if (generator != null)
-                serverConfiguration.setDefaultErrorPageGenerator(generator);
-        }
+
+        ameba.mvc.ErrorPageGenerator generator = ameba.mvc.ErrorPageGenerator.getInstance();
+        if (generator != null)
+            serverConfiguration.setDefaultErrorPageGenerator(generator);
+
         String charset = StringUtils.defaultIfBlank((String) app.getProperty("app.encoding"), "utf-8");
         serverConfiguration.setSendFileEnabled(true);
         if (!app.isRegistered(AssetsFeature.class)) {

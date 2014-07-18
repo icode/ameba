@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.http.server.DefaultErrorPageGenerator;
 import org.glassfish.grizzly.http.server.Request;
-import org.glassfish.jersey.server.mvc.spi.AbstractTemplateProcessor;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -32,29 +32,19 @@ public abstract class ErrorPageGenerator extends DefaultErrorPageGenerator imple
         return instance;
     }
 
-    public static void setInstance(ErrorPageGenerator ins) {
-        instance = ins;
+    protected abstract ErrorPageGenerator configure(ServiceLocator serviceLocator);
+
+    protected ErrorPageGenerator(ServiceLocator serviceLocator) {
+        instance = configure(serviceLocator);
     }
 
-
-    private static AbstractTemplateProcessor templateProcessor;
-
-    public static void setTemplateProcessor(AbstractTemplateProcessor templateProcessor) {
-        ErrorPageGenerator.templateProcessor = templateProcessor;
-    }
-
-    public static AbstractTemplateProcessor getTemplateProcessor() {
-        return templateProcessor;
-    }
-
-    public static void pushErrorMap(int status, String tpl) {
+    static void pushErrorMap(int status, String tpl) {
         errorTemplateMap.put(status, tpl);
     }
 
-    public static void pushAllErrorMap(HashMap<Integer, String> map) {
+    static void pushAllErrorMap(HashMap<Integer, String> map) {
         errorTemplateMap.putAll(map);
     }
-
 
     public static HashMap<Integer, String> getErrorTemplateMap() {
         return errorTemplateMap;
@@ -64,7 +54,7 @@ public abstract class ErrorPageGenerator extends DefaultErrorPageGenerator imple
         return defaultErrorTemplate;
     }
 
-    public static void setDefaultErrorTemplate(String template) {
+    static void setDefaultErrorTemplate(String template) {
         defaultErrorTemplate = template;
     }
 

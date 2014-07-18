@@ -1,16 +1,16 @@
 package ameba.mvc;
 
-import ameba.mvc.template.internal.HttlViewProcessor;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import javax.ws.rs.ConstrainedTo;
 import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 错误处理页面配置
@@ -20,27 +20,44 @@ import javax.ws.rs.core.FeatureContext;
 public class ErrorPageFeature implements Feature {
     private static final Logger logger = LoggerFactory.getLogger(ErrorPageFeature.class);
 
-    private ServiceLocator locator;
-
-    @Inject
-    public ErrorPageFeature(ServiceLocator locator) {
-        this.locator = locator;
-    }
-
     @Override
-    public boolean configure(FeatureContext featureContext) {
-        String generatorClass = (String) featureContext.getConfiguration().getProperty("http.error.page.generator");
+    public final boolean configure(FeatureContext featureContext) {
+        HashMap<Integer, String> errorMap = Maps.newHashMap();
+        Map<String, Object> config = featureContext.getConfiguration().getProperties();
+        String defaultTemplate = null;
+        String generatorClass = (String) config.get("http.error.page.generator");
         if (StringUtils.isNotBlank(generatorClass)) {
             try {
                 Class generatorClazz = Class.forName(generatorClass);
-                HttlViewProcessor httlViewProcessor = locator.createAndInitialize(HttlViewProcessor.class);
-                ErrorPageGenerator.setTemplateProcessor(httlViewProcessor);
-                ErrorPageGenerator generator = (ErrorPageGenerator) locator.create(generatorClazz);
-                ErrorPageGenerator.setInstance(generator);
-                featureContext.register(generator);
+                featureContext.register(generatorClazz);
             } catch (ClassNotFoundException e) {
                 logger.error("获取 http.error.page.generator 类失败", e);
             }
+
+            for (String key : config.keySet()) {
+                if (StringUtils.isNotBlank(key) && key.startsWith("http.error.page.")) {
+                    int startIndex = key.lastIndexOf(".");
+                    String statusCodeStr = key.substring(startIndex + 1);
+                    if (StringUtils.isNotBlank(statusCodeStr)) {
+                        if (statusCodeStr.toLowerCase().equals("default")) {
+                            defaultTemplate = (String) config.get(key);
+                            defaultTemplate = defaultTemplate.startsWith("/") ? defaultTemplate :
+                                    "/" + defaultTemplate;
+                        } else if (!statusCodeStr.toLowerCase().equals("generator")) {
+                            try {
+                                String va = (String) config.get(key);
+                                int statusCode = Integer.parseInt(statusCodeStr);
+                                if (StringUtils.isNotBlank(va))
+                                    errorMap.put(statusCode, va.startsWith("/") ? va : "/" + va);
+                            } catch (Exception e) {
+                                logger.error("parse http.compression.minSize error", e);
+                            }
+                        }
+                    }
+                }
+            }
+            ErrorPageGenerator.setDefaultErrorTemplate(defaultTemplate);
+            ErrorPageGenerator.pushAllErrorMap(errorMap);
         }
         return true;
     }
