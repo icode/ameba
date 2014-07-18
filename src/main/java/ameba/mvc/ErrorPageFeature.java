@@ -25,40 +25,30 @@ public class ErrorPageFeature implements Feature {
         HashMap<Integer, String> errorMap = Maps.newHashMap();
         Map<String, Object> config = featureContext.getConfiguration().getProperties();
         String defaultTemplate = null;
-        String generatorClass = (String) config.get("http.error.page.generator");
-        if (StringUtils.isNotBlank(generatorClass)) {
-            try {
-                Class generatorClazz = Class.forName(generatorClass);
-                featureContext.register(generatorClazz);
-            } catch (ClassNotFoundException e) {
-                logger.error("获取 http.error.page.generator 类失败", e);
-            }
-
-            for (String key : config.keySet()) {
-                if (StringUtils.isNotBlank(key) && key.startsWith("http.error.page.")) {
-                    int startIndex = key.lastIndexOf(".");
-                    String statusCodeStr = key.substring(startIndex + 1);
-                    if (StringUtils.isNotBlank(statusCodeStr)) {
-                        if (statusCodeStr.toLowerCase().equals("default")) {
-                            defaultTemplate = (String) config.get(key);
-                            defaultTemplate = defaultTemplate.startsWith("/") ? defaultTemplate :
-                                    "/" + defaultTemplate;
-                        } else if (!statusCodeStr.toLowerCase().equals("generator")) {
-                            try {
-                                String va = (String) config.get(key);
-                                int statusCode = Integer.parseInt(statusCodeStr);
-                                if (StringUtils.isNotBlank(va))
-                                    errorMap.put(statusCode, va.startsWith("/") ? va : "/" + va);
-                            } catch (Exception e) {
-                                logger.error("parse http.compression.minSize error", e);
-                            }
+        for (String key : config.keySet()) {
+            if (StringUtils.isNotBlank(key) && key.startsWith("http.error.page.")) {
+                int startIndex = key.lastIndexOf(".");
+                String statusCodeStr = key.substring(startIndex + 1);
+                if (StringUtils.isNotBlank(statusCodeStr)) {
+                    if (statusCodeStr.toLowerCase().equals("default")) {
+                        defaultTemplate = (String) config.get(key);
+                        defaultTemplate = defaultTemplate.startsWith("/") ? defaultTemplate :
+                                "/" + defaultTemplate;
+                    } else if (!statusCodeStr.toLowerCase().equals("generator")) {
+                        try {
+                            String va = (String) config.get(key);
+                            int statusCode = Integer.parseInt(statusCodeStr);
+                            if (StringUtils.isNotBlank(va))
+                                errorMap.put(statusCode, va.startsWith("/") ? va : "/" + va);
+                        } catch (Exception e) {
+                            logger.error("parse http.compression.minSize error", e);
                         }
                     }
                 }
             }
-            ErrorPageGenerator.setDefaultErrorTemplate(defaultTemplate);
-            ErrorPageGenerator.pushAllErrorMap(errorMap);
         }
+        ErrorPageGenerator.setDefaultErrorTemplate(defaultTemplate);
+        ErrorPageGenerator.pushAllErrorMap(errorMap);
         return true;
     }
 }

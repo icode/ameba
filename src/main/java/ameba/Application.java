@@ -385,8 +385,6 @@ public class Application extends ResourceConfig {
         serverConfiguration.setName("HttpServer-" + app.getApplicationName());
 
         ameba.mvc.ErrorPageGenerator generator = ameba.mvc.ErrorPageGenerator.getInstance();
-        if (generator != null)
-            serverConfiguration.setDefaultErrorPageGenerator(generator);
 
         String charset = StringUtils.defaultIfBlank((String) app.getProperty("app.encoding"), "utf-8");
         serverConfiguration.setSendFileEnabled(true);
