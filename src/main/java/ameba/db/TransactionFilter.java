@@ -1,6 +1,7 @@
 package ameba.db;
 
 import ameba.db.annotation.Transactional;
+import org.glassfish.jersey.server.ContainerResponse;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -24,10 +25,7 @@ public abstract class TransactionFilter implements ContainerRequestFilter, Conta
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-
-        String code = String.valueOf(responseContext.getStatus());
-
-        if (!code.startsWith("2") || code.length() != 3) {
+        if (((ContainerResponse)responseContext).isMappedFromException()) {
             //if (Throwable.class.isInstance(responseContext.getEntity())) {
             rollback();
             // }
