@@ -1,0 +1,45 @@
+<!--#set(ameba.mvc.ErrorPageGenerator.Error model)-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>出错</title>
+    <style>
+        html, body, pre {
+            margin: 0;
+            padding: 0;
+            font-family: Monaco, 'Lucida Console', monospace;
+            background: #ECECEC;
+        }
+
+        h1 {
+            margin: 0;
+            background: #333;
+            padding: 20px 45px;
+            color: #fff;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, .3);
+            border-bottom: 1px solid #111;
+            font-size: 28px;
+        }
+
+        p#detail {
+            margin: 0;
+            padding: 15px 45px;
+            background: #888;
+            border-top: 4px solid #666;
+            color: #111;
+            text-shadow: 1px 1px 1px rgba(255, 255, 255, .3);
+            font-size: 14px;
+            border-bottom: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+<h1>服务器一不小心犯了个错误</h1>
+
+<p id="detail">
+    没有办法啦，尝试联系管理员解决该问题。
+    ${model.request.UriInfo.absolutePath}
+</p>
+
+</body>
+</html>

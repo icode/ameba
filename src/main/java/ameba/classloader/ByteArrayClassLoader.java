@@ -1,4 +1,4 @@
-package ameba.util;
+package ameba.classloader;
 
 /**
  * @author icode

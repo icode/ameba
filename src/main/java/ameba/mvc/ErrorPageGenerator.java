@@ -7,6 +7,7 @@ import jersey.repackaged.com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.Providers;
+import org.glassfish.jersey.server.mvc.Viewable;
 import org.glassfish.jersey.server.mvc.spi.ResolvedViewable;
 import org.glassfish.jersey.server.mvc.spi.TemplateProcessor;
 
@@ -87,12 +88,15 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
             status = ((WebApplicationException) exception).getResponse().getStatus();
         }
         String tplName;
+        boolean isDefaultTpl = false;
         if (status >= 500 && app.getMode().equals(Application.Mode.DEV)) {
             //开发模式，显示详细错误信息
             tplName = DEFAULT_5XX_DEV_ERROR_PAGE;
+            isDefaultTpl = true;
         } else {
             tplName = errorTemplateMap.get(status);
             if (StringUtils.isBlank(tplName)) {
+                isDefaultTpl = true;
                 if (StringUtils.isBlank(defaultErrorTemplate)) {
                     switch (status) {
                         case 400:
@@ -123,14 +127,28 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
                 StringUtils.join(exception.getStackTrace(), "\n"),
                 exception);
 
-        ResolvedViewable errorViewable = new ResolvedViewable<Object>(
-                getTemplateProcessor()
-                , getTemplate(tplName)
-                , Viewables.newDefaultViewable(tplName, error)
-                , this.getClass()
-                , getMediaType());
+        Object viewable = Viewables.newDefaultViewable(tplName, error);
+        if (isDefaultTpl) {
+            try {
+                viewable = new ResolvedViewable<Object>(
+                        getTemplateProcessor()
+                        , getTemplate(tplName)
+                        , (Viewable) viewable
+                        , this.getClass()
+                        , getMediaType());
+            } catch (Exception e) {
+                viewable = new ResolvedViewable<Object>(
+                        getTemplateProcessor()
+                        , getTemplate(app.getMode().equals(Application.Mode.DEV) ?
+                        DEFAULT_5XX_DEV_ERROR_PAGE
+                        : DEFAULT_5XX_PRODUCT_ERROR_PAGE)
+                        , (Viewable) viewable
+                        , this.getClass()
+                        , getMediaType());
+            }
+        }
 
-        return Response.status(status).entity(errorViewable).build();
+        return Response.status(status).entity(viewable).build();
     }
 
     protected abstract TemplateProcessor<Object> getTemplateProcessor();
@@ -148,6 +166,14 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         public Throwable exception;
 
         public Error() {
+        }
+
+        public Error(ContainerRequestContext request, int status, String reasonPhrase, String description, Throwable exception) {
+            this.status = status;
+            this.reasonPhrase = reasonPhrase;
+            this.description = description;
+            this.exception = exception;
+            this.request = request;
         }
 
         public int getStatus() {
@@ -188,14 +214,6 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
 
         public void setException(Throwable exception) {
             this.exception = exception;
-        }
-
-        public Error(ContainerRequestContext request, int status, String reasonPhrase, String description, Throwable exception) {
-            this.status = status;
-            this.reasonPhrase = reasonPhrase;
-            this.description = description;
-            this.exception = exception;
-            this.request = request;
         }
     }
 }

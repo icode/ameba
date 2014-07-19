@@ -1,5 +1,6 @@
 package ameba.mvc;
 
+import ameba.exceptions.ConfigErrorException;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -25,31 +26,42 @@ public class ErrorPageFeature implements Feature {
         HashMap<Integer, String> errorMap = Maps.newHashMap();
         Map<String, Object> config = featureContext.getConfiguration().getProperties();
         String defaultTemplate = null;
-        for (String key : config.keySet()) {
-            if (StringUtils.isNotBlank(key) && key.startsWith("http.error.page.")) {
-                int startIndex = key.lastIndexOf(".");
-                String statusCodeStr = key.substring(startIndex + 1);
-                if (StringUtils.isNotBlank(statusCodeStr)) {
-                    if (statusCodeStr.toLowerCase().equals("default")) {
-                        defaultTemplate = (String) config.get(key);
-                        defaultTemplate = defaultTemplate.startsWith("/") ? defaultTemplate :
-                                "/" + defaultTemplate;
-                    } else if (!statusCodeStr.toLowerCase().equals("generator")) {
-                        try {
-                            String va = (String) config.get(key);
-                            int statusCode = Integer.parseInt(statusCodeStr);
-                            if (StringUtils.isNotBlank(va))
-                                errorMap.put(statusCode, va.startsWith("/") ? va : "/" + va);
-                        } catch (Exception e) {
-                            logger.error("parse http.compression.minSize error", e);
+        String clazz = (String) config.get("http.error.page.generator");
+        if (StringUtils.isNotBlank(clazz)) {
+            try {
+                Class clz = Class.forName(clazz);
+
+                for (String key : config.keySet()) {
+                    if (StringUtils.isNotBlank(key) && key.startsWith("http.error.page.")) {
+                        int startIndex = key.lastIndexOf(".");
+                        String statusCodeStr = key.substring(startIndex + 1);
+                        if (StringUtils.isNotBlank(statusCodeStr)) {
+                            if (statusCodeStr.toLowerCase().equals("default")) {
+                                defaultTemplate = (String) config.get(key);
+                                defaultTemplate = defaultTemplate.startsWith("/") ? defaultTemplate :
+                                        "/" + defaultTemplate;
+                            } else if (!statusCodeStr.toLowerCase().equals("generator")) {
+                                try {
+                                    String va = (String) config.get(key);
+                                    int statusCode = Integer.parseInt(statusCodeStr);
+                                    if (StringUtils.isNotBlank(va))
+                                        errorMap.put(statusCode, va.startsWith("/") ? va : "/" + va);
+                                } catch (Exception e) {
+                                    logger.error("parse http.compression.minSize error", e);
+                                }
+                            }
                         }
                     }
                 }
+
+                ErrorPageGenerator.setDefaultErrorTemplate(defaultTemplate);
+                ErrorPageGenerator.pushAllErrorMap(errorMap);
+
+                featureContext.register(clz);
+            } catch (ClassNotFoundException e) {
+                throw new ConfigErrorException("http.error.page.generator config error,not found class " + clazz, e);
             }
         }
-        ErrorPageGenerator.setDefaultErrorTemplate(defaultTemplate);
-        ErrorPageGenerator.pushAllErrorMap(errorMap);
-        featureContext.register(ErrorPageGenerator.class);
         return true;
     }
 }

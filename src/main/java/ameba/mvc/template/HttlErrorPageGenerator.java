@@ -36,16 +36,21 @@ public class HttlErrorPageGenerator extends ErrorPageGenerator {
         try {
             String con = IOUtils.readFromResource(name);
             if (con == null) {
-                logger.error("error page template not found {}", name);
+                throwNotFound(name);
                 return null;
             }
             return t.parseTemplate(con);
         } catch (IOException e) {
-            logger.error("get error page template error", e);
+            //noop
         } catch (ParseException e) {
-            logger.error("parse error page template error", e);
+            //noop
         }
+        throwNotFound(name);
         return null;
+    }
+
+    private void throwNotFound(String name) {
+        throw new TemplateException("error page template not found " + name);
     }
 
     @Override
