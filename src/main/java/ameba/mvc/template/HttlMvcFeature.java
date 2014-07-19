@@ -28,6 +28,11 @@ public class HttlMvcFeature implements Feature {
 
         context.property(MvcFeature.TEMPLATE_BASE_PATH + '.' + HttlViewProcessor.CONFIG_SUFFIX,
                 context.getConfiguration().getProperty("template.directory"));
+
+        context.property(MvcFeature.CACHE_TEMPLATES + '.' + HttlViewProcessor.CONFIG_SUFFIX,
+                context.getConfiguration().getProperty("template.cache"));
+
+
         context.register(HttlViewProcessor.class);
         return true;
     }

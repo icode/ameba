@@ -49,6 +49,7 @@ public class ErrorPageFeature implements Feature {
         }
         ErrorPageGenerator.setDefaultErrorTemplate(defaultTemplate);
         ErrorPageGenerator.pushAllErrorMap(errorMap);
+        featureContext.register(ErrorPageGenerator.class);
         return true;
     }
 }

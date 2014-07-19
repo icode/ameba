@@ -58,7 +58,16 @@ public abstract class Finder<ID, T> implements Query<T> {
     public Finder<ID, T> on(String server) {
         try {
             return this.getClass().getConstructor(String.class, Class.class, Class.class).newInstance(server, idType, modelType);
-        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+        } catch (InstantiationException e) {
+            logger.error("Finder.on(server) error", e);
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            logger.error("Finder.on(server) error", e);
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            logger.error("Finder.on(server) error", e);
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
             logger.error("Finder.on(server) error", e);
             throw new RuntimeException(e);
         }

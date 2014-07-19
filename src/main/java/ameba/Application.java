@@ -55,7 +55,7 @@ public class Application extends ResourceConfig {
     public static final String DEFAULT_NETWORK_LISTENER_NAME = "grizzly";
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private URI httpServerBaseUri;
-    private String mode;
+    private Mode mode;
     private String domain;
     private String host;
     private String applicationVersion;
@@ -80,7 +80,6 @@ public class Application extends ResourceConfig {
     private String sslTrustStoreType;
     private String sslTrustStoreProvider;
     private String sslTrustManagerFactoryAlgorithm;
-
     private boolean sslConfigReady;
 
     public Application() {
@@ -121,7 +120,14 @@ public class Application extends ResourceConfig {
         }
 
         //获取应用程序模式
-        mode = properties.getProperty("app.mode");
+        try {
+            mode = Mode.valueOf(properties.getProperty("app.mode").toUpperCase());
+        } catch (Exception e) {
+            mode = Mode.PRODUCT;
+        }
+
+        logger.info("当前应用程序为{}模式", mode.equals(Mode.DEV) ? "开发" : "产品");
+
         //设置ssl相关
         secureEnabled = Boolean.parseBoolean(properties.getProperty("ssl.enabled", "false"));
         sslProtocol = properties.getProperty("ssl.protocol");
@@ -167,16 +173,13 @@ public class Application extends ResourceConfig {
         Properties modeProperties = new Properties();
 
         //读取相应模式的配置文件
-        if (StringUtils.isNotBlank(mode)) {
-            try {
-                modeProperties.load(getResourceAsStream("conf/" + mode + ".conf"));
-                //将模式配置放入临时配置对象
-                configMap.putAll((Map) modeProperties);
-            } catch (IOException e) {
-                logger.warn("读取[conf/" + mode + ".conf]出错", e);
-            }
+        try {
+            modeProperties.load(getResourceAsStream("conf/" + mode.name().toLowerCase() + ".conf"));
+            //将模式配置放入临时配置对象
+            configMap.putAll((Map) modeProperties);
+        } catch (IOException e) {
+            logger.warn("读取[conf/" + mode.name().toLowerCase() + ".conf]出错", e);
         }
-
         //将用户配置放入临时配置对象
         if (properties.size() > 0)
             configMap.putAll((Map) properties);
@@ -235,7 +238,7 @@ public class Application extends ResourceConfig {
         logger.info("设置资源扫描包:[{}]", getProperty("resource.packages"));
         packages(packages);
 
-        if ("dev".equals(mode) && !isRegistered(LoggingFilter.class)) {
+        if (Mode.DEV.equals(mode) && !isRegistered(LoggingFilter.class)) {
             logger.debug("注册日志过滤器");
             register(LoggingFilter.class);
         }
@@ -401,8 +404,6 @@ public class Application extends ResourceConfig {
         serverConfiguration.setHttpServerVersion(app.getApplicationVersion());
         serverConfiguration.setName("HttpServer-" + app.getApplicationName());
 
-        ameba.mvc.ErrorPageGenerator generator = ameba.mvc.ErrorPageGenerator.getInstance();
-
         String charset = StringUtils.defaultIfBlank((String) app.getProperty("app.encoding"), "utf-8");
         serverConfiguration.setSendFileEnabled(true);
         if (!app.isRegistered(AssetsFeature.class)) {
@@ -420,7 +421,6 @@ public class Application extends ResourceConfig {
 
         return server;
     }
-
 
     /**
      * Creates HttpServer instance.
@@ -539,7 +539,7 @@ public class Application extends ResourceConfig {
         return domain;
     }
 
-    public String getMode() {
+    public Mode getMode() {
         return mode;
     }
 
@@ -639,9 +639,8 @@ public class Application extends ResourceConfig {
         URL loggerConfigFile = getResource(StringUtils.defaultIfBlank((String) getProperty("logger.config.file"), "conf/logback.groovy"));
 
         if (loggerConfigFile == null) {
-            loggerConfigFile = getResource("conf/logback-" + getMode() + ".groovy");
+            loggerConfigFile = getResource("conf/logback-" + getMode().name().toLowerCase() + ".groovy");
         }
-
 
         if (loggerConfigFile != null) {
             LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -660,6 +659,10 @@ public class Application extends ResourceConfig {
         }
         SLF4JBridgeHandler.install();
         rootLogger.setLevel(Level.ALL);
+    }
+
+    public enum Mode {
+        DEV, PRODUCT
     }
 
     private class ApplicationProvider extends AbstractBinder implements Factory<Application> {

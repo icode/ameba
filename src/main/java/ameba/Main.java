@@ -25,7 +25,9 @@ public class Main {
                 GrizzlyFuture<HttpServer> future = server.shutdown();
                 try {
                     future.get();
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (InterruptedException e) {
+                    logger.error("服务器关闭出错", e);
+                } catch (ExecutionException e) {
                     logger.error("服务器关闭出错", e);
                 }
                 logger.info("服务器已关闭");

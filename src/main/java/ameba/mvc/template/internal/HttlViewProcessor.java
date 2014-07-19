@@ -41,6 +41,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
     @Inject
     public HttlViewProcessor(Configuration config, @Optional ServletContext servletContext) {
         super(config, servletContext, CONFIG_SUFFIX, getExtends(config));
+
         Properties properties = new Properties();
         Map<String, Object> map = config.getProperties();
 
@@ -85,6 +86,10 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
             templatePath = templatePath.substring(dir.length());
         }
         return engine.getTemplate(templatePath);
+    }
+
+    public Template parseTemplate(String content) throws IOException, ParseException {
+        return engine.parseTemplate(content);
     }
 
     @Override

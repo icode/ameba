@@ -20,6 +20,10 @@ public abstract class Model implements Serializable {
     @Transient
     private static final long serialVersionUID = 1L;
     @Transient
+    private static final HashMap<Class, Finder> FinderMap = Maps.newHashMap();
+    @Transient
+    private static final HashMap<Class, Persister> PersisterMap = Maps.newHashMap();
+    @Transient
     private static Constructor<? extends Finder> finderConstructor = null;
     @Transient
     private static Constructor<? extends Persister> persisterConstructor = null;
@@ -29,11 +33,6 @@ public abstract class Model implements Serializable {
     private Method _idGetter = null;
     @Transient
     private Method _idSetter = null;
-    @Transient
-    private static final HashMap<Class, Finder> FinderMap = Maps.newHashMap();
-    @Transient
-    private static final HashMap<Class, Persister> PersisterMap = Maps.newHashMap();
-
 
     @Transient
     protected static Constructor<? extends Finder> getFinderConstructor() {
@@ -162,7 +161,11 @@ public abstract class Model implements Serializable {
             try {
                 persister = getPersisterConstructor().newInstance(server, this);
                 putPersisterCache(this.getClass(), persister);
-            } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
+            } catch (InstantiationException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         return persister;

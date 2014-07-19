@@ -43,17 +43,13 @@ import java.nio.file.Paths;
 @ConstrainedTo(RuntimeType.SERVER)
 public class EbeanFeature extends TransactionFeature {
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
-    private static boolean baseModelEnhanced = false;
     private static final ModelDescription BASE_MODEL_DESCRIPTION = new ModelDescription() {
         byte[] bytecode;
 
         {
             try {
                 bytecode = ehModel(this);
-            } catch (URISyntaxException | IOException | IllegalClassFormatException
-                    | ClassNotFoundException | NoSuchMethodException
-                    | IllegalAccessException | InvocationTargetException
-                    | CannotCompileException e) {
+            } catch (Exception e) {
                 throw new RuntimeException("get " + getClassFile() + " bytecode error", e);
             }
         }
@@ -78,6 +74,8 @@ public class EbeanFeature extends TransactionFeature {
             return bytecode;
         }
     };
+    private static final int EBEAN_TRANSFORM_LOG_LEVEL = LoggerFactory.getLogger(Ebean.class).isDebugEnabled() ? 9 : 0;
+    private static boolean baseModelEnhanced = false;
 
     public EbeanFeature() {
         super(EbeanFinder.class, EbeanPersister.class);
@@ -114,6 +112,29 @@ public class EbeanFeature extends TransactionFeature {
 
     public static String generateEvolutionScript(String serverName, ServerConfig config) {
         return generateEvolutionScript(Ebean.getServer(serverName), config);
+    }
+
+    private static byte[] ehModel(ModelDescription desc) throws URISyntaxException, IOException, IllegalClassFormatException,
+            ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
+            InvocationTargetException, CannotCompileException {
+        Transformer transformer = new Transformer("", "debug=" + EBEAN_TRANSFORM_LOG_LEVEL);
+        InputStreamTransform streamTransform = new InputStreamTransform(transformer, Ebean.class.getClassLoader());
+        InputStream in;
+        if (desc.getClassBytecode() != null) {
+            in = new ByteArrayInputStream(desc.getClassBytecode());
+        } else {
+            in = new URL(desc.getClassFile()).openStream();
+        }
+        byte[] result = null;
+        try {
+            result = streamTransform.transform(desc.getClassSimpleName(), in);
+        } finally {
+            in.close();
+        }
+        if (result == null) {
+            throw new CannotCompileException("ebean enhance model fail!");
+        }
+        return result;
     }
 
     @Override
@@ -189,20 +210,28 @@ public class EbeanFeature extends TransactionFeature {
         protected byte[] enhancing(ModelDescription desc) {
 
             if (!baseModelEnhanced) {
-                try (InputStream in = new ByteArrayInputStream(BASE_MODEL_DESCRIPTION.getClassBytecode())) {
+                InputStream in = new ByteArrayInputStream(BASE_MODEL_DESCRIPTION.getClassBytecode());
+                try {
                     CtClass ctClass = ClassPool.getDefault().makeClass(in);
                     ctClass.toClass();
                     ctClass.detach();
-                } catch (IOException | CannotCompileException e) {
+                } catch (CannotCompileException e) {
+                    throw new RuntimeException("make " + BASE_MODEL_DESCRIPTION.getClassFile() + " class input stream error", e);
+                } catch (IOException e) {
                     throw new RuntimeException("make " + BASE_MODEL_DESCRIPTION.getClassFile() + " class input stream error", e);
                 } finally {
                     baseModelEnhanced = true;
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        logger.warn("close io error", e);
+                    }
                 }
             }
 
             try {
                 return ehModel(desc);
-            } catch (IOException | CannotCompileException | URISyntaxException | IllegalClassFormatException | ClassNotFoundException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -273,30 +302,5 @@ public class EbeanFeature extends TransactionFeature {
                 }
             }
         }
-    }
-
-    private static final int EBEAN_TRANSFORM_LOG_LEVEL = LoggerFactory.getLogger(Ebean.class).isDebugEnabled() ? 9 : 0;
-
-    private static byte[] ehModel(ModelDescription desc) throws URISyntaxException, IOException, IllegalClassFormatException,
-            ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
-            InvocationTargetException, CannotCompileException {
-        Transformer transformer = new Transformer("", "debug=" + EBEAN_TRANSFORM_LOG_LEVEL);
-        InputStreamTransform streamTransform = new InputStreamTransform(transformer, Ebean.class.getClassLoader());
-        InputStream in;
-        if (desc.getClassBytecode() != null) {
-            in = new ByteArrayInputStream(desc.getClassBytecode());
-        } else {
-            in = new URL(desc.getClassFile()).openStream();
-        }
-        byte[] result = null;
-        try {
-            result = streamTransform.transform(desc.getClassSimpleName(), in);
-        } finally {
-            in.close();
-        }
-        if (result == null) {
-            throw new CannotCompileException("ebean enhance model fail!");
-        }
-        return result;
     }
 }

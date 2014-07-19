@@ -45,7 +45,16 @@ public abstract class Persister<M extends Model> {
     public Persister<M> on(String server) {
         try {
             return (Persister<M>) this.getClass().getConstructor(String.class, Model.class).newInstance(server, model);
-        } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+        } catch (InstantiationException e) {
+            logger.error("Persister.on(server) error", e);
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            logger.error("Persister.on(server) error", e);
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            logger.error("Persister.on(server) error", e);
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
             logger.error("Persister.on(server) error", e);
             throw new RuntimeException(e);
         }
@@ -133,22 +142,22 @@ public abstract class Persister<M extends Model> {
 
     /**
      * Marks the entity bean as dirty.
-     * <p>
+     * <p/>
      * This is used so that when a bean that is otherwise unmodified is updated the version
      * property is updated.
-     * <p>
+     * <p/>
      * An unmodified bean that is saved or updated is normally skipped and this marks the bean as
      * dirty so that it is not skipped.
-     *
+     * <p/>
      * <pre class="code">
-     *
+     * <p/>
      * Customer customer = Customer.find.byId(id);
-     *
+     * <p/>
      * // mark the bean as dirty so that a save() or update() will
      * // increment the version property
      * customer.markAsDirty();
      * customer.save();
-     *
+     * <p/>
      * </pre>
      */
     public abstract void markAsDirty();

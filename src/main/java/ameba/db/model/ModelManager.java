@@ -30,39 +30,17 @@ public class ModelManager {
     public static final String ID_SETTER_NAME = "__setId__";
     public static final String ID_GETTER_NAME = "__getId__";
     public static final String GET_FINDER_M_NAME = "getFinder";
+    public final static String BASE_MODEL_PKG = "ameba.db.model";
+    public final static String BASE_MODEL_SIMPLE_NAME = "Model";
+    public final static String BASE_MODEL_NAME = BASE_MODEL_PKG + "." + BASE_MODEL_SIMPLE_NAME;
     private static final Map<String, ModelDescription> descCache = Maps.newHashMap();
+    private static final ClassPool pool = ClassPool.getDefault();
     private List<ModelDescription> modelClassesDescList = Lists.newArrayList();
     private List<ModelEventListener> listeners = Lists.newArrayList();
-    private static final ClassPool pool = ClassPool.getDefault();
-
     private String[] packages;
 
     private ModelManager(String[] packages) {
         this.packages = packages;
-    }
-
-    public static abstract class ModelEventListener {
-        protected abstract byte[] enhancing(ModelDescription desc);
-
-        protected abstract void loaded(Class clazz, ModelDescription desc, int index, int size);
-    }
-
-    public void addModelLoadedListener(ModelEventListener listener) {
-        if (listener != null) {
-            listeners.add(listener);
-        }
-    }
-
-    private void fireModelLoaded(Class clazz, ModelDescription desc, int index, int size) {
-        for (ModelEventListener listener : listeners) {
-            listener.loaded(clazz, desc, index, size);
-        }
-    }
-
-    private void fireModelEnhancing(ModelDescription desc) {
-        for (ModelEventListener listener : listeners) {
-            desc.classBytecode = listener.enhancing(desc);
-        }
     }
 
     public static ModelManager create(String name, String[] packages) {
@@ -78,20 +56,6 @@ public class ModelManager {
         return manager;
     }
 
-    private void loadClass() {
-        ResourceFinder scanner = new PackageNamesScanner(packages, true);
-        while (scanner.hasNext()) {
-            scanner.next();
-            try (InputStream in = scanner.open()) {
-                ModelDescription desc = enhanceModel(in);
-                if (desc != null)
-                    modelClassesDescList.add(desc);
-            } catch (IOException e) {
-                logger.error("close class file input stream error", e);
-            }
-        }
-    }
-
     public static void loadAndClearDesc(String name) {
         ModelManager manager = getManager(name);
         if (manager != null) {
@@ -100,14 +64,22 @@ public class ModelManager {
             int index = 0;
             for (ModelDescription desc : manager.modelClassesDescList) {
                 if (desc.clazz == null) {
-                    try (InputStream in = new ByteArrayInputStream(desc.classBytecode)) {
+                    InputStream in = new ByteArrayInputStream(desc.classBytecode);
+                    try {
                         logger.debug("load {} model manager class {}", name, desc.classFile);
                         desc.clazz = pool.makeClass(in).toClass();
                         manager.fireModelLoaded(desc.clazz, desc, index, size);
-                    } catch (IOException | CannotCompileException e) {
+                    } catch (IOException e) {
+                        logger.warn("load model class file [" + desc.classFile + "] error", e);
+                    } catch (CannotCompileException e) {
                         logger.warn("load model class file [" + desc.classFile + "] error", e);
                     } finally {
                         index++;
+                        try {
+                            in.close();
+                        } catch (IOException e) {
+                            logger.warn("close class bytecode stream has a error", e);
+                        }
                     }
                 } else {
                     manager.fireModelLoaded(desc.clazz, desc, index, size);
@@ -129,6 +101,43 @@ public class ModelManager {
 
     public static ModelManager getManager(String name) {
         return managerMap.get(name);
+    }
+
+    public void addModelLoadedListener(ModelEventListener listener) {
+        if (listener != null) {
+            listeners.add(listener);
+        }
+    }
+
+    private void fireModelLoaded(Class clazz, ModelDescription desc, int index, int size) {
+        for (ModelEventListener listener : listeners) {
+            listener.loaded(clazz, desc, index, size);
+        }
+    }
+
+    private void fireModelEnhancing(ModelDescription desc) {
+        for (ModelEventListener listener : listeners) {
+            desc.classBytecode = listener.enhancing(desc);
+        }
+    }
+
+    private void loadClass() {
+        ResourceFinder scanner = new PackageNamesScanner(packages, true);
+        while (scanner.hasNext()) {
+            scanner.next();
+            InputStream in = scanner.open();
+            try {
+                ModelDescription desc = enhanceModel(in);
+                if (desc != null)
+                    modelClassesDescList.add(desc);
+            } finally {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    logger.error("close class file input stream error", e);
+                }
+            }
+        }
     }
 
     public String[] getPackages() {
@@ -281,10 +290,6 @@ public class ModelManager {
         }
     }
 
-    public final static String BASE_MODEL_PKG = "ameba.db.model";
-    public final static String BASE_MODEL_SIMPLE_NAME = "Model";
-    public final static String BASE_MODEL_NAME = BASE_MODEL_PKG + "." + BASE_MODEL_SIMPLE_NAME;
-
     private CtMethod createSetter(CtClass clazz, String methodName, CtClass[] args, CtField field) throws CannotCompileException {
         CtMethod setter = new CtMethod(CtClass.voidType,
                 methodName,
@@ -323,6 +328,12 @@ public class ModelManager {
         getter.setBody("{ return this." + methodName + "(); }");
         clazz.addMethod(getter);
         return getter;
+    }
+
+    public static abstract class ModelEventListener {
+        protected abstract byte[] enhancing(ModelDescription desc);
+
+        protected abstract void loaded(Class clazz, ModelDescription desc, int index, int size);
     }
 
 

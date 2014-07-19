@@ -39,7 +39,9 @@ public class ProtobufMessageBodyReader extends AbstractProtobufProvider implemen
             Schema schema = RuntimeSchema.getSchema(type);
             try {
                 ProtobufIOUtil.mergeFrom(entityStream, type.newInstance(), schema);
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException e) {
+                throw new WebApplicationException(e);
+            } catch (IllegalAccessException e) {
                 throw new WebApplicationException(e);
             }
         }
