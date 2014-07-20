@@ -155,6 +155,8 @@ public class Application extends ResourceConfig {
                 FluentIterable<File> iterable = Files.fileTreeTraverser()
                         .breadthFirstTraversal(sourceRoot);
 
+                Pattern cp = Pattern.compile("^(\\s*(/\\*|\\*|//))");//注释正则
+                Pattern p = Pattern.compile("^(\\s*package)\\s+([\\w\\.]+)\\s*;$");//包名正则
                 for (File f : iterable) {
                     if (f.getName().endsWith(".java") && f.canRead()) {
                         BufferedReader reader = null;
@@ -162,7 +164,6 @@ public class Application extends ResourceConfig {
                             reader = new BufferedReader(new FileReader(f));
 
                             String line = null;
-                            Pattern cp = Pattern.compile("^(\\s*(/\\*|\\*|//))");
                             while (StringUtils.isBlank(line)) {
                                 line = reader.readLine();
                                 //匹配注释
@@ -171,7 +172,6 @@ public class Application extends ResourceConfig {
                                     line = null;
                                 }
                             }
-                            Pattern p = Pattern.compile("^(\\s*package)\\s+([\\w\\.]+)\\s*;$");
                             Matcher m = p.matcher(line);
 
                             if (m.find()) {
