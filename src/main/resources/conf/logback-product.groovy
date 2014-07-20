@@ -1,4 +1,6 @@
 package conf
+
+import ameba.util.IOUtils
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.core.ConsoleAppender
 import ch.qos.logback.core.rolling.RollingFileAppender
@@ -16,12 +18,11 @@ appender("CONSOLE", ConsoleAppender) {
 
 String appName = context.getProperty("appName");
 appender("FILE", RollingFileAppender) {
-    file = "logs/" + appName + ".log"
     rollingPolicy(TimeBasedRollingPolicy) {
-        fileNamePattern = "logs/" + appName + ".%d{yyyy-MM-dd}-%i.log"
+        fileNamePattern = IOUtils.getResource("").getFile() + "../logs/" + appName + ".%d{yyyy-MM-dd}-%i.log"
         maxHistory = 30
         timeBasedFileNamingAndTriggeringPolicy(SizeAndTimeBasedFNATP) {
-            maxFileSize = "200MB"
+            maxFileSize = "20MB"
         }
     }
     encoder(PatternLayoutEncoder) {

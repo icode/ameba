@@ -1,6 +1,7 @@
 package ameba;
 
 import ameba.db.model.EnhanceModelFeature;
+import ameba.jvm.JvmAgent;
 import ameba.mvc.assets.AssetsFeature;
 import ameba.util.LinkedProperties;
 import ch.qos.logback.classic.LoggerContext;
@@ -8,6 +9,7 @@ import ch.qos.logback.classic.gaffer.GafferUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.grizzly.GrizzlyFuture;
 import org.glassfish.grizzly.http.CompressionConfig;
 import org.glassfish.grizzly.http.ajp.AjpAddOn;
 import org.glassfish.grizzly.http.server.*;
@@ -27,6 +29,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.inject.Singleton;
 import javax.ws.rs.ProcessingException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -38,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -52,7 +56,7 @@ import static ameba.util.IOUtils.*;
  */
 @Singleton
 public class Application extends ResourceConfig {
-    public static final String DEFAULT_NETWORK_LISTENER_NAME = "grizzly";
+    public static final String DEFAULT_NETWORK_LISTENER_NAME = "ameba";
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private URI httpServerBaseUri;
     private Mode mode;
@@ -81,6 +85,7 @@ public class Application extends ResourceConfig {
     private String sslTrustStoreProvider;
     private String sslTrustManagerFactoryAlgorithm;
     private boolean sslConfigReady;
+    private File sourceRoot;
 
     public Application() {
         this("conf/application.conf");
@@ -96,6 +101,7 @@ public class Application extends ResourceConfig {
         Map<String, Object> configMap = Maps.newLinkedHashMap();
 
         Properties properties = new LinkedProperties();
+
         logger.info("读取系统默认配置...");
         //读取系统默认配置
         try {
@@ -126,7 +132,22 @@ public class Application extends ResourceConfig {
             mode = Mode.PRODUCT;
         }
 
-        logger.info("当前应用程序为{}模式", mode.equals(Mode.DEV) ? "开发" : "产品");
+
+        String sourceRootStr = System.getProperty("app.source.root");
+
+        if (StringUtils.isNotBlank(sourceRootStr)) {
+            sourceRoot = new File(sourceRootStr);
+        } else {
+            sourceRoot = new File("");
+        }
+
+
+        if (mode.isDev()) {
+            logger.warn("当前应用程序为开发模式");
+            logger.info("应用源码根路径为：{}", sourceRoot.getAbsolutePath());
+
+            JvmAgent.initialize();
+        }
 
         //设置ssl相关
         secureEnabled = Boolean.parseBoolean(properties.getProperty("ssl.enabled", "false"));
@@ -238,7 +259,7 @@ public class Application extends ResourceConfig {
         logger.info("设置资源扫描包:[{}]", getProperty("resource.packages"));
         packages(packages);
 
-        if (Mode.DEV.equals(mode) && !isRegistered(LoggingFilter.class)) {
+        if (Mode.DEV.isDev() && !isRegistered(LoggingFilter.class)) {
             logger.debug("注册日志过滤器");
             register(LoggingFilter.class);
         }
@@ -527,6 +548,40 @@ public class Application extends ResourceConfig {
         return server;
     }
 
+    public static void bootstrap() {
+        final HttpServer server = Application.createHttpServer();
+        // register shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                logger.info("关闭服务器...");
+                GrizzlyFuture<HttpServer> future = server.shutdown();
+                try {
+                    future.get();
+                } catch (InterruptedException e) {
+                    logger.error("服务器关闭出错", e);
+                } catch (ExecutionException e) {
+                    logger.error("服务器关闭出错", e);
+                }
+                logger.info("服务器已关闭");
+            }
+        }, "shutdownHook"));
+
+        // run
+        try {
+            logger.info("启动容器...");
+            server.start();
+            logger.info("服务已启动");
+            Thread.currentThread().join();
+        } catch (Exception e) {
+            logger.error("启动服务器出现错误", e);
+        }
+    }
+
+    public File getSourceRoot() {
+        return sourceRoot;
+    }
+
     public String getHost() {
         return host;
     }
@@ -662,7 +717,15 @@ public class Application extends ResourceConfig {
     }
 
     public enum Mode {
-        DEV, PRODUCT
+        DEV, PRODUCT;
+
+        public boolean isDev() {
+            return this == DEV;
+        }
+
+        public boolean isProd() {
+            return this == PRODUCT;
+        }
     }
 
     private class ApplicationProvider extends AbstractBinder implements Factory<Application> {

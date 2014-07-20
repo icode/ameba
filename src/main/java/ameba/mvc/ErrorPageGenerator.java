@@ -89,7 +89,7 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         }
         String tplName;
         boolean isDefaultTpl = false;
-        if (status >= 500 && app.getMode().equals(Application.Mode.DEV)) {
+        if (status >= 500 && app.getMode().isDev()) {
             //开发模式，显示详细错误信息
             tplName = DEFAULT_5XX_DEV_ERROR_PAGE;
             isDefaultTpl = true;
@@ -139,7 +139,7 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
             } catch (Exception e) {
                 viewable = new ResolvedViewable<Object>(
                         getTemplateProcessor()
-                        , getTemplate(app.getMode().equals(Application.Mode.DEV) ?
+                        , getTemplate(app.getMode().isDev() ?
                         DEFAULT_5XX_DEV_ERROR_PAGE
                         : DEFAULT_5XX_PRODUCT_ERROR_PAGE)
                         , (Viewable) viewable
