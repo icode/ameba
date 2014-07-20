@@ -43,7 +43,7 @@ public class HttlErrorPageGenerator extends ErrorPageGenerator {
         } catch (IOException e) {
             //noop
         } catch (ParseException e) {
-            //noop
+            throw new TemplateException("Parse template has error " + name, e, e.getErrorOffset());
         }
         throwNotFound(name);
         return null;

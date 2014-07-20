@@ -4,6 +4,7 @@ import ameba.Application;
 import ameba.exceptions.AmebaException;
 import ameba.exceptions.SourceAttachment;
 import ameba.mvc.template.internal.Viewables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import jersey.repackaged.com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +13,8 @@ import org.glassfish.jersey.internal.inject.Providers;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.glassfish.jersey.server.mvc.spi.ResolvedViewable;
 import org.glassfish.jersey.server.mvc.spi.TemplateProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -22,6 +25,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -41,7 +45,7 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
     private static final String DEFAULT_501_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "product_501.html";
     private static final String DEFAULT_401_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "403.html";
     private static final String DEFAULT_400_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400.html";
-    private static final String SER_ERR_MSG = "服务器发生错误！";
+    private static final Logger logger = LoggerFactory.getLogger(ErrorPageGenerator.class);
     private static String defaultErrorTemplate;
     @Inject
     private Application app;
@@ -90,9 +94,6 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         int status = 500;
         if (exception instanceof WebApplicationException) {
             status = ((WebApplicationException) exception).getResponse().getStatus();
-            //真正未被包装的程序抛出的错误
-            if (status == 500)
-                exception = exception.getCause();
         }
         String tplName;
         boolean isDefaultTpl = false;
@@ -175,7 +176,10 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         private Throwable exception;
         private String sourceFile;
         private List<String> source;
+        private List<UsefulSource> usefulSources;
         private int line;
+        private int lineIndex;
+        private String method;
 
         public Error() {
         }
@@ -184,14 +188,74 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
             this.status = status;
             this.exception = exception;
             this.request = request;
-
             if (exception instanceof SourceAttachment) {
                 SourceAttachment e = (SourceAttachment) exception;
                 sourceFile = e.getSourceFile();
                 source = e.getSource();
                 line = e.getLineNumber();
+                lineIndex = e.getLineIndex();
             } else {
-                AmebaException.getInterestingStackTraceElement(exception);
+                AmebaException.InterestingSomething something = AmebaException.getInterestingSomething(exception);
+                if (something == null) return;
+                line = something.getStackTraceElement().getLineNumber();
+                File f = something.getSourceFile();
+                if (f.exists()) {
+                    sourceFile = f.getAbsolutePath();
+                    method = something.getStackTraceElement().getMethodName();
+                    source = Lists.newArrayList();
+                    LineNumberReader reader = null;
+                    try {
+                        reader = new LineNumberReader(new FileReader(f));
+                        int bl = line < 4 ? 0 : line - 4;
+                        String l;
+                        while ((l = reader.readLine()) != null) {
+                            if (bl <= reader.getLineNumber() && reader.getLineNumber() <= bl + 11) {
+
+                                if(reader.getLineNumber() == line){
+                                    lineIndex = source.size();
+                                }
+
+                                source.add(l);
+                            }
+                        }
+                    } catch (FileNotFoundException e) {
+                        logger.error("open source file has error", e);
+                    } catch (IOException e) {
+                        logger.error("read source file has error", e);
+                    } finally {
+                        if (reader != null)
+                            try {
+                                reader.close();
+                            } catch (IOException e) {
+                                logger.error("close source file input stream has error", e);
+                            }
+                    }
+                    int i = 0;
+                    usefulSources = Lists.newArrayList();
+                    for (StackTraceElement el : something.getUsefulStackTraceElements()) {
+                        LineNumberReader usefulReader = null;
+                        try {
+                            usefulReader = new LineNumberReader(new FileReader(something.getUsefulFiles().get(i)));
+                            usefulReader.setLineNumber(el.getLineNumber());
+                            UsefulSource u = new UsefulSource();
+                            u.lineNumber = el.getLineNumber();
+                            u.source = usefulReader.readLine();
+                            usefulSources.add(u);
+                        } catch (FileNotFoundException e) {
+                            logger.error("open source file has error", e);
+                        } catch (IOException e) {
+                            logger.error("read source file has error", e);
+                        } finally {
+                            if (usefulReader != null)
+                                try {
+                                    usefulReader.close();
+                                } catch (IOException e) {
+                                    logger.error("close source file input stream has error", e);
+                                }
+                            i++;
+                        }
+                    }
+                }
             }
         }
 
@@ -208,7 +272,7 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         }
 
         public boolean isSourceAvailable() {
-            return getSourceFile()!=null;
+            return getSourceFile() != null;
         }
 
         @Override
@@ -224,6 +288,31 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         @Override
         public Integer getLineNumber() {
             return line;
+        }
+
+        public String getMethod() {
+            return method;
+        }
+
+        public Integer getLineIndex() {
+            return lineIndex;
+        }
+
+        public List<UsefulSource> getUsefulSources() {
+            return usefulSources;
+        }
+
+        public static class UsefulSource {
+            int lineNumber;
+            String source;
+
+            public int getLineNumber() {
+                return lineNumber;
+            }
+
+            public String getSource() {
+                return source;
+            }
         }
     }
 }

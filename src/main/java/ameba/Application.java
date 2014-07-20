@@ -12,7 +12,6 @@ import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.grizzly.GrizzlyFuture;
 import org.glassfish.grizzly.http.CompressionConfig;
 import org.glassfish.grizzly.http.ajp.AjpAddOn;
 import org.glassfish.grizzly.http.server.*;
@@ -42,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -616,36 +614,8 @@ public class Application extends ResourceConfig {
         return server;
     }
 
-    public static Application bootstrap() {
-        Application app = new Application();
-        final HttpServer server = Application.createHttpServer(app);
-        // register shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                logger.info("关闭服务器...");
-                GrizzlyFuture<HttpServer> future = server.shutdown();
-                try {
-                    future.get();
-                } catch (InterruptedException e) {
-                    logger.error("服务器关闭出错", e);
-                } catch (ExecutionException e) {
-                    logger.error("服务器关闭出错", e);
-                }
-                logger.info("服务器已关闭");
-            }
-        }, "shutdownHook"));
-
-        // run
-        try {
-            logger.info("启动容器...");
-            server.start();
-            logger.info("服务已启动");
-            Thread.currentThread().join();
-        } catch (Exception e) {
-            logger.error("启动服务器出现错误", e);
-        }
-        return app;
+    public File getPackageRoot() {
+        return packageRoot;
     }
 
     public String getConfigFile() {

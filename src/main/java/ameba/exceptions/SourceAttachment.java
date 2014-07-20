@@ -10,4 +10,5 @@ public interface SourceAttachment {
     String getSourceFile();
     List<String> getSource();
     Integer getLineNumber();
+    Integer getLineIndex();
 }
