@@ -1,6 +1,8 @@
 package ameba.mvc;
 
 import ameba.Application;
+import ameba.exceptions.AmebaException;
+import ameba.exceptions.SourceAttachment;
 import ameba.mvc.template.internal.Viewables;
 import com.google.common.collect.Maps;
 import jersey.repackaged.com.google.common.collect.Sets;
@@ -21,6 +23,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -38,6 +41,7 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
     private static final String DEFAULT_501_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "product_501.html";
     private static final String DEFAULT_401_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "403.html";
     private static final String DEFAULT_400_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400.html";
+    private static final String SER_ERR_MSG = "服务器发生错误！";
     private static String defaultErrorTemplate;
     @Inject
     private Application app;
@@ -86,6 +90,9 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         int status = 500;
         if (exception instanceof WebApplicationException) {
             status = ((WebApplicationException) exception).getResponse().getStatus();
+            //真正未被包装的程序抛出的错误
+            if (status == 500)
+                exception = exception.getCause();
         }
         String tplName;
         boolean isDefaultTpl = false;
@@ -120,14 +127,7 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
                 }
             }
         }
-        Error error = new Error(
-                request,
-                status,
-                exception.getMessage(),
-                StringUtils.join(exception.getStackTrace(), "\n"),
-                exception);
-
-        Object viewable = Viewables.newDefaultViewable(tplName, error);
+        Object viewable = createViewble(tplName, request, status, exception);
         if (isDefaultTpl) {
             try {
                 viewable = new ResolvedViewable<Object>(
@@ -137,18 +137,29 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
                         , this.getClass()
                         , getMediaType());
             } catch (Exception e) {
+                tplName = app.getMode().isDev() ?
+                        DEFAULT_5XX_DEV_ERROR_PAGE
+                        : DEFAULT_5XX_PRODUCT_ERROR_PAGE;
                 viewable = new ResolvedViewable<Object>(
                         getTemplateProcessor()
-                        , getTemplate(app.getMode().isDev() ?
-                        DEFAULT_5XX_DEV_ERROR_PAGE
-                        : DEFAULT_5XX_PRODUCT_ERROR_PAGE)
-                        , (Viewable) viewable
+                        , getTemplate(tplName)
+                        , createViewble(tplName, request, 500, e)
                         , this.getClass()
                         , getMediaType());
             }
         }
 
         return Response.status(status).entity(viewable).build();
+    }
+
+    private Viewable createViewble(String tplName, ContainerRequestContext request,
+                                   int status, Throwable exception) {
+        Error error = new Error(
+                request,
+                status,
+                exception);
+
+        return Viewables.newDefaultViewable(tplName, error);
     }
 
     protected abstract TemplateProcessor<Object> getTemplateProcessor();
@@ -158,62 +169,61 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
     protected abstract MediaType getMediaType();
 
 
-    public static class Error {
-        public int status;
-        public ContainerRequestContext request;
-        public String reasonPhrase;
-        public String description;
-        public Throwable exception;
+    public static class Error implements SourceAttachment {
+        private int status;
+        private ContainerRequestContext request;
+        private Throwable exception;
+        private String sourceFile;
+        private List<String> source;
+        private int line;
 
         public Error() {
         }
 
-        public Error(ContainerRequestContext request, int status, String reasonPhrase, String description, Throwable exception) {
+        public Error(ContainerRequestContext request, int status, Throwable exception) {
             this.status = status;
-            this.reasonPhrase = reasonPhrase;
-            this.description = description;
             this.exception = exception;
             this.request = request;
+
+            if (exception instanceof SourceAttachment) {
+                SourceAttachment e = (SourceAttachment) exception;
+                sourceFile = e.getSourceFile();
+                source = e.getSource();
+                line = e.getLineNumber();
+            } else {
+                AmebaException.getInterestingStackTraceElement(exception);
+            }
         }
 
         public int getStatus() {
             return status;
         }
 
-        public void setStatus(int status) {
-            this.status = status;
-        }
-
         public ContainerRequestContext getRequest() {
             return request;
-        }
-
-        public void setRequest(ContainerRequestContext request) {
-            this.request = request;
-        }
-
-        public String getReasonPhrase() {
-            return reasonPhrase;
-        }
-
-        public void setReasonPhrase(String reasonPhrase) {
-            this.reasonPhrase = reasonPhrase;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
         }
 
         public Throwable getException() {
             return exception;
         }
 
-        public void setException(Throwable exception) {
-            this.exception = exception;
+        public boolean isSourceAvailable() {
+            return getSourceFile()!=null;
+        }
+
+        @Override
+        public String getSourceFile() {
+            return sourceFile;
+        }
+
+        @Override
+        public List<String> getSource() {
+            return source;
+        }
+
+        @Override
+        public Integer getLineNumber() {
+            return line;
         }
     }
 }

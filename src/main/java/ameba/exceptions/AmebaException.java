@@ -1,5 +1,7 @@
 package ameba.exceptions;
 
+import ameba.Ameba;
+
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -7,7 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public abstract class AmebaException extends RuntimeException {
     static AtomicLong atomicLong = new AtomicLong(System.currentTimeMillis());
-    String id;
+    protected String id;
 
     public AmebaException() {
         setId();
@@ -23,12 +25,13 @@ public abstract class AmebaException extends RuntimeException {
         setId();
     }
 
-    public static StackTraceElement getInterestingStrackTraceElement(Throwable cause) {
-//        for (StackTraceElement stackTraceElement : cause.getStackTrace()) {
-//            if (stackTraceElement.getLineNumber() > 0 && Play.classes.hasClass(stackTraceElement.getClassName())) {
-//                return stackTraceElement;
-//            }
-//        }
+    public static StackTraceElement getInterestingStackTraceElement(Throwable cause) {
+        for (StackTraceElement stackTraceElement : cause.getStackTrace()) {
+            if (stackTraceElement.getLineNumber() > 0 &&
+                    stackTraceElement.getClassName().startsWith(Ameba.getApp().getSourceRoot().getAbsolutePath())) {
+                return stackTraceElement;
+            }
+        }
         return null;
     }
 

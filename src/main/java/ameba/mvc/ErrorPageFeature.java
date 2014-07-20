@@ -21,12 +21,14 @@ import java.util.Map;
 public class ErrorPageFeature implements Feature {
     private static final Logger logger = LoggerFactory.getLogger(ErrorPageFeature.class);
 
+    private static final String GEN_CONF_KEY = "http.error.page.generator";
+
     @Override
     public final boolean configure(FeatureContext featureContext) {
         HashMap<Integer, String> errorMap = Maps.newHashMap();
         Map<String, Object> config = featureContext.getConfiguration().getProperties();
         String defaultTemplate = null;
-        String clazz = (String) config.get("http.error.page.generator");
+        String clazz = (String) config.get(GEN_CONF_KEY);
         if (StringUtils.isNotBlank(clazz)) {
             try {
                 Class clz = Class.forName(clazz);
@@ -59,7 +61,8 @@ public class ErrorPageFeature implements Feature {
 
                 featureContext.register(clz);
             } catch (ClassNotFoundException e) {
-                throw new ConfigErrorException("http.error.page.generator config error,not found class " + clazz, e);
+                throw new ConfigErrorException(GEN_CONF_KEY + "config error,not found class " + clazz,
+                        GEN_CONF_KEY, e);
             }
         }
         return true;

@@ -6,8 +6,11 @@ import ameba.mvc.assets.AssetsFeature;
 import ameba.util.LinkedProperties;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.gaffer.GafferUtil;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.io.Files;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.GrizzlyFuture;
 import org.glassfish.grizzly.http.CompressionConfig;
@@ -29,9 +32,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.inject.Singleton;
 import javax.ws.rs.ProcessingException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URI;
@@ -45,6 +46,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static ameba.util.IOUtils.*;
 
@@ -59,6 +62,7 @@ public class Application extends ResourceConfig {
     public static final String DEFAULT_NETWORK_LISTENER_NAME = "ameba";
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private URI httpServerBaseUri;
+    private String configFile;
     private Mode mode;
     private String domain;
     private String host;
@@ -86,6 +90,7 @@ public class Application extends ResourceConfig {
     private String sslTrustManagerFactoryAlgorithm;
     private boolean sslConfigReady;
     private File sourceRoot;
+    private File packageRoot;
 
     public Application() {
         this("conf/application.conf");
@@ -93,7 +98,7 @@ public class Application extends ResourceConfig {
 
     @SuppressWarnings("unchecked")
     public Application(String confFile) {
-
+        configFile = confFile;
         logger.info("初始化...");
         //property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
         //property(ServerProperties.BV_DISABLE_VALIDATE_ON_EXECUTABLE_OVERRIDE_CHECK, true);
@@ -132,19 +137,82 @@ public class Application extends ResourceConfig {
             mode = Mode.PRODUCT;
         }
 
-
-        String sourceRootStr = System.getProperty("app.source.root");
-
-        if (StringUtils.isNotBlank(sourceRootStr)) {
-            sourceRoot = new File(sourceRootStr);
-        } else {
-            sourceRoot = new File("");
-        }
-
-
         if (mode.isDev()) {
             logger.warn("当前应用程序为开发模式");
+            String sourceRootStr = System.getProperty("app.source.root");
+
+            if (StringUtils.isNotBlank(sourceRootStr)) {
+                sourceRoot = new File(sourceRootStr);
+            } else {
+                sourceRoot = new File("").getAbsoluteFile();
+            }
+
             logger.info("应用源码根路径为：{}", sourceRoot.getAbsolutePath());
+
+            logger.info("查找包根目录...");
+
+            if (sourceRoot.exists() && sourceRoot.isDirectory()) {
+                FluentIterable<File> iterable = Files.fileTreeTraverser()
+                        .breadthFirstTraversal(sourceRoot);
+
+                for (File f : iterable) {
+                    if (f.getName().endsWith(".java") && f.canRead()) {
+                        BufferedReader reader = null;
+                        try {
+                            reader = new BufferedReader(new FileReader(f));
+
+                            String line = null;
+                            Pattern cp = Pattern.compile("^(\\s*(/\\*|\\*|//))");
+                            while (StringUtils.isBlank(line)) {
+                                line = reader.readLine();
+                                //匹配注释
+                                Matcher m = cp.matcher(line);
+                                if (m.find()) {
+                                    line = null;
+                                }
+                            }
+                            Pattern p = Pattern.compile("^(\\s*package)\\s+([\\w\\.]+)\\s*;$");
+                            Matcher m = p.matcher(line);
+
+                            if (m.find()) {
+                                String pkg = m.group(2);
+                                String[] dirs = pkg.split("\\.");
+                                ArrayUtils.reverse(dirs);
+                                File pf = f.getParentFile();
+                                boolean isPkg = true;
+                                for (String dir : dirs) {
+                                    if (!pf.getName().equals(dir)) {
+                                        isPkg = false;
+                                        break;
+                                    }
+                                    pf = pf.getParentFile();
+                                }
+                                if (isPkg && pf != null) {
+                                    this.packageRoot = pf;
+                                    break;
+                                }
+                            }
+
+                        } catch (FileNotFoundException e) {
+                            logger.error("find package root dir has error", e);
+                        } catch (IOException e) {
+                            logger.error("find package root dir has error", e);
+                        } finally {
+                            if (reader != null) {
+                                try {
+                                    reader.close();
+                                } catch (IOException e) {
+                                    logger.warn("close file input stream error", e);
+                                }
+                            }
+                        }
+                    }
+                }
+                if (packageRoot == null)
+                    logger.warn("未找到包根目录，很多功能将失效，请确认项目内是否有Java源文件，或设置JVM参数，添加 -Dapp.source.root=${yourAppRootDir}");
+                else
+                    logger.info("包根目录为:{}", packageRoot.getAbsolutePath());
+            }
 
             JvmAgent.initialize();
         }
@@ -548,8 +616,9 @@ public class Application extends ResourceConfig {
         return server;
     }
 
-    public static void bootstrap() {
-        final HttpServer server = Application.createHttpServer();
+    public static Application bootstrap() {
+        Application app = new Application();
+        final HttpServer server = Application.createHttpServer(app);
         // register shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -576,6 +645,11 @@ public class Application extends ResourceConfig {
         } catch (Exception e) {
             logger.error("启动服务器出现错误", e);
         }
+        return app;
+    }
+
+    public String getConfigFile() {
+        return configFile;
     }
 
     public File getSourceRoot() {

@@ -7,7 +7,7 @@ import java.util.List;
  */
 public abstract class AmebaExceptionWithJavaSource extends AmebaException implements SourceAttachment {
 
-    Integer line;
+    protected Integer line;
 
     protected AmebaExceptionWithJavaSource() {
     }

@@ -105,8 +105,8 @@
         }
     </style>
 </head>
-<body id="play-error-page">
-<h1>${model.reasonPhrase}</h1>
+<body id="error-page">
+<h1>${model.message}</h1>
 
 @error match {
 
@@ -183,7 +183,7 @@ case attachment:play.api.PlayException.ExceptionAttachment => {
 case exception: play.api.PlayException if exception.cause != null => {
 
 <h2>
-    No source available, here is the exception stack trace:
+    没有有效的源文件，以下是堆栈信息：
 </h2>
 
 <div>

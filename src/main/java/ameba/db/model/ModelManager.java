@@ -124,7 +124,10 @@ public class ModelManager {
     private void loadClass() {
         ResourceFinder scanner = new PackageNamesScanner(packages, true);
         while (scanner.hasNext()) {
-            scanner.next();
+            if (!scanner.next().endsWith(".class")) {
+                continue;
+            }
+
             InputStream in = scanner.open();
             try {
                 ModelDescription desc = enhanceModel(in);
