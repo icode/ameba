@@ -1,5 +1,6 @@
 package ameba.exceptions;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -8,9 +9,9 @@ import java.util.List;
 public abstract class AmebaExceptionWithJavaSource extends AmebaException implements SourceAttachment {
 
     protected Integer line;
-
-    protected AmebaExceptionWithJavaSource() {
-    }
+    protected File sourceFile;
+    protected List<String> source;
+    protected Integer lineIndex;
 
     protected AmebaExceptionWithJavaSource(String message) {
         super(message);
@@ -21,23 +22,31 @@ public abstract class AmebaExceptionWithJavaSource extends AmebaException implem
         this.line = line;
     }
 
+    protected AmebaExceptionWithJavaSource(String message, Throwable cause, Integer line, File sourceFile, List<String> source, Integer lineIndex) {
+        super(message, cause);
+        this.line = line;
+        this.sourceFile = sourceFile;
+        this.source = source;
+        this.lineIndex = lineIndex;
+    }
+
     @Override
-    public String getSourceFile() {
-        return null;
+    public File getSourceFile() {
+        return sourceFile;
     }
 
     @Override
     public List<String> getSource() {
-        return null;
+        return source;
     }
 
     @Override
     public Integer getLineNumber() {
-        return null;
+        return line;
     }
 
     @Override
     public Integer getLineIndex() {
-        return null;
+        return lineIndex;
     }
 }

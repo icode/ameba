@@ -124,6 +124,10 @@
 <h2>源码位置</h2>
 
 <div id="source-code">
+    <pre class="error">
+        <span class="line">-></span>
+        <span class="code">${model.sourceFile.path}</span>
+    </pre>
     <!--#for(String line : model.source)-->
     <!--#if(line != null)-->
 
@@ -133,7 +137,7 @@
     <!--#end-->
     >
     <span class="line">${for.index + model.lineNumber}</span>
-    <span class="code">$!{line.replace(model.method,"<span class=\"marker\">"+model.method+"</span>")}</span>
+    <span class="code"><!--#if(model.method != null)-->$!{line.replace(model.method,"<span class=\"marker\">"+model.method+"</span>")}<!--#else-->${line}<!--#end--></span>
     </pre>
     <!--#end-->
     <!--#end-->
@@ -143,6 +147,10 @@
 
 <div>
     <!--#for(useful : model.usefulSources)-->
+    <pre class="error">
+        <span class="line">-></span>
+        <span class="code">${useful.sourceFile.path}</span>
+    </pre>
     <pre>
         <span class="line">${useful.lineNumber}</span>
         <span class="code">${useful.source}</span>

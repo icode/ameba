@@ -1,14 +1,11 @@
 package ameba.mvc.template.internal;
 
+import ameba.util.IOUtils;
 import httl.Engine;
 import httl.Template;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.server.ContainerException;
 import org.glassfish.jersey.server.mvc.Viewable;
-import org.glassfish.jersey.server.mvc.spi.AbstractTemplateProcessor;
 import org.jvnet.hk2.annotations.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -16,10 +13,9 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import java.io.IOException;
+import javax.ws.rs.ext.Provider;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -30,12 +26,12 @@ import java.util.Properties;
  * @author: ICode
  * @since: 13-8-6 下午7:57
  */
+@Provider
 @Singleton
-public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
+public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
 
     public static final String CONFIG_SUFFIX = "httl";
 
-    private static final Logger logger = LoggerFactory.getLogger(HttlViewProcessor.class);
     private Engine engine;
 
     @Inject
@@ -80,7 +76,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
     }
 
     @Override
-    protected Template resolve(String templatePath, Reader reader) throws Exception {
+    protected Template resolve(String templatePath) throws Exception {
         String dir = (String) engine.getProperty("template.directory");
         if (templatePath.startsWith(dir)) {
             templatePath = templatePath.substring(dir.length());
@@ -88,13 +84,15 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
         return engine.getTemplate(templatePath);
     }
 
-    public Template parseTemplate(String content) throws IOException, ParseException {
+    @Override
+    protected Template resolve(Reader reader) throws Exception {
+        String content = IOUtils.read(reader);
         return engine.parseTemplate(content);
     }
 
     @Override
-    public void writeTo(Template template, final Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream outputStream) throws IOException {
-        try {
+    public void writeTemplate(Template template, final Viewable viewable, MediaType mediaType,
+                              MultivaluedMap<String, Object> httpHeaders, OutputStream outputStream) throws Exception {
             Object model = viewable.getModel();
             if (!(model instanceof Map)) {
                 model = new HashMap<String, Object>() {{
@@ -104,9 +102,5 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
             if (httpHeaders != null)
                 setContentType(mediaType.equals(MediaType.WILDCARD_TYPE) ? MediaType.TEXT_HTML_TYPE : mediaType, httpHeaders);
             template.render(model, outputStream);
-        } catch (ParseException e) {
-            logger.error("Parse template error", e);
-            throw new ContainerException("Parse template error", e);
-        }
     }
 }

@@ -39,7 +39,7 @@ public abstract class AmebaException extends RuntimeException {
                     String fN = stackTraceElement.getFileName();
                     int index = fN.indexOf("$");
                     if (index < 0) {
-                        fN = fN.substring(0, fN.lastIndexOf("."));
+                        fN = fN.substring(0, fN.indexOf("."));
                     } else {
                         fN = fN.substring(0, index);
                     }
@@ -73,8 +73,8 @@ public abstract class AmebaException extends RuntimeException {
         return -1;
     }
 
-    public String getSourceFile() {
-        return "";
+    public File getSourceFile() {
+        return null;
     }
 
     public String getId() {

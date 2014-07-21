@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.Providers;
 import org.glassfish.jersey.server.mvc.Viewable;
-import org.glassfish.jersey.server.mvc.spi.ResolvedViewable;
 import org.glassfish.jersey.server.mvc.spi.TemplateProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,6 @@ import javax.inject.Singleton;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -36,9 +34,9 @@ import java.util.Set;
  */
 @Provider
 @Singleton
-public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
+public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
     private static final HashMap<Integer, String> errorTemplateMap = Maps.newHashMap();
-    private static final String DEFAULT_ERROR_PAGE_DIR = "/views/ameba/error/";
+    private static final String DEFAULT_ERROR_PAGE_DIR = "/__views/ameba/error/";
     private static final String DEFAULT_404_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "404.html";
     private static final String DEFAULT_5XX_DEV_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "dev_500.html";
     private static final String DEFAULT_5XX_PRODUCT_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "product_500.html";
@@ -96,15 +94,12 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
             status = ((WebApplicationException) exception).getResponse().getStatus();
         }
         String tplName;
-        boolean isDefaultTpl = false;
         if (status >= 500 && app.getMode().isDev()) {
             //开发模式，显示详细错误信息
             tplName = DEFAULT_5XX_DEV_ERROR_PAGE;
-            isDefaultTpl = true;
         } else {
             tplName = errorTemplateMap.get(status);
             if (StringUtils.isBlank(tplName)) {
-                isDefaultTpl = true;
                 if (StringUtils.isBlank(defaultErrorTemplate)) {
                     switch (status) {
                         case 400:
@@ -129,26 +124,8 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
             }
         }
         Object viewable = createViewble(tplName, request, status, exception);
-        if (isDefaultTpl) {
-            try {
-                viewable = new ResolvedViewable<Object>(
-                        getTemplateProcessor()
-                        , getTemplate(tplName)
-                        , (Viewable) viewable
-                        , this.getClass()
-                        , getMediaType());
-            } catch (Exception e) {
-                tplName = app.getMode().isDev() ?
-                        DEFAULT_5XX_DEV_ERROR_PAGE
-                        : DEFAULT_5XX_PRODUCT_ERROR_PAGE;
-                viewable = new ResolvedViewable<Object>(
-                        getTemplateProcessor()
-                        , getTemplate(tplName)
-                        , createViewble(tplName, request, 500, e)
-                        , this.getClass()
-                        , getMediaType());
-            }
-        }
+        if (status == 500)
+            logger.error("服务器错误", exception);
 
         return Response.status(status).entity(viewable).build();
     }
@@ -163,18 +140,12 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         return Viewables.newDefaultViewable(tplName, error);
     }
 
-    protected abstract TemplateProcessor<Object> getTemplateProcessor();
-
-    protected abstract Object getTemplate(String name);
-
-    protected abstract MediaType getMediaType();
-
 
     public static class Error implements SourceAttachment {
         private int status;
         private ContainerRequestContext request;
         private Throwable exception;
-        private String sourceFile;
+        private File sourceFile;
         private List<String> source;
         private List<UsefulSource> usefulSources;
         private int line;
@@ -199,10 +170,11 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
                 if (something == null) return;
                 line = something.getStackTraceElement().getLineNumber();
                 File f = something.getSourceFile();
+                sourceFile = f;
+                method = something.getStackTraceElement().getMethodName();
+                source = Lists.newArrayList();
+                usefulSources = Lists.newArrayList();
                 if (f.exists()) {
-                    sourceFile = f.getAbsolutePath();
-                    method = something.getStackTraceElement().getMethodName();
-                    source = Lists.newArrayList();
                     LineNumberReader reader = null;
                     try {
                         reader = new LineNumberReader(new FileReader(f));
@@ -211,7 +183,7 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
                         while ((l = reader.readLine()) != null) {
                             if (bl <= reader.getLineNumber() && reader.getLineNumber() <= bl + 11) {
 
-                                if(reader.getLineNumber() == line){
+                                if (reader.getLineNumber() == line) {
                                     lineIndex = source.size();
                                 }
 
@@ -231,15 +203,16 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
                             }
                     }
                     int i = 0;
-                    usefulSources = Lists.newArrayList();
                     for (StackTraceElement el : something.getUsefulStackTraceElements()) {
                         LineNumberReader usefulReader = null;
                         try {
-                            usefulReader = new LineNumberReader(new FileReader(something.getUsefulFiles().get(i)));
+                            File uf = something.getUsefulFiles().get(i);
+                            usefulReader = new LineNumberReader(new FileReader(uf));
                             usefulReader.setLineNumber(el.getLineNumber());
                             UsefulSource u = new UsefulSource();
                             u.lineNumber = el.getLineNumber();
                             u.source = usefulReader.readLine();
+                            u.sourceFile = uf;
                             usefulSources.add(u);
                         } catch (FileNotFoundException e) {
                             logger.error("open source file has error", e);
@@ -276,7 +249,7 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         }
 
         @Override
-        public String getSourceFile() {
+        public File getSourceFile() {
             return sourceFile;
         }
 
@@ -305,9 +278,14 @@ public abstract class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         public static class UsefulSource {
             int lineNumber;
             String source;
+            File sourceFile;
 
             public int getLineNumber() {
                 return lineNumber;
+            }
+
+            public File getSourceFile() {
+                return sourceFile;
             }
 
             public String getSource() {

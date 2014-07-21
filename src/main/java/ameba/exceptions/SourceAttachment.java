@@ -1,5 +1,6 @@
 package ameba.exceptions;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -7,7 +8,7 @@ import java.util.List;
  */
 public interface SourceAttachment {
 
-    String getSourceFile();
+    File getSourceFile();
     List<String> getSource();
     Integer getLineNumber();
     Integer getLineIndex();

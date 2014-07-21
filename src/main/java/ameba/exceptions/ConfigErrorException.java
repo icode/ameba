@@ -4,6 +4,7 @@ import ameba.Ameba;
 import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -13,9 +14,6 @@ import java.util.List;
 public class ConfigErrorException extends AmebaExceptionWithJavaSource {
     private String config;
     private String key;
-
-    public ConfigErrorException() {
-    }
 
     public ConfigErrorException(String message, String key) {
         super(message);
@@ -32,14 +30,14 @@ public class ConfigErrorException extends AmebaExceptionWithJavaSource {
     }
 
     @Override
-    public String getSourceFile() {
-        return Ameba.getApp().getConfigFile();
+    public File getSourceFile() {
+        return new File(Ameba.getApp().getConfigFile());
     }
 
     String getConfig() {
         if (config == null) {
             try {
-                config = IOUtils.readFromResource(getSourceFile());
+                config = IOUtils.readFromResource(getSourceFile().getPath());
             } catch (IOException e) {
                 return "";
             }
