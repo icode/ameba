@@ -2,7 +2,7 @@ package ameba;
 
 import ameba.db.model.EnhanceModelFeature;
 import ameba.dev.ReloadingClassLoader;
-import ameba.jvm.JvmAgent;
+import ameba.dev.JvmAgent;
 import ameba.mvc.assets.AssetsFeature;
 import ameba.util.IOUtils;
 import ameba.util.LinkedProperties;

@@ -1,4 +1,4 @@
-package ameba.jvm;
+package ameba.dev;
 
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;

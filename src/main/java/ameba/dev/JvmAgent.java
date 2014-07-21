@@ -1,4 +1,4 @@
-package ameba.jvm;
+package ameba.dev;
 
 import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.ClassFileTransformer;
