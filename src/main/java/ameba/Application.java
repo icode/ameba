@@ -1,8 +1,9 @@
 package ameba;
 
 import ameba.db.model.EnhanceModelFeature;
-import ameba.dev.ReloadingClassLoader;
 import ameba.dev.JvmAgent;
+import ameba.dev.ReloadingClassLoader;
+import ameba.dev.ReloadingFilter;
 import ameba.mvc.assets.AssetsFeature;
 import ameba.util.IOUtils;
 import ameba.util.LinkedProperties;
@@ -58,6 +59,8 @@ import static ameba.util.IOUtils.*;
 public class Application extends ResourceConfig {
     public static final String DEFAULT_NETWORK_LISTENER_NAME = "ameba";
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
+    private static final Pattern COMMENT_PATTERN = Pattern.compile("^(\\s*(/\\*|\\*|//))");//注释正则
+    private static final Pattern PKG_PATTERN = Pattern.compile("^(\\s*package)\\s+([\\w\\.]+)\\s*;$");//包名正则
     private URI httpServerBaseUri;
     private String configFile;
     private Mode mode;
@@ -78,7 +81,6 @@ public class Application extends ResourceConfig {
     private String sslKeyStorePassword;
     private String sslKeyStoreProvider;
     private String sslKeyManagerFactoryAlgorithm;
-
     private String sslTrustPassword;
     private byte[] sslTrustStoreFile;
     private String sslTrustStorePassword;
@@ -158,74 +160,21 @@ public class Application extends ResourceConfig {
             logger.info("查找包根目录...");
 
             if (sourceRoot.exists() && sourceRoot.isDirectory()) {
-                FluentIterable<File> iterable = Files.fileTreeTraverser()
-                        .breadthFirstTraversal(sourceRoot);
-
-                Pattern cp = Pattern.compile("^(\\s*(/\\*|\\*|//))");//注释正则
-                Pattern p = Pattern.compile("^(\\s*package)\\s+([\\w\\.]+)\\s*;$");//包名正则
-                for (File f : iterable) {
-                    if (f.getName().endsWith(".java") && f.canRead()) {
-                        BufferedReader reader = null;
-                        try {
-                            reader = new BufferedReader(new FileReader(f));
-
-                            String line = null;
-                            while (StringUtils.isBlank(line)) {
-                                line = reader.readLine();
-                                //匹配注释
-                                Matcher m = cp.matcher(line);
-                                if (m.find()) {
-                                    line = null;
-                                }
-                            }
-                            Matcher m = p.matcher(line);
-
-                            if (m.find()) {
-                                String pkg = m.group(2);
-                                String[] dirs = pkg.split("\\.");
-                                ArrayUtils.reverse(dirs);
-                                File pf = f.getParentFile();
-                                boolean isPkg = true;
-                                for (String dir : dirs) {
-                                    if (!pf.getName().equals(dir)) {
-                                        isPkg = false;
-                                        break;
-                                    }
-                                    pf = pf.getParentFile();
-                                }
-                                if (isPkg && pf != null) {
-                                    this.packageRoot = pf;
-                                    break;
-                                }
-                            }
-
-                        } catch (FileNotFoundException e) {
-                            logger.error("find package root dir has error", e);
-                        } catch (IOException e) {
-                            logger.error("find package root dir has error", e);
-                        } finally {
-                            if (reader != null) {
-                                try {
-                                    reader.close();
-                                } catch (IOException e) {
-                                    logger.warn("close file input stream error", e);
-                                }
-                            }
-                        }
-                    }
-                }
+                searchPackageRoot();
                 if (packageRoot == null)
                     logger.warn("未找到包根目录，很多功能将失效，请确认项目内是否有Java源文件，或设置JVM参数，添加 -Dapp.source.root=${yourAppRootDir}");
                 else {
                     logger.info("包根目录为:{}", packageRoot.getAbsolutePath());
                 }
-
-                ClassLoader classLoader = new ReloadingClassLoader(this);
-                setClassLoader(classLoader);
-                Thread.currentThread().setContextClassLoader(classLoader);
             }
 
+            ClassLoader classLoader = new ReloadingClassLoader(this);
+            setClassLoader(classLoader);
+            Thread.currentThread().setContextClassLoader(classLoader);
+
             JvmAgent.initialize();
+            logger.info("注册热加载过滤器");
+            register(ReloadingFilter.class);
         }
 
         //设置ssl相关
@@ -625,6 +574,63 @@ public class Application extends ResourceConfig {
         }
 
         return server;
+    }
+
+    public void searchPackageRoot() {
+        FluentIterable<File> iterable = Files.fileTreeTraverser()
+                .breadthFirstTraversal(sourceRoot);
+        for (File f : iterable) {
+            if (f.getName().endsWith(".java") && f.canRead()) {
+                BufferedReader reader = null;
+                try {
+                    reader = new BufferedReader(new FileReader(f));
+
+                    String line = null;
+                    while (StringUtils.isBlank(line)) {
+                        line = reader.readLine();
+                        //匹配注释
+                        Matcher m = COMMENT_PATTERN.matcher(line);
+                        if (m.find()) {
+                            line = null;
+                        }
+                    }
+                    if (line == null) continue;
+                    Matcher m = PKG_PATTERN.matcher(line);
+
+                    if (m.find()) {
+                        String pkg = m.group(2);
+                        String[] dirs = pkg.split("\\.");
+                        ArrayUtils.reverse(dirs);
+                        File pf = f.getParentFile();
+                        boolean isPkg = true;
+                        for (String dir : dirs) {
+                            if (!pf.getName().equals(dir)) {
+                                isPkg = false;
+                                break;
+                            }
+                            pf = pf.getParentFile();
+                        }
+                        if (isPkg && pf != null) {
+                            this.packageRoot = pf;
+                            break;
+                        }
+                    }
+
+                } catch (FileNotFoundException e) {
+                    logger.error("find package root dir has error", e);
+                } catch (IOException e) {
+                    logger.error("find package root dir has error", e);
+                } finally {
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (IOException e) {
+                            logger.warn("close file input stream error", e);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public File getPackageRoot() {

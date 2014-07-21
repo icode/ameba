@@ -9,6 +9,9 @@ import org.glassfish.jersey.server.mvc.Viewable;
  */
 public class Viewables {
 
+    public static final String PROTECTED_DIR = "_protected";
+    public static final String PROTECTED_DIR_PATH = "/" + PROTECTED_DIR + "/";
+
     private Viewables() {
     }
 
@@ -18,6 +21,22 @@ public class Viewables {
 
     public static Viewable newViewable(Object model) {
         return new Viewable("/" + RouteHelper.getCurrentRequestContext().getUriInfo().getPath(), model);
+    }
+
+    public static Viewable newProtected(Object model) {
+        return new Viewable(PROTECTED_DIR_PATH + RouteHelper.getCurrentRequestContext().getUriInfo().getPath(), model);
+    }
+
+    public static Viewable newProtected() {
+        return new Viewable(PROTECTED_DIR_PATH + RouteHelper.getCurrentRequestContext().getUriInfo().getPath());
+    }
+
+    public static Viewable newProtected(String name) {
+        return new Viewable(PROTECTED_DIR_PATH + name);
+    }
+
+    public static Viewable newProtected(String name, Object model) {
+        return new Viewable(PROTECTED_DIR_PATH + name, model);
     }
 
     public static Viewable newDefaultViewable() {

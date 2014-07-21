@@ -52,24 +52,38 @@ public class ReloadingClassLoader extends ClassLoader {
 
     @Override
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-/*
+
         Class<?> c = findLoadedClass(name);
         if (c != null) {
             return c;
         }
 
         // First check if it's an application Class
-        Class<?> applicationClass = loadApplicationClass(name);
-        if (applicationClass != null) {
+        Class<?> appClass = loadApplicationClass(name);
+        if (appClass != null) {
             if (resolve) {
-                resolveClass(applicationClass);
+                resolveClass(appClass);
             }
-            return applicationClass;
+            return appClass;
         }
-*/
 
-        // Delegate to the classic classloader
+
+        // Delegate to the classic classLoader
         return super.loadClass(name, resolve);
+    }
+
+    private Class<?> loadApplicationClass(String name) {
+        /*Class maybeAlreadyLoaded = findLoadedClass(name);
+        if(maybeAlreadyLoaded != null) {
+            return maybeAlreadyLoaded;
+        }*/
+
+
+        return null;
+    }
+
+    public void detectChanges() {
+
     }
 
     /**
