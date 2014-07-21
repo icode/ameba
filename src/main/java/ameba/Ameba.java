@@ -24,7 +24,11 @@ public class Ameba {
     }
 
     static Application bootstrap() {
-        app = new Application();
+        return bootstrap(new Application());
+    }
+
+    static Application bootstrap(Application app) {
+        Ameba.app = app;
         final HttpServer server = Application.createHttpServer(app);
         // register shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
