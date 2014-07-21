@@ -2,15 +2,15 @@ package ameba.db;
 
 import ameba.db.model.Finder;
 import ameba.db.model.Persister;
+import ameba.feature.AmebaFeature;
 
-import javax.ws.rs.core.Feature;
 import java.lang.reflect.Modifier;
 
 /**
  * @author: ICode
  * @since: 13-8-17 下午6:17
  */
-public abstract class TransactionFeature implements Feature {
+public abstract class TransactionFeature extends AmebaFeature {
     private static Class<? extends Finder> finderClass = null;
     private static Class<? extends Persister> persisterClass = null;
 
