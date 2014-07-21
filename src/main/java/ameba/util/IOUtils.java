@@ -1,13 +1,14 @@
 package ameba.util;
 
 import ameba.Ameba;
+import com.google.common.collect.Lists;
 
 import java.io.*;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Properties;
-import java.util.Vector;
 
 /**
  * @author: ICode
@@ -52,9 +53,16 @@ public class IOUtils {
         }
 
         if (urls == null) {
-            Vector<URL> vector = new Vector<URL>(1);
-            vector.add(IOUtils.class.getResource(resource));
-            urls = vector.elements();
+            final Iterator<URL> it = Lists.newArrayList(IOUtils.class.getResource(resource)).iterator();
+            urls = new Enumeration<URL>() {
+                public boolean hasMoreElements() {
+                    return it.hasNext();
+                }
+
+                public URL nextElement() {
+                    return it.next();
+                }
+            };
         }
         return urls;
     }
