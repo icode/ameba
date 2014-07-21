@@ -1,8 +1,10 @@
 package ameba;
 
 import ameba.db.model.EnhanceModelFeature;
+import ameba.dev.ReloadingClassLoader;
 import ameba.jvm.JvmAgent;
 import ameba.mvc.assets.AssetsFeature;
+import ameba.util.IOUtils;
 import ameba.util.LinkedProperties;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.gaffer.GafferUtil;
@@ -37,10 +39,7 @@ import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -96,11 +95,11 @@ public class Application extends ResourceConfig {
 
     @SuppressWarnings("unchecked")
     public Application(String confFile) {
+
         configFile = confFile;
         logger.info("初始化...");
         //property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
         //property(ServerProperties.BV_DISABLE_VALIDATE_ON_EXECUTABLE_OVERRIDE_CHECK, true);
-
         Map<String, Object> configMap = Maps.newLinkedHashMap();
 
         Properties properties = new LinkedProperties();
@@ -116,16 +115,25 @@ public class Application extends ResourceConfig {
         }
         logger.info("读取应用自定义配置...");
         //读取应用程序配置
-        InputStream in = getResourceAsStream(confFile);
-        if (in != null) {
+        Enumeration<URL> urls = IOUtils.getResources(confFile);
+        while (urls.hasMoreElements()) {
+            InputStream in = null;
+            URL url = urls.nextElement();
             try {
-                properties.clear();
-                properties.load(in);
-            } catch (Exception e) {
-                logger.error("读取[conf/application.conf]出错", e);
+                logger.info("读取[{}]文件配置", url.toExternalForm());
+                in = url.openStream();
+            } catch (IOException e) {
+                logger.error("读取[{}]出错", url.toExternalForm());
             }
-        } else {
-            logger.warn("用户配置文件[conf/application.conf]不存在");
+            if (in != null) {
+                try {
+                    properties.load(in);
+                } catch (Exception e) {
+                    logger.error("读取[{}]出错", url.toExternalForm());
+                }
+            } else {
+                logger.error("读取[{}]出错", url.toExternalForm());
+            }
         }
 
         //获取应用程序模式
@@ -208,8 +216,13 @@ public class Application extends ResourceConfig {
                 }
                 if (packageRoot == null)
                     logger.warn("未找到包根目录，很多功能将失效，请确认项目内是否有Java源文件，或设置JVM参数，添加 -Dapp.source.root=${yourAppRootDir}");
-                else
+                else {
                     logger.info("包根目录为:{}", packageRoot.getAbsolutePath());
+                }
+
+                ClassLoader classLoader = new ReloadingClassLoader(this);
+                setClassLoader(classLoader);
+                Thread.currentThread().setContextClassLoader(classLoader);
             }
 
             JvmAgent.initialize();
@@ -315,7 +328,7 @@ public class Application extends ResourceConfig {
         addProperties(configMap);
 
         //设置应用程序名称
-        setApplicationName((String) getProperty("app.name"));
+        setApplicationName(StringUtils.defaultString((String) getProperty("app.name"), "ameba"));
         applicationVersion = (String) getProperty("app.version");
 
         //配置日志器
@@ -333,14 +346,14 @@ public class Application extends ResourceConfig {
         logger.info("注册特性");
 
         String registerStr = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("app.registers"), ""));
-        String[] registers = null;
+        String[] registers;
         int suc = 0, fail = 0, beak = 0;
         if (StringUtils.isNotBlank(registerStr)) {
             registers = registerStr.split(",");
             for (String register : registers) {
                 try {
                     logger.debug("注册特性[{}]", register);
-                    Class clazz = Class.forName(register);
+                    Class clazz = getClassLoader().loadClass(register);
                     if (isRegistered(clazz)) {
                         beak++;
                         logger.warn("并未注册特性[{}]，因为该特性已存在", register);
@@ -366,7 +379,7 @@ public class Application extends ResourceConfig {
                     String name = key.replaceFirst("^app\\.register\\.", "");
                     try {
                         logger.debug("注册特性[{}({})]", name, className);
-                        Class clazz = Class.forName(className);
+                        Class clazz = getClassLoader().loadClass(className);
                         if (isRegistered(clazz)) {
                             beak++;
                             logger.warn("并未注册装特性[{}({})]，因为该特性已存在", name, clazz);

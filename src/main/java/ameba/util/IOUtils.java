@@ -1,9 +1,13 @@
 package ameba.util;
 
+import ameba.Ameba;
+
 import java.io.*;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Enumeration;
 import java.util.Properties;
+import java.util.Vector;
 
 /**
  * @author: ICode
@@ -30,6 +34,29 @@ public class IOUtils {
         }
 
         return in;
+    }
+
+    public static Enumeration<URL> getResources(String resource) {
+        Enumeration<URL> urls = null;
+        try {
+            urls = Thread.currentThread().getContextClassLoader().getResources(resource);
+        } catch (IOException e) {
+            //noop
+        }
+        if (urls == null) {
+            try {
+                urls = IOUtils.class.getClassLoader().getResources(resource);
+            } catch (IOException e) {
+                //noop
+            }
+        }
+
+        if (urls == null) {
+            Vector<URL> vector = new Vector<URL>(1);
+            vector.add(IOUtils.class.getResource(resource));
+            urls = vector.elements();
+        }
+        return urls;
     }
 
     public static URL getResource(String resource) {
@@ -189,23 +216,28 @@ public class IOUtils {
             return null;
         }
 
-        ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
-        if (ctxClassLoader != null) {
-            try {
-                clazz = ctxClassLoader.loadClass(className);
-            } catch (ClassNotFoundException e) {
-                // skip
-            }
-        }
-
-        if (clazz != null) {
-            return clazz;
-        }
-
         try {
-            return Class.forName(className);
+            return Ameba.getApp().getClassLoader().loadClass(className);
         } catch (ClassNotFoundException e) {
-            return null;
+
+            ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
+            if (ctxClassLoader != null) {
+                try {
+                    clazz = ctxClassLoader.loadClass(className);
+                } catch (ClassNotFoundException ex) {
+                    // skip
+                }
+            }
+
+            if (clazz != null) {
+                return clazz;
+            }
+
+            try {
+                return Class.forName(className);
+            } catch (ClassNotFoundException e1) {
+                return null;
+            }
         }
     }
 }

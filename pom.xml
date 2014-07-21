@@ -69,7 +69,12 @@
             <version>${protostuff.version}</version>
             <optional>true</optional>
         </dependency>
-
+        <!-- ASM -->
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>${asm.version}</version>
+        </dependency>
         <!-- Ebean -->
         <dependency>
             <groupId>org.avaje.ebeanorm</groupId>
@@ -436,6 +441,7 @@
     </build>
 
     <properties>
+        <asm.version>5.0.3</asm.version>
         <protostuff.version>1.0.8</protostuff.version>
         <jersey.version>2.10.1</jersey.version>
         <slf4j.version>1.7.7</slf4j.version>

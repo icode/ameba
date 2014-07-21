@@ -151,7 +151,7 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     @Inject
     public WebStatFilter(Configuration configuration) {
-        if (this.webAppStat != null) {
+        if (webAppStat != null) {
             return;
         }
 
@@ -167,7 +167,7 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
             if (param != null) {
                 param = param.trim();
                 if (param.length() != 0) {
-                    this.principalCookieName = param;
+                    principalCookieName = param;
                 }
             }
         }
@@ -177,9 +177,9 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
             if (param != null && param.trim().length() != 0) {
                 param = param.trim();
                 if ("true".equals(param)) {
-                    this.profileEnable = true;
+                    profileEnable = true;
                 } else if ("false".equals(param)) {
-                    this.profileEnable = false;
+                    profileEnable = false;
                 } else {
                     logger.error("WebStatFilter Parameter '" + PARAM_NAME_PORFILE_ENABLE + "' config error");
                 }
@@ -190,7 +190,7 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
             if (param != null && param.trim().length() != 0) {
                 param = param.trim();
                 try {
-                    this.sessionStatMaxCount = Integer.parseInt(param);
+                    sessionStatMaxCount = Integer.parseInt(param);
                 } catch (NumberFormatException e) {
                     logger.error("WebStatFilter Parameter '" + PARAM_NAME_SESSION_STAT_MAX_COUNT + "' config error", e);
                 }
@@ -203,16 +203,16 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
             if (param != null) {
                 param = param.trim();
                 if (param.length() != 0) {
-                    this.realIpHeader = param;
+                    realIpHeader = param;
                 }
             }
         }
 
         StatFilterContext.getInstance().addContextListener(statFilterContextListener);
 
-        this.contextPath = "/";
+        contextPath = "/";
         if (webAppStat == null) {
-            webAppStat = new WebAppStat(contextPath, this.sessionStatMaxCount);
+            webAppStat = new WebAppStat(contextPath, sessionStatMaxCount);
         }
         WebAppStatManager.getInstance().addWebAppStatSet(webAppStat);
     }
@@ -328,7 +328,7 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     protected String getRemoteAddress(ContainerRequestContext request) {
         String ip = null;
-        if (this.realIpHeader != null && this.realIpHeader.length() != 0) {
+        if (realIpHeader != null && realIpHeader.length() != 0) {
             ip = request.getHeaderString(realIpHeader);
         }
         if (StringUtils.isBlank(ip)) {
@@ -393,11 +393,11 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
     }
 
     public void setProfileEnable(boolean profileEnable) {
-        this.profileEnable = profileEnable;
+        WebStatFilter.profileEnable = profileEnable;
     }
 
     public void setWebAppStat(WebAppStat webAppStat) {
-        this.webAppStat = webAppStat;
+        WebStatFilter.webAppStat = webAppStat;
     }
 
     public WebAppStat getWebAppStat() {

@@ -5,27 +5,21 @@ import com.google.common.collect.Lists;
 
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author icode
  */
 public abstract class AmebaException extends RuntimeException {
-    static AtomicLong atomicLong = new AtomicLong(System.currentTimeMillis());
-    protected String id;
-
     public AmebaException() {
-        setId();
+
     }
 
     public AmebaException(String message) {
         super(message);
-        setId();
     }
 
     public AmebaException(String message, Throwable cause) {
         super(message, cause);
-        setId();
     }
 
     public static InterestingSomething getInterestingSomething(Throwable cause) {
@@ -60,11 +54,6 @@ public abstract class AmebaException extends RuntimeException {
         return something;
     }
 
-    void setId() {
-        long nid = atomicLong.incrementAndGet();
-        id = Long.toString(nid, 26);
-    }
-
     public boolean isSourceAvailable() {
         return this instanceof SourceAttachment;
     }
@@ -75,10 +64,6 @@ public abstract class AmebaException extends RuntimeException {
 
     public File getSourceFile() {
         return null;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public static class InterestingSomething {
