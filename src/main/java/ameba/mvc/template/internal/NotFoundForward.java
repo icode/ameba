@@ -58,7 +58,7 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
     @Override
     public boolean isMappable(NotFoundException exception) {
         String path = getCurrentPath();
-        //手保护目录,不允许直接访问
+        //受保护目录,不允许直接访问
         if (path.startsWith("_protected")) return false;
         try {
             return templateProcessor.resolve(path, (MediaType) null);
