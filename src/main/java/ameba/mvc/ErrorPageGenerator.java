@@ -178,10 +178,10 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
                     LineNumberReader reader = null;
                     try {
                         reader = new LineNumberReader(new FileReader(f));
-                        int bl = line < 4 ? 0 : line - 4;
+                        int bl = line < 5 ? 0 : line - 5;
                         String l;
                         while ((l = reader.readLine()) != null) {
-                            if (bl <= reader.getLineNumber() && reader.getLineNumber() <= bl + 11) {
+                            if (bl <= reader.getLineNumber() && reader.getLineNumber() < bl + 11) {
 
                                 if (reader.getLineNumber() == line) {
                                     lineIndex = source.size();

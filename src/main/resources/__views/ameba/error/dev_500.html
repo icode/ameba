@@ -4,7 +4,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>服务器发生错误</title>
+    <title>应用发生错误</title>
     <style>
         html, body, pre {
             margin: 0;
@@ -116,18 +116,9 @@
 
 <!--#if(model.sourceAvailable)-->
 
-<h2>错误类型</h2>
-<pre class="error">
-    <span class="line">-></span>
-    <span class="code">${model.exception.class.name}</span>
-</pre>
-<h2>源码位置</h2>
+<h2>源码位置 &nbsp; ${model.sourceFile.path}</h2>
 
 <div id="source-code">
-    <pre class="error">
-        <span class="line">-></span>
-        <span class="code">${model.sourceFile.path}</span>
-    </pre>
     <!--#for(String line : model.source)-->
     <!--#if(line != null)-->
 
@@ -136,7 +127,7 @@
     class="error"
     <!--#end-->
     >
-    <span class="line">${for.index + model.lineNumber}</span>
+    <span class="line">${for.index + model.lineNumber - model.lineIndex}</span>
     <span class="code"><!--#if(model.method != null)-->$!{line.replace(model.method,"<span class=\"marker\">"+model.method+"</span>")}<!--#else-->${line}<!--#end--></span>
     </pre>
     <!--#end-->
@@ -158,18 +149,8 @@
     <!--#end-->
 </div>
 <!--#end-->
-<h2>堆栈信息</h2>
-<div>
-    <!--#for(StackTraceElement el : model.exception.stackTrace)-->
-    <pre>
-        <span class="line">&nbsp;</span>
-        <span class="code">${el}</span>
-    </pre>
-    <!--#end-->
-</div>
 <!--#else-->
 <h2>没有有效的源文件，以下是堆栈信息</h2>
-
 <div>
     <pre class="error">
         <span class="line">-></span>
@@ -183,6 +164,5 @@
     <!--#end-->
 </div>
 <!--#end-->
-
 </body>
 </html>
