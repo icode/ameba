@@ -1,6 +1,5 @@
 package ameba.util;
 
-import ameba.Ameba;
 import com.google.common.collect.Lists;
 
 import java.io.*;
@@ -224,28 +223,23 @@ public class IOUtils {
             return null;
         }
 
-        try {
-            return Ameba.getApp().getClassLoader().loadClass(className);
-        } catch (ClassNotFoundException e) {
-
-            ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
-            if (ctxClassLoader != null) {
-                try {
-                    clazz = ctxClassLoader.loadClass(className);
-                } catch (ClassNotFoundException ex) {
-                    // skip
-                }
-            }
-
-            if (clazz != null) {
-                return clazz;
-            }
-
+        ClassLoader ctxClassLoader = Thread.currentThread().getContextClassLoader();
+        if (ctxClassLoader != null) {
             try {
-                return Class.forName(className);
-            } catch (ClassNotFoundException e1) {
-                return null;
+                clazz = ctxClassLoader.loadClass(className);
+            } catch (ClassNotFoundException ex) {
+                // skip
             }
+        }
+
+        if (clazz != null) {
+            return clazz;
+        }
+
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e1) {
+            return null;
         }
     }
 }

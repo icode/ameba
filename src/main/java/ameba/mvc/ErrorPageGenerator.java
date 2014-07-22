@@ -46,7 +46,7 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
     private static final Logger logger = LoggerFactory.getLogger(ErrorPageGenerator.class);
     private static String defaultErrorTemplate;
     @Inject
-    private Application app;
+    private javax.inject.Provider<Application> app;
     @Inject
     private ServiceLocator serviceLocator;
     @Context
@@ -94,7 +94,7 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
             status = ((WebApplicationException) exception).getResponse().getStatus();
         }
         String tplName;
-        if (status >= 500 && app.getMode().isDev()) {
+        if (status >= 500 && app.get().getMode().isDev()) {
             //开发模式，显示详细错误信息
             tplName = DEFAULT_5XX_DEV_ERROR_PAGE;
         } else {

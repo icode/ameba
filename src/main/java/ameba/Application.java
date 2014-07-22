@@ -21,13 +21,12 @@ import org.glassfish.grizzly.http.server.*;
 import org.glassfish.grizzly.spdy.SpdyAddOn;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
-import org.glassfish.hk2.api.Factory;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.internal.scanning.PackageNamesScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -285,7 +284,7 @@ public class Application extends ResourceConfig {
 
         String[] packages = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("resource.packages"), "")).split(",");
         logger.info("设置资源扫描包:[{}]", getProperty("resource.packages"));
-        packages(packages);
+        registerFinder(new PackageNamesScanner(getClassLoader(), packages, true));
 
         if (Mode.DEV.isDev() && !isRegistered(LoggingFilter.class)) {
             logger.debug("注册日志过滤器");
@@ -368,9 +367,6 @@ public class Application extends ResourceConfig {
 
         this.port = Integer.valueOf(StringUtils.defaultIfBlank((String) getProperty("app.port"), "80"));
 
-        register(new ApplicationProvider(this));
-
-
         if (isRegistered(EnhanceModelFeature.class)) {
             register(EnhanceModelFeature.Do.class, Integer.MIN_VALUE);
         }
@@ -451,7 +447,7 @@ public class Application extends ResourceConfig {
         ServerConfiguration serverConfiguration = server.getServerConfiguration();
         serverConfiguration.setHttpServerName(app.getApplicationName());
         serverConfiguration.setHttpServerVersion(app.getApplicationVersion());
-        serverConfiguration.setName("HttpServer-" + app.getApplicationName());
+        serverConfiguration.setName("Ameba-HttpServer-" + app.getApplicationName());
 
         String charset = StringUtils.defaultIfBlank((String) app.getProperty("app.encoding"), "utf-8");
         serverConfiguration.setSendFileEnabled(true);
@@ -788,29 +784,6 @@ public class Application extends ResourceConfig {
 
         public boolean isProd() {
             return this == PRODUCT;
-        }
-    }
-
-    private class ApplicationProvider extends AbstractBinder implements Factory<Application> {
-
-        private Application application;
-
-        public ApplicationProvider(Application application) {
-            this.application = application;
-        }
-
-        @Override
-        protected void configure() {
-            bindFactory(this).to(Application.class);
-        }
-
-        @Override
-        public Application provide() {
-            return application;
-        }
-
-        @Override
-        public void dispose(Application instance) {
         }
     }
 }

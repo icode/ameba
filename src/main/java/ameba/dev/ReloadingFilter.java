@@ -16,10 +16,11 @@ import java.io.IOException;
 @PreMatching
 @Priority(0)
 public class ReloadingFilter implements ContainerRequestFilter {
+
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         ReloadingClassLoader classLoader = (ReloadingClassLoader) Ameba.getApp().getClassLoader();
         Thread.currentThread().setContextClassLoader(classLoader);
-        classLoader.detectChanges();
+        //classLoader.detectChanges();
     }
 }
