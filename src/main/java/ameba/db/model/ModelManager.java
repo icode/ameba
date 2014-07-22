@@ -29,7 +29,8 @@ public class ModelManager {
     public static final Map<String, ModelManager> managerMap = Maps.newHashMap();
     public static final String ID_SETTER_NAME = "__setId__";
     public static final String ID_GETTER_NAME = "__getId__";
-    public static final String GET_FINDER_M_NAME = "getFinder";
+    public static final String GET_FINDER_M_NAME = "withFinder";
+    public static final String FINDER_C_NAME = "ameba.db.model.Finder";
     public final static String BASE_MODEL_PKG = "ameba.db.model";
     public final static String BASE_MODEL_SIMPLE_NAME = "Model";
     public final static String BASE_MODEL_NAME = BASE_MODEL_PKG + "." + BASE_MODEL_SIMPLE_NAME;
@@ -235,19 +236,20 @@ public class ModelManager {
                             pool.importPackage(fieldType.getPackageName());
                             pool.importPackage(mClazz.getName());
 
-                            CtMethod _getFinder = new CtMethod(pool.get(Finder.class.getName()),
+                            CtMethod _getFinder = new CtMethod(pool.get(FINDER_C_NAME),
                                     GET_FINDER_M_NAME,
-                                    new CtClass[]{pool.get(String.class.getName())},
+                                    new CtClass[]{pool.get("java.lang.String")},
                                     clazz);
                             _getFinder.setModifiers(Modifier.setPublic(Modifier.STATIC));
                             try {
                                 _getFinder.setBody("{Finder finder = getFinderCache(" + mClazz.getSimpleName() + ".class);" +
                                         "if(finder == null)" +
                                         "try {" +
-                                        "   finder = (Finder) getFinderConstructor().newInstance(new Object[]{$1," + fieldType.getSimpleName() + ".class," + mClazz.getSimpleName() + ".class});" +
+                                        "   finder = (Finder) getFinderConstructor().newInstance(new Object[]{$1," +
+                                        fieldType.getSimpleName() + ".class," + mClazz.getSimpleName() + ".class});" +
                                         "   putFinderCache(" + mClazz.getSimpleName() + ".class , finder);" +
                                         "} catch (Exception e) {" +
-                                        "    throw new RuntimeException(e);" +
+                                        "    throw new ameba.exceptions.AmebaException(e);" +
                                         "}" +
                                         "if (finder == null) {\n" +
                                         "    throw new ameba.db.model.Model.NotFinderFindException();\n" +
@@ -257,17 +259,14 @@ public class ModelManager {
                                 throw new CannotCompileException("Entity Model must be extends ameba.db.model.Model", e);
                             }
                             clazz.addMethod(_getFinder);
-                            _getFinder = new CtMethod(pool.get(Finder.class.getName()),
+                            _getFinder = new CtMethod(pool.get(FINDER_C_NAME),
                                     GET_FINDER_M_NAME,
                                     null,
                                     clazz);
 
                             _getFinder.setModifiers(Modifier.setPublic(Modifier.STATIC));
-                            _getFinder.setBody("{return (Finder) getFinder(DefaultProperties.DB_DEFAULT_SERVER_NAME);}");
+                            _getFinder.setBody("{return (Finder) " + GET_FINDER_M_NAME + "(DefaultProperties.DB_DEFAULT_SERVER_NAME);}");
                             clazz.addMethod(_getFinder);
-//                            CtField finderField = new CtField(pool.get(Finder.class.getName()), ID_TYPE_FIELD_NAME, clazz);
-//                            finderField.setModifiers(Modifier.STATIC | Modifier.PUBLIC | Modifier.FINAL);
-//                            clazz.addField(finderField, "_getFinder();");
                             idGetSetFixed = true;
                         }
                     }

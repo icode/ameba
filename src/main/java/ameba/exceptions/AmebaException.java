@@ -14,6 +14,11 @@ public abstract class AmebaException extends RuntimeException {
 
     }
 
+
+    protected AmebaException(Throwable cause) {
+        super(cause);
+    }
+
     public AmebaException(String message) {
         super(message);
     }

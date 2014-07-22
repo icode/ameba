@@ -79,7 +79,7 @@ public abstract class Model implements Serializable {
 
     @Transient
     @SuppressWarnings("unchecked")
-    public static <ID, T> Finder<ID, T> getFinder(String server) {
+    public static <ID, T> Finder<ID, T> withFinder(String server) {
         Finder<ID, T> finder = _getFinder(server);
         if (finder == null) {
             throw new NotFinderFindException();
@@ -88,8 +88,8 @@ public abstract class Model implements Serializable {
     }
 
     @Transient
-    public static <ID, T> Finder<ID, T> getFinder() {
-        return getFinder(DefaultProperties.DB_DEFAULT_SERVER_NAME);
+    public static <ID, T> Finder<ID, T> withFinder() {
+        return withFinder(DefaultProperties.DB_DEFAULT_SERVER_NAME);
     }
 
     @Transient
@@ -173,7 +173,7 @@ public abstract class Model implements Serializable {
 
     @Transient
     @SuppressWarnings("unchecked")
-    public <M extends Model> Persister<M> getPersister(String server) {
+    public <M extends Model> Persister<M> withPersister(String server) {
         Persister<M> persister = _getPersister(server);
         if (persister == null) {
             throw new NotPersisterFindException();
@@ -182,8 +182,8 @@ public abstract class Model implements Serializable {
     }
 
     @Transient
-    public <M extends Model> Persister<M> getPersister() {
-        return getPersister(DefaultProperties.DB_DEFAULT_SERVER_NAME);
+    public <M extends Model> Persister<M> withPersister() {
+        return withPersister(DefaultProperties.DB_DEFAULT_SERVER_NAME);
     }
 
     public static class NotPersisterFindException extends RuntimeException {
