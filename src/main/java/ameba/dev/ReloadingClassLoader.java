@@ -9,13 +9,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -26,6 +22,27 @@ public class ReloadingClassLoader extends URLClassLoader {
 
     private static final List<String> patterns = new ArrayList<String>();
     public File packageRoot;
+    public Application app;
+
+    /**
+     * Add all the url locations we can find for the provided class loader
+     *
+     * @param loader class loader
+     */
+    private static void addClassLoaderUrls(ClassLoader loader) {
+        if (loader != null) {
+            final Enumeration<URL> resources;
+            try {
+                resources = loader.getResources("");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            while (resources.hasMoreElements()) {
+                URL location = resources.nextElement();
+                ReloadingClassLoader.addLocation(location);
+            }
+        }
+    }
 
     public ReloadingClassLoader(Application app) {
         this(ReloadingClassLoader.class.getClassLoader(), app);
@@ -34,13 +51,13 @@ public class ReloadingClassLoader extends URLClassLoader {
     public ReloadingClassLoader(ClassLoader parent, Application app) {
         super(new URL[]{}, parent);
 
-        for (URL url : urls) {
+        addClassLoaderUrls(parent);
+
+        for (URL url : urls)
+        {
+            addURL(url);
         }
-        try {
-            addURL(app.getPackageRoot().toURI().toURL());
-        } catch (MalformedURLException e) {
-            //noop
-        }
+        this.app = app;
         packageRoot = app.getPackageRoot();
     }
 
@@ -153,7 +170,7 @@ public class ReloadingClassLoader extends URLClassLoader {
 
                 if (name != null && p.matcher(name).find()) {
                     tryHere = isInclude;
-                } else if (AmebaClass.getJava(name).exists()) {
+                } else if (AmebaClass.getJava(name, this.app).exists()) {
                     tryHere = isInclude;
                 }
             }

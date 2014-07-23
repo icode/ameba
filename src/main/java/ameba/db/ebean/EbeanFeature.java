@@ -213,7 +213,7 @@ public class EbeanFeature extends TransactionFeature {
                 InputStream in = new ByteArrayInputStream(BASE_MODEL_DESCRIPTION.getClassBytecode());
                 try {
                     CtClass ctClass = ClassPool.getDefault().makeClass(in);
-                    ctClass.toClass();
+                    ctClass.toClass(this.getClass().getClassLoader(), null);
                     ctClass.detach();
                 } catch (CannotCompileException e) {
                     throw new RuntimeException("make " + BASE_MODEL_DESCRIPTION.getClassFile() + " class input stream error", e);

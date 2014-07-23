@@ -21,6 +21,8 @@ import org.glassfish.grizzly.http.server.*;
 import org.glassfish.grizzly.spdy.SpdyAddOn;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
+import org.glassfish.hk2.api.Factory;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
 import org.glassfish.jersey.server.ContainerFactory;
@@ -167,13 +169,33 @@ public class Application extends ResourceConfig {
                 }
             }
 
-            ClassLoader classLoader = new ReloadingClassLoader(this);
+            final ClassLoader classLoader = new ReloadingClassLoader(this);
             setClassLoader(classLoader);
             Thread.currentThread().setContextClassLoader(classLoader);
 
             JvmAgent.initialize();
             logger.info("注册热加载过滤器");
             register(ReloadingFilter.class);
+            registerInstances(new AbstractBinder() {
+                @Override
+                protected void configure() {
+                    try {
+                        bindFactory(new Factory<Object>() {
+                            @Override
+                            public Object provide() {
+                                return Application.this;
+                            }
+
+                            @Override
+                            public void dispose(Object instance) {
+
+                            }
+                        }).to(classLoader.loadClass(Application.class.getName()));
+                    } catch (ClassNotFoundException e) {
+                        logger.error("bind dev app error", e);
+                    }
+                }
+            });
         }
 
         //设置ssl相关

@@ -1,6 +1,6 @@
 package ameba.classloading;
 
-import ameba.Ameba;
+import ameba.Application;
 import ameba.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,22 +56,26 @@ public class AmebaClass {
      */
     boolean compiled;
 
-    public AmebaClass() {
+    Application app;
+
+    public AmebaClass(Application app) {
+        this.app = app;
     }
 
-    public AmebaClass(String name) {
+    public AmebaClass(String name, Application app) {
         this.name = name;
-        this.javaFile = getJava(name);
+        this.app = app;
+        this.javaFile = getJava(name, app);
         this.refresh();
     }
 
-    public static File getJava(String name) {
+    public static File getJava(String name, Application app) {
         String fileName = name;
         if (fileName.contains("$")) {
             fileName = fileName.substring(0, fileName.indexOf("$"));
         }
         fileName = fileName.replace(".", "/") + ".java";
-        File pkgRoot = Ameba.getApp().getPackageRoot();
+        File pkgRoot = app.getPackageRoot();
         if (pkgRoot != null) {
             File[] files = pkgRoot.listFiles();
             if (files != null)

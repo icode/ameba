@@ -132,7 +132,7 @@ public class ModelManager {
             InputStream in = scanner.open();
             try {
                 ModelDescription desc = enhanceModel(in);
-                if (desc != null)
+                if (desc != null && !modelClassesDescList.contains(desc))
                     modelClassesDescList.add(desc);
             } finally {
                 try {
