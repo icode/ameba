@@ -77,14 +77,10 @@ public class AmebaClass {
         fileName = fileName.replace(".", "/") + ".java";
         File pkgRoot = app.getPackageRoot();
         if (pkgRoot != null) {
-            File[] files = pkgRoot.listFiles();
-            if (files != null)
-                for (File path : files) {
-                    File javaFile = new File(path, fileName);
-                    if (javaFile.exists()) {
-                        return javaFile;
-                    }
-                }
+            File javaFile = new File(pkgRoot, fileName);
+            if (javaFile.exists()) {
+                return javaFile;
+            }
         }
         return null;
     }

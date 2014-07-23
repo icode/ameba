@@ -176,26 +176,6 @@ public class Application extends ResourceConfig {
             JvmAgent.initialize();
             logger.info("注册热加载过滤器");
             register(ReloadingFilter.class);
-//            registerInstances(new AbstractBinder() {
-//                @Override
-//                protected void configure() {
-//                    try {
-//                        bindFactory(new Factory<Object>() {
-//                            @Override
-//                            public Object provide() {
-//                                return Application.this;
-//                            }
-//
-//                            @Override
-//                            public void dispose(Object instance) {
-//
-//                            }
-//                        }).to(classLoader.loadClass(Application.class.getName()));
-//                    } catch (ClassNotFoundException e) {
-//                        logger.error("bind dev app error", e);
-//                    }
-//                }
-//            });
         }
 
         registerInstances(new AbstractBinder() {

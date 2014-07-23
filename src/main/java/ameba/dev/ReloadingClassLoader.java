@@ -2,25 +2,21 @@ package ameba.dev;
 
 import ameba.Application;
 import ameba.classloading.AmebaClass;
-import ameba.exceptions.UnexpectedException;
 import ameba.util.UrlExternalFormComparator;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.Enumeration;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author icode
  */
 public class ReloadingClassLoader extends URLClassLoader {
     private static final Set<URL> urls = new TreeSet<URL>(new UrlExternalFormComparator());
-
-    private static final List<String> patterns = new ArrayList<String>();
     public File packageRoot;
     public Application app;
 
@@ -53,39 +49,23 @@ public class ReloadingClassLoader extends URLClassLoader {
 
         addClassLoaderUrls(parent);
 
-        for (URL url : urls)
-        {
+        for (URL url : urls) {
             addURL(url);
         }
         this.app = app;
         packageRoot = app.getPackageRoot();
     }
 
-    /**
-     * Include a pattern
-     *
-     * @param pattern the pattern to include
-     */
-    public static void includePattern(String pattern) {
-        patterns.add("+" + pattern);
-    }
 
-    /**
-     * Exclude a pattern
-     *
-     * @param pattern the pattern to exclude
-     */
-    public static void excludePattern(String pattern) {
-        patterns.add("-" + pattern);
-    }
+    @Override
+    public final URL getResource(final String name) {
+        URL resource = findResource(name);
+        ClassLoader parent = getParent();
+        if (resource == null && parent != null) {
+            resource = parent.getResource(name);
+        }
 
-    /**
-     * Returns the list of all configured inclusion or exclusion patterns
-     *
-     * @return list of patterns as String
-     */
-    public static List<String> getPatterns() {
-        return patterns;
+        return resource;
     }
 
     /**
@@ -104,17 +84,6 @@ public class ReloadingClassLoader extends URLClassLoader {
      */
     public static Set<URL> getLocations() {
         return urls;
-    }
-
-    @Override
-    public final URL getResource(final String name) {
-        URL resource = findResource(name);
-        ClassLoader parent = getParent();
-        if (resource == null && parent != null) {
-            resource = parent.getResource(name);
-        }
-
-        return resource;
     }
 
     public synchronized Class<?> defineClass(String name, byte[] code) {
@@ -152,28 +121,10 @@ public class ReloadingClassLoader extends URLClassLoader {
             return false;
         }
         // Scan includes, then excludes
-        boolean tryHere;
-
-        // If no explicit includes, try here
-        if (patterns.size() == 0) {
+        boolean tryHere = false;
+        File f = AmebaClass.getJava(name, this.app);
+        if (f != null && f.exists()) {
             tryHere = true;
-        } else {
-            // See if it matches include patterns
-            tryHere = false;
-            for (String rawpattern : patterns) {
-                if (rawpattern.length() <= 1) {
-                    continue;
-                }
-                boolean isInclude = rawpattern.substring(0, 1).equals("+");
-                String pattern = rawpattern.substring(1);
-                Pattern p = Pattern.compile(pattern);
-
-                if (name != null && p.matcher(name).find()) {
-                    tryHere = isInclude;
-                } else if (AmebaClass.getJava(name, this.app).exists()) {
-                    tryHere = isInclude;
-                }
-            }
         }
 
         return tryHere;
@@ -219,34 +170,4 @@ public class ReloadingClassLoader extends URLClassLoader {
     public void detectChanges() {
 
     }
-
-    /**
-     * 查找类的字节码
-     */
-    protected byte[] getClassDefinition(String name) {
-        name = name.replace(".", "/") + ".class";
-        InputStream is = getResourceAsStream(name);
-        if (is == null) {
-            return null;
-        }
-        try {
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            byte[] buffer = new byte[8192];
-            int count;
-            while ((count = is.read(buffer, 0, buffer.length)) > 0) {
-                os.write(buffer, 0, count);
-            }
-            return os.toByteArray();
-        } catch (Exception e) {
-            throw new UnexpectedException(e);
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                throw new UnexpectedException(e);
-            }
-        }
-    }
-
-
 }
