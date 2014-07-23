@@ -29,6 +29,8 @@ import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.internal.scanning.PackageNamesScanner;
+import org.glassfish.jersey.server.spi.Container;
+import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -395,6 +397,29 @@ public class Application extends ResourceConfig {
                 + ":" + this.port + "/");
         logger.info("配置服务器监听地址绑定到[{}]", httpServerBaseUri);
         logger.info("装载特性...");
+        registerInstances(new ContainerLifecycleListener() {
+            @Override
+            public void onStartup(Container container) {
+                Application.this.container = container;
+                logger.info("容器已启动");
+            }
+
+            @Override
+            public void onReload(Container container) {
+                logger.info("容器重新加载");
+            }
+
+            @Override
+            public void onShutdown(Container container) {
+                logger.info("容器已关闭");
+            }
+        });
+    }
+
+    private Container container;
+
+    public void reload() {
+        container.reload();
     }
 
     public static HttpServer createHttpServer() {

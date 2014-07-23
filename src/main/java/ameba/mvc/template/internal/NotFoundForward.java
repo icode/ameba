@@ -61,7 +61,7 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
         //受保护目录,不允许直接访问
         if (path.startsWith("_protected")) return false;
         try {
-            return templateProcessor.resolve(path, (MediaType) null);
+            return templateProcessor.resolve("/" + path, (MediaType) null);
         } catch (Exception e) {
             return false;
         }
