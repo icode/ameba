@@ -23,7 +23,7 @@
  * questions.
  */
 
-package sun.tools.attach;
+package ameba.dev.sun.tools.attach;
 
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.AgentLoadException;

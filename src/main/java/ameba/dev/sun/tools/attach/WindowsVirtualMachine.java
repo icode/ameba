@@ -22,20 +22,17 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package sun.tools.attach;
+package ameba.dev.sun.tools.attach;
 
-import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.spi.AttachProvider;
-import sun.tools.attach.HotSpotVirtualMachine;
+
 import java.io.IOException;
-import java.io.File;
 import java.io.InputStream;
-import java.util.Properties;
 import java.util.Random;
 
-public class WindowsVirtualMachine extends HotSpotVirtualMachine {
+public class WindowsVirtualMachine extends ameba.dev.sun.tools.attach.HotSpotVirtualMachine {
 
     // the enqueue code stub (copied into each target VM)
     private static byte[] stub;

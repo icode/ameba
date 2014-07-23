@@ -47,7 +47,7 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
 
     @Override
     public Response toResponse(NotFoundException exception) {
-        return Response.ok(Viewables.newDefaultViewable(getCurrentPath())).build();
+        return Response.ok(Viewables.newDefaultViewable("/" + getCurrentPath())).build();
     }
 
     private String getCurrentPath() {

@@ -366,6 +366,12 @@
             <version>${guava.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-jci-eclipse</artifactId>
+            <version>1.1</version>
+        </dependency>
+
         <!-- Cache -->
         <dependency>
             <groupId>net.sf.ehcache.internal</groupId>

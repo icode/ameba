@@ -5,10 +5,10 @@ import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
 import com.sun.tools.attach.spi.AttachProvider;
 import org.apache.log4j.Logger;
-import sun.tools.attach.BsdVirtualMachine;
-import sun.tools.attach.LinuxVirtualMachine;
-import sun.tools.attach.SolarisVirtualMachine;
-import sun.tools.attach.WindowsVirtualMachine;
+import ameba.dev.sun.tools.attach.BsdVirtualMachine;
+import ameba.dev.sun.tools.attach.LinuxVirtualMachine;
+import ameba.dev.sun.tools.attach.SolarisVirtualMachine;
+import ameba.dev.sun.tools.attach.WindowsVirtualMachine;
 
 import java.io.File;
 import java.io.IOException;
