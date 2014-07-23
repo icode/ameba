@@ -1,14 +1,14 @@
 package ameba.dev;
 
-import com.sun.tools.attach.AttachNotSupportedException;
-import com.sun.tools.attach.VirtualMachine;
-import com.sun.tools.attach.VirtualMachineDescriptor;
-import com.sun.tools.attach.spi.AttachProvider;
-import org.apache.log4j.Logger;
 import ameba.dev.sun.tools.attach.BsdVirtualMachine;
 import ameba.dev.sun.tools.attach.LinuxVirtualMachine;
 import ameba.dev.sun.tools.attach.SolarisVirtualMachine;
 import ameba.dev.sun.tools.attach.WindowsVirtualMachine;
+import com.sun.tools.attach.AttachNotSupportedException;
+import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
+import com.sun.tools.attach.spi.AttachProvider;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +23,8 @@ import java.util.List;
  * @author icode
  */
 public class AgentLoader {
-    private static final Logger logger = Logger.getLogger(AgentLoader.class);
+
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AgentLoader.class);
 
     private static final List<String> loaded = new ArrayList<String>();
 

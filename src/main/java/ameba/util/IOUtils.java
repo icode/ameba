@@ -1,6 +1,7 @@
 package ameba.util;
 
 import com.google.common.collect.Lists;
+import httl.util.UnsafeByteArrayOutputStream;
 
 import java.io.*;
 import java.net.URL;
@@ -8,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.zip.ZipFile;
 
 /**
  * @author: ICode
@@ -15,8 +17,55 @@ import java.util.Properties;
  */
 public class IOUtils {
 
-    public final static int DEFAULT_BUFFER_SIZE = 1024 * 4;
+    private static final int DEFAULT_BUFFER_SIZE = 4096;
 
+    public static byte[] toByteArray(File file) {
+        FileInputStream is = null;
+        try {
+            is = new FileInputStream(file);
+            return toByteArray(is);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            closeQuietly(is);
+        }
+    }
+
+    public static byte[] toByteArray(InputStream is) {
+        UnsafeByteArrayOutputStream out = new UnsafeByteArrayOutputStream();
+        try {
+            byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+            int n = 0;
+            while (-1 != (n = is.read(buffer))) {
+                out.write(buffer, 0, n);
+            }
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            closeQuietly(out);
+        }
+    }
+
+    public static void closeQuietly(Closeable obj) {
+        try {
+            if (obj != null) {
+                obj.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void closeQuietly(ZipFile obj) {
+        try {
+            if (obj != null) {
+                obj.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public static String read(InputStream in) {
         InputStreamReader reader;
         try {

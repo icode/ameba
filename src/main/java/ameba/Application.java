@@ -13,6 +13,10 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
+import org.apache.commons.io.monitor.FileAlterationMonitor;
+import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.http.CompressionConfig;
@@ -44,6 +48,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -63,7 +68,7 @@ public class Application extends ResourceConfig {
     public static final String DEFAULT_NETWORK_LISTENER_NAME = "ameba";
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static final Pattern COMMENT_PATTERN = Pattern.compile("^(\\s*(/\\*|\\*|//))");//注释正则
-    private static final Pattern PKG_PATTERN = Pattern.compile("^(\\s*package)\\s+([\\w\\.]+)\\s*;$");//包名正则
+    private static final Pattern PKG_PATTERN = Pattern.compile("^(\\s*package)\\s+([_a-zA-Z][_a-zA-Z0-9\\.]+)\\s*;$");//包名正则
     private URI httpServerBaseUri;
     private String configFile;
     private Mode mode;
@@ -164,11 +169,42 @@ public class Application extends ResourceConfig {
 
             if (sourceRoot.exists() && sourceRoot.isDirectory()) {
                 searchPackageRoot();
-                if (packageRoot == null)
-                    logger.warn("未找到包根目录，很多功能将失效，请确认项目内是否有Java源文件，或设置JVM参数，添加 -Dapp.source.root=${yourAppRootDir}");
-                else {
+                if (packageRoot == null) {
+                    logger.info("未找到包根目录，很多功能将失效，请确认项目内是否有Java源文件，如果确实存在Java源文件，" +
+                            "请设置项目根目录的JVM参数，添加 -Dapp.source.root=${yourAppRootDir}");
+                    logger.debug("打开文件监听，寻找包根目录...");
+                    long interval = TimeUnit.SECONDS.toMillis(4);
+                    final FileAlterationObserver observer = new FileAlterationObserver(
+                            sourceRoot,
+                            FileFilterUtils.and(
+                                    FileFilterUtils.fileFileFilter(),
+                                    FileFilterUtils.suffixFileFilter(".java")));
+                    final FileAlterationMonitor monitor = new FileAlterationMonitor(interval, observer);
+                    observer.addListener(new FileAlterationListenerAdaptor() {
+                        @Override
+                        public void onFileCreate(File pFile) {
+                            if (pFile.getName().endsWith(".java") && pFile.canRead()) {
+                                if (searchPackageRoot(pFile)) {
+                                    logger.debug("找到包根目录为：{}，退出监听。", pFile.getAbsolutePath());
+                                    try {
+                                        monitor.stop();
+                                    } catch (Exception e) {
+                                        logger.info("停止监控目录发生错误", e);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    try {
+                        monitor.start();
+                    } catch (Exception e) {
+                        logger.info("监控目录发生错误", e);
+                    }
+                } else {
                     logger.info("包根目录为:{}", packageRoot.getAbsolutePath());
                 }
+            } else {
+                logger.info("未找到项目根目录，很多功能将失效，请设置项JVM参数，添加 -Dapp.source.root=${yourAppRootDir}");
             }
 
             final ClassLoader classLoader = new ReloadingClassLoader(this);
@@ -616,58 +652,65 @@ public class Application extends ResourceConfig {
         return server;
     }
 
+    public boolean searchPackageRoot(File f) {
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(f));
+
+            String line = null;
+            while (StringUtils.isBlank(line)) {
+                line = reader.readLine();
+                //匹配注释
+                Matcher m = COMMENT_PATTERN.matcher(line);
+                if (m.find()) {
+                    line = null;
+                }
+            }
+            if (line == null) return false;
+            Matcher m = PKG_PATTERN.matcher(line);
+
+            if (m.find()) {
+                String pkg = m.group(2);
+                String[] dirs = pkg.split("\\.");
+                ArrayUtils.reverse(dirs);
+                File pf = f.getParentFile();
+                boolean isPkg = true;
+                for (String dir : dirs) {
+                    if (!pf.getName().equals(dir)) {
+                        isPkg = false;
+                        break;
+                    }
+                    pf = pf.getParentFile();
+                }
+                if (isPkg && pf != null) {
+                    this.packageRoot = pf;
+                    return true;
+                }
+            }
+
+        } catch (FileNotFoundException e) {
+            logger.error("find package root dir has error", e);
+        } catch (IOException e) {
+            logger.error("find package root dir has error", e);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    logger.warn("close file input stream error", e);
+                }
+            }
+        }
+        return false;
+    }
+
     public void searchPackageRoot() {
         FluentIterable<File> iterable = Files.fileTreeTraverser()
                 .breadthFirstTraversal(sourceRoot);
         for (File f : iterable) {
             if (f.getName().endsWith(".java") && f.canRead()) {
-                BufferedReader reader = null;
-                try {
-                    reader = new BufferedReader(new FileReader(f));
-
-                    String line = null;
-                    while (StringUtils.isBlank(line)) {
-                        line = reader.readLine();
-                        //匹配注释
-                        Matcher m = COMMENT_PATTERN.matcher(line);
-                        if (m.find()) {
-                            line = null;
-                        }
-                    }
-                    if (line == null) continue;
-                    Matcher m = PKG_PATTERN.matcher(line);
-
-                    if (m.find()) {
-                        String pkg = m.group(2);
-                        String[] dirs = pkg.split("\\.");
-                        ArrayUtils.reverse(dirs);
-                        File pf = f.getParentFile();
-                        boolean isPkg = true;
-                        for (String dir : dirs) {
-                            if (!pf.getName().equals(dir)) {
-                                isPkg = false;
-                                break;
-                            }
-                            pf = pf.getParentFile();
-                        }
-                        if (isPkg && pf != null) {
-                            this.packageRoot = pf;
-                            break;
-                        }
-                    }
-
-                } catch (FileNotFoundException e) {
-                    logger.error("find package root dir has error", e);
-                } catch (IOException e) {
-                    logger.error("find package root dir has error", e);
-                } finally {
-                    if (reader != null) {
-                        try {
-                            reader.close();
-                        } catch (IOException e) {
-                            logger.warn("close file input stream error", e);
-                        }
-                    }
+                if (searchPackageRoot(f)) {
+                    break;
                 }
             }
         }

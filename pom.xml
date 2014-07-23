@@ -76,12 +76,6 @@
             <version>${akka.version}</version>
         </dependency>
 
-        <!-- ASM -->
-        <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
-            <version>${asm.version}</version>
-        </dependency>
         <!-- Ebean -->
         <dependency>
             <groupId>org.avaje.ebeanorm</groupId>
@@ -367,9 +361,15 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-jci-eclipse</artifactId>
-            <version>1.1</version>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jdt.core.compiler</groupId>
+            <artifactId>ecj</artifactId>
+            <version>${jdt.ecj.version}</version>
         </dependency>
 
         <!-- Cache -->
@@ -454,6 +454,8 @@
     </build>
 
     <properties>
+        <commons.io.version>2.4</commons.io.version>
+        <jdt.ecj.version>4.4</jdt.ecj.version>
         <akka.version>2.3.4</akka.version>
         <asm.version>5.0.3</asm.version>
         <protostuff.version>1.0.8</protostuff.version>

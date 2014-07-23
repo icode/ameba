@@ -6,9 +6,12 @@ import ameba.util.UrlExternalFormComparator;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.instrument.ClassDefinition;
+import java.lang.instrument.UnmodifiableClassException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -16,9 +19,10 @@ import java.util.TreeSet;
  * @author icode
  */
 public class ReloadingClassLoader extends URLClassLoader {
+
     private static final Set<URL> urls = new TreeSet<URL>(new UrlExternalFormComparator());
-    public File packageRoot;
-    public Application app;
+    File packageRoot;
+    Application app;
 
     /**
      * Add all the url locations we can find for the provided class loader
@@ -147,7 +151,7 @@ public class ReloadingClassLoader extends URLClassLoader {
                 }
             }
 
-            if (clazz == null) {
+            /*if (clazz == null) {
                 if (parent == null) {
                     return null;
                 } else {
@@ -160,14 +164,14 @@ public class ReloadingClassLoader extends URLClassLoader {
                         //noop
                     }
                 }
-            }
+            }*/
         }
 
 
-        return null;
+        return clazz;
     }
 
-    public void detectChanges() {
-
+    public void detectChanges(List<ClassDefinition> classes) throws UnmodifiableClassException, ClassNotFoundException {
+        JvmAgent.reload(classes.toArray(new ClassDefinition[classes.size()]));
     }
 }
