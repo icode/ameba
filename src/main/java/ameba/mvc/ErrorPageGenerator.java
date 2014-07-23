@@ -208,10 +208,12 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
                         try {
                             File uf = something.getUsefulFiles().get(i);
                             usefulReader = new LineNumberReader(new FileReader(uf));
-                            usefulReader.setLineNumber(el.getLineNumber());
                             UsefulSource u = new UsefulSource();
                             u.lineNumber = el.getLineNumber();
-                            u.source = usefulReader.readLine();
+                            while (u.lineNumber <= usefulReader.getLineNumber()) {
+                                if (u.lineNumber == usefulReader.getLineNumber())
+                                    u.source = usefulReader.readLine();
+                            }
                             u.sourceFile = uf;
                             usefulSources.add(u);
                         } catch (FileNotFoundException e) {

@@ -1,17 +1,16 @@
 package ameba.compiler;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public abstract class JavaCompiler {
-    protected ClassLoader classloader;
-    protected boolean debugEnabled;
+    protected ClassLoader classLoader;
+    protected Config config;
 
     public static JavaCompiler create(ClassLoader classloader, Config config) {
         try {
-            JavaCompiler jc = (JavaCompiler) config.getCompileTool().newInstance();
-            jc.classloader = classloader;
-            jc.debugEnabled = config.isCompileDebug();
+            JavaCompiler jc = config.getCompiler();
+            jc.classLoader = classloader;
             jc.initialize();
             return jc;
         } catch (Exception e) {
@@ -19,16 +18,7 @@ public abstract class JavaCompiler {
         }
     }
 
-    protected void initialize() {
-    }
-
-    public boolean isDebugEnabled() {
-        return debugEnabled;
-    }
-
-    public File getOutputdir() {
-        return classloader.getOutputdir();
-    }
+    protected void initialize(){}
 
     public Class<?> compile(JavaSource source) {
         try {
@@ -37,7 +27,7 @@ public abstract class JavaCompiler {
 
             generateJavaClass(source);
 
-            return classloader.loadClass(source.getQualifiedClassName());
+            return classLoader.loadClass(source.getClassName());
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (ClassNotFoundException e) {
@@ -45,5 +35,6 @@ public abstract class JavaCompiler {
         }
     }
 
-    protected abstract void generateJavaClass(JavaSource source) throws IOException;
+    public abstract void generateJavaClass(JavaSource... source) throws IOException;
+    public abstract void generateJavaClass(List<JavaSource> sources) throws IOException;
 }

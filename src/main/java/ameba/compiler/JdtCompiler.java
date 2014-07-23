@@ -1,8 +1,8 @@
 package ameba.compiler;
 
-import ameba.util.ClassLoaderUtils;
+import ameba.util.ClassUtils;
 import ameba.util.IOUtils;
-import ameba.util.StringUtils;
+import com.google.common.collect.Maps;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.internal.compiler.*;
 import org.eclipse.jdt.internal.compiler.Compiler;
@@ -15,50 +15,36 @@ import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class JdtCompiler extends JavaCompiler {
     @Override
-    protected void generateJavaClass(JavaSource source) throws IOException {
-        INameEnvironment env = new NameEnvironment(source);
+    public void generateJavaClass(JavaSource... source) throws IOException {
+        generateJavaClass(Arrays.asList(source));
+    }
+
+    @Override
+    public void generateJavaClass(List<JavaSource> sources) throws IOException {
+        if (sources == null || sources.size() == 0) throw new IllegalArgumentException("java source list is blank");
         IErrorHandlingPolicy policy = DefaultErrorHandlingPolicies.proceedWithAllProblems();
         CompilerOptions options = getCompilerOptions();
-        CompilerRequestor requestor = new CompilerRequestor();
+        CompilerRequestor requestor = new CompilerRequestor(sources);
         IProblemFactory problemFactory = new DefaultProblemFactory(Locale.getDefault());
 
-        Compiler compiler = new Compiler(env, policy, options, requestor, problemFactory);
-        compiler.compile(new ICompilationUnit[] { new CompilationUnit(source) });
+        ICompilationUnit[] compilationUnits = new ICompilationUnit[sources.size()];
+        for (JavaSource source : sources)
+            compilationUnits[compilationUnits.length] = new CompilationUnit(source);
+
+        Compiler compiler = new Compiler(new NameEnvironment(sources), policy, options, requestor, problemFactory);
+
+        compiler.compile(compilationUnits);
 
         if (requestor.hasErrors()) {
-            String sourceCode = source.getSourceCode();
-            String[] sourceCodeLines = sourceCode.split("(\r\n|\r|\n)", -1);
-            StringBuilder sb = new StringBuilder();
-            sb.append("Compilation failed.");
-            sb.append('\n');
-            for (IProblem p : requestor.getErrors()) {
-                sb.append(p.getMessage()).append('\n');
-                int start = p.getSourceStart();
-                int column = start; // default
-                for (int i = start; i >= 0; i--) {
-                    char c = sourceCode.charAt(i);
-                    if (c == '\n' || c == '\r') {
-                        column = start - i;
-                        break;
-                    }
-                }
-                sb.append(StringUtils.getPrettyError(sourceCodeLines, p.getSourceLineNumber(), column, p.getSourceStart(), p.getSourceEnd(), 3));
-            }
-            sb.append(requestor.getErrors().length);
-            sb.append(" error(s)\n");
-            throw new CompileErrorException(sb.toString());
+            throw new CompileErrorException();
         }
-
-        requestor.save(source.getOutputdir());
     }
 
     private CompilerOptions getCompilerOptions() {
@@ -96,7 +82,7 @@ public class JdtCompiler extends JavaCompiler {
 
         @Override
         public char[] getMainTypeName() {
-            String qualifiedClassName = source.getQualifiedClassName();
+            String qualifiedClassName = source.getClassName();
             int dot = qualifiedClassName.lastIndexOf('.');
             if (dot > 0) {
                 return qualifiedClassName.substring(dot + 1).toCharArray();
@@ -106,7 +92,7 @@ public class JdtCompiler extends JavaCompiler {
 
         @Override
         public char[][] getPackageName() {
-            StringTokenizer tokenizer = new StringTokenizer(source.getQualifiedClassName(), ".");
+            StringTokenizer tokenizer = new StringTokenizer(source.getClassName(), ".");
             char[][] result = new char[tokenizer.countTokens() - 1][];
             for (int i = 0; i < result.length; i++) {
                 String tok = tokenizer.nextToken();
@@ -125,11 +111,14 @@ public class JdtCompiler extends JavaCompiler {
         static final Logger log = LoggerFactory.getLogger(NameEnvironment.class);
         final Map<String, Boolean> cache = new HashMap<String, Boolean>();
         final ClassLoader classLoader;
-        final JavaSource source;
+        final Map<String, JavaSource> map;
 
-        public NameEnvironment(JavaSource source) {
-            this.source = source;
-            this.classLoader = ClassLoaderUtils.getContextClassLoader();
+        public NameEnvironment(List<JavaSource> sources) {
+            map = Maps.newHashMap();
+            for (JavaSource source : sources) {
+                map.put(source.getClassName(), source);
+            }
+            this.classLoader = ClassUtils.getContextClassLoader();
         }
 
         @Override
@@ -147,16 +136,16 @@ public class JdtCompiler extends JavaCompiler {
         @Override
         public NameEnvironmentAnswer findType(char[] typeName, char[][] packageName) {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < packageName.length; i++) {
-                sb.append(packageName[i]).append('.');
+            for (char[] aPackageName : packageName) {
+                sb.append(aPackageName).append('.');
             }
             sb.append(typeName);
             return findType(sb.toString());
         }
 
         private NameEnvironmentAnswer findType(String className) {
-            if (className.equals(source.getQualifiedClassName())) {
-                return new NameEnvironmentAnswer(new CompilationUnit(source), null);
+            if (map.containsKey(className)) {
+                return new NameEnvironmentAnswer(new CompilationUnit(map.get(className)), null);
             }
 
             InputStream is = null;
@@ -190,7 +179,7 @@ public class JdtCompiler extends JavaCompiler {
 
             Boolean found = cache.get(name);
             if (found != null) {
-                return found.booleanValue();
+                return found;
             }
 
             boolean isPackage = !isJavaClass(name);
@@ -199,7 +188,7 @@ public class JdtCompiler extends JavaCompiler {
         }
 
         private boolean isJavaClass(String name) {
-            if (name.equals(source.getQualifiedClassName())) {
+            if (map.containsKey(name)) {
                 return true;
             }
 
@@ -215,15 +204,38 @@ public class JdtCompiler extends JavaCompiler {
 
     static class CompilerRequestor implements ICompilerRequestor {
         static final Logger log = LoggerFactory.getLogger(CompilerRequestor.class);
-        ClassFile[] classFiles;
         IProblem[] errors;
+        List<JavaSource> sources;
+        Map<String, JavaSource> map;
+
+        CompilerRequestor(List<JavaSource> sources) {
+            this.sources = sources;
+            map = Maps.newHashMap();
+
+            for (JavaSource js : sources) {
+                map.put(js.getClassName(), js);
+            }
+        }
 
         @Override
         public void acceptResult(CompilationResult result) {
             if (result.hasErrors()) {
                 errors = result.getErrors();
             } else {
-                classFiles = result.getClassFiles();
+                ClassFile[] classFiles = result.getClassFiles();
+                for (ClassFile classFile : classFiles) {
+                    char[][] compoundName =
+                            classFile.getCompoundName();
+                    String className = "";
+                    String sep = "";
+                    for (char[] aCompoundName : compoundName) {
+                        className += sep;
+                        className += new String(aCompoundName);
+                        sep = ".";
+                    }
+                    byte[] bytes = classFile.getBytes();
+                    map.get(className).setBytecode(bytes);
+                }
             }
         }
 
@@ -235,26 +247,6 @@ public class JdtCompiler extends JavaCompiler {
             return errors;
         }
 
-        public ClassFile[] getClassFiles() {
-            return classFiles;
-        }
-
-        public void save(File outputdir) throws IOException {
-            if (classFiles == null) return;
-
-            for (ClassFile classFile : classFiles) {
-                String fileName = new String(classFile.fileName()) + ".class";
-                File javaClassFile = new File(outputdir, fileName);
-                FileOutputStream fout = new FileOutputStream(javaClassFile);
-                try {
-                    BufferedOutputStream bos = new BufferedOutputStream(fout);
-                    bos.write(classFile.getBytes());
-                    bos.close();
-                } finally {
-                    IOUtils.closeQuietly(fout);
-                }
-            }
-        }
     }
 
 }

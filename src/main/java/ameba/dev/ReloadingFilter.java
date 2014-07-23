@@ -1,6 +1,9 @@
 package ameba.dev;
 
 import ameba.Ameba;
+import ameba.compiler.Config;
+import ameba.compiler.JavaCompiler;
+import ameba.compiler.JavaSource;
 import ameba.util.IOUtils;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
@@ -16,6 +19,7 @@ import javax.ws.rs.ext.Provider;
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.ClassDefinition;
+import java.lang.instrument.UnmodifiableClassException;
 import java.util.List;
 
 /**
@@ -29,7 +33,7 @@ public class ReloadingFilter implements ContainerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(ReloadingFilter.class);
 
     @Override
-    public void filter(ContainerRequestContext requestContext) throws IOException {
+    public void filter(ContainerRequestContext requestContext) {
         ReloadingClassLoader classLoader = (ReloadingClassLoader) Ameba.getApp().getClassLoader();
 
         File pkgRoot = Ameba.getApp().getPackageRoot();
@@ -40,57 +44,50 @@ public class ReloadingFilter implements ContainerRequestFilter {
 
             File classesRoot = new File(IOUtils.getResource("").getFile());
 
-            List<File> javaFiles = Lists.newArrayList();
+            List<JavaSource> javaFiles = Lists.newArrayList();
 
             for (File f : iterable) {
                 if (f.isFile() && f.getName().endsWith(".java")) {
                     String path = pkgRoot.toPath().relativize(f.toPath()).toString();
-                    File clazz = new File(classesRoot, path.substring(0, path.length() - 5) + ".class");
+                    String className = path.substring(0, path.length() - 5);
+                    File clazz = new File(classesRoot, className + ".class");
                     if (!clazz.exists() || f.lastModified() > clazz.lastModified()) {
-                        javaFiles.add(f);
+
+                        javaFiles.add(new JavaSource(className.replaceAll(File.separator, "."),
+                                pkgRoot, classesRoot));
                     }
                 }
             }
 
+
             if (javaFiles.size() > 0) {
                 final List<ClassDefinition> classes = Lists.newArrayList();
 
-                /*CompilationResult result = JAVAC.compile(javaFiles.toArray(new String[javaFiles.size()]),
-                        new FileResourceReader(pkgRoot),
-                        new FileResourceStore() {
-                            @Override
-                            public void write(String pResourceName, byte[] pData) {
-                                super.write(pResourceName, pData);
-                                try {
-                                    Class cl = finalClassLoader.loadClass(pResourceName.substring(0, pResourceName.lastIndexOf(".")).replace(File.separator, "."));
-                                    classes.add(new ClassDefinition(cl, pData));
-                                } catch (ClassNotFoundException e) {
-                                    logger.error("class not found", e);
-                                }
-                            }
-                        },
-                        classLoader,
-                        JA_C_S);
-
-                if (result.getErrors().length == 0) {
-                    try {
-                        classLoader.detectChanges(classes);
-                    } catch (UnsupportedOperationException e) {
-
-                    } catch (ClassNotFoundException e) {
-                        logger.warn("在重新加载时未找到类", e);
-                    } catch (UnmodifiableClassException e) {
-                        logger.warn("在重新加载时失败", e);
+                ReloadingClassLoader cl = new ReloadingClassLoader(classLoader.getParent(), Ameba.getApp());
+                JavaCompiler compiler = JavaCompiler.create(cl, new Config());
+                try {
+                    compiler.generateJavaClass(javaFiles);
+                    for (JavaSource source : javaFiles) {
+                        source.saveClassFile();
+                        classes.add(new ClassDefinition(classLoader.loadClass(source.getClassName()), source.getBytecode()));
                     }
-                } else {
-                    for (CompilationProblem p : result.getErrors()) {
-                        logger.error(p.toString());
-                    }
-                }*/
-                classLoader = new ReloadingClassLoader(classLoader.getParent(), Ameba.getApp());
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                } catch (ClassNotFoundException e) {
+                    logger.error(e.getMessage(), e);
+                }
+
+                try {
+                    classLoader.detectChanges(classes);
+                } catch (UnsupportedOperationException e) {
+                    classLoader = new ReloadingClassLoader(classLoader.getParent(), Ameba.getApp());
+                } catch (ClassNotFoundException e) {
+                    logger.warn("在重新加载时未找到类", e);
+                } catch (UnmodifiableClassException e) {
+                    logger.warn("在重新加载时失败", e);
+                }
                 //Ameba.getApp().forApplication(Ameba.getApp());
-                Ameba.getApp().reload();
-
+                //Ameba.getApp().reload();
             }
 
         } else {
