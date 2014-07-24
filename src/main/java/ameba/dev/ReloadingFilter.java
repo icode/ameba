@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Priority;
+import javax.persistence.Entity;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
@@ -36,7 +37,7 @@ public class ReloadingFilter implements ContainerRequestFilter {
 //    private ExtendedResourceContext resourceContext;
 
     private static final Logger logger = LoggerFactory.getLogger(ReloadingFilter.class);
-
+    private static ReloadingClassLoader _classLoader = (ReloadingClassLoader) Thread.currentThread().getContextClassLoader();
     @Override
     public void filter(ContainerRequestContext requestContext) {
         ReloadingClassLoader classLoader = (ReloadingClassLoader) Ameba.getApp().getClassLoader();
@@ -68,8 +69,8 @@ public class ReloadingFilter implements ContainerRequestFilter {
             if (javaFiles.size() > 0) {
                 final List<ClassDefinition> classes = Lists.newArrayList();
 
-                ReloadingClassLoader cl = new ReloadingClassLoader(classLoader.getParent(), Ameba.getApp());
-                JavaCompiler compiler = JavaCompiler.create(cl, new Config());
+                _classLoader = createClassLoader();
+                JavaCompiler compiler = JavaCompiler.create(_classLoader, new Config());
                 try {
                     compiler.compile(javaFiles);
                     for (JavaSource source : javaFiles) {
@@ -91,7 +92,7 @@ public class ReloadingFilter implements ContainerRequestFilter {
                     logger.warn("在重新加载时失败", e);
                 }
 
-                reloaed = reload(classes, classLoader, cl, forceDefine);
+                reloaed = reload(classes, classLoader, _classLoader, forceDefine);
                 if (reloaed) // 如果重新加载了容器，让浏览器重新访问，获取新状态
                     requestContext.abortWith(Response.temporaryRedirect(requestContext.getUriInfo().getRequestUri()).build());
             }
@@ -100,7 +101,11 @@ public class ReloadingFilter implements ContainerRequestFilter {
             logger.warn("未找到包根目录，无法识别更改！请设置JVM参数，添加 -Dapp.source.root=${yourAppRootDir}");
         }
         if (!reloaed)
-            Thread.currentThread().setContextClassLoader(classLoader);
+            Thread.currentThread().setContextClassLoader(_classLoader);
+    }
+
+    ReloadingClassLoader createClassLoader() {
+        return new ReloadingClassLoader(Ameba.getApp().getClassLoader().getParent(), Ameba.getApp());
     }
 
     /**
@@ -132,7 +137,9 @@ public class ReloadingFilter implements ContainerRequestFilter {
 
             for (ClassDefinition cf : reloadClasses) {
                 try {
-                    resourceConfig.register(nClassLoader.loadClass(cf.getDefinitionClass().getName()));
+                    Class clazz = cf.getDefinitionClass();
+                    if (!clazz.isAnnotationPresent(Entity.class))
+                        resourceConfig.register(nClassLoader.loadClass(cf.getDefinitionClass().getName()));
                 } catch (ClassNotFoundException e) {
                     logger.error("重新获取class失败", e);
                 }
