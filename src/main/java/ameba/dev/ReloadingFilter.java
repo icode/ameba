@@ -42,7 +42,7 @@ public class ReloadingFilter implements ContainerRequestFilter {
         ReloadingClassLoader classLoader = (ReloadingClassLoader) Ameba.getApp().getClassLoader();
 
         File pkgRoot = Ameba.getApp().getPackageRoot();
-
+        boolean reloaed = false;
         if (pkgRoot != null) {
             FluentIterable<File> iterable = Files.fileTreeTraverser()
                     .breadthFirstTraversal(pkgRoot);
@@ -91,16 +91,16 @@ public class ReloadingFilter implements ContainerRequestFilter {
                     logger.warn("在重新加载时失败", e);
                 }
 
-                boolean result = reload(classes, classLoader, cl, forceDefine);
-                if (result)
+                reloaed = reload(classes, classLoader, cl, forceDefine);
+                if (reloaed) // 如果重新加载了容器，让浏览器重新访问，获取新状态
                     requestContext.abortWith(Response.temporaryRedirect(requestContext.getUriInfo().getRequestUri()).build());
             }
 
         } else {
             logger.warn("未找到包根目录，无法识别更改！请设置JVM参数，添加 -Dapp.source.root=${yourAppRootDir}");
         }
-
-        Thread.currentThread().setContextClassLoader(classLoader);
+        if (!reloaed)
+            Thread.currentThread().setContextClassLoader(classLoader);
     }
 
     /**
