@@ -2,6 +2,7 @@ package ameba.dev;
 
 import ameba.Ameba;
 import ameba.Application;
+import ameba.classloading.AmebaClass;
 import ameba.compiler.Config;
 import ameba.compiler.JavaCompiler;
 import ameba.compiler.JavaSource;
@@ -38,12 +39,13 @@ public class ReloadingFilter implements ContainerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(ReloadingFilter.class);
     private static ReloadingClassLoader _classLoader = (ReloadingClassLoader) Thread.currentThread().getContextClassLoader();
+
     @Override
     public void filter(ContainerRequestContext requestContext) {
         ReloadingClassLoader classLoader = (ReloadingClassLoader) Ameba.getApp().getClassLoader();
 
         File pkgRoot = Ameba.getApp().getPackageRoot();
-        boolean reloaed = false;
+        boolean reloaded = false;
         if (pkgRoot != null) {
             FluentIterable<File> iterable = Files.fileTreeTraverser()
                     .breadthFirstTraversal(pkgRoot);
@@ -74,33 +76,36 @@ public class ReloadingFilter implements ContainerRequestFilter {
                 try {
                     compiler.compile(javaFiles);
                     for (JavaSource source : javaFiles) {
+                        if (!reloaded && !classLoader.hasClass(source.getClassName())) {
+                            reloaded = true;//新class，重新加载容器
+                        }
                         classes.add(new ClassDefinition(classLoader.loadClass(source.getClassName()), source.getBytecode()));
                     }
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
 
-                boolean forceDefine = false;
-
                 try {
                     classLoader.detectChanges(classes);
                 } catch (UnsupportedOperationException e) {
-                    forceDefine = true;
+                    reloaded = true;
                 } catch (ClassNotFoundException e) {
                     logger.warn("在重新加载时未找到类", e);
                 } catch (UnmodifiableClassException e) {
                     logger.warn("在重新加载时失败", e);
                 }
 
-                reloaed = reload(classes, classLoader, _classLoader, forceDefine);
-                if (reloaed) // 如果重新加载了容器，让浏览器重新访问，获取新状态
+                if (reloaded) {
+                    reload(classes, _classLoader);
+                    // 如果重新加载了容器，让浏览器重新访问，获取新状态
                     requestContext.abortWith(Response.temporaryRedirect(requestContext.getUriInfo().getRequestUri()).build());
+                }
             }
 
         } else {
             logger.warn("未找到包根目录，无法识别更改！请设置JVM参数，添加 -Dapp.source.root=${yourAppRootDir}");
         }
-        if (!reloaed)
+        if (!reloaded)
             Thread.currentThread().setContextClassLoader(_classLoader);
     }
 
@@ -113,51 +118,41 @@ public class ReloadingFilter implements ContainerRequestFilter {
      * 1.当出现一个没有的class，新编译的
      * 2.强制加载，当类/方法签名改变时
      */
-    boolean reload(List<ClassDefinition> reloadClasses, ReloadingClassLoader oClassLoader, ReloadingClassLoader nClassLoader, boolean force) {
+    void reload(List<ClassDefinition> reloadClasses, ReloadingClassLoader nClassLoader) {
         Application app = Ameba.getApp();
 
-        boolean needReload = force;
+        //实例化一个没有被锁住的并且从原有app获得全部属性
+        ResourceConfig resourceConfig = new ResourceConfig(app);
+        resourceConfig.setClassLoader(nClassLoader);
+        Thread.currentThread().setContextClassLoader(nClassLoader);
 
-        if (!needReload) {
-            //检查是否有新的class
-            for (ClassDefinition cf : reloadClasses) {
-                Class cl = cf.getDefinitionClass();
-                if (!oClassLoader.hasClass(cl.getName())) {
-                    needReload = true;
-                    break;
-                }
+        for (ClassDefinition cf : reloadClasses) {
+            try {
+                Class clazz = cf.getDefinitionClass();
+                if (!clazz.isAnnotationPresent(Entity.class))
+                    resourceConfig.register(nClassLoader.loadClass(cf.getDefinitionClass().getName()));
+            } catch (ClassNotFoundException e) {
+                logger.error("重新获取class失败", e);
             }
         }
 
-        if (needReload) {
-            //实例化一个没有被锁住的并且从原有app获得全部属性
-            ResourceConfig resourceConfig = new ResourceConfig(app);
-            resourceConfig.setClassLoader(nClassLoader);
-            Thread.currentThread().setContextClassLoader(nClassLoader);
+        String pkgPath = app.getSourceRoot().getAbsolutePath();
+        //切换已有class，更换class loader
+        for (Class clazz : app.getClasses()) {
+            try {
+                if (!clazz.getResource("").getPath()
+                        .startsWith(pkgPath)//不是工程内的class
 
-            for (ClassDefinition cf : reloadClasses) {
-                try {
-                    Class clazz = cf.getDefinitionClass();
-                    if (!clazz.isAnnotationPresent(Entity.class))
-                        resourceConfig.register(nClassLoader.loadClass(cf.getDefinitionClass().getName()));
-                } catch (ClassNotFoundException e) {
-                    logger.error("重新获取class失败", e);
-                }
-            }
-            //切换已有class，更换class loader
-            for (Class clazz : app.getClasses()) {
-                try {
+                        || AmebaClass.getJava(clazz.getName(), app) != null) {//是工程内，且java原始文件仍然存在
                     clazz = nClassLoader.loadClass(clazz.getName());
                     if (!resourceConfig.isRegistered(clazz))
                         resourceConfig.register(clazz);
-                } catch (ClassNotFoundException e) {
-                    logger.error("重新获取class失败", e);
                 }
+            } catch (ClassNotFoundException e) {
+                logger.error("重新获取class失败", e);
             }
-
-            app.reload(resourceConfig);
-            return true;
         }
-        return false;
+
+        app.reload(resourceConfig);
     }
 }
