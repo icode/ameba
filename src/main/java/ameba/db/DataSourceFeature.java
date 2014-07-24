@@ -67,6 +67,10 @@ public class DataSourceFeature implements Feature {
                 }
             }
         }
+
+        //用于重新加载
+        dataSourceMap.clear();
+
         for (String name : map.keySet()) {
             try {
                 Map<String, String> conf = map.get(name);
