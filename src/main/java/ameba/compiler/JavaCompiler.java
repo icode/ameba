@@ -1,6 +1,7 @@
 package ameba.compiler;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class JavaCompiler {
@@ -20,17 +21,19 @@ public abstract class JavaCompiler {
 
     protected void initialize(){}
 
-    public Class<?> compile(JavaSource source) {
+    public void compile(JavaSource... sources) {
+        compile(Arrays.asList(sources));
+    }
+
+    public void compile(List<JavaSource> sources) {
         try {
-            source.clean();
-            source.saveJavaFile();
+            generateJavaClass(sources);
 
-            generateJavaClass(source);
+            for(JavaSource source : sources){
+                source.saveClassFile();
+            }
 
-            return classLoader.loadClass(source.getClassName());
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }

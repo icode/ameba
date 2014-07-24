@@ -35,13 +35,20 @@ public class ModelManager {
     public final static String BASE_MODEL_SIMPLE_NAME = "Model";
     public final static String BASE_MODEL_NAME = BASE_MODEL_PKG + "." + BASE_MODEL_SIMPLE_NAME;
     private static final Map<String, ModelDescription> descCache = Maps.newHashMap();
-    private static final ClassPool pool = ClassPool.getDefault();
+    private static ClassPool pool;
     private List<ModelDescription> modelClassesDescList = Lists.newArrayList();
     private List<ModelEventListener> listeners = Lists.newArrayList();
     private String[] packages;
 
     private ModelManager(String[] packages) {
         this.packages = packages;
+    }
+
+    public static void reset() {
+        managerMap.clear();
+        pool = new ClassPool(null);
+        pool.appendSystemPath();
+        descCache.clear();
     }
 
     public static ModelManager create(String name, String[] packages) {

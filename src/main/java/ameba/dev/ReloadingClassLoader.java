@@ -97,6 +97,10 @@ public class ReloadingClassLoader extends URLClassLoader {
         return defineClass(name, code, 0, code.length);
     }
 
+    public boolean hasClass(String clazz) {
+        return findLoadedClass(clazz) != null;
+    }
+
     @Override
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
 

@@ -25,6 +25,7 @@ public class EnhanceModelFeature extends AmebaFeature {
 
     @Override
     public boolean configure(final FeatureContext context) {
+        ModelManager.reset();
         Configuration config = context.getConfiguration();
         for (String name : DataSourceFeature.getDataSourceNames()) {
             //db.default.models=reward.models

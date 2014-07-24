@@ -31,11 +31,7 @@ public class JdkCompiler extends JavaCompiler {
 
     public JdkCompiler() {
         String version = System.getProperty("java.version");
-        if (version != null && version.contains("1.6.")) {
-            this.isJdk6 = true;
-        } else {
-            this.isJdk6 = false;
-        }
+        this.isJdk6 = version != null && version.contains("1.6.");
         diagnosticCollector = new DiagnosticCollector<JavaFileObject>();
     }
 
@@ -135,12 +131,13 @@ public class JdkCompiler extends JavaCompiler {
             result = task.call();
         }
 
-        for (JavaSource source : sources)
+        for (JavaSource js : sources) {
             try {
-                _classLoader.findClass(source.getClassName());
+                _classLoader.findClass(js.getClassName());
             } catch (ClassNotFoundException e) {
                 logger.error(e.getMessage(), e);
             }
+        }
 
         // 返回编译结果
         if ((result == null) || !result) {
@@ -240,14 +237,20 @@ public class JdkCompiler extends JavaCompiler {
         @Override
         public JavaFileObject getJavaFileForOutput(Location location, String qualifiedName, JavaFileObject.Kind kind, FileObject outputFile)
                 throws IOException {
-            int index = qualifiedName.lastIndexOf(".");
-            String pkg = qualifiedName.substring(0, index);
-            String name = qualifiedName.substring(index + 1);
-            if (name.contains("$"))
-                name = name.substring(0, name.indexOf("$"));
-            URI uri = uri(StandardLocation.SOURCE_PATH, pkg, name + ".java");
+            JavaSource javaSource = null;
+            if (outputFile instanceof JavaFileObjectImpl)
+                javaSource = ((JavaFileObjectImpl) outputFile).getJavaSource();
 
-            JavaFileObject file = new JavaFileObjectImpl(((JavaFileObjectImpl) fileObjects.get(uri)).getJavaSource(),
+            if (outputFile == null) {
+                int index = qualifiedName.lastIndexOf(".");
+                String pkg = qualifiedName.substring(0, index);
+                String name = qualifiedName.substring(index + 1);
+                if (name.contains("$"))
+                    name = name.substring(0, name.indexOf("$"));
+                URI uri = uri(StandardLocation.SOURCE_PATH, pkg, name + ".java");
+                javaSource = ((JavaFileObjectImpl) fileObjects.get(uri)).getJavaSource();
+            }
+            JavaFileObject file = new JavaFileObjectImpl(javaSource,
                     qualifiedName, kind);
             classLoader.add(qualifiedName, file);
             return file;
@@ -305,18 +308,16 @@ public class JdkCompiler extends JavaCompiler {
 
         @Override
         protected Class<?> findClass(final String qualifiedClassName) throws ClassNotFoundException {
+            Class<?> c = findLoadedClass(qualifiedClassName);
+            if (c != null) return c;
+
             JavaFileObject file = classes.get(qualifiedClassName);
             if (file != null) {
                 byte[] bytes = ((JavaFileObjectImpl) file).getByteCode();
                 return defineClass(qualifiedClassName, bytes, 0, bytes.length);
             }
 
-            try {
-                return super.findClass(qualifiedClassName);
-            } catch (ClassNotFoundException e) {
-
-                throw e;
-            }
+            return super.findClass(qualifiedClassName);
         }
 
         void add(final String qualifiedClassName, final JavaFileObject file) {

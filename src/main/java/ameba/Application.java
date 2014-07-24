@@ -458,6 +458,11 @@ public class Application extends ResourceConfig {
         container.reload();
     }
 
+
+    public void reload(ResourceConfig configuration) {
+        container.reload(configuration);
+    }
+
     public static HttpServer createHttpServer() {
 
         Application app = new Application();
