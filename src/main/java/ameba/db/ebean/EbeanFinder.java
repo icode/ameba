@@ -12,46 +12,50 @@ import java.util.Set;
  */
 public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
-    private EbeanServer server;
+    EbeanServer server;
+
+    private EbeanServer server() {
+        return server;
+    }
 
     public EbeanFinder(String serverName, Class<ID> idType, Class<T> type) {
         super(serverName, idType, type);
-        server = Ebean.getServer(serverName);
+        server = Ebean.getServer(getServerName());
     }
 
     /**
      * Retrieves all entities of the given type.
      */
     public List<T> all() {
-        return server.find(getModelType()).findList();
+        return server().find(getModelType()).findList();
     }
 
     /**
      * Retrieves an entity by ID.
      */
     public T byId(ID id) {
-        return server.find(getModelType(), id);
+        return server().find(getModelType(), id);
     }
 
     /**
      * Retrieves an entity reference for this ID.
      */
     public T ref(ID id) {
-        return server.getReference(getModelType(), id);
+        return server().getReference(getModelType(), id);
     }
 
     /**
      * Creates a filter for sorting and filtering lists of entities locally without going back to the database.
      */
     public Filter<T> filter() {
-        return server.filter(getModelType());
+        return server().filter(getModelType());
     }
 
     /**
      * Creates a query.
      */
     public Query<T> query() {
-        return server.find(getModelType());
+        return server().find(getModelType());
     }
 
     /**
@@ -59,7 +63,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public ID nextId() {
-        return (ID) server.nextId(getModelType());
+        return (ID) server().nextId(getModelType());
     }
 
     /**
@@ -399,7 +403,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * Sets the OQL query to run
      */
     public Query<T> setQuery(String oql) {
-        return server.createQuery(getModelType(), oql);
+        return server().createQuery(getModelType(), oql);
     }
 
     /**

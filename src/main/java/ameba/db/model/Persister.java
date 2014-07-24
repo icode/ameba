@@ -16,25 +16,25 @@ public abstract class Persister<M extends Model> {
 
     private static final Logger logger = LoggerFactory.getLogger(Persister.class);
     private M model;
-    private String server;
+    private String serverName;
 
-    public Persister(String server, M model) {
-        if (StringUtils.isBlank(server)) {
+    public Persister(String serverName, M model) {
+        if (StringUtils.isBlank(serverName)) {
             throw new IllegalArgumentException("server name is blank");
         }
         if (model == null) {
             throw new IllegalArgumentException("model is null");
         }
         this.model = model;
-        this.server = server;
+        this.serverName = serverName;
     }
 
     protected M getModel() {
         return model;
     }
 
-    protected String getServer() {
-        return server;
+    protected String getServerName() {
+        return serverName;
     }
 
 

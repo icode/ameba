@@ -22,8 +22,6 @@ public abstract class Model implements Serializable {
     @Transient
     private static final HashMap<Class, Finder> FinderMap = Maps.newHashMap();
     @Transient
-    private static final HashMap<Class, Persister> PersisterMap = Maps.newHashMap();
-    @Transient
     private static Constructor<? extends Finder> finderConstructor = null;
     @Transient
     private static Constructor<? extends Persister> persisterConstructor = null;
@@ -61,15 +59,6 @@ public abstract class Model implements Serializable {
         return FinderMap.get(clzz);
     }
 
-    @Transient
-    protected static Persister getPersisterCache(Class clzz) {
-        return PersisterMap.get(clzz);
-    }
-
-    @Transient
-    protected static void putPersisterCache(Class clzz, Persister persister) {
-        PersisterMap.put(clzz, persister);
-    }
 
     @Transient
     @SuppressWarnings("unchecked")
@@ -156,11 +145,9 @@ public abstract class Model implements Serializable {
     @Transient
     @SuppressWarnings("unchecked")
     protected <M extends Model> Persister<M> _getPersister(String server) {
-        Persister persister = getPersisterCache(this.getClass());
-        if (persister == null)
+        Persister persister = null;
             try {
                 persister = getPersisterConstructor().newInstance(server, this);
-                putPersisterCache(this.getClass(), persister);
             } catch (InstantiationException e) {
                 throw new RuntimeException(e);
             } catch (InvocationTargetException e) {
