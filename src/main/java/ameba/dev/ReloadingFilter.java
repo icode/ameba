@@ -124,6 +124,7 @@ public class ReloadingFilter implements ContainerRequestFilter {
         //实例化一个没有被锁住的并且从原有app获得全部属性
         ResourceConfig resourceConfig = new ResourceConfig(app);
         resourceConfig.setClassLoader(nClassLoader);
+        resourceConfig = resourceConfig.forApplication(resourceConfig);
         Thread.currentThread().setContextClassLoader(nClassLoader);
 
         for (ClassDefinition cf : reloadClasses) {
