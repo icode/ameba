@@ -15,6 +15,10 @@ public class ConfigErrorException extends AmebaExceptionWithJavaSource {
     private String config;
     private String key;
 
+    public ConfigErrorException(String message) {
+        super(message);
+    }
+
     public ConfigErrorException(String message, String key) {
         super(message);
         this.key = key;
@@ -39,7 +43,7 @@ public class ConfigErrorException extends AmebaExceptionWithJavaSource {
             try {
                 config = IOUtils.readFromResource(getSourceFile().getPath());
             } catch (IOException e) {
-                return "";
+                config = null;
             }
         }
         return config;
@@ -47,14 +51,16 @@ public class ConfigErrorException extends AmebaExceptionWithJavaSource {
 
     @Override
     public List<String> getSource() {
-        return Lists.newArrayList(config.split("\\s"));
+        return getConfig() == null ? null : Lists.newArrayList(config.split("\\s"));
     }
 
     @Override
     public Integer getLineNumber() {
         if (line == null || line == -1) {
             int i = 0;
-            for (String line : getSource()) {
+            List<String> lines = getSource();
+            if (lines == null) return null;
+            for (String line : lines) {
                 i++;
                 if (key.equals(line.split("=")[0])) {
                     return i;

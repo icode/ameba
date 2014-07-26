@@ -4,6 +4,7 @@ import ameba.db.model.EnhanceModelFeature;
 import ameba.dev.JvmAgent;
 import ameba.dev.ReloadingClassLoader;
 import ameba.dev.ReloadingFilter;
+import ameba.exceptions.ConfigErrorException;
 import ameba.mvc.assets.AssetsFeature;
 import ameba.util.IOUtils;
 import ameba.util.LinkedProperties;
@@ -98,6 +99,7 @@ public class Application extends ResourceConfig {
     private boolean sslConfigReady;
     private File sourceRoot;
     private File packageRoot;
+    private Container container;
 
     public Application() {
         this("conf/application.conf");
@@ -118,7 +120,7 @@ public class Application extends ResourceConfig {
         //读取系统默认配置
         try {
             properties.load(getResourceAsStream("conf/default.conf"));
-            //将默认配置放入临时配置对象
+            //将默认配置放入临时配置对象,占坑(index),不清除内存,防止module替换默认配置,允许application.conf替换
             configMap.putAll((Map) properties);
         } catch (Exception e) {
             logger.warn("读取[conf/default.conf]出错", e);
@@ -126,7 +128,7 @@ public class Application extends ResourceConfig {
         logger.info("读取应用自定义配置...");
         //读取应用程序配置
         Enumeration<URL> urls = IOUtils.getResources(confFile);
-        while (urls.hasMoreElements()) {
+        if (urls.hasMoreElements()) {
             InputStream in = null;
             URL url = urls.nextElement();
             try {
@@ -144,6 +146,18 @@ public class Application extends ResourceConfig {
             } else {
                 logger.error("读取[{}]出错", url.toExternalForm());
             }
+
+            if (urls.hasMoreElements()) {
+                List<String> urlList = Lists.newArrayList(url.toExternalForm());
+                while (urls.hasMoreElements()) {
+                    urlList.add(urls.nextElement().toExternalForm());
+                }
+                String errorMsg = "存在多个程序配置,请使用唯一的程序配置文件:\n" + StringUtils.join(urlList, "\n");
+                logger.error(errorMsg);
+                throw new ConfigErrorException(errorMsg);
+            }
+        } else {
+            logger.warn("未找到{}文件,请何实", confFile);
         }
 
         //获取应用程序模式
@@ -285,6 +299,53 @@ public class Application extends ResourceConfig {
         } catch (IOException e) {
             logger.warn("读取[conf/" + mode.name().toLowerCase() + ".conf]出错", e);
         }
+
+        logger.info("读取模块配置...");
+        //读取应用程序配置
+        Enumeration<URL> moduleUrls = IOUtils.getResources("conf/module.conf");
+        Properties moduleProperties = new LinkedProperties();
+        if (moduleUrls.hasMoreElements()) {
+            while (moduleUrls.hasMoreElements()) {
+                InputStream in = null;
+                URL url = moduleUrls.nextElement();
+                try {
+                    String modelName = url.getFile();
+                    int jarFileIndex = modelName.lastIndexOf("!");
+                    if (jarFileIndex != -1) {
+                        modelName = modelName.substring(0, jarFileIndex);
+                    }
+
+                    jarFileIndex = modelName.lastIndexOf(".");
+                    if (jarFileIndex != -1) {
+                        modelName = modelName.substring(0, jarFileIndex);
+                    }
+
+                    int fileIndex = modelName.lastIndexOf(File.separator);
+                    modelName = modelName.substring(fileIndex + 1);
+
+                    logger.info("加载模块 {}", modelName);
+                    logger.debug("读取[{}]文件配置", url.toExternalForm());
+                    in = url.openStream();
+                } catch (IOException e) {
+                    logger.error("读取[{}]出错", url.toExternalForm());
+                }
+                if (in != null) {
+                    try {
+                        moduleProperties.load(in);
+                    } catch (Exception e) {
+                        logger.error("读取[{}]出错", url.toExternalForm());
+                    }
+                } else {
+                    logger.error("读取[{}]出错", url.toExternalForm());
+                }
+            }
+            configMap.putAll((Map) moduleProperties);
+            moduleProperties.clear();
+            moduleProperties = null;
+        } else {
+            logger.info("未找到附加模块");
+        }
+
         //将用户配置放入临时配置对象
         if (properties.size() > 0)
             configMap.putAll((Map) properties);
@@ -340,7 +401,14 @@ public class Application extends ResourceConfig {
         loggerConfigure();
 
         String[] packages = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("resource.packages"), "")).split(",");
-        logger.info("设置资源扫描包:[{}]", getProperty("resource.packages"));
+        for (String key : configMap.keySet()) {
+            if (key.startsWith("resource.packages.")) {
+                String pkg = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) configMap.get(key), ""));
+                if (!"".equals(pkg) && Arrays.binarySearch(packages, pkg) == -1)
+                    packages = ArrayUtils.addAll(packages, pkg.split(","));
+            }
+        }
+        logger.info("设置资源扫描包:{}", StringUtils.join(packages, ","));
         registerFinder(new PackageNamesScanner(getClassLoader(), packages, true));
 
         if (Mode.DEV.isDev() && !isRegistered(LoggingFilter.class)) {
@@ -450,17 +518,6 @@ public class Application extends ResourceConfig {
                 logger.info("容器已关闭");
             }
         });
-    }
-
-    private Container container;
-
-    public void reload() {
-        container.reload();
-    }
-
-
-    public void reload(ResourceConfig configuration) {
-        container.reload(configuration);
     }
 
     public static HttpServer createHttpServer() {
@@ -650,11 +707,21 @@ public class Application extends ResourceConfig {
                 // Start the server.
                 server.start();
             } catch (IOException ex) {
-                throw new ProcessingException("IOException thrown when trying to start grizzly server", ex);
+                String msg = "无法启动HTTP服务";
+                logger.error(msg, ex);
+                throw new ProcessingException(msg, ex);
             }
         }
 
         return server;
+    }
+
+    public void reload() {
+        container.reload();
+    }
+
+    public void reload(ResourceConfig configuration) {
+        container.reload(configuration);
     }
 
     public boolean searchPackageRoot(File f) {
