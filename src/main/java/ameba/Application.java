@@ -301,7 +301,7 @@ public class Application extends ResourceConfig {
         }
 
         logger.info("读取模块配置...");
-        //读取应用程序配置
+        //读取模块配置
         Enumeration<URL> moduleUrls = IOUtils.getResources("conf/module.conf");
         Properties moduleProperties = new LinkedProperties();
         if (moduleUrls.hasMoreElements()) {
