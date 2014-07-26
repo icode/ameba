@@ -17,8 +17,6 @@ import com.avaje.ebean.enhance.agent.Transformer;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
 import javassist.CannotCompileException;
-import javassist.ClassPool;
-import javassist.CtClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,39 +41,7 @@ import java.nio.file.Paths;
 @ConstrainedTo(RuntimeType.SERVER)
 public class EbeanFeature extends TransactionFeature {
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
-    private static final ModelDescription BASE_MODEL_DESCRIPTION = new ModelDescription() {
-        byte[] bytecode;
-
-        {
-            try {
-                bytecode = ehModel(this);
-            } catch (Exception e) {
-                throw new RuntimeException("get " + getClassFile() + " bytecode error", e);
-            }
-        }
-
-        @Override
-        public String getClassName() {
-            return ModelManager.BASE_MODEL_NAME;
-        }
-
-        @Override
-        public String getClassFile() {
-            return EbeanFeature.class.getResource("/" + getClassName().replaceAll("\\.", "/") + ".class").toExternalForm();
-        }
-
-        @Override
-        public String getClassSimpleName() {
-            return ModelManager.BASE_MODEL_SIMPLE_NAME;
-        }
-
-        @Override
-        public byte[] getClassBytecode() {
-            return bytecode;
-        }
-    };
     private static final int EBEAN_TRANSFORM_LOG_LEVEL = LoggerFactory.getLogger(Ebean.class).isDebugEnabled() ? 9 : 0;
-    private static boolean baseModelEnhanced = false;
 
     public EbeanFeature() {
         super(EbeanFinder.class, EbeanPersister.class);
@@ -208,27 +174,6 @@ public class EbeanFeature extends TransactionFeature {
 
         @Override
         protected byte[] enhancing(ModelDescription desc) {
-
-            if (!baseModelEnhanced) {
-                InputStream in = new ByteArrayInputStream(BASE_MODEL_DESCRIPTION.getClassBytecode());
-                try {
-                    CtClass ctClass = ClassPool.getDefault().makeClass(in);
-                    ctClass.toClass(this.getClass().getClassLoader(), null);
-                    ctClass.detach();
-                } catch (CannotCompileException e) {
-                    throw new RuntimeException("make " + BASE_MODEL_DESCRIPTION.getClassFile() + " class input stream error", e);
-                } catch (IOException e) {
-                    throw new RuntimeException("make " + BASE_MODEL_DESCRIPTION.getClassFile() + " class input stream error", e);
-                } finally {
-                    baseModelEnhanced = true;
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        logger.warn("close io error", e);
-                    }
-                }
-            }
-
             try {
                 return ehModel(desc);
             } catch (Exception e) {
