@@ -21,24 +21,4 @@ public class TemplateException extends AmebaExceptionWithJavaSource {
     public TemplateException(String message, Throwable cause, Integer line, File sourceFile, List<String> source, Integer lineIndex) {
         super(message, cause, line, sourceFile, source, lineIndex);
     }
-
-    @Override
-    public File getSourceFile() {
-        return super.getSourceFile();
-    }
-
-    @Override
-    public List<String> getSource() {
-        return super.getSource();
-    }
-
-    @Override
-    public Integer getLineNumber() {
-        return super.getLineNumber();
-    }
-
-    @Override
-    public Integer getLineIndex() {
-        return super.getLineIndex();
-    }
 }

@@ -128,7 +128,7 @@
     <!--#end-->
     >
     <span class="line">${for.index + model.lineNumber - model.lineIndex}</span>
-    <span class="code"><!--#if(model.method != null)-->$!{line.replace(model.method,"<span class=\"marker\">"+model.method+"</span>")}<!--#else-->${line}<!--#end--></span>
+    <span class="code"><!--#if(model.method != null && for.index == model.lineIndex)-->$!{line.replace(model.method,"<span class=\"marker\">"+model.method+"</span>")}<!--#else-->${line}<!--#end--></span>
     </pre>
     <!--#end-->
     <!--#end-->

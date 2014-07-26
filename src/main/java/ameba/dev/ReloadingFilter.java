@@ -3,6 +3,7 @@ package ameba.dev;
 import ameba.Ameba;
 import ameba.Application;
 import ameba.classloading.AmebaClass;
+import ameba.compiler.CompileErrorException;
 import ameba.compiler.Config;
 import ameba.compiler.JavaCompiler;
 import ameba.compiler.JavaSource;
@@ -81,6 +82,8 @@ public class ReloadingFilter implements ContainerRequestFilter {
                         }
                         classes.add(new ClassDefinition(classLoader.loadClass(source.getClassName()), source.getBytecode()));
                     }
+                } catch (CompileErrorException e) {
+                    throw e;
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
@@ -124,7 +127,7 @@ public class ReloadingFilter implements ContainerRequestFilter {
         //实例化一个没有被锁住的并且从原有app获得全部属性
         ResourceConfig resourceConfig = new ResourceConfig(app);
         resourceConfig.setClassLoader(nClassLoader);
-        resourceConfig = resourceConfig.forApplication(resourceConfig);
+        resourceConfig = ResourceConfig.forApplication(resourceConfig);
         Thread.currentThread().setContextClassLoader(nClassLoader);
 
         for (ClassDefinition cf : reloadClasses) {

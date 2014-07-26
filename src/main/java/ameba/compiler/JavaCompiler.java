@@ -38,6 +38,6 @@ public abstract class JavaCompiler {
         }
     }
 
-    public abstract void generateJavaClass(JavaSource... source) throws IOException;
-    public abstract void generateJavaClass(List<JavaSource> sources) throws IOException;
+    public abstract void generateJavaClass(JavaSource... source);
+    public abstract void generateJavaClass(List<JavaSource> sources);
 }

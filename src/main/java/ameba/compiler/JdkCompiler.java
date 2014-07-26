@@ -1,6 +1,5 @@
 package ameba.compiler;
 
-import ameba.Ameba;
 import ameba.util.ClassUtils;
 import ameba.util.UnsafeByteArrayInputStream;
 import ameba.util.UnsafeByteArrayOutputStream;
@@ -39,7 +38,6 @@ public class JdkCompiler extends JavaCompiler {
     protected void initialize() {
         jc = ToolProvider.getSystemJavaCompiler();
         if (jc == null) {
-            // JDT 支持 ServiceLoader 方式载入。
             ServiceLoader<javax.tools.JavaCompiler> serviceLoader = ServiceLoader.load(javax.tools.JavaCompiler.class);
             Iterator<javax.tools.JavaCompiler> iterator = serviceLoader.iterator();
             if (iterator.hasNext()) {
@@ -86,18 +84,10 @@ public class JdkCompiler extends JavaCompiler {
                 throw new IllegalStateException(e);
             }
         }
-
-        if (Ameba.getApp().getMode().isDev()) {
-            // 输出编译用的 classpath
-            Iterable<? extends File> files = fileManager.getLocation(StandardLocation.CLASS_PATH);
-            for (File file : files) {
-                logger.info("Compilation classpath: " + file.getAbsolutePath());
-            }
-        }
     }
 
     @Override
-    public void generateJavaClass(JavaSource... source) throws IOException {
+    public void generateJavaClass(JavaSource... source) {
         generateJavaClass(Arrays.asList(source));
     }
 
@@ -122,27 +112,45 @@ public class JdkCompiler extends JavaCompiler {
 
         Boolean result;
         if (isJdk6) {
-            // jdk6 的 compiler 是线程不安全的，需要手动同步
+            // jdk6 线程不安全
             synchronized (this) {
                 result = task.call();
             }
         } else {
-            // jdk7+ 的 compiler 是线程安全的
+            // jdk7+ 线程安全
             result = task.call();
-        }
-
-        for (JavaSource js : sources) {
-            try {
-                _classLoader.findClass(js.getClassName());
-            } catch (ClassNotFoundException e) {
-                logger.error(e.getMessage(), e);
-            }
         }
 
         // 返回编译结果
         if ((result == null) || !result) {
+            List<StackTraceElement> stackTraceElements = Lists.newArrayList();
+            for (Diagnostic dia : diagnosticCollector.getDiagnostics()) {
+                if (dia.getKind().equals(Diagnostic.Kind.ERROR)) {
+                    JavaFileObjectImpl javaFileObject = (JavaFileObjectImpl) diagnosticCollector.getDiagnostics().get(0).getSource();
+                    JavaSource javaSource = javaFileObject.getJavaSource();
+                    stackTraceElements.add(new StackTraceElement(
+                            javaSource.getClassName(),
+                            javaSource.getSourceCode().substring(
+                                    Integer.valueOf(String.valueOf(dia.getStartPosition())),
+                                    Integer.valueOf(String.valueOf(dia.getEndPosition()))
+                            ),
+                            javaSource.getClassFile().getName(),
+                            Integer.valueOf(String.valueOf(dia.getLineNumber()))));
+                }
+            }
 
-            throw new CompileErrorException("Compilation failed. diagnostics: " + diagnosticCollector.getDiagnostics());
+
+            CompileErrorException ex = new CompileErrorException("编译出错!");
+            ex.setStackTrace(stackTraceElements.toArray(new StackTraceElement[stackTraceElements.size()]));
+            throw ex;
+        } else {
+            for (JavaSource js : sources) {
+                try {
+                    _classLoader.findClass(js.getClassName());
+                } catch (ClassNotFoundException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
         }
     }
 

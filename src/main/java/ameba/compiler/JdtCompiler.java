@@ -15,19 +15,18 @@ import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
 
 public class JdtCompiler extends JavaCompiler {
     @Override
-    public void generateJavaClass(JavaSource... source) throws IOException {
+    public void generateJavaClass(JavaSource... source) {
         generateJavaClass(Arrays.asList(source));
     }
 
     @Override
-    public void generateJavaClass(List<JavaSource> sources) throws IOException {
+    public void generateJavaClass(List<JavaSource> sources) {
         if (sources == null || sources.size() == 0) throw new IllegalArgumentException("java source list is blank");
         IErrorHandlingPolicy policy = DefaultErrorHandlingPolicies.proceedWithAllProblems();
         CompilerOptions options = getCompilerOptions();
@@ -43,7 +42,7 @@ public class JdtCompiler extends JavaCompiler {
         compiler.compile(compilationUnits);
 
         if (requestor.hasErrors()) {
-            throw new CompileErrorException();
+            throw new CompileErrorException("编译出错!");
         }
     }
 
