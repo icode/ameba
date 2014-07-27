@@ -60,9 +60,14 @@
         <!--akka-->
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-actor_2.11</artifactId>
+            <artifactId>akka-actor_2.10</artifactId>
             <version>${akka.version}</version>
         </dependency>
+        <!--<dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-remote_2.10</artifactId>
+            <version>${akka.version}</version>
+        </dependency>-->
 
         <!-- Ebean -->
         <dependency>
