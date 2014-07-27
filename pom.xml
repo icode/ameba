@@ -76,11 +76,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!--<dependency>
-            <groupId>org.avaje</groupId>
-            <artifactId>avaje-agentloader</artifactId>
-            <version>1.1.1</version>
-        </dependency>-->
 
         <dependency>
             <groupId>org.avaje.ebeanorm</groupId>
@@ -389,6 +384,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.9</version>
@@ -449,6 +450,7 @@
     </build>
 
     <properties>
+        <liquibase.version>3.2.2</liquibase.version>
         <commons.io.version>2.4</commons.io.version>
         <jdt.ecj.version>4.4</jdt.ecj.version>
         <akka.version>2.3.4</akka.version>
