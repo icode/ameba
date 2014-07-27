@@ -11,10 +11,11 @@ appender("CONSOLE", ConsoleAppender) {
     }
 }
 
+logger("org.glassfish.jersey.filter.LoggingFilter", INFO)
 logger("org.glassfish.jersey", WARN)
 logger("org.glassfish.jersey.server.model.Parameter", WARN)
 logger("org.glassfish.grizzly", WARN)
 logger("org.avaje.ebean", WARN)
 logger("httl", WARN)
 logger("ameba", TRACE)
-root(INFO, ["CONSOLE"])
+root(WARN, ["CONSOLE"])
