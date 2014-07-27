@@ -3,6 +3,7 @@ package ameba.mvc.assets;
 import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.model.ModelProcessor;
 import org.glassfish.jersey.server.model.Resource;
@@ -47,41 +48,18 @@ public class AssetsFeature implements Feature {
                 for (String uri : uris) {
                     uriList.add(uri.startsWith("/") ? uri : "/" + uri);
                 }
-                if (StringUtils.isNotBlank(value))
-                    assetsMap.put(routePath, uriList.toArray(uris));
+                if (StringUtils.isNotBlank(value)) {
+                    String[] _uris = assetsMap.get(routePath);
+                    if (_uris == null) {
+                        assetsMap.put(routePath, uriList.toArray(uris));
+                    } else {
+                        assetsMap.put(routePath, ArrayUtils.addAll(_uris, uriList.toArray(uris)));
+                    }
+                }
+
             }
         }
         return assetsMap;
-    }
-
-    @Override
-    public boolean configure(FeatureContext context) {
-
-        Configuration configuration = context.getConfiguration();
-
-        assetsMap.putAll(getAssetMap(configuration));
-
-        context.register(new ModelProcessor() {
-            @Override
-            public ResourceModel processResourceModel(ResourceModel resourceModel, Configuration configuration) {
-                ResourceModel.Builder resourceModelBuilder = new ResourceModel.Builder(resourceModel, false);
-
-                for (String routePath : assetsMap.keySet()) {
-                    Resource.Builder resourceBuilder = Resource.builder(AssetsResource.class);
-                    resourceBuilder.path(routePath);
-                    Resource resource = resourceBuilder.build();
-                    resourceModelBuilder.addResource(resource);
-                }
-
-                return resourceModelBuilder.build();
-            }
-
-            @Override
-            public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
-                return subResourceModel;
-            }
-        });
-        return true;
     }
 
     public static Map<String, String[]> getAssetsMap() {
@@ -112,5 +90,35 @@ public class AssetsFeature implements Feature {
             }
         }
         return in;
+    }
+
+    @Override
+    public boolean configure(FeatureContext context) {
+
+        Configuration configuration = context.getConfiguration();
+
+        assetsMap.putAll(getAssetMap(configuration));
+
+        context.register(new ModelProcessor() {
+            @Override
+            public ResourceModel processResourceModel(ResourceModel resourceModel, Configuration configuration) {
+                ResourceModel.Builder resourceModelBuilder = new ResourceModel.Builder(resourceModel, false);
+
+                for (String routePath : assetsMap.keySet()) {
+                    Resource.Builder resourceBuilder = Resource.builder(AssetsResource.class);
+                    resourceBuilder.path(routePath);
+                    Resource resource = resourceBuilder.build();
+                    resourceModelBuilder.addResource(resource);
+                }
+
+                return resourceModelBuilder.build();
+            }
+
+            @Override
+            public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
+                return subResourceModel;
+            }
+        });
+        return true;
     }
 }
