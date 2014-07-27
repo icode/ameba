@@ -3,8 +3,8 @@ package ameba.util;
 import java.util.*;
 
 /**
- * @author: ICode
- * @since: 13-8-17 下午7:46
+ * @author ICode
+ * @since 13-8-17 下午7:46
  */
 public class LinkedProperties extends Properties {
     private Map<Object, Object> linkMap = new LinkedHashMap<Object, Object>();

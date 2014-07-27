@@ -11,8 +11,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 /**
- * @author: ICode
- * @since: 13-8-17 下午2:00
+ * @author ICode
+ * @since 13-8-17 下午2:00
  */
 @Priority(Priorities.ENTITY_CODER)
 @Singleton

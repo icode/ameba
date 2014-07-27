@@ -15,8 +15,8 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
 /**
- * @author: ICode
- * @since: 13-8-11 上午6:00
+ * @author ICode
+ * @since 13-8-11 上午6:00
  */
 public class JacksonFeature implements Feature {
 

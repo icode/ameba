@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author: ICode
- * @since: 13-8-17 下午2:55
+ * @author ICode
+ * @since 13-8-17 下午2:55
  */
 @ConstrainedTo(RuntimeType.SERVER)
 public class AssetsFeature implements Feature {

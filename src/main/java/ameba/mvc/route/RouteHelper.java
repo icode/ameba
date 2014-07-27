@@ -18,8 +18,8 @@ import java.util.List;
 /**
  * 路由器帮助类
  *
- * @author: ICode
- * @since: 13-8-9 下午7:45
+ * @author ICode
+ * @since 13-8-9 下午7:45
  */
 @Singleton
 @Path("route")

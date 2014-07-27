@@ -4,8 +4,8 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
 
 /**
- * @author: ICode
- * @since: 13-8-21 上午7:48
+ * @author ICode
+ * @since 13-8-21 上午7:48
  */
 public class Cookies {
     private Cookies() {

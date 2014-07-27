@@ -7,8 +7,8 @@ import ameba.feature.AmebaFeature;
 import java.lang.reflect.Modifier;
 
 /**
- * @author: ICode
- * @since: 13-8-17 下午6:17
+ * @author ICode
+ * @since 13-8-17 下午6:17
  */
 public abstract class TransactionFeature extends AmebaFeature {
     private static Class<? extends Finder> finderClass = null;

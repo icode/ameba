@@ -1,8 +1,8 @@
 package ameba.util;
 
 /**
- * @author: ICode
- * @since: 13-8-21 上午3:28
+ * @author ICode
+ * @since 13-8-21 上午3:28
  */
 public class Result {
     private boolean success;

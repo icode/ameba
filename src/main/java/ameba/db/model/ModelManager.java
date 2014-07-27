@@ -21,8 +21,8 @@ import java.util.Set;
 /**
  * 模型管理器
  *
- * @author: ICode
- * @since: 13-8-18 上午10:39
+ * @author ICode
+ * @since 13-8-18 上午10:39
  */
 public class ModelManager {
     public static final Logger logger = LoggerFactory.getLogger(ModelManager.class);

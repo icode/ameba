@@ -23,8 +23,8 @@ import java.util.Properties;
 /**
  * 淘宝HTTL模板处理器
  *
- * @author: ICode
- * @since: 13-8-6 下午7:57
+ * @author ICode
+ * @since 13-8-6 下午7:57
  */
 @Provider
 @Singleton

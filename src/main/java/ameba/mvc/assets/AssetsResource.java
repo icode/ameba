@@ -13,8 +13,8 @@ import java.io.InputStream;
 import java.net.URI;
 
 /**
- * @author: ICode
- * @since: 13-8-17 下午2:55
+ * @author ICode
+ * @since 13-8-17 下午2:55
  */
 @Path("assets")
 @Singleton

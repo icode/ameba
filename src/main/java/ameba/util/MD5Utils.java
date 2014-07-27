@@ -9,8 +9,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * @author: ICode
- * @since: 13-8-21 上午3:44
+ * @author ICode
+ * @since 13-8-21 上午3:44
  */
 public class MD5Utils {
     /**

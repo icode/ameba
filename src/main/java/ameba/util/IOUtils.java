@@ -12,8 +12,8 @@ import java.util.Properties;
 import java.util.zip.ZipFile;
 
 /**
- * @author: ICode
- * @since: 13-8-14 下午7:33
+ * @author ICode
+ * @since 13-8-14 下午7:33
  */
 public class IOUtils {
 
