@@ -2,7 +2,6 @@ package ameba.dev;
 
 import ameba.Ameba;
 import ameba.Application;
-import ameba.classloading.AmebaClass;
 import ameba.compiler.CompileErrorException;
 import ameba.compiler.Config;
 import ameba.compiler.JavaCompiler;
@@ -147,7 +146,7 @@ public class ReloadingFilter implements ContainerRequestFilter {
                 if (!clazz.getResource("").getPath()
                         .startsWith(pkgPath)//不是工程内的class
 
-                        || AmebaClass.getJava(clazz.getName(), app) != null) {//是工程内，且java原始文件仍然存在
+                        || JavaSource.getJava(clazz.getName(), app) != null) {//是工程内，且java原始文件仍然存在
                     clazz = nClassLoader.loadClass(clazz.getName());
                     if (!resourceConfig.isRegistered(clazz))
                         resourceConfig.register(clazz);

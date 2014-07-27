@@ -19,6 +19,7 @@
  */
 package ameba.compiler;
 
+import ameba.Application;
 import ameba.util.IOUtils;
 
 import java.io.*;
@@ -43,6 +44,22 @@ public class JavaSource {
         String fileName = qualifiedClassName.replace(".", File.separator);
         this.javaFile = new File(inputDir, fileName + ".java");
         this.classFile = new File(outputDir, fileName + ".class");
+    }
+
+    public static File getJava(String name, Application app) {
+        String fileName = name;
+        if (fileName.contains("$")) {
+            fileName = fileName.substring(0, fileName.indexOf("$"));
+        }
+        fileName = fileName.replace(".", "/") + ".java";
+        File pkgRoot = app.getPackageRoot();
+        if (pkgRoot != null) {
+            File javaFile = new File(pkgRoot, fileName);
+            if (javaFile.exists()) {
+                return javaFile;
+            }
+        }
+        return null;
     }
 
     public JavaSource(String qualifiedClassName, String sourceCode) {

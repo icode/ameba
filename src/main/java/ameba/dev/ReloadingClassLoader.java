@@ -1,7 +1,7 @@
 package ameba.dev;
 
 import ameba.Application;
-import ameba.classloading.AmebaClass;
+import ameba.compiler.JavaSource;
 import ameba.util.UrlExternalFormComparator;
 
 import java.io.File;
@@ -130,7 +130,7 @@ public class ReloadingClassLoader extends URLClassLoader {
         }
         // Scan includes, then excludes
         boolean tryHere = false;
-        File f = AmebaClass.getJava(name, this.app);
+        File f = JavaSource.getJava(name, this.app);
         if (f != null && f.exists()) {
             tryHere = true;
         }
