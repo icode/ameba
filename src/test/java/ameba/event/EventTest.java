@@ -17,7 +17,7 @@ public class EventTest {
     public void publish() {
         final AtomicInteger times = new AtomicInteger();
         for (int i = 0; i < 1000; i++) {
-            SystemEventBus.subscribe(TestEvent.class, new Listener<TestEvent>() {
+            SystemEventBus.subscribe(TestEvent.class, new AsyncListener<TestEvent>() {
                 @Override
                 public void onReceive(TestEvent event) {
                     logger.info("receive message : {}", event.message);

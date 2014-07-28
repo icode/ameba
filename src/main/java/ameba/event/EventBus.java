@@ -1,93 +1,53 @@
 package ameba.event;
 
 import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.actor.UntypedActor;
-import akka.event.japi.LookupEventBus;
-import com.google.common.collect.Maps;
-
-import java.util.Map;
 
 /**
  * @author icode
  */
-public abstract class EventBus<E extends Event, S extends ActorRef> extends LookupEventBus<E, S, Class<? extends E>> {
+public abstract class EventBus {
 
-    public static EventBus<Event, ActorRef> create(String actorSysName) {
-        return new Sub(actorSysName);
+    private EventBus() {
     }
 
-    @Override
-    public int compareSubscribers(S a, S b) {
-        return 1;
+    public static EventBus create(String busName) {
+        return new Sub(busName);
     }
 
-    @Override
-    public int mapSize() {
-        return 0;
-    }
+    public abstract void subscribe(Class<? extends Event> event, final Listener listener);
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public Class<? extends E> classify(E event) {
-        return (Class<? extends E>) event.getClass();
-    }
+    public abstract void unsubscribe(Class<? extends Event> event, final Listener listener);
 
-    @Override
-    public void publish(E event, S subscriber) {
-        subscriber.tell(event, ActorRef.noSender());
-    }
+    public abstract void publish(Event event);
 
-    public abstract boolean subscribe(Class<? extends E> eventClass, final Listener listener);
+    public static class Sub extends EventBus {
+        private final AsyncEventBus<Event, ActorRef> asyncEventBus;
+        private final com.google.common.eventbus.EventBus syncEventBus;
 
-    public abstract boolean unsubscribe(Class<? extends E> eventClass, final Listener listener);
-
-    private static class Sub extends EventBus<Event, ActorRef> {
-
-        private final ActorSystem actorSystem;
-        private final Map<Listener, ActorRef> actorRefMap = Maps.newHashMap();
-
-        Sub(String actorSysName) {
-            actorSystem = ActorSystem.create(actorSysName);
+        Sub(String busName) {
+            asyncEventBus = AsyncEventBus.create(busName);
+            syncEventBus = new com.google.common.eventbus.EventBus(busName);
         }
 
-        public boolean subscribe(Class<? extends Event> eventClass, final Listener listener) {
-            ActorRef actor = actorSystem.actorOf(Props.create(EventHandler.class, listener));
-            boolean suc = subscribe(actor, eventClass);
-            if (suc)
-                actorRefMap.put(listener, actor);
-            return suc;
+        public void subscribe(Class<? extends Event> event, final Listener listener) {
+            if (listener instanceof AsyncListener) {
+                asyncEventBus.subscribe(event, (AsyncListener) listener);
+            } else {
+                syncEventBus.register(listener);
+            }
         }
 
-        public boolean unsubscribe(Class<? extends Event> eventClass, final Listener listener) {
-            ActorRef actor = actorRefMap.get(listener);
-            if (actor != null) {
-                boolean suc = unsubscribe(actor, eventClass);
-                if (suc)
-                    actorRefMap.remove(listener);
-                return suc;
+        public void unsubscribe(Class<? extends Event> event, final Listener listener) {
+            if (listener instanceof AsyncListener) {
+                asyncEventBus.unsubscribe(event, (AsyncListener) listener);
+            } else {
+                syncEventBus.unregister(listener);
             }
-            return false;
         }
 
-        public static class EventHandler extends UntypedActor {
-            Listener listener;
-
-            public EventHandler(Listener listener) {
-                this.listener = listener;
-                listener.actor = this;
-            }
-
-            @Override
-            @SuppressWarnings("unchecked")
-            public void onReceive(final Object message) {
-                if (message instanceof Event) {
-                    listener.onReceive((Event) message);
-                } else {
-                    unhandled(message);
-                }
-            }
+        public void publish(Event event) {
+            asyncEventBus.publish(event);
+            syncEventBus.post(event);
         }
     }
 }
