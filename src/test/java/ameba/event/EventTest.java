@@ -4,8 +4,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * @author icode
  */
@@ -15,20 +13,44 @@ public class EventTest {
 
     @Test
     public void publish() {
-        final AtomicInteger times = new AtomicInteger();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
             SystemEventBus.subscribe(TestEvent.class, new AsyncListener<TestEvent>() {
                 @Override
                 public void onReceive(TestEvent event) {
+                    logger.info("async receive message : {}", event.message);
+                }
+            });
+        }
+        for (int i = 0; i < 10; i++) {
+            SystemEventBus.subscribe(TestEvent.class, new Listener<TestEvent>() {
+                @Override
+                public void onReceive(TestEvent event) {
                     logger.info("receive message : {}", event.message);
-                    logger.info("times: {}", times.getAndIncrement());
                 }
             });
         }
 
+        for (int i = 0; i < 10; i++) {
+            SystemEventBus.subscribe(TestEvent1.class, new AsyncListener<TestEvent1>() {
+                @Override
+                public void onReceive(TestEvent1 event) {
+                    logger.info("TestEvent1 async receive message : {}", event.message);
+                }
+            });
+        }
+        for (int i = 0; i < 10; i++) {
+            SystemEventBus.subscribe(TestEvent1.class, new Listener<TestEvent1>() {
+                @Override
+                public void onReceive(TestEvent1 event) {
+                    logger.info("TestEvent1 receive message : {}", event.message);
+                }
+            });
+        }
+
+
         logger.info("publish message ..");
-        for (int i = 0; i < 50; i++) {
-            SystemEventBus.publish(new TestEvent("message: " + i));
+        for (int i = 0; i < 10; i++) {
+            SystemEventBus.publish(new TestEvent1("message: " + i));
         }
 
         try {
@@ -44,6 +66,14 @@ public class EventTest {
         public String message;
 
         public TestEvent(String message) {
+            this.message = message;
+        }
+    }
+
+    public static class TestEvent1 extends Event {
+        public String message;
+
+        public TestEvent1(String message) {
             this.message = message;
         }
     }

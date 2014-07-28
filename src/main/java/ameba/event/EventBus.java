@@ -14,9 +14,9 @@ public abstract class EventBus {
         return new Sub(busName);
     }
 
-    public abstract void subscribe(Class<? extends Event> event, final Listener listener);
+    public abstract <E extends Event> void subscribe(Class<E> event, final Listener<E> listener);
 
-    public abstract void unsubscribe(Class<? extends Event> event, final Listener listener);
+    public abstract <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener);
 
     public abstract void publish(Event event);
 
@@ -29,7 +29,7 @@ public abstract class EventBus {
             syncEventBus = new com.google.common.eventbus.EventBus(busName);
         }
 
-        public void subscribe(Class<? extends Event> event, final Listener listener) {
+        public <E extends Event> void subscribe(Class<E> event, final Listener<E> listener) {
             if (listener instanceof AsyncListener) {
                 asyncEventBus.subscribe(event, (AsyncListener) listener);
             } else {
@@ -37,7 +37,7 @@ public abstract class EventBus {
             }
         }
 
-        public void unsubscribe(Class<? extends Event> event, final Listener listener) {
+        public <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener) {
             if (listener instanceof AsyncListener) {
                 asyncEventBus.unsubscribe(event, (AsyncListener) listener);
             } else {
