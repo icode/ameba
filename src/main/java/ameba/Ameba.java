@@ -1,5 +1,7 @@
 package ameba;
 
+import ameba.event.Listener;
+import ameba.event.SystemEventBus;
 import ameba.mvc.assets.AssetsFeature;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.GrizzlyFuture;
@@ -37,6 +39,14 @@ public class Ameba {
     }
 
     public static void main(String[] args) {
+
+        SystemEventBus.subscribe(Application.ConfiguredEvent.class, new Listener<Application.ConfiguredEvent>() {
+            @Override
+            public void onReceive(Application.ConfiguredEvent event) {
+                app = event.getApp();
+            }
+        });
+
         bootstrap();
     }
 
@@ -243,7 +253,6 @@ public class Ameba {
 
 
     static Application bootstrap(Application app) {
-        Ameba.app = app;
         final HttpServer server = createHttpServer(app);
         // register shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {

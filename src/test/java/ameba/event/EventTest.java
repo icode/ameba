@@ -20,17 +20,7 @@ public class EventTest {
                     logger.info("async receive message : {}", event.message);
                 }
             });
-        }
-        for (int i = 0; i < 10; i++) {
-            SystemEventBus.subscribe(TestEvent.class, new Listener<TestEvent>() {
-                @Override
-                public void onReceive(TestEvent event) {
-                    logger.info("receive message : {}", event.message);
-                }
-            });
-        }
 
-        for (int i = 0; i < 10; i++) {
             SystemEventBus.subscribe(TestEvent1.class, new AsyncListener<TestEvent1>() {
                 @Override
                 public void onReceive(TestEvent1 event) {
@@ -38,7 +28,14 @@ public class EventTest {
                 }
             });
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
+            SystemEventBus.subscribe(TestEvent.class, new Listener<TestEvent>() {
+                @Override
+                public void onReceive(TestEvent event) {
+                    logger.info("receive message : {}", event.message);
+                }
+            });
+
             SystemEventBus.subscribe(TestEvent1.class, new Listener<TestEvent1>() {
                 @Override
                 public void onReceive(TestEvent1 event) {
@@ -47,15 +44,15 @@ public class EventTest {
             });
         }
 
-
         logger.info("publish message ..");
         for (int i = 0; i < 10; i++) {
+            SystemEventBus.publish(new TestEvent("message: " + i));
             SystemEventBus.publish(new TestEvent1("message: " + i));
         }
 
         try {
             synchronized (this) {
-                wait(5000);
+                wait(500);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
