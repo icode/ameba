@@ -7,6 +7,7 @@ import ameba.dev.ReloadingFilter;
 import ameba.event.Event;
 import ameba.event.SystemEventBus;
 import ameba.exceptions.ConfigErrorException;
+import ameba.feature.AmebaFeature;
 import ameba.util.IOUtils;
 import ameba.util.LinkedProperties;
 import ch.qos.logback.classic.LoggerContext;
@@ -172,6 +173,11 @@ public class Application extends ResourceConfig {
         //清空临时读取的配置
         properties.clear();
         properties = null;
+    }
+
+    private static void publishEvent(Event event) {
+        SystemEventBus.publish(event);
+        AmebaFeature.getEventBus().publish(event);
     }
 
     private void configureFeature(Map<String, Object> configMap) {
@@ -377,90 +383,24 @@ public class Application extends ResourceConfig {
             @Override
             public void onStartup(Container container) {
                 Application.this.container = container;
-                SystemEventBus.publish(new ContainerStartupEvent(container, Application.this));
+                publishEvent(new ContainerStartupEvent(container, Application.this));
                 logger.info("容器已启动");
             }
 
             @Override
             public void onReload(Container container) {
-                SystemEventBus.publish(new ContainerReloadEvent(container, Application.this));
+                publishEvent(new ContainerShutdownEvent(container, Application.this));
                 logger.info("容器重新加载");
             }
 
             @Override
             public void onShutdown(Container container) {
-                SystemEventBus.publish(new ContainerShutdownEvent(container, Application.this));
+                publishEvent(new ContainerShutdownEvent(container, Application.this));
                 logger.info("容器已关闭");
             }
         });
 
         SystemEventBus.publish(new ConfiguredEvent(this));
-    }
-
-    public static class ConfiguredEvent extends Event {
-        private Application app;
-
-        public Application getApp() {
-            return app;
-        }
-
-        public ConfiguredEvent(Application app) {
-            this.app = app;
-        }
-    }
-
-    public static class ContainerStartupEvent extends Event {
-        private Container container;
-        private Application app;
-
-        Container getContainer() {
-            return container;
-        }
-
-        public Application getApp() {
-            return app;
-        }
-
-        public ContainerStartupEvent(Container container, Application app) {
-            this.container = container;
-            this.app = app;
-        }
-    }
-
-    public static class ContainerReloadEvent extends Event {
-        private Container container;
-        private Application app;
-
-        Container getContainer() {
-            return container;
-        }
-
-        public Application getApp() {
-            return app;
-        }
-
-        public ContainerReloadEvent(Container container, Application app) {
-            this.container = container;
-            this.app = app;
-        }
-    }
-
-    public static class ContainerShutdownEvent extends Event {
-        Container container;
-        Application app;
-
-        Container getContainer() {
-            return container;
-        }
-
-        public Application getApp() {
-            return app;
-        }
-
-        public ContainerShutdownEvent(Container container, Application app) {
-            this.container = container;
-            this.app = app;
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -530,7 +470,6 @@ public class Application extends ResourceConfig {
             }
         });
     }
-
 
     private void configureDev() {
         logger.warn("当前应用程序为开发模式");
@@ -861,6 +800,72 @@ public class Application extends ResourceConfig {
 
         public boolean isTest() {
             return this == TEST;
+        }
+    }
+
+    public static class ConfiguredEvent extends Event {
+        private Application app;
+
+        public ConfiguredEvent(Application app) {
+            this.app = app;
+        }
+
+        public Application getApp() {
+            return app;
+        }
+    }
+
+    public static class ContainerStartupEvent extends Event {
+        private Container container;
+        private Application app;
+
+        public ContainerStartupEvent(Container container, Application app) {
+            this.container = container;
+            this.app = app;
+        }
+
+        Container getContainer() {
+            return container;
+        }
+
+        public Application getApp() {
+            return app;
+        }
+    }
+
+    public static class ContainerReloadEvent extends Event {
+        private Container container;
+        private Application app;
+
+        public ContainerReloadEvent(Container container, Application app) {
+            this.container = container;
+            this.app = app;
+        }
+
+        Container getContainer() {
+            return container;
+        }
+
+        public Application getApp() {
+            return app;
+        }
+    }
+
+    public static class ContainerShutdownEvent extends Event {
+        Container container;
+        Application app;
+
+        public ContainerShutdownEvent(Container container, Application app) {
+            this.container = container;
+            this.app = app;
+        }
+
+        Container getContainer() {
+            return container;
+        }
+
+        public Application getApp() {
+            return app;
         }
     }
 }
