@@ -849,7 +849,7 @@ public class Application extends ResourceConfig {
     }
 
     public enum Mode {
-        DEV, PRODUCT;
+        DEV, PRODUCT, TEST;
 
         public boolean isDev() {
             return this == DEV;
@@ -857,6 +857,10 @@ public class Application extends ResourceConfig {
 
         public boolean isProd() {
             return this == PRODUCT;
+        }
+
+        public boolean isTest() {
+            return this == TEST;
         }
     }
 }
