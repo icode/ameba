@@ -2,6 +2,9 @@ package ameba.container;
 
 import ameba.Application;
 import ameba.util.ClassUtils;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -9,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
  * @author icode
  */
 public abstract class Container {
+    public static final Logger logger = LoggerFactory.getLogger(Container.class);
 
     protected Application application;
 
@@ -17,14 +21,19 @@ public abstract class Container {
     }
 
     public static Container create(Application application) throws IllegalAccessException, InstantiationException {
+
+        String provider = (String) application.getProperty("app.container.provider");
+
         try {
-            return (Container) ClassUtils.forName((String) application.getProperty("app.container.provider"))
+            return (Container) ClassUtils.forName(provider)
                     .getConstructor(Application.class)
                     .newInstance(application);
         } catch (InvocationTargetException e) {
             //noop
         } catch (NoSuchMethodException e) {
             //noop
+        } finally {
+            logger.info("HTTP容器为 {}", provider);
         }
         return null;
     }
@@ -32,6 +41,8 @@ public abstract class Container {
     public Application getApplication() {
         return application;
     }
+
+    public abstract ServiceLocator getServiceLocator();
 
     public abstract void start() throws Exception;
 

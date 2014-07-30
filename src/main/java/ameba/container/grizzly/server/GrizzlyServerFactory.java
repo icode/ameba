@@ -1,14 +1,14 @@
 package ameba.container.grizzly.server;
 
-import ameba.mvc.assets.AssetsFeature;
-import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.GrizzlyFuture;
 import org.glassfish.grizzly.http.CompressionConfig;
 import org.glassfish.grizzly.http.ajp.AjpAddOn;
-import org.glassfish.grizzly.http.server.*;
+import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.http.server.NetworkListener;
+import org.glassfish.grizzly.http.server.ServerConfiguration;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
 import org.glassfish.grizzly.spdy.SpdyAddOn;
-import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.grizzly.strategies.WorkerThreadIOStrategy;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
@@ -30,7 +30,6 @@ import javax.websocket.server.ServerEndpointConfig;
 import javax.ws.rs.ProcessingException;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -85,97 +84,6 @@ public class GrizzlyServerFactory {
      * The number of open sessions per remote address is not limited by default.
      */
     public static final String MAX_SESSIONS_PER_REMOTE_ADDR = "app.websocket.maxSessionsPerRemoteAddr";
-
-
-    public static HttpServer createHttpServer() {
-
-        ameba.Application app = new ameba.Application();
-
-        return createHttpServer(app);
-    }
-
-
-    @SuppressWarnings("unchecked")
-    public static HttpServer createHttpServer(ameba.Application app) {
-        SSLEngineConfigurator sslEngineConfigurator = null;
-        if (app.isSslConfigReady()) {
-            SSLContextConfigurator sslContextConfiguration = new SSLContextConfigurator();
-            sslContextConfiguration.setKeyPass(app.getSslKeyPassword());
-            sslContextConfiguration.setSecurityProtocol(app.getSslProtocol());
-
-            sslContextConfiguration.setKeyStoreBytes(app.getSslKeyStoreFile());
-            sslContextConfiguration.setKeyStorePass(app.getSslKeyStorePassword());
-            sslContextConfiguration.setKeyStoreProvider(app.getSslKeyStoreProvider());
-            sslContextConfiguration.setKeyStoreType(app.getSslKeyStoreType());
-            sslContextConfiguration.setKeyManagerFactoryAlgorithm(app.getSslKeyManagerFactoryAlgorithm());
-
-            sslContextConfiguration.setTrustStoreBytes(app.getSslTrustStoreFile());
-            if (StringUtils.isNotBlank(app.getSslTrustStorePassword()))
-                sslContextConfiguration.setTrustStorePass(app.getSslTrustStorePassword());
-            sslContextConfiguration.setTrustStoreType(app.getSslTrustStoreType());
-            sslContextConfiguration.setTrustStoreProvider(app.getSslTrustStoreProvider());
-            sslContextConfiguration.setTrustManagerFactoryAlgorithm(app.getSslTrustManagerFactoryAlgorithm());
-
-            sslEngineConfigurator = new SSLEngineConfigurator(sslContextConfiguration,
-                    app.isSslClientMode(), app.isSslNeedClientAuth(), app.isSslWantClientAuth());
-        }
-
-        CompressionConfig compressionConfig = new CompressionConfig();
-
-
-        String modeStr = (String) app.getProperty("http.compression.mode");
-        if (StringUtils.isNotBlank(modeStr) && ((modeStr = modeStr.toUpperCase()).equals("ON") || modeStr.equals("FORCE"))) {
-
-            String minSizeStr = (String) app.getProperty("http.compression.minSize");
-            String mimeTypesStr = (String) app.getProperty("http.compression.mimeTypes");
-            String userAgentsStr = (String) app.getProperty("http.compression.ignore.userAgents");
-
-            compressionConfig.setCompressionMode(CompressionConfig.CompressionMode.fromString(modeStr)); // the mode
-            if (StringUtils.isNotBlank(minSizeStr))
-                try {
-                    compressionConfig.setCompressionMinSize(Integer.parseInt(minSizeStr)); // the min amount of bytes to compress
-                } catch (Exception e) {
-                    logger.error("parse http.compression.minSize error", e);
-                }
-            if (StringUtils.isNotBlank(mimeTypesStr))
-                compressionConfig.setCompressableMimeTypes(mimeTypesStr.split(",")); // the mime types to compress
-            if (StringUtils.isNotBlank(userAgentsStr))
-                compressionConfig.setNoCompressionUserAgents(userAgentsStr.split(","));
-        }
-
-
-        HttpServer server = createHttpServer(
-                app.getHttpServerBaseUri(),
-                app,
-                compressionConfig,
-                app.isSecureEnabled(),
-                app.isAjpEnabled(),
-                app.isJmxEnabled(),
-                sslEngineConfigurator,
-                false);
-
-        ServerConfiguration serverConfiguration = server.getServerConfiguration();
-        serverConfiguration.setHttpServerName(app.getApplicationName());
-        serverConfiguration.setHttpServerVersion(app.getApplicationVersion());
-        serverConfiguration.setName("Ameba-HttpServer-" + app.getApplicationName());
-
-        String charset = StringUtils.defaultIfBlank((String) app.getProperty("app.encoding"), "utf-8");
-        serverConfiguration.setSendFileEnabled(true);
-        if (!app.isRegistered(AssetsFeature.class)) {
-            Map<String, String[]> assetMap = AssetsFeature.getAssetMap(app);
-            Set<String> mapKey = assetMap.keySet();
-            for (String key : mapKey) {
-                HttpHandler httpHandler = new CLStaticHttpHandler(ameba.Application.class.getClassLoader(), key + "/");
-                httpHandler.setRequestURIEncoding(charset);
-                serverConfiguration.addHttpHandler(httpHandler,
-                        assetMap.get(key));
-            }
-        }
-
-        server.getServerConfiguration().setDefaultQueryEncoding(Charset.forName(charset));
-
-        return server;
-    }
 
     /**
      * Creates HttpServer instance.

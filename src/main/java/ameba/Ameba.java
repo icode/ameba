@@ -1,8 +1,7 @@
 package ameba;
 
 import ameba.container.Container;
-import ameba.event.Listener;
-import ameba.event.SystemEventBus;
+import ameba.exceptions.AmebaException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +14,10 @@ public class Ameba {
 
     private static Application app;
     private static ServiceLocator serviceLocator;
+    private static Container container;
+
+    private Ameba() {
+    }
 
     public static ServiceLocator getServiceLocator() {
         return serviceLocator;
@@ -24,47 +27,50 @@ public class Ameba {
         return app;
     }
 
-    public static void main(String[] args) throws InstantiationException, IllegalAccessException {
-
-        SystemEventBus.subscribe(Application.ConfiguredEvent.class, new Listener<Application.ConfiguredEvent>() {
-            @Override
-            public void onReceive(Application.ConfiguredEvent event) {
-                app = event.getApp();
-            }
-        });
-
+    public static void main(String[] args) throws InstantiationException, IllegalAccessException, InterruptedException {
         bootstrap();
-    }
 
-    static Application bootstrap() throws IllegalAccessException, InstantiationException {
-        return bootstrap(new Application());
-    }
-
-    static Application bootstrap(Application app) throws InstantiationException, IllegalAccessException {
-        final Container container = Container.create(app);
         // register shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                logger.info("关闭服务器...");
-                try {
-                    container.shutdown();
-                } catch (Exception e) {
-                    logger.error("服务器关闭出错", e);
-                }
-                logger.info("服务器已关闭");
+                shutdown();
             }
         }, "shutdownHook"));
+
+        Thread.currentThread().join();
+    }
+
+    public static void bootstrap() throws IllegalAccessException, InstantiationException {
+        bootstrap(new Application());
+    }
+
+    public static synchronized void bootstrap(Application application) throws InstantiationException, IllegalAccessException {
+        if (Ameba.container != null) {
+            throw new AmebaException("无法启动多个实例");
+        }
+
+        app = application;
+        container = Container.create(app);
+        serviceLocator = container.getServiceLocator();
 
         // run
         try {
             logger.info("启动容器...");
             container.start();
             logger.info("服务已启动");
-            Thread.currentThread().join();
         } catch (Exception e) {
             logger.error("启动服务器出现错误", e);
         }
-        return app;
+    }
+
+    public static synchronized void shutdown() {
+        logger.info("关闭服务器...");
+        try {
+            container.shutdown();
+        } catch (Exception e) {
+            logger.error("服务器关闭出错", e);
+        }
+        logger.info("服务器已关闭");
     }
 }

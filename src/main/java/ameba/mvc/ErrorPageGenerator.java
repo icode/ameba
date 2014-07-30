@@ -1,6 +1,6 @@
 package ameba.mvc;
 
-import ameba.Application;
+import ameba.Ameba;
 import ameba.exceptions.AmebaException;
 import ameba.exceptions.SourceAttachment;
 import ameba.mvc.template.internal.Viewables;
@@ -45,8 +45,6 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
     private static final String DEFAULT_400_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400.html";
     private static final Logger logger = LoggerFactory.getLogger(ErrorPageGenerator.class);
     private static String defaultErrorTemplate;
-    @Inject
-    private javax.inject.Provider<Application> app;
     @Inject
     private ServiceLocator serviceLocator;
     @Context
@@ -94,7 +92,7 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
             status = ((WebApplicationException) exception).getResponse().getStatus();
         }
         String tplName;
-        if (status >= 500 && app.get().getMode().isDev()) {
+        if (status >= 500 && Ameba.getApp().getMode().isDev()) {
             //开发模式，显示详细错误信息
             tplName = DEFAULT_5XX_DEV_ERROR_PAGE;
         } else {

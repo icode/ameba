@@ -23,8 +23,6 @@ import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.hk2.api.Factory;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
@@ -135,8 +133,6 @@ public class Application extends ResourceConfig {
         if (mode.isDev()) {
             configureDev();
         }
-
-        bindApp();
 
         //设置ssl相关
         configureSsl(properties);
@@ -464,25 +460,6 @@ public class Application extends ResourceConfig {
         } else {
             logger.info("未找到附加模块");
         }
-    }
-
-    private void bindApp() {
-        registerInstances(new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bindFactory(new Factory<Object>() {
-                    @Override
-                    public Object provide() {
-                        return Application.this;
-                    }
-
-                    @Override
-                    public void dispose(Object instance) {
-
-                    }
-                }).to(Application.class);
-            }
-        });
     }
 
     private void configureDev() {
