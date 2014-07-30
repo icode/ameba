@@ -1,4 +1,4 @@
-package ameba.container.server;
+package ameba.container.grizzly.server;
 
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.http.server.AddOn;

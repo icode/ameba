@@ -1,4 +1,4 @@
-package ameba.container.server;
+package ameba.container.grizzly.server;
 
 import ameba.mvc.assets.AssetsFeature;
 import org.apache.commons.lang3.StringUtils;
@@ -40,8 +40,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author icode
  */
-public class GrizzlyServer {
-    public static final Logger logger = LoggerFactory.getLogger(GrizzlyServer.class);
+public class GrizzlyServerFactory {
+    public static final Logger logger = LoggerFactory.getLogger(GrizzlyServerFactory.class);
     public static final String DEFAULT_NETWORK_LISTENER_NAME = "ameba";
     /**
      * Server-side property to set custom worker {@link org.glassfish.grizzly.threadpool.ThreadPoolConfig}.
@@ -223,6 +223,7 @@ public class GrizzlyServer {
      * @throws javax.ws.rs.ProcessingException
      * @see GrizzlyHttpContainer
      */
+    @SuppressWarnings("unchecked")
     public static HttpServer createHttpServer(final URI uri,
                                               final HttpHandler handler,
                                               final Map<String, Object> webSocketConfig,
@@ -237,6 +238,7 @@ public class GrizzlyServer {
                 : uri.getHost();
         final int port = (uri.getPort() == -1) ? 80 : uri.getPort();
         final NetworkListener listener = new NetworkListener(DEFAULT_NETWORK_LISTENER_NAME, host, port);
+
         final ServerContainer webSocketContainer = bindWebSocket(webSocketConfig, listener);
         final HttpServer server = new HttpServer() {
             @Override
@@ -329,7 +331,7 @@ public class GrizzlyServer {
         final Integer maxSessionsPerApp = Utils.getProperty(localProperties, MAX_SESSIONS_PER_APP, Integer.class);
         final Integer maxSessionsPerRemoteAddr = Utils.getProperty(localProperties, MAX_SESSIONS_PER_REMOTE_ADDR, Integer.class);
 
-        return new TyrusServerContainer((Set<Class<?>>) null) {
+        return new TyrusServerContainer((Set<Class<?>>)null) {
 
             private final WebSocketEngine engine = TyrusWebSocketEngine.builder(this)
                     .incomingBufferSize(incomingBufferSize)

@@ -1,14 +1,11 @@
 package ameba;
 
-import ameba.container.server.GrizzlyServer;
+import ameba.container.Container;
 import ameba.event.Listener;
 import ameba.event.SystemEventBus;
-import org.glassfish.grizzly.GrizzlyFuture;
-import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author icode
@@ -17,12 +14,17 @@ public class Ameba {
     public static final Logger logger = LoggerFactory.getLogger(Ameba.class);
 
     private static Application app;
+    private static ServiceLocator serviceLocator;
+
+    public static ServiceLocator getServiceLocator() {
+        return serviceLocator;
+    }
 
     public static Application getApp() {
         return app;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InstantiationException, IllegalAccessException {
 
         SystemEventBus.subscribe(Application.ConfiguredEvent.class, new Listener<Application.ConfiguredEvent>() {
             @Override
@@ -34,23 +36,20 @@ public class Ameba {
         bootstrap();
     }
 
-    static Application bootstrap() {
+    static Application bootstrap() throws IllegalAccessException, InstantiationException {
         return bootstrap(new Application());
     }
 
-    static Application bootstrap(Application app) {
-        final HttpServer server = GrizzlyServer.createHttpServer(app);
+    static Application bootstrap(Application app) throws InstantiationException, IllegalAccessException {
+        final Container container = Container.create(app);
         // register shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
                 logger.info("关闭服务器...");
-                GrizzlyFuture<HttpServer> future = server.shutdown();
                 try {
-                    future.get();
-                } catch (InterruptedException e) {
-                    logger.error("服务器关闭出错", e);
-                } catch (ExecutionException e) {
+                    container.shutdown();
+                } catch (Exception e) {
                     logger.error("服务器关闭出错", e);
                 }
                 logger.info("服务器已关闭");
@@ -60,7 +59,7 @@ public class Ameba {
         // run
         try {
             logger.info("启动容器...");
-            server.start();
+            container.start();
             logger.info("服务已启动");
             Thread.currentThread().join();
         } catch (Exception e) {

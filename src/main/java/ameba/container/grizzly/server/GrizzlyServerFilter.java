@@ -1,4 +1,4 @@
-package ameba.container.server;
+package ameba.container.grizzly.server;
 
 import org.glassfish.grizzly.*;
 import org.glassfish.grizzly.attributes.Attribute;
@@ -47,7 +47,7 @@ public class GrizzlyServerFilter extends BaseFilter {
     /**
      * Constructs a new {@link GrizzlyServerFilter}.
      *
-     * @param serverContainer TODO
+     * @param serverContainer
      */
     public GrizzlyServerFilter(ServerContainer serverContainer) {
         this.serverContainer = serverContainer;
@@ -108,7 +108,7 @@ public class GrizzlyServerFilter extends BaseFilter {
      *
      * @param ctx {@link FilterChainContext}
      * @return {@link NextAction} instruction for {@link org.glassfish.grizzly.filterchain.FilterChain}, how it should continue the execution
-     * @throws IOException TODO
+     * @throws IOException
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -116,21 +116,20 @@ public class GrizzlyServerFilter extends BaseFilter {
         // Get the parsed HttpContent (we assume prev. filter was HTTP)
         final HttpContent message = ctx.getMessage();
 
-        // Get the HTTP header
-        final HttpHeader header = message.getHttpHeader();
-
-        // If websocket is null - it means either non-websocket Connection
-        if (!UpgradeRequest.WEBSOCKET.equalsIgnoreCase(header.getUpgrade()) && message.getHttpHeader().isRequest()) {
-            // if it's not a websocket connection - pass the processing to the next filter
-            return ctx.getInvokeAction();
-        }
-
         final org.glassfish.tyrus.spi.Connection tyrusConnection = getConnection(ctx);
 
         logger.debug("handleRead websocket: {0} content-size={1} headers=\n{2}",
                 tyrusConnection, message.getContent().remaining(), message.getHttpHeader());
 
         if (tyrusConnection == null) {
+            // Get the HTTP header
+            final HttpHeader header = message.getHttpHeader();
+
+            // If websocket is null - it means either non-websocket Connection
+            if (!UpgradeRequest.WEBSOCKET.equalsIgnoreCase(header.getUpgrade()) && message.getHttpHeader().isRequest()) {
+                // if it's not a websocket connection - pass the processing to the next filter
+                return ctx.getInvokeAction();
+            }
 
             final String ATTR_NAME = "org.glassfish.tyrus.container.grizzly.WebSocketFilter.HANDSHAKE_PROCESSED";
 
@@ -177,8 +176,6 @@ public class GrizzlyServerFilter extends BaseFilter {
         return TYRUS_CONNECTION.get(ctx.getConnection());
     }
 
-    // --------------------------------------------------------- Private Methods
-
     private TaskProcessor getTaskProcessor(FilterChainContext ctx) {
         return TASK_PROCESSOR.get(ctx.getConnection());
     }
@@ -192,7 +189,6 @@ public class GrizzlyServerFilter extends BaseFilter {
      */
     private NextAction handleHandshake(final FilterChainContext ctx, HttpContent content) {
         final UpgradeRequest upgradeRequest = createWebSocketRequest(content);
-        // TODO: final UpgradeResponse upgradeResponse = GrizzlyUpgradeResponse(HttpResponsePacket)
         final UpgradeResponse upgradeResponse = new TyrusUpgradeResponse();
         final WebSocketEngine.UpgradeInfo upgradeInfo = serverContainer.getWebSocketEngine().upgrade(upgradeRequest, upgradeResponse);
 
@@ -240,9 +236,6 @@ public class GrizzlyServerFilter extends BaseFilter {
         final HttpResponsePacket responsePacket = ((HttpRequestPacket) ((HttpContent) ctx.getMessage()).getHttpHeader()).getResponse();
         responsePacket.setProtocol(Protocol.HTTP_1_1);
         responsePacket.setStatus(response.getStatus());
-
-        // TODO
-//        responsePacket.setReasonPhrase(response.getReasonPhrase());
 
         for (Map.Entry<String, List<String>> entry : response.getHeaders().entrySet()) {
             responsePacket.setHeader(entry.getKey(), Utils.getHeaderFromList(entry.getValue()));

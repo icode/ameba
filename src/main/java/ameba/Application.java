@@ -6,6 +6,7 @@ import ameba.dev.ReloadingClassLoader;
 import ameba.dev.ReloadingFilter;
 import ameba.event.Event;
 import ameba.event.SystemEventBus;
+import ameba.exceptions.AmebaException;
 import ameba.exceptions.ConfigErrorException;
 import ameba.feature.AmebaFeature;
 import ameba.util.IOUtils;
@@ -35,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.inject.Singleton;
+import javax.ws.rs.core.Feature;
+import javax.ws.rs.core.FeatureContext;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -98,6 +101,10 @@ public class Application extends ResourceConfig {
 
     @SuppressWarnings("unchecked")
     public Application(String confFile) {
+
+        if (Ameba.getApp() != null) {
+            throw new AmebaException("已经存在一个应用实例");
+        }
 
         configFile = confFile;
         logger.info("初始化...");
@@ -401,6 +408,13 @@ public class Application extends ResourceConfig {
         });
 
         SystemEventBus.publish(new ConfiguredEvent(this));
+
+        registerInstances(new Feature() {
+            @Override
+            public boolean configure(FeatureContext context) {
+                return true;
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")

@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author icode
  */
-public abstract class AmebaException extends RuntimeException {
+public class AmebaException extends RuntimeException {
     public AmebaException() {
 
     }
