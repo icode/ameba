@@ -1,7 +1,6 @@
 package ameba.util;
 
 import com.google.common.collect.Lists;
-import httl.util.UnsafeByteArrayOutputStream;
 
 import java.io.*;
 import java.net.URL;
@@ -9,13 +8,12 @@ import java.text.SimpleDateFormat;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.zip.ZipFile;
 
 /**
  * @author ICode
  * @since 13-8-14 下午7:33
  */
-public class IOUtils {
+public class IOUtils extends org.apache.commons.io.IOUtils{
 
     private static final int DEFAULT_BUFFER_SIZE = 4096;
 
@@ -29,51 +27,6 @@ public class IOUtils {
         } finally {
             closeQuietly(is);
         }
-    }
-
-    public static byte[] toByteArray(InputStream is) {
-        UnsafeByteArrayOutputStream out = new UnsafeByteArrayOutputStream();
-        try {
-            byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-            int n = 0;
-            while (-1 != (n = is.read(buffer))) {
-                out.write(buffer, 0, n);
-            }
-            return out.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            closeQuietly(out);
-        }
-    }
-
-    public static void closeQuietly(Closeable obj) {
-        try {
-            if (obj != null) {
-                obj.close();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void closeQuietly(ZipFile obj) {
-        try {
-            if (obj != null) {
-                obj.close();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    public static String read(InputStream in) {
-        InputStreamReader reader;
-        try {
-            reader = new InputStreamReader(in, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-        return read(reader);
     }
 
     public static InputStream getResourceAsStream(String resource) {
@@ -124,6 +77,16 @@ public class IOUtils {
         return url;
     }
 
+    public static String read(InputStream in) {
+        InputStreamReader reader;
+        try {
+            reader = new InputStreamReader(in, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+        return read(reader);
+    }
+
     public static String readFromResource(String resource) throws IOException {
 
         InputStream in = getResourceAsStream(resource);
@@ -131,8 +94,7 @@ public class IOUtils {
             return null;
         }
 
-        String text = IOUtils.read(in);
-        return text;
+        return read(in);
     }
 
     public static byte[] readByteArrayFromResource(String resource) throws IOException {
@@ -150,27 +112,13 @@ public class IOUtils {
         return output.toByteArray();
     }
 
-    public static long copy(InputStream input, OutputStream output) throws IOException {
-        final int EOF = -1;
-
-        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-
-        long count = 0;
-        int n = 0;
-        while (EOF != (n = input.read(buffer))) {
-            output.write(buffer, 0, n);
-            count += n;
-        }
-        return count;
-    }
-
     public static String read(Reader reader) {
         try {
 
             StringWriter writer = new StringWriter();
 
             char[] buffer = new char[DEFAULT_BUFFER_SIZE];
-            int n = 0;
+            int n;
             while (-1 != (n = reader.read(buffer))) {
                 writer.write(buffer, 0, n);
             }
