@@ -1,22 +1,3 @@
-/**
- * jetbrick-template
- * http://subchen.github.io/jetbrick-template/
- *
- * Copyright 2010-2014 Guoqiang Chen. All rights reserved.
- * Email: subchen@gmail.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package ameba.compiler;
 
 import ameba.Application;
@@ -42,8 +23,8 @@ public class JavaSource {
         this.outputDir = outputDir;
         this.inputDir = inputDir;
         String fileName = qualifiedClassName.replace(".", File.separator);
-        this.javaFile = new File(inputDir, fileName + ".java");
-        this.classFile = new File(outputDir, fileName + ".class");
+        this.javaFile = new File(inputDir, fileName + JAVA_EXTENSION);
+        this.classFile = new File(outputDir, fileName + CLASS_EXTENSION);
     }
 
     public static File getJava(String name, Application app) {
@@ -51,7 +32,7 @@ public class JavaSource {
         if (fileName.contains("$")) {
             fileName = fileName.substring(0, fileName.indexOf("$"));
         }
-        fileName = fileName.replace(".", "/") + ".java";
+        fileName = fileName.replace(".", "/") + JAVA_EXTENSION;
         File pkgRoot = app.getPackageRoot();
         if (pkgRoot != null) {
             File javaFile = new File(pkgRoot, fileName);

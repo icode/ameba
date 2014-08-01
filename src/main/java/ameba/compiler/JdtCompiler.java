@@ -149,7 +149,7 @@ public class JdtCompiler extends JavaCompiler {
 
             InputStream is = null;
             try {
-                String resourceName = className.replace('.', '/') + ".class";
+                String resourceName = className.replace('.', '/') + JavaSource.CLASS_EXTENSION;
                 is = classLoader.getResourceAsStream(resourceName);
                 if (is != null) {
                     byte[] bytes = IOUtils.toByteArray(is);
@@ -191,7 +191,7 @@ public class JdtCompiler extends JavaCompiler {
                 return true;
             }
 
-            String resourceName = name.replace('.', '/') + ".class";
+            String resourceName = name.replace('.', '/') + JavaSource.CLASS_EXTENSION;
             URL url = classLoader.getResource(resourceName);
             return url != null;
         }
@@ -202,7 +202,6 @@ public class JdtCompiler extends JavaCompiler {
     }
 
     static class CompilerRequestor implements ICompilerRequestor {
-        static final Logger log = LoggerFactory.getLogger(CompilerRequestor.class);
         IProblem[] errors;
         List<JavaSource> sources;
         Map<String, JavaSource> map;
