@@ -15,6 +15,7 @@ import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
@@ -152,7 +153,12 @@ public class JdtCompiler extends JavaCompiler {
                 String resourceName = className.replace('.', '/') + JavaSource.CLASS_EXTENSION;
                 is = classLoader.getResourceAsStream(resourceName);
                 if (is != null) {
-                    byte[] bytes = IOUtils.toByteArray(is);
+                    byte[] bytes;
+                    try {
+                        bytes = IOUtils.toByteArray(is);
+                    } catch (IOException e) {
+                        throw new CompileErrorException(e);
+                    }
                     char[] fileName = resourceName.toCharArray();
                     ClassFileReader classFileReader = new ClassFileReader(bytes, fileName, true);
                     return new NameEnvironmentAnswer(classFileReader, null);
