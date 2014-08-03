@@ -146,8 +146,8 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         private File sourceFile;
         private List<String> source;
         private List<UsefulSource> usefulSources;
-        private int line;
-        private int lineIndex;
+        private Integer line;
+        private Integer lineIndex;
         private String method;
 
         public Error() {

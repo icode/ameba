@@ -1,4 +1,4 @@
-<!--#set(ameba.mvc.ErrorPageGenerator.Error model,)-->
+<!--#set(ameba.mvc.ErrorPageGenerator.Error model)-->
 <!--#set(ameba.mvc.ErrorPageGenerator.Error$UsefulSource useful)-->
 <!DOCTYPE html>
 <html>
@@ -156,6 +156,14 @@
         <span class="line">-></span>
         <span class="code">${model.exception.class.name}</span>
     </pre>
+
+    <!--#if(model.exception.cause != null)-->
+        <pre class="error">
+            <span class="line">&gt;</span>
+            <span class="code">${model.exception.cause.message}</span>
+        </pre>
+    <!--#end-->
+
     <!--#for(StackTraceElement el : model.exception.stackTrace)-->
     <pre>
         <span class="line">&nbsp;</span>
