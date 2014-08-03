@@ -130,15 +130,22 @@ public class Application extends ResourceConfig {
             mode = Mode.PRODUCT;
         }
 
+        //设置应用程序名称
+        setApplicationName(StringUtils.defaultString((String) getProperty("app.name"), "ameba"));
+        applicationVersion = (String) getProperty("app.version");
+
+        //配置日志器
+        configureLogger();
+
         if (mode.isDev()) {
             configureDev();
         }
 
-        //设置ssl相关
-        configureSsl(properties);
-
         //读取模式配置
         readModeConfig(configMap);
+
+        //设置ssl相关
+        configureSsl(properties);
 
         //读取模块配置
         readModuleConfig(configMap);
@@ -153,21 +160,11 @@ public class Application extends ResourceConfig {
         //将临时配置对象放入应用程序配置
         addProperties(configMap);
 
-        //设置应用程序名称
-        setApplicationName(StringUtils.defaultString((String) getProperty("app.name"), "ameba"));
-        applicationVersion = (String) getProperty("app.version");
-
-        //配置日志器
-        configureLogger();
-
         //配置资源
         configureResource(configMap);
 
         //配置特性
         configureFeature(configMap);
-
-        //设置服务器相关
-        configureServer(properties);
 
         //清空临时配置
         configMap.clear();
