@@ -131,8 +131,8 @@ public class Application extends ResourceConfig {
         }
 
         //设置应用程序名称
-        setApplicationName(StringUtils.defaultString((String) getProperty("app.name"), "ameba"));
-        applicationVersion = (String) getProperty("app.version");
+        setApplicationName(StringUtils.defaultString(properties.getProperty("app.name"), "ameba"));
+        applicationVersion = (String) properties.getProperty("app.version");
 
         //配置日志器
         configureLogger();
