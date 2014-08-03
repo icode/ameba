@@ -1,5 +1,6 @@
 package ameba.mvc.template.internal;
 
+import ameba.Ameba;
 import ameba.util.IOUtils;
 import httl.Engine;
 import httl.Template;
@@ -32,16 +33,13 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
 
     public static final String CONFIG_SUFFIX = "httl";
 
-    private Engine engine;
+    private static final Engine engine;
 
-    @Inject
-    public HttlViewProcessor(Configuration config, @Optional ServletContext servletContext) {
-        super(config, servletContext, CONFIG_SUFFIX, getExtends(config));
-
+    static {
         Properties properties = new Properties();
-        Map<String, Object> map = config.getProperties();
+        Map<String, Object> map = Ameba.getApp().getProperties();
 
-        properties.put("template.suffix", StringUtils.join(getExtends(config)));
+        properties.put("template.suffix", StringUtils.join(getExtends(Ameba.getApp())));
 
         String encoding = (String) map.get("app.encoding");
 
@@ -62,7 +60,14 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
                 properties.put(name, map.get(key));
             }
         }
-        this.engine = Engine.getEngine(properties);
+        engine = Engine.getEngine(properties);
+    }
+
+
+
+    @Inject
+    public HttlViewProcessor(Configuration config, @Optional ServletContext servletContext) {
+        super(config, servletContext, CONFIG_SUFFIX, getExtends(config));
     }
 
     static String[] getExtends(Configuration config) {
