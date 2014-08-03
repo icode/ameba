@@ -9,7 +9,6 @@ import org.glassfish.jersey.server.internal.scanning.PackageNamesScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.Entity;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -159,17 +158,33 @@ public class ModelManager {
         return Lists.newArrayList(modelClassesDescList);
     }
 
+    protected boolean isProperty(CtField ctField) {
+        return !(ctField.getName().equals(ctField.getName().toUpperCase())
+                || ctField.getName().substring(0, 1).equals(ctField.getName().substring(0, 1).toUpperCase()))
+                && Modifier.isPublic(ctField.getModifiers())
+                && !Modifier.isStatic(ctField.getModifiers()) // protected classes will be considered public by this call
+                && Modifier.isPublic(ctField.getDeclaringClass().getModifiers());
+    }
+
     private ModelDescription enhanceModel(InputStream in) {
         try {
             pool.importPackage(BASE_MODEL_PKG);
             CtClass clazz = pool.makeClass(in);
+
+            if (clazz.isInterface()) {
+                return null;
+            }
+            if (clazz.getName().endsWith(".package")) {
+                return null;
+            }
+
             ModelDescription cache = descCache.get(clazz.getURL().toExternalForm());
             if (cache != null) {
                 return cache;
             }
-            if (!clazz.hasAnnotation(Entity.class)) {
-                return null;
-            }
+//            if (!clazz.hasAnnotation(Entity.class)) {
+//                return null;
+//            }
             logger.debug("增强模型类[{}]", clazz.getName());
             CtClass mClazz = clazz;
 
@@ -181,7 +196,7 @@ public class ModelManager {
             boolean idGetSetFixed = false;
             while (clazz != null) {
                 for (CtField field : clazz.getDeclaredFields()) {
-                    if (Modifier.isStatic(field.getModifiers())) {
+                    if (!isProperty(field)) {
                         continue;
                     }
                     //add getter method
