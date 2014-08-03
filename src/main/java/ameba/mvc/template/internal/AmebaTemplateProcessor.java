@@ -34,7 +34,9 @@ import java.util.Set;
 @Provider
 @Singleton
 public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcessor<T> {
+    public static final String PROTECTED_DIR = "_protected";
     private static final Logger logger = LoggerFactory.getLogger(AmebaTemplateProcessor.class);
+    private static final ThreadLocal<Viewable> ERROR_VIEWBLE_THREAD_LOCAL = new ThreadLocal<Viewable>();
     /**
      * Create an instance of the processor with injected {@link javax.ws.rs.core.Configuration config} and
      * (optional) {@link javax.servlet.ServletContext servlet context}.
@@ -48,35 +50,31 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
     Set<String> supportedExtensions;
     @Inject
     private ServiceLocator serviceLocator;
+    private ErrorPageGenerator errorPageGenerator;
 
     public AmebaTemplateProcessor(Configuration config, ServletContext servletContext, String propertySuffix, String... supportedExtensions) {
         super(config, servletContext, propertySuffix, supportedExtensions);
         this.supportedExtensions = Sets.newHashSet(Collections2.transform(
                 Arrays.asList(supportedExtensions), new Function<String, String>() {
-            @Override
-            public String apply(String input) {
-                input = input.toLowerCase();
-                return input.startsWith(".") ? input : "." + input;
-            }
-        }));
-    }
-
-    private static final ThreadLocal<Viewable> ERROR_VIEWBLE_THREAD_LOCAL = new ThreadLocal<Viewable>();
-
-    protected void setExceptionViewable(Viewable e) {
-        ERROR_VIEWBLE_THREAD_LOCAL.set(e);
+                    @Override
+                    public String apply(String input) {
+                        input = input.toLowerCase();
+                        return input.startsWith(".") ? input : "." + input;
+                    }
+                }));
     }
 
     protected Viewable getExceptionViewable() {
         return ERROR_VIEWBLE_THREAD_LOCAL.get();
     }
 
+    protected void setExceptionViewable(Viewable e) {
+        ERROR_VIEWBLE_THREAD_LOCAL.set(e);
+    }
+
     protected void clearExceptionViewable() {
         ERROR_VIEWBLE_THREAD_LOCAL.remove();
     }
-
-
-    private ErrorPageGenerator errorPageGenerator;
 
     protected ErrorPageGenerator getErrorPageGenerator() {
         if (errorPageGenerator == null) {
@@ -96,6 +94,10 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
     @Override
     public T resolve(String name, MediaType mediaType) {
         T t = super.resolve(name, mediaType);
+
+        if (t == null && name != null && name.startsWith("/")) {
+            t = super.resolve("/" + PROTECTED_DIR + name, mediaType);
+        }
 
         if (t == null && name != null && name.startsWith("/")) {
             for (String ex : supportedExtensions) {

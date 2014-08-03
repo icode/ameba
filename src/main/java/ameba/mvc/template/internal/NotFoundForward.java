@@ -59,7 +59,7 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
     public boolean isMappable(NotFoundException exception) {
         String path = getCurrentPath();
         //受保护目录,不允许直接访问
-        if (path.startsWith("_protected")) return false;
+        if (path.startsWith(AmebaTemplateProcessor.PROTECTED_DIR)) return false;
         try {
             return templateProcessor.resolve("/" + path, (MediaType) null);
         } catch (Exception e) {
