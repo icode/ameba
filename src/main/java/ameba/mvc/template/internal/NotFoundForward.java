@@ -11,7 +11,6 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Provider;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
 
@@ -32,14 +31,20 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
 
     @Inject
     public NotFoundForward(final Configuration config, @Optional final ServletContext servletContext) {
-        this.templateProcessor = new AbstractTemplateProcessor<Boolean>(config, servletContext, HttlViewProcessor.CONFIG_SUFFIX, HttlViewProcessor.getExtends(config)) {
+        this.templateProcessor = new AmebaTemplateProcessor<Boolean>(config, servletContext, HttlViewProcessor.CONFIG_SUFFIX, HttlViewProcessor.getExtends(config)) {
+
             @Override
-            protected Boolean resolve(String templatePath, Reader reader) throws Exception {
+            protected Boolean resolve(String templatePath) throws Exception {
                 return true;
             }
 
             @Override
-            public void writeTo(Boolean aBoolean, Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> stringObjectMultivaluedMap, OutputStream outputStream) throws IOException {
+            protected Boolean resolve(Reader reader) throws Exception {
+                return true;
+            }
+
+            @Override
+            public void writeTemplate(Boolean templateReference, Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws Exception {
 
             }
         };
