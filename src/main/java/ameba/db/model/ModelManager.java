@@ -1,5 +1,7 @@
 package ameba.db.model;
 
+import ameba.enhancers.Enhancer;
+import ameba.enhancers.EnhancingException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import javassist.*;
@@ -23,7 +25,7 @@ import java.util.Set;
  * @author ICode
  * @since 13-8-18 上午10:39
  */
-public class ModelManager {
+public class ModelManager extends Enhancer {
     public static final Logger logger = LoggerFactory.getLogger(ModelManager.class);
     public static final Map<String, ModelManager> managerMap = Maps.newHashMap();
     public static final String ID_SETTER_NAME = "__setId__";
@@ -124,7 +126,11 @@ public class ModelManager {
 
     private void fireModelEnhancing(ModelDescription desc) {
         for (ModelEventListener listener : listeners) {
-            desc.classBytecode = listener.enhancing(desc);
+            byte[] bytes = listener.enhancing(desc);
+            if (bytes != null)
+                desc.classBytecode = bytes;
+            else
+                throw new EnhancingException("Enhance class byte code is null.");
         }
     }
 
@@ -156,14 +162,6 @@ public class ModelManager {
 
     public List<ModelDescription> getModelClassesDesc() {
         return Lists.newArrayList(modelClassesDescList);
-    }
-
-    protected boolean isProperty(CtField ctField) {
-        return !(ctField.getName().equals(ctField.getName().toUpperCase())
-                || ctField.getName().substring(0, 1).equals(ctField.getName().substring(0, 1).toUpperCase()))
-                && Modifier.isPublic(ctField.getModifiers())
-                && !Modifier.isStatic(ctField.getModifiers()) // protected classes will be considered public by this call
-                && Modifier.isPublic(ctField.getDeclaringClass().getModifiers());
     }
 
     private ModelDescription enhanceModel(InputStream in) {

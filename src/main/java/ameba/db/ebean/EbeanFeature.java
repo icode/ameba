@@ -98,7 +98,8 @@ public class EbeanFeature extends TransactionFeature {
             in.close();
         }
         if (result == null) {
-            throw new CannotCompileException("ebean enhance model fail!");
+            logger.debug("{} class not entity.", desc.getClassName());
+            result = desc.getClassBytecode();
         }
         return result;
     }

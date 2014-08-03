@@ -29,13 +29,12 @@ public abstract class Container {
                     .getConstructor(Application.class)
                     .newInstance(application);
         } catch (InvocationTargetException e) {
-            //noop
+            throw new ContainerException(e);
         } catch (NoSuchMethodException e) {
-            //noop
+            throw new ContainerException(e);
         } finally {
             logger.info("HTTP容器为 {}", provider);
         }
-        return null;
     }
 
     public Application getApplication() {
