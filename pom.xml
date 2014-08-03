@@ -393,18 +393,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-core</artifactId>
-            <version>${liquibase.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>junit</artifactId>
-                    <groupId>junit</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.9</version>
@@ -466,7 +454,6 @@
 
     <properties>
         <tyrus.version>1.7</tyrus.version>
-        <liquibase.version>3.2.2</liquibase.version>
         <commons.io.version>2.4</commons.io.version>
         <jdt.ecj.version>4.4</jdt.ecj.version>
         <akka.version>2.3.4</akka.version>
