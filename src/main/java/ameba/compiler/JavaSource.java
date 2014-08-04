@@ -22,7 +22,7 @@ public class JavaSource {
         this.qualifiedClassName = qualifiedClassName;
         this.outputDir = outputDir;
         this.inputDir = inputDir;
-        String fileName = qualifiedClassName.replace(".", File.separator);
+        String fileName = qualifiedClassName.replaceAll("\\.", "\\" + File.separator);
         this.javaFile = new File(inputDir, fileName + JAVA_EXTENSION);
         this.classFile = new File(outputDir, fileName + CLASS_EXTENSION);
     }

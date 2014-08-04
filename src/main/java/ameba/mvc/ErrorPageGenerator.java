@@ -157,6 +157,9 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
             this.status = status;
             this.exception = exception;
             this.request = request;
+            if (status < 500) {
+                return;
+            }
             if (exception instanceof SourceAttachment) {
                 SourceAttachment e = (SourceAttachment) exception;
                 sourceFile = e.getSourceFile();
