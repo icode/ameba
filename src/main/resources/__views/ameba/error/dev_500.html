@@ -72,6 +72,7 @@
             text-shadow: 1px 1px 1px rgba(255, 255, 255, .5);
             font-weight: bold;
             float: left;
+            height: 17px;
         }
 
         pre span.code {
@@ -121,14 +122,9 @@
 <div id="source-code">
     <!--#for(String line : model.source)-->
     <!--#if(line != null)-->
-
-    <pre
-    <!--#if(for.index == model.lineIndex)-->
-    class="error"
-    <!--#end-->
-    >
-    <span class="line">${for.index + model.lineNumber - model.lineIndex}</span>
-    <span class="code"><!--#if(model.method != null && for.index == model.lineIndex)-->$!{line.replace(model.method,"<span class=\"marker\">"+model.method+"</span>")}<!--#else-->${line}<!--#end--></span>
+    <pre<!--#if(for.index == model.lineIndex)--> class="error"<!--#end-->>
+        <span class="line">${for.index + model.lineNumber - model.lineIndex}</span>
+        <span class="code"><!--#if(model.method != null && for.index == model.lineIndex)-->$!{line.replace(model.method,"<span class=\"marker\">"+model.method+"</span>")}<!--#else-->${line}<!--#end--></span>
     </pre>
     <!--#end-->
     <!--#end-->
