@@ -100,25 +100,29 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
             tplName = errorTemplateMap.get(status);
             if (StringUtils.isBlank(tplName)) {
                 if (StringUtils.isBlank(defaultErrorTemplate)) {
-                    switch (status) {
-                        case 400:
-                            tplName = DEFAULT_400_ERROR_PAGE;
-                            break;
-                        case 401:
-                        case 403:
-                            tplName = DEFAULT_401_ERROR_PAGE;
-                            break;
-                        case 404:
-                            tplName = DEFAULT_404_ERROR_PAGE;
-                            break;
-                        case 405:
-                            tplName = DEFAULT_405_ERROR_PAGE;
-                            break;
-                        case 501:
-                            tplName = DEFAULT_501_ERROR_PAGE;
-                            break;
-                        default:
-                            tplName = DEFAULT_5XX_PRODUCT_ERROR_PAGE;
+                    if (status < 500) {
+                        switch (status) {
+                            case 401:
+                            case 403:
+                                tplName = DEFAULT_401_ERROR_PAGE;
+                                break;
+                            case 404:
+                                tplName = DEFAULT_404_ERROR_PAGE;
+                                break;
+                            case 405:
+                                tplName = DEFAULT_405_ERROR_PAGE;
+                                break;
+                            default:
+                                tplName = DEFAULT_400_ERROR_PAGE;
+                        }
+                    } else {
+                        switch (status) {
+                            case 501:
+                                tplName = DEFAULT_501_ERROR_PAGE;
+                                break;
+                            default:
+                                tplName = DEFAULT_5XX_PRODUCT_ERROR_PAGE;
+                        }
                     }
                 } else {
                     tplName = defaultErrorTemplate;
