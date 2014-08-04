@@ -57,7 +57,7 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
 
     private String getCurrentPath() {
         String path = uriInfo.get().getPath();
-        return path.equals("/") || path.equals("") ? "/index" : path;
+        return path.equals("/") || path.equals("") ? "index" : path;
     }
 
     @Override

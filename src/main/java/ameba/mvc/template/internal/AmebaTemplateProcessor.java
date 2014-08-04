@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import jersey.repackaged.com.google.common.base.Function;
 import jersey.repackaged.com.google.common.collect.Collections2;
 import jersey.repackaged.com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.Providers;
 import org.glassfish.jersey.server.mvc.Viewable;
@@ -23,6 +24,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
@@ -51,17 +53,20 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
     @Inject
     private ServiceLocator serviceLocator;
     private ErrorPageGenerator errorPageGenerator;
+    private Charset charset;
 
     public AmebaTemplateProcessor(Configuration config, ServletContext servletContext, String propertySuffix, String... supportedExtensions) {
         super(config, servletContext, propertySuffix, supportedExtensions);
+        String charsetStr = (String) config.getProperty("app.charset");
+        charset = Charset.forName(StringUtils.isBlank(charsetStr) ? "utf-8" : charsetStr);
         this.supportedExtensions = Sets.newHashSet(Collections2.transform(
                 Arrays.asList(supportedExtensions), new Function<String, String>() {
-                    @Override
-                    public String apply(String input) {
-                        input = input.toLowerCase();
-                        return input.startsWith(".") ? input : "." + input;
-                    }
-                }));
+            @Override
+            public String apply(String input) {
+                input = input.toLowerCase();
+                return input.startsWith(".") ? input : "." + input;
+            }
+        }));
     }
 
     protected Viewable getExceptionViewable() {
@@ -105,7 +110,7 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
                 InputStream in = IOUtils.getResourceAsStream(file);
                 try {
                     if (in != null) {
-                        t = resolve(file.startsWith("/__views/ameba/") ? null : file, new InputStreamReader(in));
+                        t = resolve(file.startsWith("/__views/ameba/") ? null : file, new InputStreamReader(in, charset));
                         if (t != null)
                             return t;
                     }
