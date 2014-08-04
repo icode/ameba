@@ -43,6 +43,7 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
     private static final String DEFAULT_501_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "product_501.html";
     private static final String DEFAULT_401_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "403.html";
     private static final String DEFAULT_400_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400.html";
+    private static final String DEFAULT_405_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "405.html";
     private static final Logger logger = LoggerFactory.getLogger(ErrorPageGenerator.class);
     private static String defaultErrorTemplate;
     @Inject
@@ -109,6 +110,9 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
                             break;
                         case 404:
                             tplName = DEFAULT_404_ERROR_PAGE;
+                            break;
+                        case 405:
+                            tplName = DEFAULT_405_ERROR_PAGE;
                             break;
                         case 501:
                             tplName = DEFAULT_501_ERROR_PAGE;
