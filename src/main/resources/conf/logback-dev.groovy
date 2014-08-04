@@ -11,9 +11,13 @@ appender("CONSOLE", ConsoleAppender) {
     }
 }
 
+
+String appPackage = context.getProperty("appPackage");
 logger("org.glassfish.jersey.filter.LoggingFilter", INFO)
 logger("org.glassfish", WARN)
 logger("org.avaje.ebean", WARN)
 logger("httl", WARN)
 logger("ameba", TRACE)
+if (appPackage != null)
+    logger(appPackage, INFO)
 root(WARN, ["CONSOLE"])
