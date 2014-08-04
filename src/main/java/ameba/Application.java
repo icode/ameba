@@ -160,13 +160,13 @@ public class Application extends ResourceConfig {
         //将临时配置对象放入应用程序配置
         addProperties(configMap);
 
-        configureServer(properties);
-
         //配置资源
         configureResource(configMap);
 
         //配置特性
         configureFeature(configMap);
+
+        configureServer(properties);
 
         //清空临时配置
         configMap.clear();
