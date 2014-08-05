@@ -387,6 +387,12 @@
         </dependency>
 
         <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>${joda.time.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>${commons.collections.version}</version>
@@ -453,6 +459,7 @@
     </build>
 
     <properties>
+        <joda.time.version>2.4</joda.time.version>
         <tyrus.version>1.7</tyrus.version>
         <commons.io.version>2.4</commons.io.version>
         <jdt.ecj.version>4.4</jdt.ecj.version>
