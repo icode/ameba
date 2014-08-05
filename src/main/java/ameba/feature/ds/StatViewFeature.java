@@ -154,9 +154,8 @@ public class StatViewFeature implements Feature {
     private static String getJmxResult(MBeanServerConnection connetion, String url) throws Exception {
         ObjectName name = new ObjectName(DruidStatService.MBEAN_NAME);
 
-        String result = (String) conn.invoke(name, "service", new String[]{url},
+        return (String) conn.invoke(name, "service", new String[]{url},
                 new String[]{String.class.getName()});
-        return result;
     }
 
     /**
@@ -210,7 +209,7 @@ public class StatViewFeature implements Feature {
         String path = (String) configuration.getProperty("ds.resource.path");
 
         if (StringUtils.isNotBlank(path)) {
-            dsPath = path;
+            dsPath = path.startsWith("/") ? path : "/" + path;
         }
 
         context.register(WebStatFilter.class);
@@ -251,7 +250,7 @@ public class StatViewFeature implements Feature {
         @Override
         public void filter(ContainerRequestContext requestContext)
                 throws IOException {
-            String path = requestContext.getUriInfo().getPath();
+            String path = "/" + requestContext.getUriInfo().getPath();
             Cookie cookie = requestContext.getCookies().get(SESSION_USER_KEY);
             if ((cookie == null || !authorizeToken.equals(cookie.getValue())) &&
                     !((dsPath + "/login.html").equals(path)
