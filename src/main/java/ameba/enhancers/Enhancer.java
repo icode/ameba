@@ -26,6 +26,10 @@ public abstract class Enhancer {
         return classPool;
     }
 
+    protected boolean isFinal(CtField ctField) {
+        return java.lang.reflect.Modifier.isFinal(ctField.getModifiers());
+    }
+
     /**
      * Test if a class has the provided annotation
      * @param ctClass the javassist class representation

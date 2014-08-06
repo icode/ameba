@@ -280,26 +280,6 @@
             <version>${grizzly.version}</version>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-memcached</artifactId>
-            <version>${grizzly.ext.memcached.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>grizzly-framework</artifactId>
-                    <groupId>org.glassfish.grizzly</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>log4j</artifactId>
-                    <groupId>log4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>zookeeper</artifactId>
-                    <groupId>org.apache.zookeeper</groupId>
-                </exclusion>
-            </exclusions>
-            <optional>true</optional>
-        </dependency>
         <!-- XML/JSON support -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -386,11 +366,11 @@
             <version>${jdt.ecj.version}</version>
         </dependency>
 
-        <dependency>
+        <!--<dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>${joda.time.version}</version>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -479,7 +459,6 @@
         <jackson.provider.version>${jackson.core.version}</jackson.provider.version>
         <commons.lang3.version>3.3.2</commons.lang3.version>
         <grizzly.version>2.3.16</grizzly.version>
-        <grizzly.ext.memcached.version>1.3.10</grizzly.ext.memcached.version>
         <guava.version>17.0</guava.version>
         <persistence.version>1.0.2</persistence.version>
         <bean.validator.version>5.1.1.Final</bean.validator.version>

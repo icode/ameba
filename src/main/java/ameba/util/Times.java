@@ -1,44 +1,47 @@
 package ameba.util;
 
-import com.google.common.primitives.Ints;
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.Duration;
-import org.joda.time.Period;
-import org.joda.time.format.PeriodFormatter;
-import org.joda.time.format.PeriodFormatterBuilder;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author icode
  */
 public class Times {
-    private static final PeriodFormatter formatter = new PeriodFormatterBuilder()
-            .appendDays().appendSuffix("d").appendSeparatorIfFieldsAfter(" ")
-            .appendHours().appendSuffix("h").appendSeparatorIfFieldsAfter(" ")
-            .appendMinutes().appendSuffix("min").appendSeparatorIfFieldsAfter(" ")
-            .appendSeconds().appendSuffix("s")
-            .toFormatter();
+    static Pattern days = Pattern.compile("^([0-9]+)d$");
+    static Pattern hours = Pattern.compile("^([0-9]+)h$");
+    static Pattern minutes = Pattern.compile("^([0-9]+)mi?n$");
+    static Pattern seconds = Pattern.compile("^([0-9]+)s$");
 
-    private Times() {
-    }
-
-    public static Period parsePeriod(String duration) {
-        if (StringUtils.isBlank(duration)) return null;
-        return formatter.parsePeriod(duration);
-    }
-
-
-    public static Duration parseDuration(String duration) {
-        if (StringUtils.isBlank(duration)) return null;
-        return parsePeriod(duration).toStandardDuration();
-    }
-
-    public static long parseToMillis(String duration) {
-        if (StringUtils.isBlank(duration)) return 0;
-        return parseDuration(duration).getMillis();
-    }
-
-    public static int parseToSeconds(String duration) {
-        if (StringUtils.isBlank(duration)) return 0;
-        return Ints.checkedCast(parseDuration(duration).getStandardSeconds());
+    /**
+     * Parse a duration
+     * @param duration 3h, 2mn, 7s
+     * @return The number of seconds
+     */
+    public static int parseDuration(String duration) {
+        if (duration == null) {
+            return 60 * 60 * 24 * 30;
+        }
+        int toAdd = -1;
+        if (days.matcher(duration).matches()) {
+            Matcher matcher = days.matcher(duration);
+            matcher.matches();
+            toAdd = Integer.parseInt(matcher.group(1)) * (60 * 60) * 24;
+        } else if (hours.matcher(duration).matches()) {
+            Matcher matcher = hours.matcher(duration);
+            matcher.matches();
+            toAdd = Integer.parseInt(matcher.group(1)) * (60 * 60);
+        } else if (minutes.matcher(duration).matches()) {
+            Matcher matcher = minutes.matcher(duration);
+            matcher.matches();
+            toAdd = Integer.parseInt(matcher.group(1)) * (60);
+        } else if (seconds.matcher(duration).matches()) {
+            Matcher matcher = seconds.matcher(duration);
+            matcher.matches();
+            toAdd = Integer.parseInt(matcher.group(1));
+        }
+        if (toAdd == -1) {
+            throw new IllegalArgumentException("Invalid duration pattern : " + duration);
+        }
+        return toAdd;
     }
 }

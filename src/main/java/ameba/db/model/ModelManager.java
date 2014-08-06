@@ -2,6 +2,7 @@ package ameba.db.model;
 
 import ameba.enhancers.Enhancer;
 import ameba.enhancers.EnhancingException;
+import ameba.exceptions.UnexpectedException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import javassist.*;
@@ -192,6 +193,25 @@ public class ModelManager extends Enhancer {
             cache.className = mClazz.getName();
 
             boolean idGetSetFixed = false;
+
+            // Add a default constructor if needed
+            try {
+                boolean hasDefaultConstructor = false;
+                for (CtConstructor constructor : clazz.getDeclaredConstructors()) {
+                    if (constructor.getParameterTypes().length == 0) {
+                        hasDefaultConstructor = true;
+                        break;
+                    }
+                }
+                if (!hasDefaultConstructor) {
+                    CtConstructor defaultConstructor = CtNewConstructor.defaultConstructor(clazz);
+                    clazz.addConstructor(defaultConstructor);
+                }
+            } catch (Exception e) {
+                logger.error("Error in ModelManager", e);
+                throw new UnexpectedException("Error in PropertiesEnhancer", e);
+            }
+
             while (clazz != null) {
                 for (CtField field : clazz.getDeclaredFields()) {
                     if (!isProperty(field)) {
@@ -219,39 +239,34 @@ public class ModelManager extends Enhancer {
                     if (getter == null) {
                         createGetter(clazz, getterName, fieldType, field);
                     }
-
                     String setterName = "set" + fieldName;
-                    CtMethod setter = null;
                     CtClass[] args = new CtClass[]{fieldType};
-                    try {
-                        setter = clazz.getDeclaredMethod(setterName, args);
-                    } catch (NotFoundException e) {
-                        //noop
-                    }
-                    if (setter == null) {
-                        //add setter method
-                        createSetter(clazz, setterName, args, field);
+                    if (!isFinal(field)) {
+                        try {
+                            CtMethod ctMethod = clazz.getDeclaredMethod(setterName, args);
+                            if (ctMethod.getParameterTypes().length != 1 || !ctMethod.getParameterTypes()[0].equals(field.getType())
+                                    || Modifier.isStatic(ctMethod.getModifiers())) {
+                                throw new NotFoundException("it's not a setter !");
+                            }
+                        } catch (NotFoundException e) {
+                            //add setter method
+                            createSetter(clazz, setterName, args, field);
+                        }
                     }
                     // 查找作为id的字段
                     if (!idGetSetFixed) {
                         if (field.getAnnotation(javax.persistence.Id.class) != null) {
-                            CtMethod idGetter = null;
-                            CtMethod idSetter = null;
                             try {
-                                idGetter = clazz.getDeclaredMethod(ID_GETTER_NAME);
+                                clazz.getDeclaredMethod(ID_GETTER_NAME);
                             } catch (NotFoundException e) {
-                                //noop
-                            }
-                            if (idGetter == null)
                                 createIdGetter(clazz, getterName, fieldType);
+                            }
 
                             try {
-                                idSetter = clazz.getDeclaredMethod(ID_SETTER_NAME);
+                                clazz.getDeclaredMethod(ID_SETTER_NAME);
                             } catch (NotFoundException e) {
-                                //noop
-                            }
-                            if (idSetter == null)
                                 createIdSetter(clazz, setterName, args);
+                            }
 
                             pool.importPackage(fieldType.getPackageName());
                             pool.importPackage(mClazz.getName());
