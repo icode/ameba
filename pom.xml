@@ -57,18 +57,6 @@
             <version>${groovy.version}</version>
         </dependency>
 
-        <!--akka-->
-        <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-actor_2.10</artifactId>
-            <version>${akka.version}</version>
-        </dependency>
-        <!--<dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-remote_2.10</artifactId>
-            <version>${akka.version}</version>
-        </dependency>-->
-
         <!-- Ebean -->
         <dependency>
             <groupId>org.avaje.ebeanorm</groupId>
@@ -97,18 +85,6 @@
             <artifactId>persistence-api</artifactId>
             <groupId>javax.persistence</groupId>
             <version>${persistence.version}</version>
-        </dependency>
-        <!-- 类字节码修改器 -->
-        <dependency>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <version>${javassist.version}</version>
-        </dependency>
-        <!-- 加密工具 -->
-        <dependency>
-            <groupId>org.jasypt</groupId>
-            <artifactId>jasypt</artifactId>
-            <version>${jasypt.version}</version>
         </dependency>
 
         <!-- druid -->
@@ -341,24 +317,7 @@
             <artifactId>httl</artifactId>
             <version>${httl.version}</version>
         </dependency>
-        <!-- commons lang -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>${commons.lang3.version}</version>
-        </dependency>
 
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>${commons.io.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.eclipse.jdt.core.compiler</groupId>
@@ -366,16 +325,10 @@
             <version>${jdt.ecj.version}</version>
         </dependency>
 
-        <!--<dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>${joda.time.version}</version>
-        </dependency>-->
-
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-            <version>${commons.collections.version}</version>
+            <groupId>ameba</groupId>
+            <artifactId>ameba-utils</artifactId>
+            <version>${ameba.utils.version}</version>
         </dependency>
 
         <dependency>
@@ -439,12 +392,9 @@
     </build>
 
     <properties>
-        <joda.time.version>2.4</joda.time.version>
+        <ameba.utils.version>0.1.6</ameba.utils.version>
         <tyrus.version>1.7</tyrus.version>
-        <commons.io.version>2.4</commons.io.version>
         <jdt.ecj.version>4.4</jdt.ecj.version>
-        <akka.version>2.3.4</akka.version>
-        <asm.version>5.0.3</asm.version>
         <jersey.version>2.10.1</jersey.version>
         <slf4j.version>1.7.7</slf4j.version>
         <logback.version>1.1.2</logback.version>
@@ -453,16 +403,11 @@
         <druid.version>1.0.7</druid.version>
         <groovy.version>2.3.4</groovy.version>
         <httl.version>1.0.11</httl.version>
-        <jasypt.version>1.9.2</jasypt.version>
-        <javassist.version>3.18.2-GA</javassist.version>
         <jackson.core.version>2.4.1</jackson.core.version>
         <jackson.provider.version>${jackson.core.version}</jackson.provider.version>
-        <commons.lang3.version>3.3.2</commons.lang3.version>
         <grizzly.version>2.3.16</grizzly.version>
-        <guava.version>17.0</guava.version>
         <persistence.version>1.0.2</persistence.version>
         <bean.validator.version>5.1.1.Final</bean.validator.version>
-        <commons.collections.version>4.0</commons.collections.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 </project>
