@@ -2,6 +2,7 @@ package ameba.cache;
 
 import ameba.util.Times;
 
+import javax.ws.rs.core.FeatureContext;
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.Map;
@@ -16,7 +17,7 @@ public abstract class Cache {
     /**
      * 缓存引擎
      */
-    static CacheEngine cacheEngine;
+    static CacheEngine<String, Object> cacheEngine;
 
     /**
      * Add an element only if it doesn't exist.
@@ -27,7 +28,7 @@ public abstract class Cache {
      */
     public static void add(String key, Object value, String expiration) {
         checkSerializable(value);
-        cacheEngine.add(key, value, Times.parseDurationToSeconds(expiration));
+        cacheEngine.add(key, value, Times.parseToSeconds(expiration));
     }
 
     /**
@@ -41,7 +42,7 @@ public abstract class Cache {
      */
     public static boolean safeAdd(String key, Object value, String expiration) {
         checkSerializable(value);
-        return cacheEngine.safeAdd(key, value, Times.parseDurationToSeconds(expiration));
+        return cacheEngine.safeAdd(key, value, Times.parseToSeconds(expiration));
     }
 
     /**
@@ -52,7 +53,7 @@ public abstract class Cache {
      */
     public static void add(String key, Object value) {
         checkSerializable(value);
-        cacheEngine.add(key, value, Times.parseDurationToSeconds(null));
+        cacheEngine.add(key, value, 0);
     }
 
     /**
@@ -64,7 +65,7 @@ public abstract class Cache {
      */
     public static void set(String key, Object value, String expiration) {
         checkSerializable(value);
-        cacheEngine.set(key, value, Times.parseDurationToSeconds(expiration));
+        cacheEngine.set(key, value, Times.parseToSeconds(expiration));
     }
 
     /**
@@ -77,7 +78,7 @@ public abstract class Cache {
      */
     public static boolean safeSet(String key, Object value, String expiration) {
         checkSerializable(value);
-        return cacheEngine.safeSet(key, value, Times.parseDurationToSeconds(expiration));
+        return cacheEngine.safeSet(key, value, Times.parseToSeconds(expiration));
     }
 
     /**
@@ -88,7 +89,7 @@ public abstract class Cache {
      */
     public static void set(String key, Object value) {
         checkSerializable(value);
-        cacheEngine.set(key, value, Times.parseDurationToSeconds(null));
+        cacheEngine.set(key, value, 0);
     }
 
     /**
@@ -100,7 +101,7 @@ public abstract class Cache {
      */
     public static void replace(String key, Object value, String expiration) {
         checkSerializable(value);
-        cacheEngine.replace(key, value, Times.parseDurationToSeconds(expiration));
+        cacheEngine.replace(key, value, Times.parseToSeconds(expiration));
     }
 
     /**
@@ -114,7 +115,7 @@ public abstract class Cache {
      */
     public static boolean safeReplace(String key, Object value, String expiration) {
         checkSerializable(value);
-        return cacheEngine.safeReplace(key, value, Times.parseDurationToSeconds(expiration));
+        return cacheEngine.safeReplace(key, value, Times.parseToSeconds(expiration));
     }
 
     /**
@@ -125,18 +126,69 @@ public abstract class Cache {
      */
     public static void replace(String key, Object value) {
         checkSerializable(value);
-        cacheEngine.replace(key, value, Times.parseDurationToSeconds(null));
+        cacheEngine.replace(key, value, 0);
     }
 
     /**
      * Increment the element value (must be a Number).
      *
-     * @param key Element key
-     * @param by  The incr value
+     * @param key              Element key
+     * @param by               The incr value
+     * @param initial          The initial value
+     * @param expirationInSecs The expiration
      * @return The new value
      */
-    public static long incr(String key, int by) {
-        return cacheEngine.incr(key, by);
+    public static long incr(String key, int by, final long initial, final int expirationInSecs) {
+        return cacheEngine.incr(key, by, initial, expirationInSecs);
+    }
+
+    /**
+     * Increment the element value (must be a Number) by 1.
+     *
+     * @param key              Element key
+     * @param expirationInSecs The expiration
+     * @return The new value
+     */
+    public static long incr(String key, final int expirationInSecs) {
+        return cacheEngine.incr(key, 1, 0, expirationInSecs);
+    }
+
+    public static void add(String key, Object value, int expiration) {
+        checkSerializable(value);
+        cacheEngine.add(key, value, expiration);
+    }
+
+    public static boolean safeAdd(String key, Object value, int expiration) {
+        checkSerializable(value);
+        return cacheEngine.safeAdd(key, value, expiration);
+    }
+
+    public static boolean safeSet(String key, Object value, int expiration) {
+        checkSerializable(value);
+        return cacheEngine.safeSet(key, value, expiration);
+    }
+
+    public static Object gat(String key, int expiration) {
+        return cacheEngine.gat(key, expiration);
+    }
+
+    public static boolean safeReplace(String key, Object value, int expiration) {
+        checkSerializable(value);
+        return cacheEngine.safeReplace(key, value, expiration);
+    }
+
+    public static boolean touch(String key, int expiration) {
+        return cacheEngine.touch(key, expiration);
+    }
+
+    public static void replace(String key, Object value, int expiration) {
+        checkSerializable(value);
+        cacheEngine.replace(key, value, expiration);
+    }
+
+    public static void set(String key, Object value, int expiration) {
+        checkSerializable(value);
+        cacheEngine.set(key, value, expiration);
     }
 
     /**
@@ -146,18 +198,31 @@ public abstract class Cache {
      * @return The new value
      */
     public static long incr(String key) {
-        return cacheEngine.incr(key, 1);
+        return cacheEngine.incr(key, 1, 0, 0);
     }
 
     /**
      * Decrement the element value (must be a Number).
      *
-     * @param key Element key
-     * @param by  The decr value
+     * @param key              Element key
+     * @param by               The decr value
+     * @param initial          The initial value
+     * @param expirationInSecs The expiration
      * @return The new value
      */
-    public static long decr(String key, int by) {
-        return cacheEngine.decr(key, by);
+    public static long decr(String key, int by, final long initial, final int expirationInSecs) {
+        return cacheEngine.decr(key, by, initial, expirationInSecs);
+    }
+
+    /**
+     * Decrement the element value (must be a Number) by 1.
+     *
+     * @param key              Element key
+     * @param expirationInSecs The expiration
+     * @return The new value
+     */
+    public static long decr(String key, final int expirationInSecs) {
+        return cacheEngine.decr(key, 1, 0, expirationInSecs);
     }
 
     /**
@@ -167,17 +232,7 @@ public abstract class Cache {
      * @return The new value
      */
     public static long decr(String key) {
-        return cacheEngine.decr(key, 1);
-    }
-
-    /**
-     * Retrieve an object.
-     *
-     * @param key The element key
-     * @return The element value or null
-     */
-    public static Object get(String key) {
-        return cacheEngine.get(key);
+        return cacheEngine.decr(key, 1, 0, 0);
     }
 
     /**
@@ -220,13 +275,12 @@ public abstract class Cache {
     /**
      * Convenient clazz to get a value a class type;
      *
-     * @param <T>   The needed type
-     * @param key   The element key
-     * @param clazz The type class
+     * @param <T> The needed type
+     * @param key The element key
      * @return The element value or null
      */
     @SuppressWarnings("unchecked")
-    public static <T> T get(String key, Class<T> clazz) {
+    public static <T> T get(String key) {
         return (T) cacheEngine.get(key);
     }
 
@@ -243,6 +297,14 @@ public abstract class Cache {
     static void checkSerializable(Object value) {
         if (value != null && !(value instanceof Serializable)) {
             throw new CacheException("Cannot cache a non-serializable value of type " + value.getClass().getName(), new NotSerializableException(value.getClass().getName()));
+        }
+    }
+
+    public static class Feature implements javax.ws.rs.core.Feature {
+
+        @Override
+        public boolean configure(FeatureContext context) {
+            return false;
         }
     }
 }
