@@ -1,4 +1,4 @@
-package ameba.db.model;
+package ameba.model;
 
 /**
  * @author icode

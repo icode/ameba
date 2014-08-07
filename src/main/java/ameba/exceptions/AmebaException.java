@@ -31,8 +31,8 @@ public class AmebaException extends RuntimeException {
         InterestingSomething something = null;
         for (StackTraceElement stackTraceElement : cause.getStackTrace()) {
             if (stackTraceElement.getLineNumber() > 0) {
-                String path = stackTraceElement.getClassName().replaceAll("\\.", "\\" + File.separator);
-                path = path.substring(0, path.lastIndexOf(File.separator));
+                String path = stackTraceElement.getClassName().replaceAll("\\.", "/");
+                path = path.substring(0, path.lastIndexOf("/"));
                 File source = new File(Ameba.getApp().getPackageRoot(), path);
                 if (source.exists() && source.isDirectory()) {
                     String fN = stackTraceElement.getFileName();

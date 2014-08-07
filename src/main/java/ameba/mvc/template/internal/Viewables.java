@@ -10,33 +10,41 @@ import org.glassfish.jersey.server.mvc.Viewable;
 public class Viewables {
 
     public static final String PROTECTED_DIR = "_protected";
-    public static final String PROTECTED_DIR_PATH = "/" + PROTECTED_DIR + "/";
+    public static final String PROTECTED_DIR_PATH = "/" + PROTECTED_DIR;
 
     private Viewables() {
     }
 
     public static Viewable newViewable() {
-        return new Viewable("/" + RouteHelper.getCurrentRequestContext().getUriInfo().getPath());
+        return new Viewable(getPath());
     }
 
     public static Viewable newViewable(Object model) {
-        return new Viewable("/" + RouteHelper.getCurrentRequestContext().getUriInfo().getPath(), model);
+        return new Viewable(getPath(), model);
+    }
+
+    private static String getPath() {
+        return "/" + RouteHelper.getCurrentRequestContext().getUriInfo().getPath();
+    }
+
+    private static String getPath(String name) {
+        return name.startsWith("/") ? name : "/" + name;
     }
 
     public static Viewable newProtected(Object model) {
-        return new Viewable(PROTECTED_DIR_PATH + RouteHelper.getCurrentRequestContext().getUriInfo().getPath(), model);
+        return new Viewable(PROTECTED_DIR_PATH + getPath(), model);
     }
 
     public static Viewable newProtected() {
-        return new Viewable(PROTECTED_DIR_PATH + RouteHelper.getCurrentRequestContext().getUriInfo().getPath());
+        return new Viewable(PROTECTED_DIR_PATH + getPath());
     }
 
     public static Viewable newProtected(String name) {
-        return new Viewable(PROTECTED_DIR_PATH + name);
+        return new Viewable(PROTECTED_DIR_PATH + getPath(name));
     }
 
     public static Viewable newProtected(String name, Object model) {
-        return new Viewable(PROTECTED_DIR_PATH + name, model);
+        return new Viewable(PROTECTED_DIR_PATH + getPath(name), model);
     }
 
     public static Viewable newDefaultViewable() {

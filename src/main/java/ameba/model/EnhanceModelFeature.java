@@ -1,4 +1,4 @@
-package ameba.db.model;
+package ameba.model;
 
 import ameba.Application;
 import ameba.db.DataSourceFeature;
@@ -30,7 +30,7 @@ public class EnhanceModelFeature extends AmebaFeature {
             @Override
             public void onReceive(Application.ConfiguredEvent event) {
                 if (app.isRegistered(EnhanceModelFeature.class)) {
-                    app.register(EnhanceModelFeature.Do.class, Integer.MIN_VALUE);
+                    app.register(Enhance.class, Integer.MAX_VALUE);
                 }
             }
         });
@@ -51,7 +51,7 @@ public class EnhanceModelFeature extends AmebaFeature {
         return true;
     }
 
-    public static class Do implements Feature {
+    public static class Enhance implements Feature {
 
         @Override
         public boolean configure(FeatureContext context) {

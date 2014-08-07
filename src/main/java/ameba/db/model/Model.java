@@ -1,6 +1,7 @@
 package ameba.db.model;
 
 import ameba.db.TransactionFeature;
+import ameba.model.ModelManager;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -31,6 +32,8 @@ public abstract class Model implements Serializable {
     private Method _idGetter = null;
     @Transient
     private Method _idSetter = null;
+    @Transient
+    public static String DB_DEFAULT_SERVER_NAME = "default";
 
     @Transient
     protected static Constructor<? extends Finder> getFinderConstructor() {
@@ -78,7 +81,7 @@ public abstract class Model implements Serializable {
 
     @Transient
     public static <ID, T> Finder<ID, T> withFinder() {
-        return withFinder(DefaultProperties.DB_DEFAULT_SERVER_NAME);
+        return withFinder(DB_DEFAULT_SERVER_NAME);
     }
 
     @Transient
@@ -170,7 +173,7 @@ public abstract class Model implements Serializable {
 
     @Transient
     public <M extends Model> Persister<M> withPersister() {
-        return withPersister(DefaultProperties.DB_DEFAULT_SERVER_NAME);
+        return withPersister(DB_DEFAULT_SERVER_NAME);
     }
 
     public static class NotPersisterFindException extends RuntimeException {

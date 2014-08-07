@@ -3,9 +3,9 @@ package ameba.db.ebean;
 import ameba.db.DataSourceFeature;
 import ameba.db.TransactionFeature;
 import ameba.db.ebean.transaction.EbeanTransactional;
-import ameba.db.model.DefaultProperties;
-import ameba.db.model.ModelDescription;
-import ameba.db.model.ModelManager;
+import ameba.db.model.Model;
+import ameba.model.ModelDescription;
+import ameba.model.ModelManager;
 import ameba.util.IOUtils;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
@@ -135,7 +135,7 @@ public class EbeanFeature extends TransactionFeature {
             }
 
             config.setDataSource(DataSourceFeature.getDataSource(name));//设置为druid数据源
-            if (name.equals(DefaultProperties.DB_DEFAULT_SERVER_NAME)) {
+            if (name.equals(Model.DB_DEFAULT_SERVER_NAME)) {
                 config.setDefaultServer(true);
             }
 
