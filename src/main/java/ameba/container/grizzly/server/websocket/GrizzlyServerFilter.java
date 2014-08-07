@@ -1,4 +1,4 @@
-package ameba.container.grizzly.server;
+package ameba.container.grizzly.server.websocket;
 
 import org.glassfish.grizzly.*;
 import org.glassfish.grizzly.attributes.Attribute;

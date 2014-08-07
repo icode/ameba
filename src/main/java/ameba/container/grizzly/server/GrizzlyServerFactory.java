@@ -1,5 +1,6 @@
 package ameba.container.grizzly.server;
 
+import ameba.container.grizzly.server.websocket.WebSocketAddOn;
 import org.glassfish.grizzly.GrizzlyFuture;
 import org.glassfish.grizzly.http.CompressionConfig;
 import org.glassfish.grizzly.http.ajp.AjpAddOn;

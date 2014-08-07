@@ -1,4 +1,4 @@
-package ameba.container.grizzly.server;
+package ameba.container.grizzly.server.websocket;
 
 import ameba.Ameba;
 import org.glassfish.tyrus.core.ComponentProvider;
