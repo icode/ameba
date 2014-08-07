@@ -15,7 +15,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.internal.scanning.PackageNamesScanner;
@@ -130,7 +129,7 @@ public class Application extends ResourceConfig {
         //配置日志器
         configureLogger();
 
-        AmebaFeature.preConfigure();
+        AmebaFeature.preConfigure(this);
 
         publishEvent(new ModeLoadedEvent(this));
 
@@ -180,19 +179,19 @@ public class Application extends ResourceConfig {
     }
 
     @SuppressWarnings("unchecked")
-    private void preConfigureFeature(Class clazz){
+    private void preConfigureFeature(Class clazz) {
         if (AmebaFeature.class.isAssignableFrom(clazz)) {
             try {
-                Method m = clazz.getMethod("preConfigure");
+                Method m = clazz.getDeclaredMethod("preConfigure", Application.class);
                 if (Modifier.isStatic(m.getModifiers())) {
-                    m.invoke(null);
+                    m.invoke(null, Application.this);
                 }
             } catch (IllegalAccessException e) {
-                logger.warn("提前初始化特性出错[" + clazz.getName() + "]", e);
+                logger.warn("前期初始化特性出错[" + clazz.getName() + "]", e);
             } catch (InvocationTargetException e) {
-                logger.warn("提前初始化特性出错[" + clazz.getName() + "]", e);
+                logger.warn("前期初始化特性出错[" + clazz.getName() + "]", e);
             } catch (NoSuchMethodException e) {
-                logger.warn("提前初始化特性出错[" + clazz.getName() + "]", e);
+                logger.trace(clazz.getName() + " 类未发现需要前期配置项");
             }
         }
     }
@@ -270,11 +269,6 @@ public class Application extends ResourceConfig {
         }
         logger.info("设置资源扫描包:{}", StringUtils.join(packages, ","));
         registerFinder(new PackageNamesScanner(getClassLoader(), packages, true));
-
-        if (Mode.DEV.isDev() && !isRegistered(LoggingFilter.class)) {
-            logger.debug("注册日志过滤器");
-            register(LoggingFilter.class);
-        }
     }
 
     private void convertJerseyConfig(Map<String, Object> configMap) {
@@ -390,10 +384,6 @@ public class Application extends ResourceConfig {
         host = StringUtils.defaultIfBlank((String) getProperty("app.host"), "0.0.0.0");
 
         port = Integer.valueOf(StringUtils.defaultIfBlank((String) getProperty("app.port"), "80"));
-
-        if (isRegistered(EnhanceModelFeature.class)) {
-            register(EnhanceModelFeature.Do.class, Integer.MIN_VALUE);
-        }
 
         //config server base uri
         httpServerBaseUri = URI.create("http" + (isSecureEnabled() ? "s" : "") + "://" + host

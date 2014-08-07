@@ -1,5 +1,6 @@
 package ameba.feature;
 
+import ameba.Application;
 import ameba.event.Event;
 import ameba.event.EventBus;
 import ameba.event.Listener;
@@ -29,7 +30,7 @@ public abstract class AmebaFeature implements Feature {
         EVENT_BUS.publish(event);
     }
 
-    public static void preConfigure(){
+    public static void preConfigure(Application app){
 
     }
 }
