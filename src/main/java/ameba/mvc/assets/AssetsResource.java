@@ -1,6 +1,6 @@
 package ameba.mvc.assets;
 
-import org.glassfish.grizzly.http.util.MimeType;
+import ameba.util.MimeType;
 
 import javax.inject.Singleton;
 import javax.ws.rs.GET;

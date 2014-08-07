@@ -99,42 +99,6 @@
             <artifactId>el-impl</artifactId>
             <version>2.2</version>
         </dependency>
-
-        <!-- grizzly2 -->
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-grizzly2-http</artifactId>
-            <version>${jersey.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.glassfish.grizzly</groupId>
-                    <artifactId>grizzly-http-server</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-http-server</artifactId>
-            <version>${grizzly.version}</version>
-        </dependency>
-        <!-- spdy -->
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-spdy</artifactId>
-            <version>${grizzly.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.glassfish.grizzly</groupId>
-                    <artifactId>grizzly-npn-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-npn-bootstrap</artifactId>
-            <version>1.1</version>
-            <scope>provided</scope>
-        </dependency>
         <!-- MVC -->
         <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>
@@ -185,44 +149,6 @@
             <artifactId>jersey-entity-filtering</artifactId>
             <version>${jersey.version}</version>
         </dependency>
-
-
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-http-ajp</artifactId>
-            <version>${grizzly.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-framework-monitoring</artifactId>
-            <version>${grizzly.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-http-monitoring</artifactId>
-            <version>${grizzly.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-http-server-monitoring</artifactId>
-            <version>${grizzly.version}</version>
-        </dependency>
-        <!-- Java WebSocket -->
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-server</artifactId>
-            <version>${tyrus.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>grizzly-framework</artifactId>
-                    <groupId>org.glassfish.grizzly</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>grizzly-http-server</artifactId>
-                    <groupId>org.glassfish.grizzly</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>javax.websocket</groupId>
             <artifactId>javax.websocket-api</artifactId>
@@ -244,18 +170,6 @@
                 </exclusion>
             </exclusions>
         </dependency>-->
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-comet</artifactId>
-            <version>${grizzly.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-portunif</artifactId>
-            <version>${grizzly.version}</version>
-            <optional>true</optional>
-        </dependency>
         <!-- XML/JSON support -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -389,7 +303,6 @@
 
     <properties>
         <ameba.utils.version>0.1.6</ameba.utils.version>
-        <tyrus.version>1.7</tyrus.version>
         <jdt.ecj.version>4.4</jdt.ecj.version>
         <jersey.version>2.10.1</jersey.version>
         <slf4j.version>1.7.7</slf4j.version>
@@ -401,7 +314,6 @@
         <httl.version>1.0.11</httl.version>
         <jackson.core.version>2.4.1</jackson.core.version>
         <jackson.provider.version>${jackson.core.version}</jackson.provider.version>
-        <grizzly.version>2.3.16</grizzly.version>
         <persistence.version>1.0.2</persistence.version>
         <bean.validator.version>5.1.1.Final</bean.validator.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
