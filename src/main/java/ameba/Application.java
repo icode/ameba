@@ -130,7 +130,7 @@ public class Application extends ResourceConfig {
         //配置日志器
         configureLogger();
 
-        AmebaFeature.preInit();
+        AmebaFeature.preConfigure();
 
         publishEvent(new ModeLoadedEvent(this));
 
@@ -180,10 +180,10 @@ public class Application extends ResourceConfig {
     }
 
     @SuppressWarnings("unchecked")
-    private void preInitFeature(Class clazz){
+    private void preConfigureFeature(Class clazz){
         if (AmebaFeature.class.isAssignableFrom(clazz)) {
             try {
-                Method m = clazz.getMethod("preInit");
+                Method m = clazz.getMethod("preConfigure");
                 if (Modifier.isStatic(m.getModifiers())) {
                     m.invoke(null);
                 }
@@ -215,7 +215,7 @@ public class Application extends ResourceConfig {
                         continue;
                     }
 
-                    preInitFeature(clazz);
+                    preConfigureFeature(clazz);
 
                     register(clazz);
                     suc++;
@@ -243,7 +243,7 @@ public class Application extends ResourceConfig {
                             logger.warn("并未注册装特性[{}({})]，因为该特性已存在", name, clazz);
                             continue;
                         }
-                        preInitFeature(clazz);
+                        preConfigureFeature(clazz);
                         register(clazz);
                         suc++;
                     } catch (ClassNotFoundException e) {

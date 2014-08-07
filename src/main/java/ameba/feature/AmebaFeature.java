@@ -29,7 +29,7 @@ public abstract class AmebaFeature implements Feature {
         EVENT_BUS.publish(event);
     }
 
-    public static void preInit(){
+    public static void preConfigure(){
 
     }
 }
