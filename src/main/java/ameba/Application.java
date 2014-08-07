@@ -1,6 +1,5 @@
 package ameba;
 
-import ameba.db.model.EnhanceModelFeature;
 import ameba.event.Event;
 import ameba.event.SystemEventBus;
 import ameba.exceptions.AmebaException;
@@ -130,8 +129,6 @@ public class Application extends ResourceConfig {
         configureLogger();
 
         AmebaFeature.preConfigure(this);
-
-        publishEvent(new ModeLoadedEvent(this));
 
         //读取模式配置
         readModeConfig(configMap);
@@ -693,18 +690,6 @@ public class Application extends ResourceConfig {
         private Application app;
 
         public ConfiguredEvent(Application app) {
-            this.app = app;
-        }
-
-        public Application getApp() {
-            return app;
-        }
-    }
-
-    public static class ModeLoadedEvent extends Event {
-        private Application app;
-
-        public ModeLoadedEvent(Application app) {
             this.app = app;
         }
 
