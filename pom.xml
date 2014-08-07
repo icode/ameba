@@ -359,10 +359,6 @@
                     <archive>
                         <manifestEntries>
                             <build-version>${project.version}</build-version>
-                            <Premain-Class>ameba.dev.JvmAgent</Premain-Class>
-                            <Agent-Class>ameba.dev.JvmAgent</Agent-Class>
-                            <Can-Redefine-Classes>true</Can-Redefine-Classes>
-                            <Can-Retransform-Classes>true</Can-Retransform-Classes>
                         </manifestEntries>
                         <manifest>
                             <mainClass>

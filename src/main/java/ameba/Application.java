@@ -5,6 +5,7 @@ import ameba.event.Event;
 import ameba.event.SystemEventBus;
 import ameba.exceptions.AmebaException;
 import ameba.exceptions.ConfigErrorException;
+import ameba.exceptions.FrostAppCanNotChange;
 import ameba.feature.AmebaFeature;
 import ameba.util.IOUtils;
 import ameba.util.LinkedProperties;
@@ -31,6 +32,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URL;
@@ -81,6 +84,8 @@ public class Application extends ResourceConfig {
     private File packageRoot;
     private Container container;
 
+    private boolean frost = false;
+
     public Application() {
         this("conf/application.conf");
     }
@@ -125,6 +130,8 @@ public class Application extends ResourceConfig {
         //配置日志器
         configureLogger();
 
+        AmebaFeature.preInit();
+
         publishEvent(new ModeLoadedEvent(this));
 
         //读取模式配置
@@ -162,11 +169,32 @@ public class Application extends ResourceConfig {
         //清空临时读取的配置
         properties.clear();
         properties = null;
+
+        publishEvent(new ConfiguredEvent(this));
+        frost = true;
     }
 
     private static void publishEvent(Event event) {
         SystemEventBus.publish(event);
         AmebaFeature.getEventBus().publish(event);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void preInitFeature(Class clazz){
+        if (AmebaFeature.class.isAssignableFrom(clazz)) {
+            try {
+                Method m = clazz.getMethod("preInit");
+                if (Modifier.isStatic(m.getModifiers())) {
+                    m.invoke(null);
+                }
+            } catch (IllegalAccessException e) {
+                logger.warn("提前初始化特性出错[" + clazz.getName() + "]", e);
+            } catch (InvocationTargetException e) {
+                logger.warn("提前初始化特性出错[" + clazz.getName() + "]", e);
+            } catch (NoSuchMethodException e) {
+                logger.warn("提前初始化特性出错[" + clazz.getName() + "]", e);
+            }
+        }
     }
 
     private void configureFeature(Map<String, Object> configMap) {
@@ -186,6 +214,9 @@ public class Application extends ResourceConfig {
                         logger.warn("并未注册特性[{}]，因为该特性已存在", register);
                         continue;
                     }
+
+                    preInitFeature(clazz);
+
                     register(clazz);
                     suc++;
                 } catch (ClassNotFoundException e) {
@@ -212,6 +243,7 @@ public class Application extends ResourceConfig {
                             logger.warn("并未注册装特性[{}({})]，因为该特性已存在", name, clazz);
                             continue;
                         }
+                        preInitFeature(clazz);
                         register(clazz);
                         suc++;
                     } catch (ClassNotFoundException e) {
@@ -389,8 +421,6 @@ public class Application extends ResourceConfig {
             }
         });
 
-        SystemEventBus.publish(new ConfiguredEvent(this));
-
         registerInstances(new Feature() {
             @Override
             public boolean configure(FeatureContext context) {
@@ -447,7 +477,6 @@ public class Application extends ResourceConfig {
             logger.info("未找到附加模块");
         }
     }
-
 
 
     private void readAppConfig(Properties properties, String confFile) {
@@ -614,7 +643,14 @@ public class Application extends ResourceConfig {
     }
 
     public void setSourceRoot(File sourceRoot) {
+        checkFrost();
         this.sourceRoot = sourceRoot;
+    }
+
+    private void checkFrost() {
+        if (frost) {
+            throw new FrostAppCanNotChange("应用配置不能在此刻更改");
+        }
     }
 
     /**
