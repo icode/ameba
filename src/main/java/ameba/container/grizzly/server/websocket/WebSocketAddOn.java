@@ -13,7 +13,7 @@ public class WebSocketAddOn implements AddOn {
 
     private final ServerContainer serverContainer;
 
-    WebSocketAddOn(ServerContainer serverContainer) {
+    public WebSocketAddOn(ServerContainer serverContainer) {
         this.serverContainer = serverContainer;
     }
 
