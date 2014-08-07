@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.ServletContext;
-import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -42,7 +41,6 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
     public static final String PROTECTED_DIR = "_protected";
     public static final String INNER_TPL_DIR = "/__views/ameba/";
     private static final Logger logger = LoggerFactory.getLogger(AmebaTemplateProcessor.class);
-    private static final ThreadLocal<Viewable> ERROR_VIEWBLE_THREAD_LOCAL = new ThreadLocal<Viewable>();
     /**
      * Create an instance of the processor with injected {@link javax.ws.rs.core.Configuration config} and
      * (optional) {@link javax.servlet.ServletContext servlet context}.
@@ -56,8 +54,6 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
     Set<String> supportedExtensions;
     @Inject
     private ServiceLocator serviceLocator;
-    @Inject
-    private javax.inject.Provider<ContainerResponseContext> responseContextProvider;
 
     private ErrorPageGenerator errorPageGenerator;
     private Charset charset;
@@ -114,7 +110,7 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
                             in.close();
                         }
                     } else if (resolve(file, (Reader) null) == null && Ameba.getApp().getMode().isDev() && !file.startsWith(INNER_TPL_DIR)) {
-                        throw new TemplateNotFoundException("未找到模板:" + name);
+                        throw new TemplateNotFoundException("未找到模板:" + getBasePath() + file);
                     }
                 } catch (TemplateNotFoundException e) {
                     throw e;
@@ -125,7 +121,7 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
                     if (e instanceof ParseException) {
                         r = createException((ParseException) e);
                     } else {
-                        r = new TemplateException("Parse template error", e, e.getStackTrace()[0].getLineNumber());
+                        r = new TemplateException("Parse template error: " + getBasePath() + file, e, e.getStackTrace()[0].getLineNumber());
                     }
                     throw r;
                 } finally {
@@ -170,6 +166,8 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
             RuntimeException r;
             if (e instanceof ParseException) {
                 r = createException((ParseException) e);
+            } else if (e instanceof IllegalStateException) {
+                return null;
             } else {
                 r = new TemplateException("Parse template error: " + templatePath, e, e.getStackTrace()[0].getLineNumber());
             }
@@ -193,11 +191,13 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
             if (e instanceof ParseException) {
                 r = createException((ParseException) e);
             } else {
-                r = new TemplateException("Write template error: " + viewable.getTemplateName(), e, e.getStackTrace()[0].getLineNumber());
+                r = new TemplateException("Write template error: " + getTemplateFile(templateReference), e, e.getStackTrace()[0].getLineNumber());
             }
             throw r;
         }
     }
+
+    public abstract String getTemplateFile(T templateReference);
 
     public abstract void writeTemplate(T templateReference, Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws Exception;
 }

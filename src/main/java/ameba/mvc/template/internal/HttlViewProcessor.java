@@ -96,6 +96,11 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
     }
 
     @Override
+    public String getTemplateFile(Template templateReference) {
+        return templateReference.getName();
+    }
+
+    @Override
     public void writeTemplate(Template template, final Viewable viewable, MediaType mediaType,
                               MultivaluedMap<String, Object> httpHeaders, OutputStream outputStream) throws Exception {
             Object model = viewable.getModel();

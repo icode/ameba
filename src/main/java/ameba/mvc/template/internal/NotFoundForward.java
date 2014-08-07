@@ -44,6 +44,11 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
             }
 
             @Override
+            public String getTemplateFile(Boolean templateReference) {
+                return null;
+            }
+
+            @Override
             public void writeTemplate(Boolean templateReference, Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws Exception {
 
             }
