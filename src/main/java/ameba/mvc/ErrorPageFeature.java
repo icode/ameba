@@ -29,42 +29,45 @@ public class ErrorPageFeature implements Feature {
         Map<String, Object> config = featureContext.getConfiguration().getProperties();
         String defaultTemplate = null;
         String clazz = (String) config.get(GEN_CONF_KEY);
-        if (StringUtils.isNotBlank(clazz)) {
+        Class clz = null;
+        if (StringUtils.isBlank(clazz)) {
+            clz = ErrorPageGenerator.class;
+        } else {
             try {
-                Class clz = Class.forName(clazz);
-
-                for (String key : config.keySet()) {
-                    if (StringUtils.isNotBlank(key) && key.startsWith("http.error.page.")) {
-                        int startIndex = key.lastIndexOf(".");
-                        String statusCodeStr = key.substring(startIndex + 1);
-                        if (StringUtils.isNotBlank(statusCodeStr)) {
-                            if (statusCodeStr.toLowerCase().equals("default")) {
-                                defaultTemplate = (String) config.get(key);
-                                defaultTemplate = defaultTemplate.startsWith("/") ? defaultTemplate :
-                                        "/" + defaultTemplate;
-                            } else if (!statusCodeStr.toLowerCase().equals("generator")) {
-                                try {
-                                    String va = (String) config.get(key);
-                                    int statusCode = Integer.parseInt(statusCodeStr);
-                                    if (StringUtils.isNotBlank(va))
-                                        errorMap.put(statusCode, va.startsWith("/") ? va : "/" + va);
-                                } catch (Exception e) {
-                                    logger.error("parse http.compression.minSize error", e);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                ErrorPageGenerator.setDefaultErrorTemplate(defaultTemplate);
-                ErrorPageGenerator.pushAllErrorMap(errorMap);
-
-                featureContext.register(clz);
+                clz = Class.forName(clazz);
             } catch (ClassNotFoundException e) {
                 throw new ConfigErrorException(GEN_CONF_KEY + "config error,not found class " + clazz,
                         GEN_CONF_KEY, e);
             }
         }
+
+        for (String key : config.keySet()) {
+            if (StringUtils.isNotBlank(key) && key.startsWith("http.error.page.")) {
+                int startIndex = key.lastIndexOf(".");
+                String statusCodeStr = key.substring(startIndex + 1);
+                if (StringUtils.isNotBlank(statusCodeStr)) {
+                    if (statusCodeStr.toLowerCase().equals("default")) {
+                        defaultTemplate = (String) config.get(key);
+                        defaultTemplate = defaultTemplate.startsWith("/") ? defaultTemplate :
+                                "/" + defaultTemplate;
+                    } else if (!statusCodeStr.toLowerCase().equals("generator")) {
+                        try {
+                            String va = (String) config.get(key);
+                            int statusCode = Integer.parseInt(statusCodeStr);
+                            if (StringUtils.isNotBlank(va))
+                                errorMap.put(statusCode, va.startsWith("/") ? va : "/" + va);
+                        } catch (Exception e) {
+                            logger.error("parse http.compression.minSize error", e);
+                        }
+                    }
+                }
+            }
+        }
+
+        ErrorPageGenerator.setDefaultErrorTemplate(defaultTemplate);
+        ErrorPageGenerator.pushAllErrorMap(errorMap);
+
+        featureContext.register(clz);
         return true;
     }
 }
