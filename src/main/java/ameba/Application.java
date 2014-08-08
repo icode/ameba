@@ -330,8 +330,9 @@ public class Application extends ResourceConfig {
                 IOUtils.closeQuietly(in);
             }
         }
-        //将模式配置放入临时配置对象
-        configMap.putAll((Map) modeProperties);
+        if (modeProperties.size() > 0)
+            //将模式配置放入临时配置对象
+            configMap.putAll((Map) modeProperties);
 
         //清空应用程序模式配置
         modeProperties.clear();
