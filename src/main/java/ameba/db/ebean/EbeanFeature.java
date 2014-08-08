@@ -95,7 +95,7 @@ public class EbeanFeature extends TransactionFeature {
         try {
             result = streamTransform.transform(desc.getClassSimpleName(), in);
         } finally {
-            in.close();
+            IOUtils.closeQuietly(in);
         }
         if (result == null) {
             logger.debug("{} class not entity.", desc.getClassName());

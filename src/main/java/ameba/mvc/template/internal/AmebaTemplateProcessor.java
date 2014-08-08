@@ -64,12 +64,12 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
         charset = Charset.forName(StringUtils.isBlank(charsetStr) ? "utf-8" : charsetStr);
         this.supportedExtensions = Sets.newHashSet(Collections2.transform(
                 Arrays.asList(supportedExtensions), new Function<String, String>() {
-                    @Override
-                    public String apply(String input) {
-                        input = input.toLowerCase();
-                        return input.startsWith(".") ? input : "." + input;
-                    }
-                }));
+            @Override
+            public String apply(String input) {
+                input = input.toLowerCase();
+                return input.startsWith(".") ? input : "." + input;
+            }
+        }));
     }
 
 
@@ -107,7 +107,7 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
                             if (t != null)
                                 return t;
                         } finally {
-                            in.close();
+                            IOUtils.closeQuietly(in);
                         }
                     } else if (resolve(file, (Reader) null) == null && Ameba.getApp().getMode().isDev() && !file.startsWith(INNER_TPL_DIR)) {
                         throw new TemplateNotFoundException("未找到模板:" + getBasePath() + file);
@@ -125,13 +125,7 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
                     }
                     throw r;
                 } finally {
-                    if (in != null) {
-                        try {
-                            in.close();
-                        } catch (IOException e) {
-                            logger.warn("close template input stream has error", e);
-                        }
-                    }
+                    IOUtils.closeQuietly(in);
                 }
             }
         }
@@ -173,8 +167,7 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
             }
             throw r;
         } finally {
-            if (reader != null)
-                reader.close();
+            IOUtils.closeQuietly(reader);
         }
     }
 

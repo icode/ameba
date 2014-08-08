@@ -318,14 +318,20 @@ public class Application extends ResourceConfig {
         Properties modeProperties = new Properties();
 
         //读取相应模式的配置文件
-        try {
-            modeProperties.load(getResourceAsStream("conf/" + mode.name().toLowerCase() + ".conf"));
-            //将模式配置放入临时配置对象
-            configMap.putAll((Map) modeProperties);
-        } catch (IOException e) {
-            logger.warn("读取[conf/" + mode.name().toLowerCase() + ".conf]出错", e);
+        Enumeration<java.net.URL> confs = IOUtils.getResources("conf/" + mode.name().toLowerCase() + ".conf");
+        while (confs.hasMoreElements()) {
+            InputStream in = null;
+            try {
+                in = confs.nextElement().openStream();
+                modeProperties.load(in);
+            } catch (IOException e) {
+                logger.warn("读取[conf/" + mode.name().toLowerCase() + ".conf]出错", e);
+            } finally {
+                IOUtils.closeQuietly(in);
+            }
         }
-
+        //将模式配置放入临时配置对象
+        configMap.putAll((Map) modeProperties);
 
         //清空应用程序模式配置
         modeProperties.clear();

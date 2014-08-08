@@ -4,6 +4,7 @@ import ameba.db.model.Model;
 import ameba.enhancers.Enhancer;
 import ameba.enhancers.EnhancingException;
 import ameba.exceptions.UnexpectedException;
+import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import javassist.*;
@@ -86,11 +87,7 @@ public class ModelManager extends Enhancer {
                         logger.warn("load model class file [" + desc.classFile + "] error", e);
                     } finally {
                         index++;
-                        try {
-                            in.close();
-                        } catch (IOException e) {
-                            logger.warn("close class bytecode stream has a error", e);
-                        }
+                        IOUtils.closeQuietly(in);
                     }
                 } else {
                     manager.fireModelLoaded(desc.clazz, desc, index, size);
@@ -149,11 +146,7 @@ public class ModelManager extends Enhancer {
                 if (desc != null && !modelClassesDescList.contains(desc))
                     modelClassesDescList.add(desc);
             } finally {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    logger.error("close class file input stream error", e);
-                }
+                IOUtils.closeQuietly(in);
             }
         }
     }
