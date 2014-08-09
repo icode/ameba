@@ -159,21 +159,6 @@
             <version>1.0</version>
             <scope>provided</scope>
         </dependency>
-        <!--<dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-container-grizzly-server</artifactId>
-            <version>${tyrus.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>grizzly-http-server</artifactId>
-                    <groupId>org.glassfish.grizzly</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>grizzly-framework</artifactId>
-                    <groupId>org.glassfish.grizzly</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
         <!-- XML/JSON support -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
