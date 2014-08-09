@@ -9,10 +9,14 @@ import com.fasterxml.jackson.jaxrs.base.JsonParseExceptionMapper;
 import com.fasterxml.jackson.jaxrs.cfg.Annotations;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.jaxrs.xml.JacksonJaxbXMLProvider;
-import org.glassfish.jersey.CommonProperties;
+import org.glassfish.jersey.internal.InternalProperties;
+import org.glassfish.jersey.internal.util.PropertiesHelper;
 
+import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.MessageBodyWriter;
 
 /**
  * @author ICode
@@ -20,16 +24,19 @@ import javax.ws.rs.core.FeatureContext;
  */
 public class JacksonFeature implements Feature {
 
+    private final static String JSON_FEATURE = JacksonFeature.class.getSimpleName();
+
     @Override
     public boolean configure(final FeatureContext context) {
-        final String disableMoxy = CommonProperties.MOXY_JSON_FEATURE_DISABLE + '.'
-                + context.getConfiguration().getRuntimeType().name().toLowerCase();
-        context.property(disableMoxy, true);
+        final Configuration config = context.getConfiguration();
 
-        context.register(JacksonJsonProvider.class);
-        context.register(JacksonXMLProvider.class);
+        context.property(PropertiesHelper.getPropertyNameForRuntime(InternalProperties.JSON_FEATURE, config.getRuntimeType()),
+                JSON_FEATURE);
+
         context.register(JsonParseExceptionMapper.class);
         context.register(JsonMappingException.class);
+        context.register(JacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
+        context.register(JacksonXMLProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
         return true;
     }
 

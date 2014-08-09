@@ -293,7 +293,7 @@
     <properties>
         <ameba.utils.version>0.1.6</ameba.utils.version>
         <jdt.ecj.version>4.4</jdt.ecj.version>
-        <jersey.version>2.10.1</jersey.version>
+        <jersey.version>2.11</jersey.version>
         <slf4j.version>1.7.7</slf4j.version>
         <logback.version>1.1.2</logback.version>
         <ebean.version>4.1.4</ebean.version>
