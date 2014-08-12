@@ -263,7 +263,7 @@
         </dependency>
 
         <dependency>
-            <groupId>ameba</groupId>
+            <groupId>org.amebastack</groupId>
             <artifactId>ameba-utils</artifactId>
             <version>${ameba.utils.version}</version>
         </dependency>
