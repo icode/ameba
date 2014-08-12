@@ -330,13 +330,16 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
                                 <phase>verify</phase>
+                                <configuration>
+                                    <gpgArguments>
+                                        <argument>--no-tty</argument>
+                                    </gpgArguments>
+                                </configuration>
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
@@ -373,6 +376,17 @@
             </build>
         </profile>
     </profiles>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>oss</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>oss</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
     <properties>
         <ameba.utils.version>0.1.6</ameba.utils.version>
