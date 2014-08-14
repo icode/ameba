@@ -27,7 +27,7 @@ public class Ameba {
         return app;
     }
 
-    public static void main(String[] args) throws InstantiationException, IllegalAccessException, InterruptedException {
+    public static void main(String[] args) throws Exception {
         bootstrap();
 
         // register shutdown hook
@@ -41,11 +41,11 @@ public class Ameba {
         Thread.currentThread().join();
     }
 
-    public static void bootstrap() throws IllegalAccessException, InstantiationException {
+    public static void bootstrap() throws Exception {
         bootstrap(new Application());
     }
 
-    public static synchronized void bootstrap(Application application) throws InstantiationException, IllegalAccessException {
+    public static synchronized void bootstrap(Application application) throws Exception {
         if (Ameba.container != null) {
             throw new AmebaException("无法启动多个实例");
         }
@@ -55,13 +55,9 @@ public class Ameba {
         serviceLocator = container.getServiceLocator();
 
         // run
-        try {
-            logger.info("启动容器...");
-            container.start();
-            logger.info("服务已启动");
-        } catch (Exception e) {
-            logger.error("启动服务器出现错误", e);
-        }
+        logger.info("启动容器...");
+        container.start();
+        logger.info("服务已启动");
     }
 
     public static synchronized void shutdown() {

@@ -16,7 +16,7 @@ public class JavaSource {
     private final File classFile;
     private final File inputDir;
     private String sourceCode;
-    private byte[] bytecode;
+    private byte[] byteCode;
 
     public JavaSource(String qualifiedClassName, File inputDir, File outputDir) {
         this.qualifiedClassName = qualifiedClassName;
@@ -51,12 +51,12 @@ public class JavaSource {
         return inputDir;
     }
 
-    public byte[] getBytecode() {
-        return bytecode;
+    public byte[] getByteCode() {
+        return byteCode;
     }
 
-    public void setBytecode(byte[] bytecode) {
-        this.bytecode = bytecode;
+    public void setByteCode(byte[] byteCode) {
+        this.byteCode = byteCode;
     }
 
     public void clean() {
@@ -84,7 +84,7 @@ public class JavaSource {
 
         OutputStream out = new FileOutputStream(classFile);
         try {
-            out.write(bytecode);
+            out.write(byteCode);
         } finally {
             IOUtils.closeQuietly(out);
         }

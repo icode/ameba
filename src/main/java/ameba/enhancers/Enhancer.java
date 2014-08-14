@@ -27,7 +27,7 @@ public abstract class Enhancer {
     }
 
     protected boolean isFinal(CtField ctField) {
-        return java.lang.reflect.Modifier.isFinal(ctField.getModifiers());
+        return Modifier.isFinal(ctField.getModifiers());
     }
 
     /**

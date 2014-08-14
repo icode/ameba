@@ -209,7 +209,7 @@ public class JdkCompiler extends JavaCompiler {
         public byte[] getByteCode() {
             byte[] bytes = bytecode.toByteArray();
             if (source != null)
-                source.setBytecode(bytes);
+                source.setByteCode(bytes);
             return bytes;
         }
     }

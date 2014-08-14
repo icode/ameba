@@ -1,4 +1,4 @@
-package ameba.model;
+package ameba.enhancers.model;
 
 import ameba.Application;
 import ameba.db.DataSourceFeature;

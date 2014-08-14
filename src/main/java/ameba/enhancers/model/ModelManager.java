@@ -1,4 +1,4 @@
-package ameba.model;
+package ameba.enhancers.model;
 
 import ameba.db.model.Model;
 import ameba.enhancers.Enhancer;
@@ -36,10 +36,8 @@ public class ModelManager extends Enhancer {
     public static final String GET_FINDER_M_NAME = "withFinder";
     public static final String FINDER_C_NAME = "ameba.db.model.Finder";
     public final static String BASE_MODEL_PKG = "ameba.db.model";
-    public final static String BASE_MODEL_SIMPLE_NAME = "Model";
-    public final static String BASE_MODEL_NAME = BASE_MODEL_PKG + "." + BASE_MODEL_SIMPLE_NAME;
     private static final Map<String, ModelDescription> descCache = Maps.newHashMap();
-    private static ClassPool pool;
+    private static ClassPool classpool;
     private List<ModelDescription> modelClassesDescList = Lists.newArrayList();
     private List<ModelEventListener> listeners = Lists.newArrayList();
     private String[] packages;
@@ -50,8 +48,7 @@ public class ModelManager extends Enhancer {
 
     public static void reset() {
         managerMap.clear();
-        pool = new ClassPool(null);
-        pool.appendSystemPath();
+        classpool = newClassPool();
         descCache.clear();
     }
 
@@ -79,7 +76,7 @@ public class ModelManager extends Enhancer {
                     InputStream in = new ByteArrayInputStream(desc.classBytecode);
                     try {
                         logger.debug("load {} model manager class {}", name, desc.classFile);
-                        desc.clazz = pool.makeClass(in).toClass();
+                        desc.clazz = classpool.makeClass(in).toClass();
                         manager.fireModelLoaded(desc.clazz, desc, index, size);
                     } catch (IOException e) {
                         logger.warn("load model class file [" + desc.classFile + "] error", e);
@@ -161,8 +158,8 @@ public class ModelManager extends Enhancer {
 
     private ModelDescription enhanceModel(InputStream in) {
         try {
-            pool.importPackage(BASE_MODEL_PKG);
-            CtClass clazz = pool.makeClass(in);
+            classpool.importPackage(BASE_MODEL_PKG);
+            CtClass clazz = classpool.makeClass(in);
 
             if (clazz.isInterface()) {
                 return null;
@@ -213,7 +210,7 @@ public class ModelManager extends Enhancer {
                 String fieldName = StringUtils.capitalize(field.getName());
                 String getterName = "get" + fieldName;
                 CtMethod getter = null;
-                CtClass fieldType = pool.get(field.getType().getName());
+                CtClass fieldType = classpool.get(field.getType().getName());
                 try {
                     getter = clazz.getDeclaredMethod(getterName);
                 } catch (NotFoundException e) {
@@ -260,12 +257,12 @@ public class ModelManager extends Enhancer {
                             createIdSetter(clazz, setterName, args);
                         }
 
-                        pool.importPackage(fieldType.getPackageName());
-                        pool.importPackage(clazz.getName());
+                        classpool.importPackage(fieldType.getPackageName());
+                        classpool.importPackage(clazz.getName());
 
-                        CtMethod _getFinder = new CtMethod(pool.get(FINDER_C_NAME),
+                        CtMethod _getFinder = new CtMethod(classpool.get(FINDER_C_NAME),
                                 GET_FINDER_M_NAME,
-                                new CtClass[]{pool.get("java.lang.String")},
+                                new CtClass[]{classpool.get("java.lang.String")},
                                 clazz);
                         _getFinder.setModifiers(Modifier.setPublic(Modifier.STATIC));
                         try {
@@ -286,7 +283,7 @@ public class ModelManager extends Enhancer {
                             throw new CannotCompileException("Entity Model must be extends ameba.db.model.Model", e);
                         }
                         clazz.addMethod(_getFinder);
-                        _getFinder = new CtMethod(pool.get(FINDER_C_NAME),
+                        _getFinder = new CtMethod(classpool.get(FINDER_C_NAME),
                                 GET_FINDER_M_NAME,
                                 null,
                                 clazz);

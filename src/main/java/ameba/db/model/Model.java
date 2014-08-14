@@ -1,7 +1,7 @@
 package ameba.db.model;
 
 import ameba.db.TransactionFeature;
-import ameba.model.ModelManager;
+import ameba.enhancers.model.ModelManager;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.NotImplementedException;
 

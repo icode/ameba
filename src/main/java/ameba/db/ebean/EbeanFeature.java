@@ -4,8 +4,8 @@ import ameba.db.DataSourceFeature;
 import ameba.db.TransactionFeature;
 import ameba.db.ebean.transaction.EbeanTransactional;
 import ameba.db.model.Model;
-import ameba.model.ModelDescription;
-import ameba.model.ModelManager;
+import ameba.enhancers.model.ModelDescription;
+import ameba.enhancers.model.ModelManager;
 import ameba.util.IOUtils;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
@@ -86,8 +86,8 @@ public class EbeanFeature extends TransactionFeature {
         Transformer transformer = new Transformer("", "debug=" + EBEAN_TRANSFORM_LOG_LEVEL);
         InputStreamTransform streamTransform = new InputStreamTransform(transformer, Ebean.class.getClassLoader());
         InputStream in;
-        if (desc.getClassBytecode() != null) {
-            in = new ByteArrayInputStream(desc.getClassBytecode());
+        if (desc.getClassByteCode() != null) {
+            in = new ByteArrayInputStream(desc.getClassByteCode());
         } else {
             in = new URL(desc.getClassFile()).openStream();
         }
@@ -99,7 +99,7 @@ public class EbeanFeature extends TransactionFeature {
         }
         if (result == null) {
             logger.debug("{} class not entity.", desc.getClassName());
-            result = desc.getClassBytecode();
+            result = desc.getClassByteCode();
         }
         return result;
     }

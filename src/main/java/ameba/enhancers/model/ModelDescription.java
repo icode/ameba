@@ -1,4 +1,4 @@
-package ameba.model;
+package ameba.enhancers.model;
 
 /**
  * @author icode
@@ -10,7 +10,7 @@ public class ModelDescription {
     byte[] classBytecode;
     Class clazz;
 
-    public byte[] getClassBytecode() {
+    public byte[] getClassByteCode() {
         return classBytecode;
     }
 

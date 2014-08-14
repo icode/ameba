@@ -238,7 +238,7 @@ public class JdtCompiler extends JavaCompiler {
                         sep = ".";
                     }
                     byte[] bytes = classFile.getBytes();
-                    map.get(className).setBytecode(bytes);
+                    map.get(className).setByteCode(bytes);
                 }
             }
         }
