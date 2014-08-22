@@ -394,7 +394,7 @@
         <jersey.version>2.11</jersey.version>
         <slf4j.version>1.7.7</slf4j.version>
         <logback.version>1.1.2</logback.version>
-        <ebean.version>4.1.4</ebean.version>
+        <ebean.version>[4.1.6,5.0.0)</ebean.version>
         <ebean.agent.version>4.1.5</ebean.agent.version>
         <druid.version>1.0.7</druid.version>
         <groovy.version>2.3.4</groovy.version>
