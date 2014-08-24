@@ -17,6 +17,7 @@ import com.avaje.ebean.enhance.agent.Transformer;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
 import javassist.CannotCompileException;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,14 +26,13 @@ import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.FeatureContext;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * @author 张立鑫 IntelligentCode
@@ -191,7 +191,7 @@ public class EbeanFeature extends TransactionFeature {
                 // DDL
                 if (!isProd) {
                     if (genDdl) {
-                        final String basePath = IOUtils.getResource("").getFile() + "conf/evolutions/" + server.getName() + "/";
+                        final String basePath = IOUtils.getResource("").getPath() + "conf/evolutions/" + server.getName() + "/";
                         DdlGenerator ddl = new DdlGenerator() {
                             @Override
                             protected String getDropFileName() {
@@ -238,7 +238,7 @@ public class EbeanFeature extends TransactionFeature {
                         };
                         ddl.setup((SpiEbeanServer) server, config.getDatabasePlatform(), config);
                         try {
-                            Files.createDirectories(Paths.get(basePath));
+                            FileUtils.forceMkdir(new File(basePath));
                             ddl.generateDdl();
                             ddl.runDdl();
                         } catch (IOException e) {
