@@ -159,29 +159,14 @@ public class JdkCompiler extends JavaCompiler {
         private final JavaSource source;
         private UnsafeByteArrayOutputStream bytecode;
 
-        public JavaFileObjectImpl(final String baseName, final CharSequence source) {
-            super(ClassUtils.toURI(baseName + ClassUtils.JAVA_EXTENSION), Kind.SOURCE);
-            this.source = new JavaSource(baseName, source.toString());
-        }
-
         public JavaFileObjectImpl(JavaSource source) {
-            super(ClassUtils.toURI(source.getJavaFile().getPath()), Kind.SOURCE);
+            super(source.getJavaFile().toURI(), Kind.SOURCE);
             this.source = source;
         }
 
         public JavaFileObjectImpl(JavaSource source, final String baseName, Kind k) {
             super(ClassUtils.toURI(baseName), k);
             this.source = source;
-        }
-
-        JavaFileObjectImpl(final String name, final Kind kind) {
-            super(ClassUtils.toURI(name), kind);
-            source = null;
-        }
-
-        public JavaFileObjectImpl(URI uri, Kind kind) {
-            super(uri, kind);
-            source = null;
         }
 
         @Override
