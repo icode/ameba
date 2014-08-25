@@ -29,12 +29,15 @@ import javax.ws.rs.core.FeatureContext;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -423,6 +426,14 @@ public class Application extends ResourceConfig {
         });
     }
 
+    private String toExternalForm(URL url) {
+        try {
+            return URLDecoder.decode(url.toExternalForm(), Charset.defaultCharset().name());
+        } catch (UnsupportedEncodingException e) {
+            return url.toExternalForm();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private void readModuleConfig(Map<String, Object> configMap) {
         logger.info("读取模块配置...");
@@ -445,24 +456,25 @@ public class Application extends ResourceConfig {
                         modelName = modelName.substring(0, jarFileIndex);
                     }
 
-                    int fileIndex = modelName.lastIndexOf(File.separator);
+                    int fileIndex = modelName.lastIndexOf("/");
                     modelName = modelName.substring(fileIndex + 1);
 
                     logger.info("加载模块 {}", modelName);
-                    logger.debug("读取[{}]文件配置", url.toExternalForm());
+                    logger.debug("读取[{}]文件配置", toExternalForm(url));
                     in = url.openStream();
                 } catch (IOException e) {
-                    logger.error("读取[{}]出错", url.toExternalForm());
+                    logger.error("读取[{}]出错", toExternalForm(url));
                 }
                 if (in != null) {
                     try {
                         moduleProperties.load(in);
                     } catch (Exception e) {
-                        logger.error("读取[{}]出错", url.toExternalForm());
+                        logger.error("读取[{}]出错", toExternalForm(url));
                     }
                 } else {
-                    logger.error("读取[{}]出错", url.toExternalForm());
+                    logger.error("读取[{}]出错", toExternalForm(url));
                 }
+                closeQuietly(in);
             }
             configMap.putAll((Map) moduleProperties);
             moduleProperties.clear();
@@ -479,23 +491,24 @@ public class Application extends ResourceConfig {
             InputStream in = null;
             URL url = urls.nextElement();
             try {
-                logger.info("读取[{}]文件配置", url.toExternalForm());
+                logger.info("读取[{}]文件配置", toExternalForm(url));
                 in = url.openStream();
             } catch (IOException e) {
-                logger.error("读取[{}]出错", url.toExternalForm());
+                logger.error("读取[{}]出错", toExternalForm(url));
             }
             if (in != null) {
                 try {
                     properties.load(in);
                 } catch (Exception e) {
-                    logger.error("读取[{}]出错", url.toExternalForm());
+                    logger.error("读取[{}]出错", toExternalForm(url));
                 }
             } else {
-                logger.error("读取[{}]出错", url.toExternalForm());
+                logger.error("读取[{}]出错", toExternalForm(url));
             }
+            closeQuietly(in);
 
             if (urls.hasMoreElements()) {
-                List<String> urlList = Lists.newArrayList(url.toExternalForm());
+                List<String> urlList = Lists.newArrayList(toExternalForm(url));
                 while (urls.hasMoreElements()) {
                     urlList.add(urls.nextElement().toExternalForm());
                 }
