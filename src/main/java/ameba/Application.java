@@ -185,7 +185,7 @@ public class Application extends ResourceConfig {
     private void preConfigureFeature(Class clazz) {
         if (AmebaFeature.class.isAssignableFrom(clazz)) {
             try {
-                Method m = clazz.getDeclaredMethod("preConfigure", Application.class);
+                Method m = clazz.getMethod("preConfigure", Application.class);
                 if (Modifier.isStatic(m.getModifiers())) {
                     m.invoke(null, Application.this);
                 }
