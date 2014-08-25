@@ -38,7 +38,10 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -262,11 +265,17 @@ public class Application extends ResourceConfig {
         String[] packages = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("resource.packages"), "")).split(",");
         for (String key : configMap.keySet()) {
             if (key.startsWith("resource.packages.")) {
-                String pkg = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) configMap.get(key), ""));
-                if (!"".equals(pkg) && Arrays.binarySearch(packages, pkg) == -1)
-                    packages = ArrayUtils.addAll(packages, pkg.split(","));
+                String pkgStr = (String) configMap.get(key);
+                if (StringUtils.isNotBlank(pkgStr)) {
+                    String[] pkgs = StringUtils.deleteWhitespace(pkgStr).split(",");
+                    for (String pkg : pkgs) {
+                        if (!ArrayUtils.contains(packages, pkg))
+                            packages = ArrayUtils.add(packages, pkg);
+                    }
+                }
             }
         }
+        packages = ArrayUtils.removeElement(packages, "");
         logger.info("设置资源扫描包:{}", StringUtils.join(packages, ","));
         registerFinder(new PackageNamesScanner(getClassLoader(), packages, true));
     }
