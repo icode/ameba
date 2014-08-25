@@ -17,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +68,14 @@ public class ModelManager extends Enhancer {
         return manager;
     }
 
+    private static String decodeClassFile(ModelDescription desc){
+        try {
+            return URLDecoder.decode(desc.classFile, Charset.defaultCharset().name());
+        } catch (UnsupportedEncodingException e) {
+            return desc.classFile;
+        }
+    }
+
     public static void loadAndClearDesc(String name) {
         ModelManager manager = getManager(name);
         if (manager != null) {
@@ -75,13 +86,13 @@ public class ModelManager extends Enhancer {
                 if (desc.clazz == null) {
                     InputStream in = new ByteArrayInputStream(desc.classBytecode);
                     try {
-                        logger.debug("load {} model manager class {}", name, desc.classFile);
+                        logger.debug("load {} model manager class {}", name, decodeClassFile(desc));
                         desc.clazz = classpool.makeClass(in).toClass();
                         manager.fireModelLoaded(desc.clazz, desc, index, size);
                     } catch (IOException e) {
-                        logger.warn("load model class file [" + desc.classFile + "] error", e);
+                        logger.warn("load model class file [" + decodeClassFile(desc) + "] error", e);
                     } catch (CannotCompileException e) {
-                        logger.warn("load model class file [" + desc.classFile + "] error", e);
+                        logger.warn("load model class file [" + decodeClassFile(desc) + "] error", e);
                     } finally {
                         index++;
                         IOUtils.closeQuietly(in);
@@ -90,7 +101,7 @@ public class ModelManager extends Enhancer {
                     manager.fireModelLoaded(desc.clazz, desc, index, size);
                     index++;
                 }
-                logger.debug("clear {} model manager class {} desc", name, desc.classFile);
+                logger.debug("clear {} model manager class {} desc", name, decodeClassFile(desc));
                 desc.classBytecode = null;
             }
         }
