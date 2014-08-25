@@ -13,14 +13,13 @@ public class Ameba {
     public static final Logger logger = LoggerFactory.getLogger(Ameba.class);
 
     private static Application app;
-    private static ServiceLocator serviceLocator;
     private static Container container;
 
     private Ameba() {
     }
 
     public static ServiceLocator getServiceLocator() {
-        return serviceLocator;
+        return container.getServiceLocator();
     }
 
     public static Application getApp() {
@@ -52,7 +51,6 @@ public class Ameba {
 
         app = application;
         container = Container.create(app);
-        serviceLocator = container.getServiceLocator();
 
         // run
         logger.info("启动容器...");
