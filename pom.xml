@@ -399,7 +399,7 @@
         <druid.version>1.0.8</druid.version>
         <groovy.version>2.3.4</groovy.version>
         <httl.version>1.0.11</httl.version>
-        <jackson.core.version>2.4.1</jackson.core.version>
+        <jackson.core.version>2.4.2</jackson.core.version>
         <jackson.provider.version>${jackson.core.version}</jackson.provider.version>
         <persistence.version>1.0.2</persistence.version>
         <bean.validator.version>5.1.1.Final</bean.validator.version>
