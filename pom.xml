@@ -6,7 +6,7 @@
     <groupId>org.amebastack</groupId>
     <artifactId>ameba</artifactId>
     <packaging>jar</packaging>
-    <version>0.1.6</version>
+    <version>0.1.6a</version>
     <name>Ameba-Framework</name>
     <description>A useful Java framework!</description>
 
@@ -389,7 +389,7 @@
     </build>
 
     <properties>
-        <ameba.utils.version>0.1.6</ameba.utils.version>
+        <ameba.utils.version>0.1.6a</ameba.utils.version>
         <jdt.ecj.version>4.4</jdt.ecj.version>
         <jersey.version>2.11</jersey.version>
         <slf4j.version>1.7.7</slf4j.version>

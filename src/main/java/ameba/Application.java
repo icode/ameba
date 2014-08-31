@@ -6,6 +6,7 @@ import ameba.exceptions.AmebaException;
 import ameba.exceptions.ConfigErrorException;
 import ameba.exceptions.FrostAppCanNotChange;
 import ameba.feature.AmebaFeature;
+import ameba.server.Connector;
 import ameba.util.IOUtils;
 import ameba.util.LinkedProperties;
 import ch.qos.logback.classic.LoggerContext;
@@ -24,8 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.inject.Singleton;
-import javax.ws.rs.core.Feature;
-import javax.ws.rs.core.FeatureContext;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +33,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
@@ -57,36 +55,14 @@ import static ameba.util.IOUtils.*;
 @Singleton
 public class Application extends ResourceConfig {
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
-    private URI httpServerBaseUri;
+    protected boolean jmxEnabled;
     private String configFile;
     private Mode mode;
-    private String domain;
-    private String host;
     private String applicationVersion;
-    private boolean ajpEnabled;
-    private boolean secureEnabled;
-    private boolean jmxEnabled;
-    private Integer port;
-    private String sslProtocol;
-    private boolean sslClientMode;
-    private boolean sslNeedClientAuth;
-    private boolean sslWantClientAuth;
-    private String sslKeyPassword;
-    private byte[] sslKeyStoreFile;
-    private String sslKeyStoreType;
-    private String sslKeyStorePassword;
-    private String sslKeyStoreProvider;
-    private String sslKeyManagerFactoryAlgorithm;
-    private String sslTrustPassword;
-    private byte[] sslTrustStoreFile;
-    private String sslTrustStorePassword;
-    private String sslTrustStoreType;
-    private String sslTrustStoreProvider;
-    private String sslTrustManagerFactoryAlgorithm;
-    private boolean sslConfigReady;
     private File sourceRoot;
     private File packageRoot;
     private Container container;
+    private List<Connector> connectors = Lists.newArrayList();
 
     private boolean frost = false;
 
@@ -139,8 +115,8 @@ public class Application extends ResourceConfig {
         //读取模式配置
         readModeConfig(configMap);
 
-        //设置ssl相关
-        configureSsl(properties);
+        //配置连接器
+        configureConnector(properties);
 
         //读取模块配置
         readModuleConfig(configMap);
@@ -174,6 +150,7 @@ public class Application extends ResourceConfig {
 
         publishEvent(new ConfiguredEvent(this));
         frost = true;
+        logger.info("装载特性...");
     }
 
     private static void publishEvent(Event event) {
@@ -351,67 +328,95 @@ public class Application extends ResourceConfig {
         modeProperties = null;
     }
 
-    private void configureSsl(Properties properties) {
-        secureEnabled = Boolean.parseBoolean(properties.getProperty("ssl.enabled", "false"));
-        sslProtocol = properties.getProperty("ssl.protocol");
-        sslClientMode = Boolean.parseBoolean(properties.getProperty("ssl.clientMode", "false"));
-        sslNeedClientAuth = Boolean.parseBoolean(properties.getProperty("ssl.needClientAuth", "false"));
-        sslWantClientAuth = Boolean.parseBoolean(properties.getProperty("ssl.wantClientAuth", "false"));
-
-        sslKeyManagerFactoryAlgorithm = properties.getProperty("ssl.key.manager.factory.algorithm");
-        sslKeyPassword = properties.getProperty("ssl.key.password");
-        sslKeyStoreProvider = properties.getProperty("ssl.key.store.provider");
-        String keyStoreFile = properties.getProperty("ssl.key.store.file");
-        if (StringUtils.isNotBlank(keyStoreFile))
-            try {
-                sslKeyStoreFile = readByteArrayFromResource(keyStoreFile);
-            } catch (IOException e) {
-                logger.error("读取sslKeyStoreFile出错", e);
+    private void configureConnector(Properties properties) {
+        Map<String, Properties> propertiesMap = Maps.newLinkedHashMap();
+        for (String key : properties.stringPropertyNames()) {
+            if (key.startsWith("app.connector.")) {
+                String oKey = key;
+                key = key.replaceFirst("^app\\.connector\\.", "");
+                int index = key.indexOf(".");
+                if (index == -1){
+                    throw new ConfigErrorException("connector configure error, format app.connector.{connectorName}.{property}");
+                }
+                String name = key.substring(0, index);
+                Properties pr = propertiesMap.get(name);
+                if (pr == null) {
+                    pr = new Properties();
+                    propertiesMap.put(name, pr);
+                    pr.setProperty("name", name);
+                }
+                pr.setProperty(key.substring(index + 1), properties.getProperty(oKey));
             }
-        sslKeyStoreType = properties.getProperty("ssl.key.store.type");
-        sslKeyStorePassword = properties.getProperty("ssl.key.store.password");
+        }
 
-        sslTrustManagerFactoryAlgorithm = properties.getProperty("ssl.Trust.manager.factory.algorithm");
-        sslTrustPassword = properties.getProperty("ssl.trust.password");
-        sslTrustStoreProvider = properties.getProperty("ssl.trust.store.provider");
-        String trustStoreFile = properties.getProperty("ssl.trust.store.file");
-        if (StringUtils.isNotBlank(trustStoreFile))
-            try {
-                sslTrustStoreFile = readByteArrayFromResource(trustStoreFile);
-            } catch (IOException e) {
-                logger.error("读取sslTrustStoreFile出错", e);
-            }
-        sslTrustStoreType = properties.getProperty("ssl.trust.store.type");
-        sslTrustStorePassword = properties.getProperty("ssl.trust.store.password");
-
-        if (secureEnabled && sslKeyStoreFile != null &&
-                StringUtils.isNotBlank(sslKeyPassword) &&
-                StringUtils.isNotBlank(sslKeyStorePassword)) {
-            sslConfigReady = true;
+        for (Properties prop : propertiesMap.values()) {
+            connectors.add(createConnector(prop));
         }
     }
 
+    private Connector createConnector(Properties properties) {
+        Connector.Builder builder = Connector.Builder.create()
+                .rawProperties(properties)
+                .secureEnabled(Boolean.parseBoolean(properties.getProperty("ssl.enabled", "false")))
+                .sslProtocol(properties.getProperty("ssl.protocol"))
+                .sslClientMode(Boolean.parseBoolean(properties.getProperty("ssl.clientMode", "false")))
+                .sslNeedClientAuth(Boolean.parseBoolean(properties.getProperty("ssl.needClientAuth", "false")))
+                .sslWantClientAuth(Boolean.parseBoolean(properties.getProperty("ssl.wantClientAuth", "false")))
+                .sslKeyManagerFactoryAlgorithm(properties.getProperty("ssl.key.manager.factory.algorithm"))
+                .sslKeyPassword(properties.getProperty("ssl.key.password"))
+                .sslKeyStoreProvider(properties.getProperty("ssl.key.store.provider"))
+                .sslKeyStoreType(properties.getProperty("ssl.key.store.type"))
+                .sslKeyStorePassword(properties.getProperty("ssl.key.store.password"))
+                .sslTrustManagerFactoryAlgorithm(properties.getProperty("ssl.Trust.manager.factory.algorithm"))
+                .sslTrustPassword(properties.getProperty("ssl.trust.password"))
+                .sslTrustStoreProvider(properties.getProperty("ssl.trust.store.provider"))
+                .sslTrustStoreType(properties.getProperty("ssl.trust.store.type"))
+                .sslTrustStorePassword(properties.getProperty("ssl.trust.store.password"))
+                .ajpEnabled(Boolean.parseBoolean(properties.getProperty("ajp.enabled", "false")))
+                .host(StringUtils.defaultIfBlank(properties.getProperty("host"), "0.0.0.0"))
+                .port(Integer.valueOf(StringUtils.defaultIfBlank(properties.getProperty("port"), "80")))
+                .name(properties.getProperty("name"));
+
+        String keyStoreFile = properties.getProperty("ssl.key.store.file");
+        if (StringUtils.isNotBlank(keyStoreFile))
+            try {
+                builder.sslKeyStoreFile(readByteArrayFromResource(keyStoreFile));
+            } catch (IOException e) {
+                logger.error("读取sslKeyStoreFile出错", e);
+            }
+
+        String trustStoreFile = properties.getProperty("ssl.trust.store.file");
+        if (StringUtils.isNotBlank(trustStoreFile))
+            try {
+                builder.sslTrustStoreFile(readByteArrayFromResource(trustStoreFile));
+            } catch (IOException e) {
+                logger.error("读取sslTrustStoreFile出错", e);
+            }
+
+        return builder.build();
+    }
+
     private void configureServer(Properties properties) {
-        ajpEnabled = Boolean.parseBoolean(properties.getProperty("http.server.ajp.enabled", "false"));
-        jmxEnabled = Boolean.parseBoolean(properties.getProperty("app.jmx.enabled", "false"));
-
-        domain = (String) getProperty("app.domain");
-
-        host = StringUtils.defaultIfBlank((String) getProperty("app.host"), "0.0.0.0");
-
-        port = Integer.valueOf(StringUtils.defaultIfBlank((String) getProperty("app.port"), "80"));
-
-        //config server base uri
-        httpServerBaseUri = URI.create("http" + (isSecureEnabled() ? "s" : "") + "://" + host
-                + ":" + port + "/");
-        logger.info("配置服务器监听地址绑定到[{}]", httpServerBaseUri);
-        logger.info("装载特性...");
+        jmxEnabled = Boolean.parseBoolean(properties.getProperty("app.jmx.enabled"));
         registerInstances(new ContainerLifecycleListener() {
             @Override
             public void onStartup(Container container) {
-                Application.this.container = container;
                 publishEvent(new ContainerStartupEvent(container, Application.this));
                 logger.info("容器已启动");
+
+                if (Application.this.container == null) {
+                    StringBuilder connectorsBuilder = new StringBuilder();
+
+                    for (Connector connector : connectors) {
+                        connectorsBuilder.append("        ")
+                                .append(connector.getHttpServerBaseUri())
+                                .append("\n");
+                    }
+
+                    logger.info("服务器监听地址:\n{}", connectorsBuilder);
+                }
+
+                Application.this.container = container;
             }
 
             @Override
@@ -424,13 +429,6 @@ public class Application extends ResourceConfig {
             public void onShutdown(Container container) {
                 publishEvent(new ContainerShutdownEvent(container, Application.this));
                 logger.info("容器已关闭");
-            }
-        });
-
-        registerInstances(new Feature() {
-            @Override
-            public boolean configure(FeatureContext context) {
-                return true;
             }
         });
     }
@@ -542,6 +540,10 @@ public class Application extends ResourceConfig {
         return packageRoot;
     }
 
+    public void setPackageRoot(File packageRoot) {
+        this.packageRoot = packageRoot;
+    }
+
     public String getConfigFile() {
         return configFile;
     }
@@ -550,117 +552,25 @@ public class Application extends ResourceConfig {
         return sourceRoot;
     }
 
-    public String getHost() {
-        return host;
-    }
-
-    public Integer getPort() {
-        return port;
-    }
-
-    public String getDomain() {
-        return domain;
+    public void setSourceRoot(File sourceRoot) {
+        checkFrost();
+        this.sourceRoot = sourceRoot;
     }
 
     public Mode getMode() {
         return mode;
     }
 
-    public URI getHttpServerBaseUri() {
-        return httpServerBaseUri;
-    }
-
-    public boolean isSecureEnabled() {
-        return secureEnabled;
-    }
-
-    public boolean isSslClientMode() {
-        return sslClientMode;
-    }
-
-    public boolean isSslNeedClientAuth() {
-        return sslNeedClientAuth;
-    }
-
-    public boolean isSslWantClientAuth() {
-        return sslWantClientAuth;
-    }
-
-    public String getSslKeyPassword() {
-        return sslKeyPassword;
-    }
-
-    public byte[] getSslKeyStoreFile() {
-        return sslKeyStoreFile;
-    }
-
-    public String getSslKeyStoreType() {
-        return sslKeyStoreType;
-    }
-
-    public String getSslKeyStorePassword() {
-        return sslKeyStorePassword;
-    }
-
-    public String getSslTrustPassword() {
-        return sslTrustPassword;
-    }
-
-    public byte[] getSslTrustStoreFile() {
-        return sslTrustStoreFile;
-    }
-
-    public String getSslTrustStorePassword() {
-        return sslTrustStorePassword;
-    }
-
-    public String getSslTrustStoreType() {
-        return sslTrustStoreType;
-    }
-
-    public boolean isSslConfigReady() {
-        return sslConfigReady;
-    }
-
-    public String getSslProtocol() {
-        return sslProtocol;
-    }
-
-    public String getSslKeyStoreProvider() {
-        return sslKeyStoreProvider;
-    }
-
-    public String getSslTrustStoreProvider() {
-        return sslTrustStoreProvider;
-    }
-
-    public String getSslKeyManagerFactoryAlgorithm() {
-        return sslKeyManagerFactoryAlgorithm;
-    }
-
-    public String getSslTrustManagerFactoryAlgorithm() {
-        return sslTrustManagerFactoryAlgorithm;
-    }
-
-    public boolean isAjpEnabled() {
-        return ajpEnabled;
-    }
-
-    public boolean isJmxEnabled() {
-        return jmxEnabled;
-    }
-
     public String getApplicationVersion() {
         return applicationVersion;
     }
 
-    public void setPackageRoot(File packageRoot) {
-        this.packageRoot = packageRoot;
+    public List<Connector> getConnectors() {
+        return connectors;
     }
 
-    public void setSourceRoot(File sourceRoot) {
-        checkFrost();
-        this.sourceRoot = sourceRoot;
+    public boolean isJmxEnabled() {
+        return jmxEnabled;
     }
 
     private void checkFrost() {

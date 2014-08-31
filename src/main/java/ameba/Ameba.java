@@ -55,7 +55,6 @@ public class Ameba {
         // run
         logger.info("启动容器...");
         container.start();
-        logger.info("服务已启动");
     }
 
     public static synchronized void shutdown() {
