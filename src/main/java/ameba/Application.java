@@ -304,7 +304,7 @@ public class Application extends ResourceConfig {
 
     @SuppressWarnings("unchecked")
     private void readModeConfig(Map<String, Object> configMap) {
-        Properties modeProperties = new Properties();
+        Properties modeProperties = new LinkedProperties();
 
         //读取相应模式的配置文件
         Enumeration<java.net.URL> confs = IOUtils.getResources("conf/" + mode.name().toLowerCase() + ".conf");
