@@ -1,7 +1,9 @@
 package ameba.mvc.template.internal;
 
 import ameba.Ameba;
+import ameba.mvc.template.TemplateException;
 import ameba.util.IOUtils;
+import com.google.common.collect.Lists;
 import httl.Engine;
 import httl.Template;
 import org.apache.commons.lang3.StringUtils;
@@ -15,9 +17,12 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
+import java.io.File;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.text.ParseException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -78,6 +83,22 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
             return new String[]{".html"};
         }
         return extension.split(",");
+    }
+
+    @Override
+    protected TemplateException createException(ParseException e)  {
+        List<String> msgSource = Lists.newArrayList(e.getMessage().split("\n"));
+        File file = new File(getBasePath() + msgSource.get(2));
+        List<String> source = Lists.newArrayList();
+        source.add(msgSource.get(4));
+        source.add(msgSource.get(5));
+        Integer line;
+        try {
+            line = Integer.valueOf(msgSource.get(1).split(",")[1].split(":")[1].trim());
+        } catch (Exception ex) {
+            line = 0;
+        }
+        return new TemplateException(msgSource.get(0) + "\n" + msgSource.get(1).replace(", in:", ""), e, line, file, source, 0);
     }
 
     @Override

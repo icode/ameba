@@ -12,20 +12,22 @@ import jersey.repackaged.com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.Providers;
+import org.glassfish.jersey.message.MessageBodyWorkers;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.glassfish.jersey.server.mvc.spi.AbstractTemplateProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 import java.io.*;
+import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -40,7 +42,6 @@ import java.util.Set;
 public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcessor<T> {
     public static final String PROTECTED_DIR = "_protected";
     public static final String INNER_TPL_DIR = "/__views/ameba/";
-    private static final Logger logger = LoggerFactory.getLogger(AmebaTemplateProcessor.class);
     /**
      * Create an instance of the processor with injected {@link javax.ws.rs.core.Configuration config} and
      * (optional) {@link javax.servlet.ServletContext servlet context}.
@@ -52,9 +53,13 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
      */
 
     Set<String> supportedExtensions;
+
+    @Context
+    private MessageBodyWorkers workers;
     @Inject
     private ServiceLocator serviceLocator;
 
+    private MessageBodyWriter<Viewable> viewableMessageBodyWriter;
     private ErrorPageGenerator errorPageGenerator;
     private Charset charset;
 
@@ -64,27 +69,41 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
         charset = Charset.forName(StringUtils.isBlank(charsetStr) ? "utf-8" : charsetStr);
         this.supportedExtensions = Sets.newHashSet(Collections2.transform(
                 Arrays.asList(supportedExtensions), new Function<String, String>() {
-            @Override
-            public String apply(String input) {
-                input = input.toLowerCase();
-                return input.startsWith(".") ? input : "." + input;
-            }
-        }));
+                    @Override
+                    public String apply(String input) {
+                        input = input.toLowerCase();
+                        return input.startsWith(".") ? input : "." + input;
+                    }
+                }));
     }
 
-
-    protected ErrorPageGenerator getErrorPageGenerator() {
-        if (errorPageGenerator == null) {
-            final Set<ExceptionMapper> exceptionMappers = Sets.newLinkedHashSet();
-            exceptionMappers.addAll(Providers.getCustomProviders(serviceLocator, ExceptionMapper.class));
-            exceptionMappers.addAll(Providers.getProviders(serviceLocator, ExceptionMapper.class));
-            for (ExceptionMapper t : exceptionMappers) {
-                if (t instanceof ErrorPageGenerator) {
-                    this.errorPageGenerator = (ErrorPageGenerator) t;
-                    return this.errorPageGenerator;
+    public MessageBodyWriter<Viewable> getViewableMessageBodyWriter() {
+        if (viewableMessageBodyWriter == null)
+            synchronized (this) {
+                if (viewableMessageBodyWriter == null) {
+                    viewableMessageBodyWriter =
+                            workers.getMessageBodyWriter(Viewable.class, Viewable.class,
+                                    new Annotation[]{}, null);
                 }
             }
-        }
+        return viewableMessageBodyWriter;
+    }
+
+    protected ErrorPageGenerator getErrorPageGenerator() {
+        if (errorPageGenerator == null)
+            synchronized (this) {
+                if (errorPageGenerator == null) {
+                    final Set<ExceptionMapper> exceptionMappers = Sets.newLinkedHashSet();
+                    exceptionMappers.addAll(Providers.getCustomProviders(serviceLocator, ExceptionMapper.class));
+                    exceptionMappers.addAll(Providers.getProviders(serviceLocator, ExceptionMapper.class));
+                    for (ExceptionMapper t : exceptionMappers) {
+                        if (t instanceof ErrorPageGenerator) {
+                            this.errorPageGenerator = (ErrorPageGenerator) t;
+                            return this.errorPageGenerator;
+                        }
+                    }
+                }
+            }
         return errorPageGenerator;
     }
 
@@ -92,9 +111,9 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
     public T resolve(String name, MediaType mediaType) {
         T t = super.resolve(name, mediaType);
 
-        if (t == null && name != null && name.startsWith("/")) {
+        /*if (t == null && name != null && name.startsWith("/")) {
             t = super.resolve("/" + PROTECTED_DIR + name, mediaType);
-        }
+        }*/
 
         if (t == null && name != null && name.startsWith("/")) {
             for (String ex : supportedExtensions) {
@@ -134,20 +153,7 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
     }
 
 
-    protected TemplateException createException(ParseException e) {
-        List<String> msgSource = Lists.newArrayList(e.getMessage().split("\n"));
-        File file = new File(getBasePath() + msgSource.get(2));
-        List<String> source = Lists.newArrayList();
-        source.add(msgSource.get(4));
-        source.add(msgSource.get(5));
-        Integer line;
-        try {
-            line = Integer.valueOf(msgSource.get(1).split(",")[1].split(":")[1].trim());
-        } catch (Exception ex) {
-            line = 0;
-        }
-        return new TemplateException(msgSource.get(0) + "\n" + msgSource.get(1).replace(", in:", ""), e, line, file, source, 0);
-    }
+    protected abstract TemplateException createException(ParseException e);
 
     @Override
     protected T resolve(String templatePath, Reader reader) throws Exception {
@@ -184,9 +190,34 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
             if (e instanceof ParseException) {
                 r = createException((ParseException) e);
             } else {
-                r = new TemplateException("Write template error: " + getTemplateFile(templateReference), e, e.getStackTrace()[0].getLineNumber());
+                String file = getTemplateFile(templateReference);
+                File tFile = new File(file);
+                file = getBasePath() + file;
+                String source = IOUtils.readFromResource(file);
+
+                List<String> sources;
+
+                if (!"".equals(source)) {
+                    sources = Lists.newArrayList(source.split("\n"));
+                } else {
+                    sources = Lists.newArrayList();
+                }
+
+                if (e instanceof FileNotFoundException || e.getCause() instanceof FileNotFoundException) {
+                    r = new TemplateNotFoundException("Template not found in " + file + ". " + e.getMessage(),
+                            e, -1, tFile, sources, -1);
+                } else {
+                    r = new TemplateException("Write template error in  " + file + ". " + e.getMessage(),
+                            e, -1, tFile, sources, -1);
+                }
             }
-            throw r;
+
+            viewable = (Viewable) getErrorPageGenerator().toResponse(r).getEntity();
+
+            getViewableMessageBodyWriter().writeTo(viewable,
+                    Viewable.class, Viewable.class, new Annotation[]{},
+                    mediaType, httpHeaders,
+                    out);
         }
     }
 

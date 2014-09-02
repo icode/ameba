@@ -1,5 +1,6 @@
 package ameba.mvc.template.internal;
 
+import ameba.mvc.template.TemplateException;
 import groovy.lang.Singleton;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.glassfish.jersey.server.mvc.spi.AbstractTemplateProcessor;
@@ -13,6 +14,7 @@ import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Provider;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.text.ParseException;
 
 /**
  * 404 跳转到模板
@@ -32,6 +34,11 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
     @Inject
     public NotFoundForward(final Configuration config, @Optional final ServletContext servletContext) {
         this.templateProcessor = new AmebaTemplateProcessor<Boolean>(config, servletContext, HttlViewProcessor.CONFIG_SUFFIX, HttlViewProcessor.getExtends(config)) {
+
+            @Override
+            protected TemplateException createException(ParseException e) {
+                return null;
+            }
 
             @Override
             protected Boolean resolve(String templatePath) throws Exception {
