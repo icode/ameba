@@ -30,6 +30,7 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
     private javax.inject.Provider<UriInfo> uriInfo;
 
     private AbstractTemplateProcessor<Boolean> templateProcessor;
+    private ThreadLocal<String> templatePath = new ThreadLocal<String>();
 
     @Inject
     public NotFoundForward(final Configuration config, @Optional final ServletContext servletContext) {
@@ -64,12 +65,11 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
 
     @Override
     public Response toResponse(NotFoundException exception) {
-        return Response.ok(Viewables.newDefaultViewable("/" + getCurrentPath())).build();
+        return Response.ok(Viewables.newDefaultViewable(templatePath.get())).build();
     }
 
     private String getCurrentPath() {
-        String path = uriInfo.get().getPath();
-        return path.equals("/") || path.equals("") ? "index" : path;
+        return "/" + uriInfo.get().getPath();
     }
 
     @Override
@@ -78,7 +78,13 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
         //受保护目录,不允许直接访问
         if (path.startsWith(AmebaTemplateProcessor.PROTECTED_DIR)) return false;
         try {
-            return templateProcessor.resolve("/" + path, (MediaType) null);
+            Boolean has = templateProcessor.resolve(path, (MediaType) null);
+            if (has == null || !has) {
+                path = path + "/index";
+                has = templateProcessor.resolve(path, (MediaType) null);
+            }
+            templatePath.set(path);
+            return has != null && has;
         } catch (Exception e) {
             return false;
         }
