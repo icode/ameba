@@ -191,8 +191,8 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
                 r = createException((ParseException) e);
             } else {
                 String file = getTemplateFile(templateReference);
-                File tFile = new File(file);
                 file = getBasePath() + file;
+                File tFile = new File(file);
                 String source = IOUtils.readFromResource(file);
 
                 List<String> sources;
@@ -204,7 +204,7 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
                 }
 
                 if (e instanceof FileNotFoundException || e.getCause() instanceof FileNotFoundException) {
-                    r = new TemplateNotFoundException("Template not found in " + file + ". " + e.getMessage(),
+                    r = new TemplateNotFoundException(e.getMessage(),
                             e, -1, tFile, sources, -1);
                 } else {
                     r = new TemplateException("Write template error in  " + file + ". " + e.getMessage(),
