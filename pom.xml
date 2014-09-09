@@ -6,7 +6,7 @@
     <groupId>org.amebastack</groupId>
     <artifactId>ameba</artifactId>
     <packaging>jar</packaging>
-    <version>0.1.6b</version>
+    <version>0.1.6c</version>
     <name>Ameba-Framework</name>
     <description>A useful Java framework!</description>
 
@@ -389,14 +389,14 @@
     </build>
 
     <properties>
-        <ameba.utils.version>0.1.6a</ameba.utils.version>
+        <ameba.utils.version>0.1.6c</ameba.utils.version>
         <jdt.ecj.version>4.4</jdt.ecj.version>
         <jersey.version>2.11</jersey.version>
         <slf4j.version>1.7.7</slf4j.version>
         <logback.version>1.1.2</logback.version>
         <ebean.version>[4.1.6,5.0.0)</ebean.version>
         <ebean.agent.version>[4.1.5,5.0.0)</ebean.agent.version>
-        <druid.version>1.0.8</druid.version>
+        <druid.version>1.0.9</druid.version>
         <groovy.version>2.3.4</groovy.version>
         <httl.version>1.0.11</httl.version>
         <jackson.core.version>2.4.2</jackson.core.version>
