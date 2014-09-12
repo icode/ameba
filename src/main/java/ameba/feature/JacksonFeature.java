@@ -9,6 +9,7 @@ import com.fasterxml.jackson.jaxrs.base.JsonParseExceptionMapper;
 import com.fasterxml.jackson.jaxrs.cfg.Annotations;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.jaxrs.xml.JacksonJaxbXMLProvider;
+import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.internal.InternalProperties;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 
@@ -30,13 +31,23 @@ public class JacksonFeature implements Feature {
     public boolean configure(final FeatureContext context) {
         final Configuration config = context.getConfiguration();
 
+        final String jsonFeature = CommonProperties.getValue(config.getProperties(), config.getRuntimeType(),
+                InternalProperties.JSON_FEATURE, JSON_FEATURE, String.class);
+        // Other JSON providers registered.
+        if (!JSON_FEATURE.equalsIgnoreCase(jsonFeature)) {
+            return false;
+        }
+
+        // Disable other JSON providers.
         context.property(PropertiesHelper.getPropertyNameForRuntime(InternalProperties.JSON_FEATURE, config.getRuntimeType()),
                 JSON_FEATURE);
 
-        context.register(JsonParseExceptionMapper.class);
-        context.register(JsonMappingException.class);
-        context.register(JacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
-        context.register(JacksonXMLProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
+        if (!config.isRegistered(JacksonJaxbJsonProvider.class)) {
+            context.register(JsonParseExceptionMapper.class);
+            context.register(JsonMappingException.class);
+            context.register(JacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
+            context.register(JacksonXMLProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
+        }
         return true;
     }
 

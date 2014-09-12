@@ -208,11 +208,11 @@
             <version>${bean.validator.version}</version>
         </dependency>
         <!-- sse -->
-        <dependency>
+        <!--<dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-sse</artifactId>
             <version>${jersey.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
