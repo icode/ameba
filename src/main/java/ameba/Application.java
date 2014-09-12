@@ -331,12 +331,12 @@ public class Application extends ResourceConfig {
     private void configureConnector(Properties properties) {
         Map<String, Properties> propertiesMap = Maps.newLinkedHashMap();
         for (String key : properties.stringPropertyNames()) {
-            if (key.startsWith("app.connector.")) {
+            if (key.startsWith("connector.")) {
                 String oKey = key;
-                key = key.replaceFirst("^app\\.connector\\.", "");
+                key = key.replaceFirst("^connector\\.", "");
                 int index = key.indexOf(".");
                 if (index == -1){
-                    throw new ConfigErrorException("connector configure error, format app.connector.{connectorName}.{property}");
+                    throw new ConfigErrorException("connector configure error, format connector.{connectorName}.{property}");
                 }
                 String name = key.substring(0, index);
                 Properties pr = propertiesMap.get(name);
