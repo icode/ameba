@@ -196,6 +196,10 @@
                     <artifactId>hibernate-validator</artifactId>
                     <groupId>org.hibernate</groupId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.glassfish.hk2</groupId>
+                    <artifactId>osgi-resource-locator</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
