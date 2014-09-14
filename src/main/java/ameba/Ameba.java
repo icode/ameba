@@ -2,6 +2,7 @@ package ameba;
 
 import ameba.container.Container;
 import ameba.exceptions.AmebaException;
+import ameba.util.IOUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,9 +12,15 @@ import org.slf4j.LoggerFactory;
  */
 public class Ameba {
     public static final Logger logger = LoggerFactory.getLogger(Ameba.class);
-
+    public static final String LOGO = "\n\n" +
+            "    _                   _           \n" +
+            "   / \\   _ __ ___   ___| |__   __ _ \n" +
+            "  / _ \\ | '_ ` _ \\ / _ \\ '_ \\ / _` |\n" +
+            " / ___ \\| | | | | |  __/ |_) | (_| |\n" +
+            "/_/   \\_\\_| |_| |_|\\___|_.__/ \\__,_|   {}\n\n";
     private static Application app;
     private static Container container;
+    private static String version;
 
     private Ameba() {
     }
@@ -26,7 +33,18 @@ public class Ameba {
         return app;
     }
 
+    public static String getVersion() {
+        return version;
+    }
+
+    public static void printInfo() {
+        logger.info(LOGO, version);
+    }
+
     public static void main(String[] args) throws Exception {
+
+        version = IOUtils.getJarImplVersion(Ameba.class);
+
         bootstrap();
 
         // register shutdown hook
@@ -53,7 +71,7 @@ public class Ameba {
         container = Container.create(app);
 
         // run
-        logger.info("启动容器...");
+        logger.info("启动服务...");
         container.start();
     }
 

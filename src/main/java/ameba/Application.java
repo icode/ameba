@@ -4,15 +4,16 @@ import ameba.event.Event;
 import ameba.event.SystemEventBus;
 import ameba.exceptions.AmebaException;
 import ameba.exceptions.ConfigErrorException;
-import ameba.exceptions.FrostAppCanNotChange;
 import ameba.feature.AmebaFeature;
 import ameba.server.Connector;
 import ameba.util.IOUtils;
 import ameba.util.LinkedProperties;
+import ameba.util.Times;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.gaffer.GafferUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -58,13 +59,12 @@ public class Application extends ResourceConfig {
     protected boolean jmxEnabled;
     private String configFile;
     private Mode mode;
-    private String applicationVersion;
+    private CharSequence applicationVersion;
     private File sourceRoot;
     private File packageRoot;
     private Container container;
     private List<Connector> connectors = Lists.newArrayList();
-
-    private boolean frost = false;
+    private long timestamp = System.currentTimeMillis();
 
     public Application() {
         this("conf/application.conf");
@@ -78,12 +78,12 @@ public class Application extends ResourceConfig {
         }
 
         configFile = confFile;
-        logger.info("初始化...");
+        logger.trace("初始化...");
         Map<String, Object> configMap = Maps.newLinkedHashMap();
 
         Properties properties = new LinkedProperties();
 
-        logger.info("读取系统默认配置...");
+        logger.trace("读取系统默认配置...");
         //读取系统默认配置
         try {
             properties.load(getResourceAsStream("conf/default.conf"));
@@ -92,9 +92,9 @@ public class Application extends ResourceConfig {
         } catch (Exception e) {
             logger.warn("读取[conf/default.conf]出错", e);
         }
-        logger.info("读取应用自定义配置...");
+        logger.trace("读取应用自定义配置...");
         //读取应用程序配置
-        readAppConfig(properties, confFile);
+        URL appCfgUrl = readAppConfig(properties, confFile);
 
         //获取应用程序模式
         try {
@@ -106,9 +106,16 @@ public class Application extends ResourceConfig {
         //设置应用程序名称
         setApplicationName(StringUtils.defaultString(properties.getProperty("app.name"), "ameba"));
         applicationVersion = properties.getProperty("app.version");
+        if (StringUtils.isBlank(applicationVersion)) {
+            applicationVersion = new UnknownVersion();
+        }
 
         //配置日志器
         configureLogger();
+
+        Ameba.printInfo();
+
+        logger.info("初始化...");
 
         AmebaFeature.preConfigure(this);
 
@@ -149,13 +156,16 @@ public class Application extends ResourceConfig {
         properties = null;
 
         publishEvent(new ConfiguredEvent(this));
-        frost = true;
         logger.info("装载特性...");
     }
 
     private static void publishEvent(Event event) {
         SystemEventBus.publish(event);
         AmebaFeature.getEventBus().publish(event);
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 
     @SuppressWarnings("unchecked")
@@ -335,7 +345,7 @@ public class Application extends ResourceConfig {
                 String oKey = key;
                 key = key.replaceFirst("^connector\\.", "");
                 int index = key.indexOf(".");
-                if (index == -1){
+                if (index == -1) {
                     throw new ConfigErrorException("connector configure error, format connector.{connectorName}.{property}");
                 }
                 String name = key.substring(0, index);
@@ -402,19 +412,44 @@ public class Application extends ResourceConfig {
             @Override
             public void onStartup(Container container) {
                 publishEvent(new ContainerStartupEvent(container, Application.this));
-                logger.info("容器已启动");
 
                 if (Application.this.container == null) {
-                    StringBuilder connectorsBuilder = new StringBuilder();
+                    Runtime r = Runtime.getRuntime();
+                    r.gc();
 
+                    String startUsedTime = Times.toDuration(System.currentTimeMillis() - timestamp);
+
+                    StringBuilder builder = new StringBuilder();
+                    builder
+                            .append("Ameba 版本 : ")
+                            .append(Ameba.getVersion())
+                            .append("\n")
+                            .append("启动用时    : ")
+                            .append(startUsedTime)
+                            .append("\n")
+                            .append("应用名称    : ")
+                            .append(getApplicationName())
+                            .append("\n")
+                            .append("应用版本    : ")
+                            .append(getApplicationVersion())
+                            .append("\n")
+                            .append("内存使用    : ")
+                            .append(FileUtils.byteCountToDisplaySize((r.totalMemory() - r.freeMemory())))
+                            .append("/")
+                            .append(FileUtils.byteCountToDisplaySize(r.maxMemory()))
+                            .append("\n")
+                            .append("监听地址    : ");
                     for (Connector connector : connectors) {
-                        connectorsBuilder.append("        ")
-                                .append(connector.getHttpServerBaseUri())
-                                .append("\n");
+                        builder.append("\n             ")
+                                .append(connector.getHttpServerBaseUri());
                     }
 
-                    logger.info("服务器监听地址:\n{}", connectorsBuilder);
+                    logger.info("应用容器已启动\n{}\n{}\n{}",
+                            "---------------------------------------",
+                            builder,
+                            "---------------------------------------");
                 }
+
 
                 Application.this.container = container;
             }
@@ -422,13 +457,13 @@ public class Application extends ResourceConfig {
             @Override
             public void onReload(Container container) {
                 publishEvent(new ContainerReloadEvent(container, Application.this));
-                logger.info("容器重新加载");
+                logger.trace("应用容器重新加载");
             }
 
             @Override
             public void onShutdown(Container container) {
                 publishEvent(new ContainerShutdownEvent(container, Application.this));
-                logger.info("容器已关闭");
+                logger.trace("应用容器已关闭");
             }
         });
     }
@@ -491,14 +526,14 @@ public class Application extends ResourceConfig {
         }
     }
 
-
-    private void readAppConfig(Properties properties, String confFile) {
+    private URL readAppConfig(Properties properties, String confFile) {
         Enumeration<URL> urls = IOUtils.getResources(confFile);
+        URL url = null;
         if (urls.hasMoreElements()) {
             InputStream in = null;
-            URL url = urls.nextElement();
+            url = urls.nextElement();
             try {
-                logger.info("读取[{}]文件配置", toExternalForm(url));
+                logger.trace("读取[{}]文件配置", toExternalForm(url));
                 in = url.openStream();
             } catch (IOException e) {
                 logger.error("读取[{}]出错", toExternalForm(url));
@@ -526,6 +561,7 @@ public class Application extends ResourceConfig {
         } else {
             logger.warn("未找到{}文件,请何实", confFile);
         }
+        return url;
     }
 
     public void reload() {
@@ -553,7 +589,6 @@ public class Application extends ResourceConfig {
     }
 
     public void setSourceRoot(File sourceRoot) {
-        checkFrost();
         this.sourceRoot = sourceRoot;
     }
 
@@ -561,7 +596,7 @@ public class Application extends ResourceConfig {
         return mode;
     }
 
-    public String getApplicationVersion() {
+    public CharSequence getApplicationVersion() {
         return applicationVersion;
     }
 
@@ -571,12 +606,6 @@ public class Application extends ResourceConfig {
 
     public boolean isJmxEnabled() {
         return jmxEnabled;
-    }
-
-    private void checkFrost() {
-        if (frost) {
-            throw new FrostAppCanNotChange("应用配置不能在此刻更改");
-        }
     }
 
     /**
@@ -688,6 +717,31 @@ public class Application extends ResourceConfig {
 
         public Application getApp() {
             return app;
+        }
+    }
+
+    public class UnknownVersion implements CharSequence {
+
+        String version = "Unknown";
+
+        @Override
+        public int length() {
+            return version.length();
+        }
+
+        @Override
+        public char charAt(int index) {
+            return version.charAt(index);
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return version.subSequence(start, end);
+        }
+
+        @Override
+        public String toString() {
+            return version;
         }
     }
 }
