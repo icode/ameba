@@ -421,24 +421,30 @@ public class Application extends ResourceConfig {
 
                     StringBuilder builder = new StringBuilder();
                     builder
-                            .append("Ameba 版本 : ")
+                            .append("Ameba版本  >   ")
                             .append(Ameba.getVersion())
                             .append("\n")
-                            .append("启动用时    : ")
+                            .append("启动用时    >   ")
                             .append(startUsedTime)
                             .append("\n")
-                            .append("应用名称    : ")
+                            .append("应用名称    >   ")
                             .append(getApplicationName())
                             .append("\n")
-                            .append("应用版本    : ")
+                            .append("应用版本    >   ")
                             .append(getApplicationVersion())
                             .append("\n")
-                            .append("内存使用    : ")
+                            .append("内存使用    >   ")
                             .append(FileUtils.byteCountToDisplaySize((r.totalMemory() - r.freeMemory())))
                             .append("/")
                             .append(FileUtils.byteCountToDisplaySize(r.maxMemory()))
                             .append("\n")
-                            .append("监听地址    : ");
+                            .append("启用JMX    >   ")
+                            .append(isJmxEnabled())
+                            .append("\n")
+                            .append("应用模式    >   ")
+                            .append(getMode())
+                            .append("\n")
+                            .append("监听地址    >   ");
                     for (Connector connector : connectors) {
                         builder.append("\n             ")
                                 .append(connector.getHttpServerBaseUri());
