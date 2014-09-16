@@ -26,11 +26,11 @@ import java.util.Map;
 public class AssetsFeature implements Feature {
 
     private static final Map<String, String[]> assetsMap = Maps.newLinkedHashMap();
-
+    private static final String ASSETS_CONF_PREFIX = "resource.assets.";
     public static Map<String, String[]> getAssetMap(Configuration configuration) {
         Map<String, String[]> assetsMap = Maps.newLinkedHashMap();
         for (String key : configuration.getPropertyNames()) {
-            if (key.startsWith("resource.assets.") || key.equals("resource.assets")) {
+            if (key.startsWith(ASSETS_CONF_PREFIX) || key.equals("resource.assets")) {
                 String routePath = key.replaceFirst("^resource\\.assets", "");
                 if (routePath.startsWith(".")) {
                     routePath = routePath.substring(1);

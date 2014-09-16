@@ -37,6 +37,7 @@ import java.util.Properties;
 public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
 
     public static final String CONFIG_SUFFIX = "httl";
+    private static final String TEMPLATE_CONF_PREFIX = "template.";
 
     private static final Engine engine;
 
@@ -55,19 +56,18 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
         }
 
         for (String key : map.keySet()) {
-            if (key.startsWith("template.")) {
+            if (key.startsWith(TEMPLATE_CONF_PREFIX)) {
                 String name;
                 if (key.equals("template.suffix") || key.equals("template.directory") || key.equals("template.parser")) {
                     name = key;
                 } else {
-                    name = key.replaceFirst("^template\\.", "");
+                    name = key.substring(TEMPLATE_CONF_PREFIX.length());
                 }
                 properties.put(name, map.get(key));
             }
         }
         engine = Engine.getEngine(properties);
     }
-
 
 
     @Inject
@@ -86,7 +86,7 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
     }
 
     @Override
-    protected TemplateException createException(ParseException e)  {
+    protected TemplateException createException(ParseException e) {
         List<String> msgSource = Lists.newArrayList(e.getMessage().split("\n"));
         File file = new File(getBasePath() + msgSource.get(2));
         List<String> source = Lists.newArrayList();
@@ -124,14 +124,14 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
     @Override
     public void writeTemplate(Template template, final Viewable viewable, MediaType mediaType,
                               MultivaluedMap<String, Object> httpHeaders, OutputStream outputStream) throws Exception {
-            Object model = viewable.getModel();
-            if (!(model instanceof Map)) {
-                model = new HashMap<String, Object>() {{
-                    put("model", viewable.getModel());
-                }};
-            }
-            if (httpHeaders != null)
-                setContentType(mediaType.equals(MediaType.WILDCARD_TYPE) ? MediaType.TEXT_HTML_TYPE : mediaType, httpHeaders);
-            template.render(model, outputStream);
+        Object model = viewable.getModel();
+        if (!(model instanceof Map)) {
+            model = new HashMap<String, Object>() {{
+                put("model", viewable.getModel());
+            }};
+        }
+        if (httpHeaders != null)
+            setContentType(mediaType.equals(MediaType.WILDCARD_TYPE) ? MediaType.TEXT_HTML_TYPE : mediaType, httpHeaders);
+        template.render(model, outputStream);
     }
 }

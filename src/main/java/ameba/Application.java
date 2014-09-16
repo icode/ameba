@@ -56,6 +56,9 @@ import static ameba.util.IOUtils.*;
 @Singleton
 public class Application extends ResourceConfig {
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
+    private static final String REGISTER_CONF_PREFIX = "app.register.";
+    private static final String JERSEY_CONF_NAME_PREFIX = "app.sys.core.";
+    private static final String CONNECTOR_CONF_PREFIX = "connector.";
     protected boolean jmxEnabled;
     private String configFile;
     private Mode mode;
@@ -95,6 +98,8 @@ public class Application extends ResourceConfig {
         logger.trace("读取应用自定义配置...");
         //读取应用程序配置
         URL appCfgUrl = readAppConfig(properties, confFile);
+
+        logger.info("应用配置文件 {}", toExternalForm(appCfgUrl));
 
         //获取应用程序模式
         try {
@@ -220,10 +225,10 @@ public class Application extends ResourceConfig {
 
 
         for (String key : configMap.keySet()) {
-            if (key.startsWith("app.register.")) {
+            if (key.startsWith(REGISTER_CONF_PREFIX)) {
                 String className = (String) getProperty(key);
                 if (StringUtils.isNotBlank(className)) {
-                    String name = key.replaceFirst("^app\\.register\\.", "");
+                    String name = key.substring(REGISTER_CONF_PREFIX.length());
                     try {
                         logger.debug("注册特性[{}({})]", name, className);
                         Class clazz = getClassLoader().loadClass(className);
@@ -282,8 +287,8 @@ public class Application extends ResourceConfig {
 
         //进行jersey配置项转化
         for (String key : configMap.keySet()) {
-            if (key.startsWith("app.")) {
-                String name = key.substring(key.indexOf(".") + 1);
+            if (key.startsWith(JERSEY_CONF_NAME_PREFIX)) {
+                String name = key.substring(JERSEY_CONF_NAME_PREFIX.length());
                 //转化键到jersey配置
                 name = name.replaceAll("\\.", "_").toUpperCase();
                 Field filed = staticFieldsMap.get(name);
@@ -341,9 +346,9 @@ public class Application extends ResourceConfig {
     private void configureConnector(Properties properties) {
         Map<String, Properties> propertiesMap = Maps.newLinkedHashMap();
         for (String key : properties.stringPropertyNames()) {
-            if (key.startsWith("connector.")) {
+            if (key.startsWith(CONNECTOR_CONF_PREFIX)) {
                 String oKey = key;
-                key = key.replaceFirst("^connector\\.", "");
+                key = key.substring(CONNECTOR_CONF_PREFIX.length());
                 int index = key.indexOf(".");
                 if (index == -1) {
                     throw new ConfigErrorException("connector configure error, format connector.{connectorName}.{property}");
@@ -408,6 +413,8 @@ public class Application extends ResourceConfig {
 
     private void configureServer(Properties properties) {
         jmxEnabled = Boolean.parseBoolean(properties.getProperty("app.jmx.enabled"));
+        if (jmxEnabled && properties.getProperty(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED) == null)
+            property(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED, jmxEnabled);
         registerInstances(new ContainerLifecycleListener() {
             @Override
             public void onStartup(Container container) {
