@@ -4,6 +4,7 @@ import ameba.websocket.internal.WebSocketBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
@@ -12,18 +13,20 @@ import javax.ws.rs.core.FeatureContext;
  */
 public class WebSocketFeature implements Feature {
 
-    private static Logger logger = LoggerFactory.getLogger(WebSocketFeature.class);
+    public static final String WEB_SOCKET_ENABLED_CONF = "websocket.enabled";
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketFeature.class);
 
     @Override
     public boolean configure(FeatureContext context) {
 
-//        final Configuration config = context.getConfiguration();
-//
-//        if (!config.isRegistered(WebSocketBinder.class)) {
+        final Configuration config = context.getConfiguration();
+
+        if (!"false".equals(config.getProperty(WEB_SOCKET_ENABLED_CONF))) {
             context.register(new WebSocketBinder());
             return true;
-//        }
-//
-//        return false;
+        }
+
+        logger.debug("WebSocket 未启用");
+        return false;
     }
 }

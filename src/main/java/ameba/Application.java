@@ -59,6 +59,7 @@ public class Application extends ResourceConfig {
     private static final String REGISTER_CONF_PREFIX = "app.register.";
     private static final String JERSEY_CONF_NAME_PREFIX = "app.sys.core.";
     private static final String CONNECTOR_CONF_PREFIX = "connector.";
+    private static String INFO_SPLITOR = "---------------------------------------------------";
     protected boolean jmxEnabled;
     private String configFile;
     private Mode mode;
@@ -458,9 +459,9 @@ public class Application extends ResourceConfig {
                     }
 
                     logger.info("应用容器已启动\n{}\n{}\n{}",
-                            "---------------------------------------",
+                            INFO_SPLITOR,
                             builder,
-                            "---------------------------------------");
+                            INFO_SPLITOR);
                 }
 
 
@@ -578,6 +579,7 @@ public class Application extends ResourceConfig {
     }
 
     public void reload() {
+        publishEvent(new ContainerBeginReloadEvent(container, this));
         container.reload();
     }
 
@@ -679,57 +681,45 @@ public class Application extends ResourceConfig {
         }
     }
 
-    public static class ContainerStartupEvent extends Event {
+    private static class ContainerEvent extends Event {
         private Container container;
         private Application app;
 
+        public ContainerEvent(Container container, Application app) {
+            this.container = container;
+            this.app = app;
+        }
+
+        Container getContainer() {
+            return container;
+        }
+
+        public Application getApp() {
+            return app;
+        }
+    }
+
+    public static class ContainerStartupEvent extends ContainerEvent {
         public ContainerStartupEvent(Container container, Application app) {
-            this.container = container;
-            this.app = app;
-        }
-
-        Container getContainer() {
-            return container;
-        }
-
-        public Application getApp() {
-            return app;
+            super(container, app);
         }
     }
 
-    public static class ContainerReloadEvent extends Event {
-        private Container container;
-        private Application app;
-
+    public static class ContainerReloadEvent extends ContainerEvent {
         public ContainerReloadEvent(Container container, Application app) {
-            this.container = container;
-            this.app = app;
-        }
-
-        Container getContainer() {
-            return container;
-        }
-
-        public Application getApp() {
-            return app;
+            super(container, app);
         }
     }
 
-    public static class ContainerShutdownEvent extends Event {
-        Container container;
-        Application app;
+    public static class ContainerBeginReloadEvent extends ContainerEvent {
+        public ContainerBeginReloadEvent(Container container, Application app) {
+            super(container, app);
+        }
+    }
 
+    public static class ContainerShutdownEvent extends ContainerEvent {
         public ContainerShutdownEvent(Container container, Application app) {
-            this.container = container;
-            this.app = app;
-        }
-
-        Container getContainer() {
-            return container;
-        }
-
-        public Application getApp() {
-            return app;
+            super(container, app);
         }
     }
 
