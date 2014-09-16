@@ -1,4 +1,4 @@
-package ameba.feature;
+package ameba.message;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonMappingException;

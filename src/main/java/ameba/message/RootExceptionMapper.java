@@ -1,4 +1,4 @@
-package ameba.feature.exception;
+package ameba.message;
 
 import org.glassfish.jersey.spi.ExtendedExceptionMapper;
 import org.slf4j.Logger;
