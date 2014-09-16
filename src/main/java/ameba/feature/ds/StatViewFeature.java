@@ -45,15 +45,15 @@ public class StatViewFeature implements Feature {
     private static String password = "";
     private static String authorizeToken = null;
     /**
-     * web.xml中配置的jmx的连接地址
+     * 配置的jmx的连接地址
      */
     private static String jmxUrl = null;
     /**
-     * web.xml中配置的jmx的用户名
+     * 配置的jmx的用户名
      */
     private static String jmxUsername = null;
     /**
-     * web.xml中配置的jmx的密码
+     * 配置的jmx的密码
      */
     private static String jmxPassword = null;
     private static MBeanServerConnection conn = null;
