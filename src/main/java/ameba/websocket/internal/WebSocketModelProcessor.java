@@ -13,7 +13,6 @@ import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
 import javax.ws.rs.core.Configuration;
 import java.lang.reflect.Method;
-import java.util.List;
 
 /**
  * @author icode
@@ -29,7 +28,7 @@ public class WebSocketModelProcessor implements ModelProcessor {
 
     @Override
     public ResourceModel processResourceModel(ResourceModel resourceModel, Configuration configuration) {
-        ResourceModel result = processModel(resourceModel.getRuntimeResourceModel());
+        ResourceModel result = processModel(resourceModel);
         return result != null ? result : resourceModel;
     }
 
@@ -38,25 +37,40 @@ public class WebSocketModelProcessor implements ModelProcessor {
         return subResourceModel;
     }
 
-    private ResourceModel processModel(final RuntimeResourceModel resourceModel) {
-        for (RuntimeResource resource : resourceModel.getRuntimeResources()) {
-            for (RuntimeResource child : resource.getChildRuntimeResources()) {
-                List<ResourceMethod> resourceMethods = child.getResourceMethods();
-                if (resourceMethods.isEmpty()) {
-                    ResourceMethod resourceMethod = child.getResourceLocator();
-                    if (resourceMethod != null)
-                        processResource(child.getFullPathRegex(), resourceMethod);
-                } else {
-                    for (ResourceMethod resourceMethod : resourceMethods) {
-                        processResource(child.getFullPathRegex(), resourceMethod);
-                    }
-                }
-            }
+    private ResourceModel processModel(final ResourceModel resourceModel) {
+        ResourceModel.Builder modelBuilder = new ResourceModel.Builder(false);
+        for (RuntimeResource resource : resourceModel.getRuntimeResourceModel().getRuntimeResources()) {
+            Resource newResource = processResource(resource);
+            modelBuilder.addResource(newResource);
         }
-        return null;
+        return modelBuilder.build();
     }
 
-    private void processResource(String path, ResourceMethod resourceMethod) {
+    private Resource processResource(RuntimeResource resource) {
+        Resource.Builder resourceBuilder = Resource.builder(resource.getRegex());
+        for (ResourceMethod resourceMethod : resource.getResourceMethods()) {
+            addResourceMethod(resourceBuilder, resourceMethod);
+        }
+        if (resource.getResourceLocator() != null) {
+            addResourceMethod(resourceBuilder, resource.getResourceLocator());
+        }
+
+        for (RuntimeResource child : resource.getChildRuntimeResources()) {
+            resourceBuilder.addChildResource(processResource(child));
+        }
+
+        return resourceBuilder.build();
+    }
+
+    private void addResourceMethod(Resource.Builder resourceBuilder, ResourceMethod resourceMethod) {
+        if (resourceMethod.getInvocable().getHandlingMethod().isAnnotationPresent(WebSocket.class)) {
+            processWebSocketEndpoint(resourceMethod);
+        } else {
+            resourceBuilder.addMethod(resourceMethod);
+        }
+    }
+
+    private void processWebSocketEndpoint(ResourceMethod resourceMethod) {
         Invocable invocation = resourceMethod.getInvocable();
         Method handlingMethod = invocation.getHandlingMethod();
         WebSocket webSocketConf = handlingMethod.getAnnotation(WebSocket.class);
@@ -64,10 +78,17 @@ public class WebSocketModelProcessor implements ModelProcessor {
             webSocketConf = invocation.getDefinitionMethod().getAnnotation(WebSocket.class);
         }
         if (webSocketConf != null) {
-            logger.trace("find web socket in {} class, method {}", handlingMethod.getDeclaringClass().getName(), handlingMethod.toGenericString());
+            logger.trace("find web socket in {} class, method {}",
+                    handlingMethod.getDeclaringClass().getName(), handlingMethod.toGenericString());
             try {
-                DefaultServerEndpointConfig endpointConfig = new DefaultServerEndpointConfig(serviceLocator, resourceMethod, path, webSocketConf);
-                container.addEndpoint(endpointConfig);
+                StringBuilder path = new StringBuilder();
+                Resource resource = resourceMethod.getParent();
+                if (resource != null)
+                    do {
+                        if (path.length() != 0) path.insert(0, "/");
+                        path.insert(0, resource.getPath());
+                    } while ((resource = resource.getParent()) != null);
+                container.addEndpoint(new DefaultServerEndpointConfig(serviceLocator, resourceMethod, path.toString(), webSocketConf));
             } catch (DeploymentException e) {
                 throw new WebSocketExcption(e);
             }
