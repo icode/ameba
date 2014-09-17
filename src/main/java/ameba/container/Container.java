@@ -4,6 +4,7 @@ import ameba.Application;
 import ameba.util.ClassUtils;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +20,17 @@ public abstract class Container {
 
     protected Application application;
 
-    protected Container(Application application) {
+    public Container(Application application) {
         this.application = application;
+        configureHttpServer();
+        configureWebSocketContainerProvider();
+        application.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bindFactory(getWebSocketContainerProvider()).to(ServerContainer.class).proxy(false);
+            }
+        });
+        configureHttpContainer();
     }
 
     @SuppressWarnings("unchecked")
@@ -31,11 +41,7 @@ public abstract class Container {
         try {
             Class<Container> ContainerClass = (Class<Container>) ClassUtils.forName(provider);
             Constructor<Container> constructor = ContainerClass.<Container>getDeclaredConstructor(Application.class);
-            constructor.setAccessible(true);
-            Container container = constructor.newInstance(application);
-            constructor.setAccessible(false);
-            application.register(container.getWebSocketContainerProvider());
-            return container;
+            return constructor.newInstance(application);
         } catch (InvocationTargetException e) {
             throw new ContainerException(e);
         } catch (NoSuchMethodException e) {
@@ -51,14 +57,19 @@ public abstract class Container {
 
     public abstract ServiceLocator getServiceLocator();
 
+    protected abstract void configureHttpServer();
+
+    protected abstract void configureHttpContainer();
+
     public abstract ServerContainer getWebSocketContainer();
+
+    protected abstract void configureWebSocketContainerProvider();
 
     protected abstract WebSocketContainerProvider getWebSocketContainerProvider();
 
     public abstract void start() throws Exception;
 
     public abstract void shutdown() throws Exception;
-
 
     public abstract class WebSocketContainerProvider implements Factory<ServerContainer> {
 
