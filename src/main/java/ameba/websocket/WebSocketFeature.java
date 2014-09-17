@@ -18,8 +18,11 @@ public class WebSocketFeature implements Feature {
 
     @Override
     public boolean configure(FeatureContext context) {
-
         final Configuration config = context.getConfiguration();
+
+        if (config.isEnabled(this.getClass())) {
+            return false;
+        }
 
         if (!"false".equals(config.getProperty(WEB_SOCKET_ENABLED_CONF))) {
             context.register(new WebSocketBinder());

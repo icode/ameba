@@ -1,9 +1,10 @@
 package ameba.websocket;
 
+import ameba.websocket.internal.DefaultServerEndpointConfig;
+
 import javax.websocket.Decoder;
 import javax.websocket.Encoder;
 import javax.websocket.Extension;
-import javax.websocket.server.ServerEndpointConfig;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -60,7 +61,7 @@ public @interface WebSocket {
      * @return the custom configuration class, or ServerEndpointConfig.Configurator.class
      * if none was set in the annotation.
      */
-    public Class<? extends ServerEndpointConfig.Configurator> configurator() default ServerEndpointConfig.Configurator.class;
+    public Class<? extends DefaultServerEndpointConfig.Configurator> configurator() default DefaultServerEndpointConfig.Configurator.class;
 
     public Class<? extends Extension>[] extensions() default {};
 }

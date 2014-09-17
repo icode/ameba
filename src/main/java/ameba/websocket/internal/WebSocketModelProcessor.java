@@ -66,7 +66,8 @@ public class WebSocketModelProcessor implements ModelProcessor {
         if (webSocketConf != null) {
             logger.trace("find web socket in {} class, method {}", handlingMethod.getDeclaringClass().getName(), handlingMethod.toGenericString());
             try {
-                container.addEndpoint(new DefaultServerEndpointConfig(serviceLocator, EndpointDelegate.class, path, webSocketConf));
+                DefaultServerEndpointConfig endpointConfig = new DefaultServerEndpointConfig(serviceLocator, resourceMethod, path, webSocketConf);
+                container.addEndpoint(endpointConfig);
             } catch (DeploymentException e) {
                 throw new WebSocketExcption(e);
             }
