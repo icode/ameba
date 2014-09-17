@@ -1,19 +1,12 @@
 package ameba.websocket.internal;
 
-import ameba.util.IOUtils;
 import ameba.websocket.WebSocketExcption;
-import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.internal.inject.Injections;
-import org.glassfish.jersey.server.internal.inject.AbstractValueFactoryProvider;
 import org.glassfish.jersey.server.internal.inject.ConfiguredValidator;
-import org.glassfish.jersey.server.internal.inject.MultivaluedParameterExtractorProvider;
 import org.glassfish.jersey.server.model.Invocable;
-import org.glassfish.jersey.server.model.Parameter;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.spi.internal.ParameterValueHelper;
-import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +14,6 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.websocket.*;
 import java.lang.reflect.*;
-import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.Collection;
 
@@ -40,13 +32,13 @@ public class EndpointDelegate extends Endpoint {
             return method.invoke(target, args);
         }
     };
+    private final ThreadLocal<Object> messageLocal = new ThreadLocal<Object>();
     @Inject
     private ServiceLocator serviceLocator;
     @Inject
     private Provider<ConfiguredValidator> validatorProvider;
     private ResourceMethod resourceMethod;
     private Invocable invocable;
-    private static final ThreadLocal<Object> messageLocal = new ThreadLocal<Object>();
 
     public ResourceMethod getResourceMethod() {
         return resourceMethod;
@@ -57,88 +49,7 @@ public class EndpointDelegate extends Endpoint {
     }
 
     private void bindLocator(final Session session, final EndpointConfig config) {
-        serviceLocator = Injections.createLocator(serviceLocator, new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bindFactory(new Factory<Session>() {
-                    @Override
-                    public Session provide() {
-                        return session;
-                    }
-
-                    @Override
-                    public void dispose(Session instance) {
-                        if (instance.isOpen())
-                            IOUtils.closeQuietly(instance);
-                    }
-                });
-
-                bindFactory(new Factory<EndpointConfig>() {
-                    @Override
-                    public EndpointConfig provide() {
-                        return config;
-                    }
-
-                    @Override
-                    public void dispose(EndpointConfig instance) {
-
-                    }
-                });
-
-
-                bindFactory(new Factory<RemoteEndpoint.Async>() {
-                    @Override
-                    public RemoteEndpoint.Async provide() {
-                        return session.getAsyncRemote();
-                    }
-
-                    @Override
-                    public void dispose(RemoteEndpoint.Async instance) {
-
-                    }
-                });
-
-                bindFactory(new Factory<RemoteEndpoint>() {
-                    @Override
-                    public RemoteEndpoint provide() {
-                        return session.getAsyncRemote();
-                    }
-
-                    @Override
-                    public void dispose(RemoteEndpoint instance) {
-
-                    }
-                });
-
-                bindFactory(new Factory<RemoteEndpoint.Basic>() {
-                    @Override
-                    public RemoteEndpoint.Basic provide() {
-                        return session.getBasicRemote();
-                    }
-
-                    @Override
-                    public void dispose(RemoteEndpoint.Basic instance) {
-
-                    }
-                });
-
-                bindFactory(new Factory<Principal>() {
-                    @Override
-                    public Principal provide() {
-                        return session.getUserPrincipal();
-                    }
-
-                    @Override
-                    public void dispose(Principal instance) {
-
-                    }
-                });
-
-                bindFactory(new MessageFactory());
-
-                bind(MessageValueFactoryProvider.class).to(ValueFactoryProvider.class).ranked(100);
-            }
-        });
+        serviceLocator = Injections.createLocator(serviceLocator, new ParameterInjectionBinder(session, config, messageLocal));
     }
 
     @Override
@@ -233,30 +144,5 @@ public class EndpointDelegate extends Endpoint {
     @Override
     public void onError(Session session, Throwable thr) {
         logger.error("web socket has a err", thr);
-    }
-
-    static class MessageFactory implements Factory<Object> {
-        @Override
-        public Object provide() {
-            return messageLocal.get();
-        }
-
-        @Override
-        public void dispose(Object instance) {
-
-        }
-    }
-
-    static class MessageValueFactoryProvider extends AbstractValueFactoryProvider {
-
-        @Inject
-        protected MessageValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY);
-        }
-
-        @Override
-        protected Factory<?> createValueFactory(Parameter parameter) {
-            return new MessageFactory();
-        }
     }
 }
