@@ -88,8 +88,10 @@ public class ParameterInjectionBinder extends AbstractBinder {
         }
 
         @Override
-        protected Factory<?> createValueFactory(Parameter parameter) {
-            return factory;
+        protected Factory<Session> createValueFactory(Parameter parameter) {
+            if (Session.class.isAssignableFrom(parameter.getRawType()))
+                return factory;
+            return null;
         }
     }
 
@@ -105,7 +107,9 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
-            return factory;
+            if (EndpointConfig.class.isAssignableFrom(parameter.getRawType()))
+                return factory;
+            return null;
         }
     }
 
@@ -121,7 +125,10 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
-            return factory;
+            if (RemoteEndpoint.Async.class.isAssignableFrom(parameter.getRawType())
+                    || parameter.getRawType().equals(RemoteEndpoint.class))
+                return factory;
+            return null;
         }
     }
 
@@ -137,7 +144,9 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
-            return factory;
+            if (RemoteEndpoint.Basic.class.isAssignableFrom(parameter.getRawType()))
+                return factory;
+            return null;
         }
     }
 
@@ -154,7 +163,9 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
-            return factory;
+            if (String.class.isAssignableFrom(parameter.getRawType()))
+                return factory;
+            return null;
         }
     }
 
