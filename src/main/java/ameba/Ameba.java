@@ -29,6 +29,10 @@ public class Ameba {
         return container.getServiceLocator();
     }
 
+    public static Container getContainer() {
+        return container;
+    }
+
     public static Application getApp() {
         return app;
     }

@@ -1,6 +1,7 @@
 package ameba.container;
 
 import ameba.Application;
+import ameba.container.server.Connector;
 import ameba.util.ClassUtils;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.websocket.server.ServerContainer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 /**
  * @author icode
@@ -39,15 +41,17 @@ public abstract class Container {
         String provider = (String) application.getProperty("app.container.provider");
 
         try {
-            Class<Container> ContainerClass = (Class<Container>) ClassUtils.forName(provider);
+            Class<Container> ContainerClass = (Class<Container>) ClassUtils.getClass(provider);
             Constructor<Container> constructor = ContainerClass.<Container>getDeclaredConstructor(Application.class);
             return constructor.newInstance(application);
         } catch (InvocationTargetException e) {
             throw new ContainerException(e);
         } catch (NoSuchMethodException e) {
             throw new ContainerException(e);
+        } catch (ClassNotFoundException e) {
+            throw new ContainerException(e);
         } finally {
-            logger.info("HTTP容器为 {}", provider);
+            logger.debug("HTTP容器为 {}", provider);
         }
     }
 
@@ -70,6 +74,10 @@ public abstract class Container {
     public abstract void start() throws Exception;
 
     public abstract void shutdown() throws Exception;
+
+    public abstract List<Connector> getConnectors();
+
+    public abstract String getType();
 
     public abstract class WebSocketContainerProvider implements Factory<ServerContainer> {
 

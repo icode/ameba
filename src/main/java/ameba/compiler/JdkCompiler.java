@@ -165,7 +165,7 @@ public class JdkCompiler extends JavaCompiler {
         }
 
         public JavaFileObjectImpl(JavaSource source, final String baseName, Kind k) {
-            super(ClassUtils.toURI(baseName), k);
+            super(URI.create(baseName), k);
             this.source = source;
         }
 
@@ -224,7 +224,7 @@ public class JdkCompiler extends JavaCompiler {
         }
 
         private URI uri(Location location, String packageName, String relativeName) {
-            return ClassUtils.toURI(location.getName() + '/' + packageName + '/' + relativeName);
+            return URI.create(location.getName() + '/' + packageName + '/' + relativeName);
         }
 
         @Override

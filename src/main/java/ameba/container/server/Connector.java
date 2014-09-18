@@ -1,14 +1,26 @@
-package ameba.server;
+package ameba.container.server;
 
+import ameba.exceptions.ConfigErrorException;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URI;
-import java.util.Properties;
+import java.util.List;
+import java.util.Map;
+
+import static ameba.util.IOUtils.readByteArrayFromResource;
 
 /**
  * @author icode
  */
 public class Connector {
+    public static final String CONNECTOR_CONF_PREFIX = "connector.";
+    private static final Logger logger = LoggerFactory.getLogger(Connector.class);
     protected URI httpServerBaseUri;
     protected String host;
     protected String name;
@@ -32,9 +44,79 @@ public class Connector {
     protected String sslTrustStoreProvider;
     protected String sslTrustManagerFactoryAlgorithm;
     protected boolean sslConfigReady;
-    protected Properties rawProperties;
+    protected Map<String, String> rawProperties;
 
     protected Connector() {
+    }
+
+    public static Connector createDefault(Map<String, String> properties) {
+        Connector.Builder builder = Connector.Builder.create()
+                .rawProperties(properties)
+                .secureEnabled(Boolean.parseBoolean(properties.get("ssl.enabled")))
+                .sslProtocol(properties.get("ssl.protocol"))
+                .sslClientMode(Boolean.parseBoolean(properties.get("ssl.clientMode")))
+                .sslNeedClientAuth(Boolean.parseBoolean(properties.get("ssl.needClientAuth")))
+                .sslWantClientAuth(Boolean.parseBoolean(properties.get("ssl.wantClientAuth")))
+                .sslKeyManagerFactoryAlgorithm(properties.get("ssl.key.manager.factory.algorithm"))
+                .sslKeyPassword(properties.get("ssl.key.password"))
+                .sslKeyStoreProvider(properties.get("ssl.key.store.provider"))
+                .sslKeyStoreType(properties.get("ssl.key.store.type"))
+                .sslKeyStorePassword(properties.get("ssl.key.store.password"))
+                .sslTrustManagerFactoryAlgorithm(properties.get("ssl.Trust.manager.factory.algorithm"))
+                .sslTrustPassword(properties.get("ssl.trust.password"))
+                .sslTrustStoreProvider(properties.get("ssl.trust.store.provider"))
+                .sslTrustStoreType(properties.get("ssl.trust.store.type"))
+                .sslTrustStorePassword(properties.get("ssl.trust.store.password"))
+                .ajpEnabled(Boolean.parseBoolean(properties.get("ajp.enabled")))
+                .host(StringUtils.defaultIfBlank(properties.get("host"), "0.0.0.0"))
+                .port(Integer.valueOf(StringUtils.defaultIfBlank(properties.get("port"), "80")))
+                .name(properties.get("name"));
+
+        String keyStoreFile = properties.get("ssl.key.store.file");
+        if (StringUtils.isNotBlank(keyStoreFile))
+            try {
+                builder.sslKeyStoreFile(readByteArrayFromResource(keyStoreFile));
+            } catch (IOException e) {
+                logger.error("读取sslKeyStoreFile出错", e);
+            }
+
+        String trustStoreFile = properties.get("ssl.trust.store.file");
+        if (StringUtils.isNotBlank(trustStoreFile))
+            try {
+                builder.sslTrustStoreFile(readByteArrayFromResource(trustStoreFile));
+            } catch (IOException e) {
+                logger.error("读取sslTrustStoreFile出错", e);
+            }
+
+        return builder.build();
+    }
+
+    public static List<Connector> createDefaultConnectors(Map<String, Object> properties) {
+        List<Connector> connectors = Lists.newArrayList();
+        Map<String, Map<String, String>> propertiesMap = Maps.newLinkedHashMap();
+        for (String key : properties.keySet()) {
+            if (key.startsWith(Connector.CONNECTOR_CONF_PREFIX)) {
+                String oKey = key;
+                key = key.substring(Connector.CONNECTOR_CONF_PREFIX.length());
+                int index = key.indexOf(".");
+                if (index == -1) {
+                    throw new ConfigErrorException("connector configure error, format connector.{connectorName}.{property}");
+                }
+                String name = key.substring(0, index);
+                Map<String, String> pr = propertiesMap.get(name);
+                if (pr == null) {
+                    pr = Maps.newLinkedHashMap();
+                    propertiesMap.put(name, pr);
+                    pr.put("name", name);
+                }
+                pr.put(key.substring(index + 1), String.valueOf(properties.get(oKey)));
+            }
+        }
+
+        for (Map<String, String> prop : propertiesMap.values()) {
+            connectors.add(createDefault(prop));
+        }
+        return connectors;
     }
 
     public String getHost() {
@@ -129,12 +211,24 @@ public class Connector {
         return name;
     }
 
-    public Properties getRawProperties() {
+    public Map<String, String> getRawProperties() {
         return rawProperties;
     }
 
     public static class Builder {
-        Connector connector = new Connector();
+        Connector connector;
+
+        private Builder(Connector connector) {
+            this.connector = connector;
+        }
+
+        private Builder() {
+            this(new Connector());
+        }
+
+        public static Builder from(Connector connector) {
+            return new Builder(connector);
+        }
 
         public static Builder create() {
             return new Builder();
@@ -332,8 +426,8 @@ public class Connector {
             return this;
         }
 
-        public Builder rawProperties(Properties properties) {
-            connector.rawProperties = properties;
+        public Builder rawProperties(Map<String, String> properties) {
+            connector.rawProperties = ImmutableMap.copyOf(properties);
             return this;
         }
 
@@ -342,8 +436,8 @@ public class Connector {
                 //config server base uri
                 connector.httpServerBaseUri = URI.create(
                         "http" + (isSecureEnabled() ? "s" : "") + "://"
-                        + connector.getHost()
-                        + ":" + connector.port + "/");
+                                + connector.getHost()
+                                + ":" + connector.port + "/");
             }
             if (connector.secureEnabled && connector.sslKeyStoreFile != null &&
                     StringUtils.isNotBlank(connector.sslKeyPassword) &&

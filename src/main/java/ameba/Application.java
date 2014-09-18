@@ -1,11 +1,11 @@
 package ameba;
 
+import ameba.container.server.Connector;
 import ameba.event.Event;
 import ameba.event.SystemEventBus;
 import ameba.exceptions.AmebaException;
 import ameba.exceptions.ConfigErrorException;
 import ameba.feature.AmebaFeature;
-import ameba.server.Connector;
 import ameba.util.IOUtils;
 import ameba.util.LinkedProperties;
 import ameba.util.Times;
@@ -58,7 +58,6 @@ public class Application extends ResourceConfig {
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static final String REGISTER_CONF_PREFIX = "app.register.";
     private static final String JERSEY_CONF_NAME_PREFIX = "app.sys.core.";
-    private static final String CONNECTOR_CONF_PREFIX = "connector.";
     private static String INFO_SPLITOR = "---------------------------------------------------";
     protected boolean jmxEnabled;
     private String configFile;
@@ -67,7 +66,6 @@ public class Application extends ResourceConfig {
     private File sourceRoot;
     private File packageRoot;
     private Container container;
-    private List<Connector> connectors = Lists.newArrayList();
     private long timestamp = System.currentTimeMillis();
 
     public Application() {
@@ -126,9 +124,6 @@ public class Application extends ResourceConfig {
 
         //读取模式配置
         readModeConfig(configMap);
-
-        //配置连接器
-        configureConnector(properties);
 
         //读取模块配置
         readModuleConfig(configMap);
@@ -343,74 +338,6 @@ public class Application extends ResourceConfig {
         modeProperties = null;
     }
 
-    private void configureConnector(Properties properties) {
-        Map<String, Properties> propertiesMap = Maps.newLinkedHashMap();
-        for (String key : properties.stringPropertyNames()) {
-            if (key.startsWith(CONNECTOR_CONF_PREFIX)) {
-                String oKey = key;
-                key = key.substring(CONNECTOR_CONF_PREFIX.length());
-                int index = key.indexOf(".");
-                if (index == -1) {
-                    throw new ConfigErrorException("connector configure error, format connector.{connectorName}.{property}");
-                }
-                String name = key.substring(0, index);
-                Properties pr = propertiesMap.get(name);
-                if (pr == null) {
-                    pr = new Properties();
-                    propertiesMap.put(name, pr);
-                    pr.setProperty("name", name);
-                }
-                pr.setProperty(key.substring(index + 1), properties.getProperty(oKey));
-            }
-        }
-
-        for (Properties prop : propertiesMap.values()) {
-            connectors.add(createConnector(prop));
-        }
-    }
-
-    private Connector createConnector(Properties properties) {
-        Connector.Builder builder = Connector.Builder.create()
-                .rawProperties(properties)
-                .secureEnabled(Boolean.parseBoolean(properties.getProperty("ssl.enabled", "false")))
-                .sslProtocol(properties.getProperty("ssl.protocol"))
-                .sslClientMode(Boolean.parseBoolean(properties.getProperty("ssl.clientMode", "false")))
-                .sslNeedClientAuth(Boolean.parseBoolean(properties.getProperty("ssl.needClientAuth", "false")))
-                .sslWantClientAuth(Boolean.parseBoolean(properties.getProperty("ssl.wantClientAuth", "false")))
-                .sslKeyManagerFactoryAlgorithm(properties.getProperty("ssl.key.manager.factory.algorithm"))
-                .sslKeyPassword(properties.getProperty("ssl.key.password"))
-                .sslKeyStoreProvider(properties.getProperty("ssl.key.store.provider"))
-                .sslKeyStoreType(properties.getProperty("ssl.key.store.type"))
-                .sslKeyStorePassword(properties.getProperty("ssl.key.store.password"))
-                .sslTrustManagerFactoryAlgorithm(properties.getProperty("ssl.Trust.manager.factory.algorithm"))
-                .sslTrustPassword(properties.getProperty("ssl.trust.password"))
-                .sslTrustStoreProvider(properties.getProperty("ssl.trust.store.provider"))
-                .sslTrustStoreType(properties.getProperty("ssl.trust.store.type"))
-                .sslTrustStorePassword(properties.getProperty("ssl.trust.store.password"))
-                .ajpEnabled(Boolean.parseBoolean(properties.getProperty("ajp.enabled", "false")))
-                .host(StringUtils.defaultIfBlank(properties.getProperty("host"), "0.0.0.0"))
-                .port(Integer.valueOf(StringUtils.defaultIfBlank(properties.getProperty("port"), "80")))
-                .name(properties.getProperty("name"));
-
-        String keyStoreFile = properties.getProperty("ssl.key.store.file");
-        if (StringUtils.isNotBlank(keyStoreFile))
-            try {
-                builder.sslKeyStoreFile(readByteArrayFromResource(keyStoreFile));
-            } catch (IOException e) {
-                logger.error("读取sslKeyStoreFile出错", e);
-            }
-
-        String trustStoreFile = properties.getProperty("ssl.trust.store.file");
-        if (StringUtils.isNotBlank(trustStoreFile))
-            try {
-                builder.sslTrustStoreFile(readByteArrayFromResource(trustStoreFile));
-            } catch (IOException e) {
-                logger.error("读取sslTrustStoreFile出错", e);
-            }
-
-        return builder.build();
-    }
-
     private void configureServer(Properties properties) {
         jmxEnabled = Boolean.parseBoolean(properties.getProperty("app.jmx.enabled"));
         if (jmxEnabled && properties.getProperty(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED) == null)
@@ -431,6 +358,9 @@ public class Application extends ResourceConfig {
                             .append("Ameba版本  >   ")
                             .append(Ameba.getVersion())
                             .append("\n")
+                            .append("HTTP容器   >   ")
+                            .append(StringUtils.defaultString(Ameba.getContainer().getType(), "Unknown"))
+                            .append("\n")
                             .append("启动用时    >   ")
                             .append(startUsedTime)
                             .append("\n")
@@ -449,12 +379,16 @@ public class Application extends ResourceConfig {
                             .append(isJmxEnabled())
                             .append("\n")
                             .append("应用模式    >   ")
-                            .append(getMode())
-                            .append("\n")
-                            .append("监听地址    >   ");
-                    for (Connector connector : connectors) {
-                        builder.append("\n             ")
-                                .append(connector.getHttpServerBaseUri());
+                            .append(getMode());
+
+                    List<Connector> connectors = getConnectors();
+                    if (connectors != null && connectors.size() > 0) {
+                        builder.append("\n")
+                                .append("监听地址    >   ");
+                        for (Connector connector : connectors) {
+                            builder.append("\n             ")
+                                    .append(connector.getHttpServerBaseUri());
+                        }
                     }
 
                     logger.info("应用容器已启动\n{}\n{}\n{}",
@@ -615,7 +549,7 @@ public class Application extends ResourceConfig {
     }
 
     public List<Connector> getConnectors() {
-        return connectors;
+        return Ameba.getContainer().getConnectors();
     }
 
     public boolean isJmxEnabled() {
