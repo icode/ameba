@@ -1,6 +1,7 @@
 package ameba.websocket.internal;
 
 import ameba.websocket.WebSocketExcption;
+import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.Injections;
 import org.glassfish.jersey.server.internal.inject.ConfiguredValidator;
@@ -13,9 +14,12 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.websocket.*;
+import java.io.Reader;
 import java.lang.reflect.*;
+import java.nio.ByteBuffer;
 import java.security.PrivilegedAction;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author icode
@@ -32,13 +36,18 @@ public class EndpointDelegate extends Endpoint {
             return method.invoke(target, args);
         }
     };
-    private final ThreadLocal<Object> messageLocal = new ThreadLocal<Object>();
+    private final ThreadLocal<MessageState> messageState = new ThreadLocal<MessageState>();
     @Inject
     private ServiceLocator serviceLocator;
     @Inject
     private Provider<ConfiguredValidator> validatorProvider;
+
     private ResourceMethod resourceMethod;
     private Invocable invocable;
+    private List<Factory<?>> valueProviders;
+    private Object resource;
+    private Method method;
+    Class msgType;
 
     public ResourceMethod getResourceMethod() {
         return resourceMethod;
@@ -49,7 +58,7 @@ public class EndpointDelegate extends Endpoint {
     }
 
     private void bindLocator(final Session session, final EndpointConfig config) {
-        serviceLocator = Injections.createLocator(serviceLocator, new ParameterInjectionBinder(session, config, messageLocal));
+        serviceLocator = Injections.createLocator(serviceLocator, new ParameterInjectionBinder(session, config, messageState));
     }
 
     @Override
@@ -57,30 +66,76 @@ public class EndpointDelegate extends Endpoint {
         bindLocator(session, config);
 
         invocable = resourceMethod.getInvocable();
-        final Method method = invocable.getHandlingMethod();
-        final Class clazz = method.getDeclaringClass();
+        valueProviders = invocable.getValueProviders(serviceLocator);
+        method = invocable.getHandlingMethod();
+        final Class resourceClass = method.getDeclaringClass();
+        resource = serviceLocator.createAndInitialize(resourceClass);
         Class returnType = method.getReturnType();
 
+        int index = -1;
+        boolean isAsync = false;
+        boolean needMsg = false;
+        for (Factory factory : valueProviders) {
+            if (factory.getClass().equals(ParameterInjectionBinder.MessageEndFactory.class)) {
+                isAsync = true;
+            }
+            if (!factory.getClass().equals(ParameterInjectionBinder.MessageFactory.class)) {
+                index++;
+            } else {
+                needMsg = true;
+            }
+        }
+        msgType = needMsg ? method.getParameterTypes()[index < 0 ? 0 : index] : String.class;
+
         if (isMessageHandler(returnType)) {// 返回的是消息处理对象，添加之
-            session.addMessageHandler(this.<MessageHandler>processHandler(clazz, method));
+            session.addMessageHandler(this.<MessageHandler>processHandler());
         } else if (returnType.isArray() && isMessageHandler(returnType.getComponentType())) {// 返回的是一组消息处理对象，全部添加
-            MessageHandler[] handlers = processHandler(clazz, method);
+            MessageHandler[] handlers = processHandler();
             for (MessageHandler handler : handlers) {
                 session.addMessageHandler(handler);
             }
-        } else if (isMessageHandlerCollection(returnType, method)) {// 返回的是一组消息处理对象，全部添加
-            Collection<MessageHandler> handlers = processHandler(clazz, method);
+        } else if (isMessageHandlerCollection(returnType)) {// 返回的是一组消息处理对象，全部添加
+            Collection<MessageHandler> handlers = processHandler();
             for (MessageHandler handler : handlers) {
                 session.addMessageHandler(handler);
             }
         } else {
-            session.addMessageHandler(new MessageHandler.Whole<String>() {
-                @Override
-                public void onMessage(String message) {
-                    messageLocal.set(message);
-                    session.getAsyncRemote().sendObject(processHandler(clazz, method));
+            MessageHandler handler = null;
+
+            if (isAsync) {
+                if (String.class.equals(msgType)) {
+                    handler = new AsyncMessageHandler<String>(session) {
+                    };
+                } else if (ByteBuffer.class.equals(msgType)) {
+                    handler = new AsyncMessageHandler<ByteBuffer>(session) {
+                    };
+                } else if (byte.class.equals(msgType.getComponentType())) {
+                    handler = new AsyncMessageHandler<byte[]>(session) {
+                    };
+                } else {
+                    handler = new AsyncMessageHandler<Object>(session) {
+                    };
                 }
-            });
+            } else {
+                if (String.class.equals(msgType)) {
+                    handler = new BasicMessageHandler<String>(session) {
+                    };
+                } else if (Reader.class.equals(msgType)) {
+                    handler = new BasicMessageHandler<Reader>(session) {
+                    };
+                } else if (ByteBuffer.class.equals(msgType)) {
+                    handler = new BasicMessageHandler<ByteBuffer>(session) {
+                    };
+                } else if (byte.class.equals(msgType.getComponentType())) {
+                    handler = new BasicMessageHandler<byte[]>(session) {
+                    };
+                } else {
+                    handler = new BasicMessageHandler<Object>(session) {
+                    };
+                }
+            }
+
+            session.addMessageHandler(handler);
         }
     }
 
@@ -93,11 +148,11 @@ public class EndpointDelegate extends Endpoint {
         return MessageHandler.class.isAssignableFrom(clazz);
     }
 
-    private boolean isMessageHandlerCollection(Class clazz, Method method) {
+    private boolean isMessageHandlerCollection(Class clazz) {
         if (Collection.class.isAssignableFrom(clazz)) {
-            Type genericReturnType = method.getGenericReturnType();
-            if (genericReturnType instanceof ParameterizedType) {
-                Type[] types = ((ParameterizedType) genericReturnType).getActualTypeArguments();
+            Type methodGenericReturnType = method.getGenericReturnType();
+            if (methodGenericReturnType instanceof ParameterizedType) {
+                Type[] types = ((ParameterizedType) methodGenericReturnType).getActualTypeArguments();
                 if (types.length > 0 && isMessageHandler((Class) types[0])) {
                     // 返回的是一组消息处理对象
                     return true;
@@ -108,12 +163,11 @@ public class EndpointDelegate extends Endpoint {
     }
 
     @SuppressWarnings("unchecked")
-    private <H> H processHandler(Class clazz, final Method method) {
+    private <H> H processHandler() {
 
-        final Object resource = serviceLocator.createAndInitialize(clazz);
         final ConfiguredValidator validator = validatorProvider.get();
 
-        final Object[] args = ParameterValueHelper.getParameterValues(invocable.getValueProviders(serviceLocator));
+        final Object[] args = ParameterValueHelper.getParameterValues(valueProviders);
 
         // Validate resource class & method input parameters.
         if (validator != null) {
@@ -144,5 +198,73 @@ public class EndpointDelegate extends Endpoint {
     @Override
     public void onError(Session session, Throwable thr) {
         logger.error("web socket has a err", thr);
+    }
+
+    private class AsyncMessageHandler<M> implements MessageHandler.Partial<M> {
+
+        Session session;
+
+        private AsyncMessageHandler(Session session) {
+            this.session = session;
+        }
+
+        @Override
+        public void onMessage(M partialMessage, boolean last) {
+            messageState.set(new MessageState(partialMessage, last));
+            session.getAsyncRemote().sendObject(processHandler());
+        }
+    }
+
+    private class BasicMessageHandler<M> implements MessageHandler.Whole<M> {
+
+        Session session;
+
+        private BasicMessageHandler(Session session) {
+            this.session = session;
+        }
+
+        @Override
+        public void onMessage(M partialMessage) {
+            messageState.set(new MessageState(partialMessage));
+            session.getAsyncRemote().sendObject(processHandler());
+        }
+    }
+
+    public class MessageHandlerDelegate {
+        boolean async;
+
+        public MessageHandlerDelegate(boolean async) {
+            this.async = async;
+        }
+
+        public boolean isAsync() {
+            return async;
+        }
+
+        Object process() {
+            return processHandler();
+        }
+    }
+
+    class MessageState {
+        private Object message;
+        private Boolean last;
+
+        MessageState(Object message, Boolean last) {
+            this.message = message;
+            this.last = last;
+        }
+
+        MessageState(Object message) {
+            this.message = message;
+        }
+
+        public Object getMessage() {
+            return message;
+        }
+
+        public Boolean getLast() {
+            return last;
+        }
     }
 }

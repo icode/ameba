@@ -22,12 +22,12 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
     private Session session;
     private EndpointConfig config;
-    private ThreadLocal<Object> messageLocal;
+    private ThreadLocal<EndpointDelegate.MessageState> messageState;
 
-    public ParameterInjectionBinder(Session session, EndpointConfig config, ThreadLocal<Object> messageLocal) {
+    public ParameterInjectionBinder(Session session, EndpointConfig config, ThreadLocal<EndpointDelegate.MessageState> messageState) {
         this.session = session;
         this.config = config;
-        this.messageLocal = messageLocal;
+        this.messageState = messageState;
     }
 
     @Override
@@ -56,12 +56,16 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
         bind(PrincipalValueFactoryProvider.class).to(ValueFactoryProvider.class);
 
+        bindFactory(new MessageEndFactory()).to(boolean.class).to(Boolean.class);
+
+        bind(MessageEndValueFactoryProvider.class).to(ValueFactoryProvider.class);
+
         bindFactory(new MessageFactory()).to(Object.class);
 
         bind(MessageValueFactoryProvider.class).to(ValueFactoryProvider.class);
     }
 
-    private static class MessageValueFactoryProvider extends AbstractValueFactoryProvider {
+    static class MessageValueFactoryProvider extends AbstractValueFactoryProvider {
 
         @Inject
         MessageFactory factory;
@@ -77,7 +81,26 @@ public class ParameterInjectionBinder extends AbstractBinder {
         }
     }
 
-    private static class SessionValueFactoryProvider extends AbstractValueFactoryProvider {
+    static class MessageEndValueFactoryProvider extends AbstractValueFactoryProvider {
+
+        @Inject
+        MessageEndFactory factory;
+
+        @Inject
+        protected MessageEndValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
+            super(mpep, locator, Parameter.Source.ENTITY);
+        }
+
+        @Override
+        protected Factory<?> createValueFactory(Parameter parameter) {
+            if (parameter.getRawType().equals(Boolean.class) || parameter.getRawType().equals(boolean.class))
+                return factory;
+            return null;
+        }
+    }
+
+
+    static class SessionValueFactoryProvider extends AbstractValueFactoryProvider {
 
         @Inject
         SessionFactory factory;
@@ -89,13 +112,13 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
         @Override
         protected Factory<Session> createValueFactory(Parameter parameter) {
-            if (Session.class.isAssignableFrom(parameter.getRawType()))
+            if (parameter.getRawType().equals(Session.class))
                 return factory;
             return null;
         }
     }
 
-    private static class EndpointConfigValueFactoryProvider extends AbstractValueFactoryProvider {
+    static class EndpointConfigValueFactoryProvider extends AbstractValueFactoryProvider {
 
         @Inject
         EndpointConfigFactory factory;
@@ -107,13 +130,13 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
-            if (EndpointConfig.class.isAssignableFrom(parameter.getRawType()))
+            if (parameter.getRawType().equals(EndpointConfig.class))
                 return factory;
             return null;
         }
     }
 
-    private static class RemoteEndpointAsyncValueFactoryProvider extends AbstractValueFactoryProvider {
+    static class RemoteEndpointAsyncValueFactoryProvider extends AbstractValueFactoryProvider {
 
         @Inject
         RemoteEndpointAsyncFactory factory;
@@ -125,14 +148,14 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
-            if (RemoteEndpoint.Async.class.isAssignableFrom(parameter.getRawType())
+            if (parameter.getRawType().equals(RemoteEndpoint.Async.class)
                     || parameter.getRawType().equals(RemoteEndpoint.class))
                 return factory;
             return null;
         }
     }
 
-    private static class RemoteEndpointBasicValueFactoryProvider extends AbstractValueFactoryProvider {
+    static class RemoteEndpointBasicValueFactoryProvider extends AbstractValueFactoryProvider {
 
         @Inject
         RemoteEndpointBasicFactory factory;
@@ -144,14 +167,14 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
-            if (RemoteEndpoint.Basic.class.isAssignableFrom(parameter.getRawType()))
+            if (parameter.getRawType().equals(RemoteEndpoint.Basic.class))
                 return factory;
             return null;
         }
     }
 
 
-    private static class PrincipalValueFactoryProvider extends AbstractValueFactoryProvider {
+    static class PrincipalValueFactoryProvider extends AbstractValueFactoryProvider {
 
         @Inject
         PrincipalFactory factory;
@@ -163,14 +186,14 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
-            if (String.class.isAssignableFrom(parameter.getRawType()))
+            if (parameter.getRawType().equals(Principal.class))
                 return factory;
             return null;
         }
     }
 
 
-    private class PrincipalFactory implements Factory<Principal> {
+    class PrincipalFactory implements Factory<Principal> {
         @Override
         public Principal provide() {
             return session.getUserPrincipal();
@@ -182,7 +205,7 @@ public class ParameterInjectionBinder extends AbstractBinder {
         }
     }
 
-    private class RemoteEndpointBasicFactory implements Factory<RemoteEndpoint.Basic> {
+    class RemoteEndpointBasicFactory implements Factory<RemoteEndpoint.Basic> {
         @Override
         public RemoteEndpoint.Basic provide() {
             return session.getBasicRemote();
@@ -194,7 +217,7 @@ public class ParameterInjectionBinder extends AbstractBinder {
         }
     }
 
-    private class RemoteEndpointAsyncFactory implements Factory<RemoteEndpoint.Async> {
+    class RemoteEndpointAsyncFactory implements Factory<RemoteEndpoint.Async> {
         @Override
         public RemoteEndpoint.Async provide() {
             return session.getAsyncRemote();
@@ -206,7 +229,7 @@ public class ParameterInjectionBinder extends AbstractBinder {
         }
     }
 
-    private class EndpointConfigFactory implements Factory<EndpointConfig> {
+    class EndpointConfigFactory implements Factory<EndpointConfig> {
         @Override
         public EndpointConfig provide() {
             return config;
@@ -218,7 +241,7 @@ public class ParameterInjectionBinder extends AbstractBinder {
         }
     }
 
-    private class SessionFactory implements Factory<Session> {
+    class SessionFactory implements Factory<Session> {
         @Override
         public Session provide() {
             return session;
@@ -231,10 +254,22 @@ public class ParameterInjectionBinder extends AbstractBinder {
         }
     }
 
-    private class MessageFactory implements Factory<Object> {
+    class MessageFactory implements Factory<Object> {
         @Override
         public Object provide() {
-            return messageLocal.get();
+            return messageState.get().getMessage();
+        }
+
+        @Override
+        public void dispose(Object instance) {
+
+        }
+    }
+
+    class MessageEndFactory implements Factory<Object> {
+        @Override
+        public Object provide() {
+            return messageState.get().getLast();
         }
 
         @Override

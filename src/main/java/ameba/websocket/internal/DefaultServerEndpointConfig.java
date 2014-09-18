@@ -37,8 +37,8 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
         this.path = path;
         this.endpointClass = endpointClass;
         this.subprotocols = Arrays.asList(webSocketConf.subprotocols());
-        encoders = Arrays.asList(webSocketConf.encoders());
-        decoders = Arrays.asList(webSocketConf.decoders());
+        encoders = Lists.newArrayList(webSocketConf.encoders());
+        decoders = Lists.newArrayList(webSocketConf.decoders());
         for (Class<? extends Extension> extensionClass : webSocketConf.extensions()) {
             extensions.add(serviceLocator.createAndInitialize(extensionClass));
         }

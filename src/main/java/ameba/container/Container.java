@@ -30,6 +30,17 @@ public abstract class Container {
             @Override
             protected void configure() {
                 bindFactory(getWebSocketContainerProvider()).to(ServerContainer.class).proxy(false);
+                bindFactory(new Factory<Container>() {
+                    @Override
+                    public Container provide() {
+                        return Container.this;
+                    }
+
+                    @Override
+                    public void dispose(Container instance) {
+
+                    }
+                }).to(Container.class).proxy(false);
             }
         });
         configureHttpContainer();
