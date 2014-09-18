@@ -100,8 +100,6 @@ public class Application extends ResourceConfig {
         //读取应用程序配置
         URL appCfgUrl = readAppConfig(properties, confFile);
 
-        logger.info("应用配置文件 {}", toExternalForm(appCfgUrl));
-
         //获取应用程序模式
         try {
             mode = Mode.valueOf(properties.getProperty("app.mode").toUpperCase());
@@ -122,6 +120,7 @@ public class Application extends ResourceConfig {
         Ameba.printInfo();
 
         logger.info("初始化...");
+        logger.info("应用配置文件 {}", toExternalForm(appCfgUrl));
 
         AmebaFeature.preConfigure(this);
 

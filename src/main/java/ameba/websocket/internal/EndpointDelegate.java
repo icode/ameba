@@ -74,9 +74,9 @@ public class EndpointDelegate extends Endpoint {
                 session.addMessageHandler(handler);
             }
         } else {
-            session.addMessageHandler(new MessageHandler.Whole() {
+            session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
-                public void onMessage(Object message) {
+                public void onMessage(String message) {
                     messageLocal.set(message);
                     session.getAsyncRemote().sendObject(processHandler(clazz, method));
                 }

@@ -41,7 +41,8 @@ public class WebSocketModelProcessor implements ModelProcessor {
         ResourceModel.Builder modelBuilder = new ResourceModel.Builder(false);
         for (RuntimeResource resource : resourceModel.getRuntimeResourceModel().getRuntimeResources()) {
             Resource newResource = processResource(resource);
-            modelBuilder.addResource(newResource);
+            if (newResource.getChildResources().size() > 0)
+                modelBuilder.addResource(newResource);
         }
         return modelBuilder.build();
     }
@@ -56,7 +57,11 @@ public class WebSocketModelProcessor implements ModelProcessor {
         }
 
         for (RuntimeResource child : resource.getChildRuntimeResources()) {
-            resourceBuilder.addChildResource(processResource(child));
+            Resource rs = processResource(child);
+            if (rs.getResourceMethods().size() > 0
+                    || rs.getResourceLocator() != null
+                    || rs.getChildResources().size() > 0)
+                resourceBuilder.addChildResource(rs);
         }
 
         return resourceBuilder.build();
