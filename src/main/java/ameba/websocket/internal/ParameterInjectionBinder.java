@@ -1,6 +1,6 @@
 package ameba.websocket.internal;
 
-import ameba.util.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -13,6 +13,7 @@ import javax.inject.Inject;
 import javax.websocket.EndpointConfig;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
+import javax.websocket.server.PathParam;
 import java.security.Principal;
 
 /**
@@ -20,100 +21,94 @@ import java.security.Principal;
  */
 public class ParameterInjectionBinder extends AbstractBinder {
 
-    private Session session;
-    private EndpointConfig config;
-    private ThreadLocal<EndpointDelegate.MessageState> messageState;
+    private MessageState messageState;
 
-    public ParameterInjectionBinder(Session session, EndpointConfig config, ThreadLocal<EndpointDelegate.MessageState> messageState) {
-        this.session = session;
-        this.config = config;
+    public ParameterInjectionBinder(MessageState messageState) {
         this.messageState = messageState;
     }
 
     @Override
     protected void configure() {
-        bindFactory(new SessionFactory()).to(Session.class);
+        bindFactory(new MessageStateFactory(messageState)).to(MessageState.class);
 
-        bind(SessionValueFactoryProvider.class).to(ValueFactoryProvider.class);
-
-        bindFactory(new EndpointConfigFactory()).to(EndpointConfig.class);
-
+        bind(PathParamValueFactoryProvider.class).to(ValueFactoryProvider.class);
+        bind(MessageStateValueFactoryProvider.class).to(ValueFactoryProvider.class);
+        bind(BasicRemoteEndpointValueFactoryProvider.class).to(ValueFactoryProvider.class);
+        bind(AsyncRemoteEndpointValueFactoryProvider.class).to(ValueFactoryProvider.class);
         bind(EndpointConfigValueFactoryProvider.class).to(ValueFactoryProvider.class);
-
-        bindFactory(new RemoteEndpointAsyncFactory())
-                .to(RemoteEndpoint.Async.class)
-                .to(RemoteEndpoint.class);
-
-        bind(RemoteEndpointAsyncValueFactoryProvider.class)
-                .to(ValueFactoryProvider.class);
-
-
-        bindFactory(new RemoteEndpointBasicFactory()).to(RemoteEndpoint.Basic.class);
-        bind(RemoteEndpointBasicValueFactoryProvider.class)
-                .to(ValueFactoryProvider.class);
-
-        bindFactory(new PrincipalFactory()).to(Principal.class);
-
+        bind(SessionValueFactoryProvider.class).to(ValueFactoryProvider.class);
         bind(PrincipalValueFactoryProvider.class).to(ValueFactoryProvider.class);
-
-        bindFactory(new MessageEndFactory()).to(boolean.class).to(Boolean.class);
-
         bind(MessageEndValueFactoryProvider.class).to(ValueFactoryProvider.class);
-
-        bindFactory(new MessageFactory()).to(Object.class);
 
         bind(MessageValueFactoryProvider.class).to(ValueFactoryProvider.class);
     }
 
-    static class MessageValueFactoryProvider extends AbstractValueFactoryProvider {
-
-        @Inject
-        MessageFactory factory;
-
-        @Inject
-        protected MessageValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY);
-        }
-
-        @Override
-        protected Factory<?> createValueFactory(Parameter parameter) {
-            return factory;
-        }
-    }
 
     static class MessageEndValueFactoryProvider extends AbstractValueFactoryProvider {
 
         @Inject
-        MessageEndFactory factory;
+        MessageState state;
+
+        MessageEndFactory messageEndFactory;
 
         @Inject
         protected MessageEndValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY);
+            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
         }
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
-            if (parameter.getRawType().equals(Boolean.class) || parameter.getRawType().equals(boolean.class))
-                return factory;
+            Class type = parameter.getRawType();
+
+            if (type.equals(Boolean.class) || type.equals(boolean.class))
+                return messageEndFactory == null ? (messageEndFactory = new MessageEndFactory(state)) : messageEndFactory;
+
             return null;
         }
     }
 
+    static class PrincipalValueFactoryProvider extends AbstractValueFactoryProvider {
+
+        @Inject
+        MessageState state;
+
+        PrincipalFactory principalFactory;
+
+        @Inject
+        protected PrincipalValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
+            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
+        }
+
+        @Override
+        protected Factory<?> createValueFactory(Parameter parameter) {
+            Class type = parameter.getRawType();
+
+            if (type.equals(Principal.class))
+                return principalFactory == null ? (principalFactory = new PrincipalFactory(state)) : principalFactory;
+
+            return null;
+        }
+    }
 
     static class SessionValueFactoryProvider extends AbstractValueFactoryProvider {
 
         @Inject
-        SessionFactory factory;
+        MessageState state;
+
+        SessionFactory sessionFactory;
 
         @Inject
         protected SessionValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY);
+            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
         }
 
         @Override
-        protected Factory<Session> createValueFactory(Parameter parameter) {
-            if (parameter.getRawType().equals(Session.class))
-                return factory;
+        protected Factory<?> createValueFactory(Parameter parameter) {
+            Class type = parameter.getRawType();
+
+            if (type.equals(Session.class))
+                return sessionFactory == null ? (sessionFactory = new SessionFactory(state)) : sessionFactory;
+
             return null;
         }
     }
@@ -121,160 +116,261 @@ public class ParameterInjectionBinder extends AbstractBinder {
     static class EndpointConfigValueFactoryProvider extends AbstractValueFactoryProvider {
 
         @Inject
-        EndpointConfigFactory factory;
+        MessageState state;
+
+        EndpointConfigFactory endpointConfigFactory;
 
         @Inject
         protected EndpointConfigValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY);
+            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
         }
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
-            if (parameter.getRawType().equals(EndpointConfig.class))
-                return factory;
+            Class type = parameter.getRawType();
+
+            if (type.equals(EndpointConfig.class))
+                return endpointConfigFactory == null ? (endpointConfigFactory = new EndpointConfigFactory(state)) : endpointConfigFactory;
+
             return null;
         }
     }
 
-    static class RemoteEndpointAsyncValueFactoryProvider extends AbstractValueFactoryProvider {
+    static class AsyncRemoteEndpointValueFactoryProvider extends AbstractValueFactoryProvider {
 
         @Inject
-        RemoteEndpointAsyncFactory factory;
+        MessageState state;
+
+        AsyncRemoteEndpointFactory asyncRemoteEndpointFactory;
 
         @Inject
-        protected RemoteEndpointAsyncValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY);
+        protected AsyncRemoteEndpointValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
+            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
         }
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
-            if (parameter.getRawType().equals(RemoteEndpoint.Async.class)
-                    || parameter.getRawType().equals(RemoteEndpoint.class))
-                return factory;
+            Class type = parameter.getRawType();
+
+            if (type.equals(RemoteEndpoint.Async.class)
+                    || type.equals(RemoteEndpoint.class))
+                return asyncRemoteEndpointFactory == null ? (asyncRemoteEndpointFactory = new AsyncRemoteEndpointFactory(state)) : asyncRemoteEndpointFactory;
+
             return null;
         }
     }
 
-    static class RemoteEndpointBasicValueFactoryProvider extends AbstractValueFactoryProvider {
+    static class BasicRemoteEndpointValueFactoryProvider extends AbstractValueFactoryProvider {
 
         @Inject
-        RemoteEndpointBasicFactory factory;
+        MessageState state;
+
+        BasicRemoteEndpointFactory basicRemoteEndpointFactory;
 
         @Inject
-        protected RemoteEndpointBasicValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY);
+        protected BasicRemoteEndpointValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
+            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
         }
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
-            if (parameter.getRawType().equals(RemoteEndpoint.Basic.class))
-                return factory;
+            Class type = parameter.getRawType();
+            if (type.equals(RemoteEndpoint.Basic.class))
+                return basicRemoteEndpointFactory == null ? (basicRemoteEndpointFactory = new BasicRemoteEndpointFactory(state)) : basicRemoteEndpointFactory;
+
             return null;
         }
     }
 
-
-    static class PrincipalValueFactoryProvider extends AbstractValueFactoryProvider {
-
-        @Inject
-        PrincipalFactory factory;
+    static class MessageStateValueFactoryProvider extends AbstractValueFactoryProvider {
 
         @Inject
-        protected PrincipalValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY);
+        MessageStateFactory messageStatefactory;
+
+        @Inject
+        protected MessageStateValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
+            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
         }
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
-            if (parameter.getRawType().equals(Principal.class))
-                return factory;
+            Class type = parameter.getRawType();
+            if (type.equals(MessageState.class))
+                return messageStatefactory;
+
             return null;
         }
     }
 
+    static class PathParamValueFactoryProvider extends AbstractValueFactoryProvider {
 
-    class PrincipalFactory implements Factory<Principal> {
+        @Inject
+        MessageState state;
+        PathParamFactory pathParamFactory;
+
+        @Inject
+        protected PathParamValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
+            super(mpep, locator, Parameter.Source.PATH, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
+        }
+
+        @Override
+        protected Factory<?> createValueFactory(Parameter parameter) {
+            Class type = parameter.getRawType();
+
+            if (!type.equals(String.class))
+                return null;
+            
+            javax.ws.rs.PathParam pathParamRs = parameter.getAnnotation(javax.ws.rs.PathParam.class);
+
+            if (pathParamRs != null && StringUtils.isNotBlank(pathParamRs.value()))
+                return pathParamFactory == null ? (pathParamFactory = new PathParamFactory(pathParamRs.value(), state)) : pathParamFactory;
+            else {
+                PathParam pathParam = parameter.getAnnotation(PathParam.class);
+                if (pathParam != null && StringUtils.isNotBlank(pathParam.value()))
+                    return pathParamFactory == null ? (pathParamFactory = new PathParamFactory(pathParam.value(), state)) : pathParamFactory;
+            }
+            return null;
+        }
+    }
+
+    static class MessageValueFactoryProvider extends AbstractValueFactoryProvider {
+
+
+        MessageFactory messageFactory;
+
+        @Inject
+        protected MessageValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator,
+                                              MessageState state) {
+            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
+            messageFactory = new MessageFactory(state);
+        }
+
+        @Override
+        protected Factory<?> createValueFactory(Parameter parameter) {
+
+            Object msg = messageFactory.provide();
+            if (msg == null || parameter.getRawType().isAssignableFrom(msg.getClass()))
+                return messageFactory;
+
+            return null;
+        }
+    }
+
+    private static abstract class AbstractValueFactory<V> implements Factory<V> {
+        MessageState messageState;
+
+        AbstractValueFactory(MessageState messageState) {
+            this.messageState = messageState;
+        }
+
+        @Override
+        public void dispose(V instance) {
+            // not use
+        }
+    }
+
+    static class PathParamFactory extends AbstractValueFactory<String> {
+
+        String key;
+
+        PathParamFactory(String key, MessageState messageState) {
+            super(messageState);
+            this.key = key;
+        }
+
+        @Override
+        public String provide() {
+            return messageState.getSession().getPathParameters().get(key);
+        }
+    }
+
+    static class MessageFactory extends AbstractValueFactory<Object> {
+
+
+        MessageFactory(MessageState messageState) {
+            super(messageState);
+        }
+
+        @Override
+        public Object provide() {
+            return messageState.getMessage();
+        }
+    }
+
+    static class PrincipalFactory extends AbstractValueFactory<Principal> {
+        PrincipalFactory(MessageState messageState) {
+            super(messageState);
+        }
+
         @Override
         public Principal provide() {
-            return session.getUserPrincipal();
-        }
-
-        @Override
-        public void dispose(Principal instance) {
-
+            return messageState.getSession().getUserPrincipal();
         }
     }
 
-    class RemoteEndpointBasicFactory implements Factory<RemoteEndpoint.Basic> {
+    static class BasicRemoteEndpointFactory extends AbstractValueFactory<RemoteEndpoint.Basic> {
+        BasicRemoteEndpointFactory(MessageState messageState) {
+            super(messageState);
+        }
+
         @Override
         public RemoteEndpoint.Basic provide() {
-            return session.getBasicRemote();
-        }
-
-        @Override
-        public void dispose(RemoteEndpoint.Basic instance) {
-
+            return messageState.getSession().getBasicRemote();
         }
     }
 
-    class RemoteEndpointAsyncFactory implements Factory<RemoteEndpoint.Async> {
+    static class AsyncRemoteEndpointFactory extends AbstractValueFactory<RemoteEndpoint.Async> {
+        AsyncRemoteEndpointFactory(MessageState messageState) {
+            super(messageState);
+        }
+
         @Override
         public RemoteEndpoint.Async provide() {
-            return session.getAsyncRemote();
-        }
-
-        @Override
-        public void dispose(RemoteEndpoint.Async instance) {
-
+            return messageState.getSession().getAsyncRemote();
         }
     }
 
-    class EndpointConfigFactory implements Factory<EndpointConfig> {
+    static class EndpointConfigFactory extends AbstractValueFactory<EndpointConfig> {
+        EndpointConfigFactory(MessageState messageState) {
+            super(messageState);
+        }
+
         @Override
         public EndpointConfig provide() {
-            return config;
-        }
-
-        @Override
-        public void dispose(EndpointConfig instance) {
-
+            return messageState.getEndpointConfig();
         }
     }
 
-    class SessionFactory implements Factory<Session> {
+    static class SessionFactory extends AbstractValueFactory<Session> {
+        SessionFactory(MessageState messageState) {
+            super(messageState);
+        }
+
         @Override
         public Session provide() {
-            return session;
-        }
-
-        @Override
-        public void dispose(Session instance) {
-            if (instance.isOpen())
-                IOUtils.closeQuietly(instance);
+            return messageState.getSession();
         }
     }
 
-    class MessageFactory implements Factory<Object> {
-        @Override
-        public Object provide() {
-            return messageState.get().getMessage();
+    static class MessageEndFactory extends AbstractValueFactory<Object> {
+        MessageEndFactory(MessageState messageState) {
+            super(messageState);
         }
 
         @Override
-        public void dispose(Object instance) {
-
+        public Object provide() {
+            return messageState.getLast();
         }
     }
 
-    class MessageEndFactory implements Factory<Object> {
-        @Override
-        public Object provide() {
-            return messageState.get().getLast();
+    static class MessageStateFactory extends AbstractValueFactory<MessageState> {
+        MessageStateFactory(MessageState messageState) {
+            super(messageState);
         }
 
         @Override
-        public void dispose(Object instance) {
-
+        public MessageState provide() {
+            return messageState;
         }
     }
 }

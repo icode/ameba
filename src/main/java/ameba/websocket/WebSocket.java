@@ -18,10 +18,10 @@ import java.lang.annotation.Target;
 public @interface WebSocket {
 
     /**
-     * Enable SockJS support
-     * @return SockJS enabled
+     * Enable Engine.io support
+     * @return Engine.io enabled
      */
-    boolean withSockJS() default false;
+    boolean withEngineIO() default false;
 
     /**
      * The ordered array of web socket protocols this endpoint supports.
