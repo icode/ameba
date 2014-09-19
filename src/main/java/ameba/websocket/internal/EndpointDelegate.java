@@ -42,7 +42,6 @@ public class EndpointDelegate extends Endpoint {
     private ServiceLocator serviceLocator;
     @Inject
     private Provider<ConfiguredValidator> validatorProvider;
-    @Inject
     private ResourceMethod resourceMethod;
     private Invocable invocable;
     private List<Factory<?>> valueProviders;
