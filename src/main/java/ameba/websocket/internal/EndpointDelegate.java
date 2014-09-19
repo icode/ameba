@@ -9,7 +9,6 @@ import org.glassfish.jersey.server.internal.inject.ConfiguredValidator;
 import org.glassfish.jersey.server.model.Invocable;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.spi.internal.ParameterValueHelper;
-import org.jvnet.hk2.annotations.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +43,7 @@ public class EndpointDelegate extends Endpoint {
     @Inject
     private Provider<ConfiguredValidator> validatorProvider;
     @Inject
-    @Optional
     private ResourceMethod resourceMethod;
-
     private Invocable invocable;
     private List<Factory<?>> valueProviders;
     private Object resourceInstance;
@@ -54,6 +51,10 @@ public class EndpointDelegate extends Endpoint {
     private EndpointConfig endpointConfig;
     private Session session;
     private Class<?> messageType;
+
+    protected void setResourceMethod(ResourceMethod resourceMethod) {
+        this.resourceMethod = resourceMethod;
+    }
 
     private void bindLocator() {
         serviceLocator = Injections.createLocator(serviceLocator,
