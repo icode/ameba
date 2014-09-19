@@ -3,7 +3,10 @@ package ameba.websocket.internal;
 import ameba.websocket.WebSocket;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.Injections;
 import org.glassfish.jersey.server.model.ResourceMethod;
 
 import javax.websocket.Decoder;
@@ -27,10 +30,10 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
     private List<Extension> extensions = Lists.newArrayList();
     private List<Class<? extends Encoder>> encoders;
     private List<Class<? extends Decoder>> decoders;
-    private Map<String, Object> userProperties = Maps.newHashMap();
+    private Map<String, Object> userProperties = Maps.newConcurrentMap();
     private ServerEndpointConfig.Configurator serverEndpointConfigurator;
 
-    public DefaultServerEndpointConfig(final ServiceLocator serviceLocator,
+    public DefaultServerEndpointConfig(ServiceLocator serviceLocator,
                                        final ResourceMethod resourceMethod,
                                        Class<?> endpointClass, String path,
                                        final WebSocket webSocketConf) {
@@ -42,8 +45,28 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
         for (Class<? extends Extension> extensionClass : webSocketConf.extensions()) {
             extensions.add(serviceLocator.createAndInitialize(extensionClass));
         }
+
+        serviceLocator = Injections.createLocator(serviceLocator, new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bindFactory(new Factory<ResourceMethod>() {
+                    @Override
+                    public ResourceMethod provide() {
+                        return resourceMethod;
+                    }
+
+                    @Override
+                    public void dispose(ResourceMethod instance) {
+
+                    }
+                }).to(ResourceMethod.class);
+            }
+        });
+
+        final Configurator configurator = serviceLocator.createAndInitialize(webSocketConf.configurator());
+
+        final ServiceLocator finalServiceLocator = serviceLocator;
         serverEndpointConfigurator = new Configurator() {
-            Configurator configurator = serviceLocator.createAndInitialize(webSocketConf.configurator());
 
             @Override
             public String getNegotiatedSubprotocol(List<String> supported, List<String> requested) {
@@ -68,9 +91,7 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
             @Override
             public <T> T getEndpointInstance(Class<T> endpointClass) throws InstantiationException {
                 T endpoint = configurator.getEndpointInstance(endpointClass);
-                if (endpoint instanceof EndpointDelegate) {
-                    ((EndpointDelegate) endpoint).setResourceMethod(resourceMethod);
-                }
+                finalServiceLocator.inject(endpoint);
                 return endpoint;
             }
         };
