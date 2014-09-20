@@ -73,7 +73,7 @@ public class EndpointDelegate extends Endpoint {
             Class returnType = method.getReturnType();
 
             if (isMessageHandler(returnType)) {// 返回的是消息处理对象，添加之
-                MessageHandler handler = this.processHandler();
+                MessageHandler handler = processHandler();
                 addMessageHandler(handler);
             } else if (returnType.isArray() && isMessageHandler(returnType.getComponentType())) {// 返回的是一组消息处理对象，全部添加
                 MessageHandler[] handlers = processHandler();
