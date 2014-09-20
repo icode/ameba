@@ -229,6 +229,8 @@ public class EndpointDelegate extends Endpoint {
             thr = thr.getCause();
         }
 
+        messageState.change().throwable(thr);
+
         logger.error("web socket has a err", thr);
     }
 
