@@ -38,7 +38,7 @@ public class EndpointDelegate extends Endpoint {
             return method.invoke(target, args);
         }
     };
-    private ThreadLocal<MessageState> messageState = new ThreadLocal<MessageState>();
+    private MessageState messageState;
     @Inject
     private ServiceLocator serviceLocator;
     @Inject
@@ -62,7 +62,7 @@ public class EndpointDelegate extends Endpoint {
     @Override
     public void onOpen(final Session session, final EndpointConfig config) {
         try {
-            this.messageState.set(MessageState.builder(session, config).build());
+            this.messageState = MessageState.builder(session, config).build();
 
             bindLocator();
 
@@ -104,8 +104,6 @@ public class EndpointDelegate extends Endpoint {
                         }
                 }
                 messageType = needMsg ? method.getParameterTypes()[index < 0 ? 0 : index] : String.class;
-
-                messageState.get().change().async(isAsync);
 
                 if (isAsync) {
                     if (String.class.equals(messageType)) {
@@ -160,7 +158,7 @@ public class EndpointDelegate extends Endpoint {
     @Override
     public void onClose(Session session, CloseReason closeReason) {
         try {
-            messageState.get().change().closeReason(closeReason);
+            messageState.change().closeReason(closeReason);
             onClose();
         } finally {
             serviceLocator.shutdown();
@@ -168,8 +166,9 @@ public class EndpointDelegate extends Endpoint {
     }
 
     private void addMessageHandler(MessageHandler handler) {
-        messageType = ClassUtils.getGenericClass(handler.getClass());
-        messageState.get().getSession().addMessageHandler(handler);
+        Class clazz = handler.getClass();
+        messageType = ClassUtils.getGenericClass(clazz);
+        messageState.getSession().addMessageHandler(handler);
     }
 
     private boolean isMessageHandler(Class clazz) {
@@ -237,7 +236,7 @@ public class EndpointDelegate extends Endpoint {
 
         @Override
         public void onMessage(M partialMessage, boolean last) {
-            messageState.get().change().message(partialMessage)
+            messageState.change().message(partialMessage)
                     .last(last).build()
                     .getSession().getAsyncRemote().sendObject(processHandler());
         }
@@ -246,7 +245,7 @@ public class EndpointDelegate extends Endpoint {
     private class BasicMessageHandler<M> implements MessageHandler.Whole<M> {
         @Override
         public void onMessage(M partialMessage) {
-            messageState.get().change().message(partialMessage).build()
+            messageState.change().message(partialMessage).build()
                     .getSession().getAsyncRemote().sendObject(processHandler());
         }
     }

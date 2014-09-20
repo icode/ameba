@@ -1,7 +1,6 @@
 package ameba.websocket.internal;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -15,17 +14,28 @@ import javax.websocket.EndpointConfig;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
 import javax.websocket.server.PathParam;
+import javax.ws.rs.QueryParam;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.security.Principal;
+import java.util.List;
 
 /**
  * @author icode
  */
 public class ParameterInjectionBinder extends AbstractBinder {
 
-    private ThreadLocal<MessageState> messageState;
+    private static final String PATH_PARAM_ERR_MSG = "@PathParam parameter class must be String.";
+    private static final String QUERY_PARAM_ERR_MSG = "@QueryParam parameter class must be String, String[] or List<String>";
+    private MessageState messageState;
 
-    public ParameterInjectionBinder(ThreadLocal<MessageState> messageState) {
+    public ParameterInjectionBinder(MessageState messageState) {
         this.messageState = messageState;
+    }
+
+    private static Parameter.Source[] addDefaultSources(Parameter.Source... sources) {
+        Parameter.Source[] defaults = new Parameter.Source[]{Parameter.Source.ENTITY, Parameter.Source.UNKNOWN};
+        return sources == null || sources.length == 0 ? defaults : ArrayUtils.addAll(defaults, sources);
     }
 
     @Override
@@ -39,11 +49,13 @@ public class ParameterInjectionBinder extends AbstractBinder {
         bind(EndpointConfigValueFactoryProvider.class).to(ValueFactoryProvider.class);
         bind(SessionValueFactoryProvider.class).to(ValueFactoryProvider.class);
         bind(PrincipalValueFactoryProvider.class).to(ValueFactoryProvider.class);
-        bind(MessageEndValueFactoryProvider.class).to(ValueFactoryProvider.class);
-
-        bind(MessageValueFactoryProvider.class).to(ValueFactoryProvider.class);
+        bind(QueryParamValueFactoryProvider.class).to(ValueFactoryProvider.class);
+        bind(QueryStringValueFactoryProvider.class).to(ValueFactoryProvider.class);
     }
 
+    static void createMessageValueLocal(){
+
+    }
 
     static class MessageEndValueFactoryProvider extends WebSocketValueFactoryProvider {
 
@@ -193,15 +205,7 @@ public class ParameterInjectionBinder extends AbstractBinder {
         }
     }
 
-
-    private static Parameter.Source[] addDefaultSources(Parameter.Source... sources) {
-        Parameter.Source[] defaults = new Parameter.Source[]{Parameter.Source.ENTITY, Parameter.Source.UNKNOWN};
-        return sources == null || sources.length == 0 ? defaults : ArrayUtils.addAll(defaults, sources);
-    }
-
     static class PathParamValueFactoryProvider extends WebSocketValueFactoryProvider {
-
-        PathParamFactory pathParamFactory;
 
         @Inject
         protected PathParamValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
@@ -211,18 +215,84 @@ public class ParameterInjectionBinder extends AbstractBinder {
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
             Class type = parameter.getRawType();
-
-            if (!type.equals(String.class))
-                return null;
-
             javax.ws.rs.PathParam pathParamRs = parameter.getAnnotation(javax.ws.rs.PathParam.class);
 
-            if (pathParamRs != null && StringUtils.isNotBlank(pathParamRs.value()))
-                return pathParamFactory == null ? (pathParamFactory = new PathParamFactory(pathParamRs.value())) : pathParamFactory;
-            else {
+            if (pathParamRs != null) {
+                if (!type.equals(String.class))
+                    throw new IllegalArgumentException(PATH_PARAM_ERR_MSG);
+                return new PathParamFactory(pathParamRs.value());
+            } else {
                 PathParam pathParam = parameter.getAnnotation(PathParam.class);
-                if (pathParam != null && StringUtils.isNotBlank(pathParam.value()))
-                    return pathParamFactory == null ? (pathParamFactory = new PathParamFactory(pathParam.value())) : pathParamFactory;
+                if (pathParam != null) {
+                    if (!type.equals(String.class))
+                        throw new IllegalArgumentException(PATH_PARAM_ERR_MSG);
+                    return new PathParamFactory(pathParam.value());
+                }
+            }
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    static class QueryParamValueFactoryProvider extends AbstractValueFactoryProvider {
+
+        @Inject
+        protected QueryParamValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
+            super(mpep, locator, Parameter.Source.QUERY);
+        }
+
+        @Override
+        protected Factory<?> createValueFactory(Parameter parameter) {
+            Class type = parameter.getRawType();
+
+            QueryParam queryParam = parameter.getAnnotation(QueryParam.class);
+
+            if (queryParam != null)
+                if (type.equals(String.class)) {
+                    return new QueryParamFactory(queryParam.value());
+                } else if (type.isArray()) {
+                    if (!type.getComponentType().equals(String.class)) {
+                        throw new IllegalArgumentException(QUERY_PARAM_ERR_MSG);
+                    }
+                    return new QueryParamsFactory(queryParam.value());
+                } else if (List.class.isAssignableFrom(type)) {
+                    Class gType = null;
+                    if (parameter.getType() instanceof ParameterizedType) {
+                        Type[] types = ((ParameterizedType) parameter.getType()).getActualTypeArguments();
+                        if (types.length == 1)
+                            gType = (Class) types[0];
+                    }
+                    if (String.class.equals(gType)) {
+                        return new QueryParamListFactory(queryParam.value(), null);
+                    } else {
+                        throw new IllegalArgumentException(QUERY_PARAM_ERR_MSG);
+                    }
+                } else {
+                    throw new IllegalArgumentException(QUERY_PARAM_ERR_MSG);
+                }
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    static class QueryStringValueFactoryProvider extends WebSocketValueFactoryProvider {
+
+        QueryStringFactory queryStringFactory;
+
+        @Inject
+        protected QueryStringValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
+            super(mpep, locator);
+        }
+
+        @Override
+        protected Factory<?> createValueFactory(Parameter parameter) {
+            Class type = parameter.getRawType();
+
+            QueryString queryString = parameter.getAnnotation(QueryString.class);
+            if (queryString != null) {
+                if (!type.isAssignableFrom(String.class))
+                    throw new IllegalArgumentException("@QueryString parameter class must be String.");
+                return queryStringFactory == null ? (queryStringFactory = new QueryStringFactory()) : queryStringFactory;
             }
             return null;
         }
@@ -261,6 +331,71 @@ public class ParameterInjectionBinder extends AbstractBinder {
         }
     }
 
+    static class QueryParamsFactory extends AbstractValueFactory<String[]> {
+
+        QueryParamListFactory factory;
+        String key;
+
+        QueryParamsFactory(String key) {
+            this.key = key;
+        }
+
+        @Override
+        public String[] provide() {
+            if (factory == null) {
+                factory = new QueryParamListFactory(key, messageState);
+            }
+            List<String> params = factory.provide();
+            return params != null ? params.toArray(new String[params.size()]) : null;
+        }
+    }
+
+    static class QueryParamListFactory implements Factory<List<String>> {
+
+        String key;
+        @Inject
+        MessageState messageState;
+
+        QueryParamListFactory(String key, MessageState messageState) {
+            this.key = key;
+            this.messageState = messageState;
+        }
+
+        @Override
+        public List<String> provide() {
+            return messageState.getSession().getRequestParameterMap().get(key);
+        }
+
+        @Override
+        public void dispose(List<String> instance) {
+
+        }
+    }
+
+    static class QueryParamFactory extends AbstractValueFactory<String> {
+
+        QueryParamListFactory factory;
+        String key;
+
+        QueryParamFactory(String key) {
+            this.key = key;
+        }
+
+        @Override
+        public String provide() {
+
+            if (factory == null) {
+                factory = new QueryParamListFactory(key, messageState);
+            }
+
+            List<String> params = factory.provide();
+            if (params != null && params.size() > 0) {
+                return params.get(0);
+            }
+            return null;
+        }
+    }
+
     static class PathParamFactory extends AbstractValueFactory<String> {
 
         String key;
@@ -275,7 +410,16 @@ public class ParameterInjectionBinder extends AbstractBinder {
         }
     }
 
-    static class MessageFactory extends AbstractValueFactory<Object> {
+    static class QueryStringFactory extends AbstractValueFactory<String> {
+        @Override
+        public String provide() {
+            return messageState.getSession().getQueryString();
+        }
+    }
+
+    static class MessageFactory implements Factory<Object> {
+
+        MessageState messageState;
 
         MessageFactory(MessageState state) {
             messageState = state;
@@ -284,6 +428,11 @@ public class ParameterInjectionBinder extends AbstractBinder {
         @Override
         public Object provide() {
             return messageState.getMessage();
+        }
+
+        @Override
+        public void dispose(Object instance) {
+
         }
     }
 
@@ -331,15 +480,15 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
     static class MessageStateFactory implements Factory<MessageState> {
 
-        ThreadLocal<MessageState> messageState;
+        MessageState messageState;
 
-        MessageStateFactory(ThreadLocal<MessageState> messageState) {
+        MessageStateFactory(MessageState messageState) {
             this.messageState = messageState;
         }
 
         @Override
         public MessageState provide() {
-            return messageState.get();
+            return messageState;
         }
 
         @Override

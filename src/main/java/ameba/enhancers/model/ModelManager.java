@@ -86,7 +86,7 @@ public class ModelManager extends Enhancer {
                 if (desc.clazz == null) {
                     InputStream in = new ByteArrayInputStream(desc.classBytecode);
                     try {
-                        logger.debug("load {} model manager class {}", name, decodeClassFile(desc));
+                        logger.trace("load {} model manager class {}", name, decodeClassFile(desc));
                         desc.clazz = classpool.makeClass(in).toClass();
                         manager.fireModelLoaded(desc.clazz, desc, index, size);
                     } catch (IOException e) {
@@ -101,7 +101,7 @@ public class ModelManager extends Enhancer {
                     manager.fireModelLoaded(desc.clazz, desc, index, size);
                     index++;
                 }
-                logger.debug("clear {} model manager class {} desc", name, decodeClassFile(desc));
+                logger.trace("clear {} model manager class {} desc", name, decodeClassFile(desc));
                 desc.classBytecode = null;
             }
         }

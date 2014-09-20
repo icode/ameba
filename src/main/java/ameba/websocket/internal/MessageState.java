@@ -8,13 +8,12 @@ import javax.websocket.Session;
  * @author icode
  */
 public class MessageState {
-    private Object message;
-    private Boolean last;
-    private Throwable throwable;
-    private CloseReason closeReason;
+    private ThreadLocal<Object> message = new ThreadLocal<Object>();
+    private ThreadLocal<Boolean> last = new ThreadLocal<Boolean>();
+    private ThreadLocal<Throwable> throwable = new ThreadLocal<Throwable>();
+    private ThreadLocal<CloseReason> closeReason = new ThreadLocal<CloseReason>();
     private Session session;
     private EndpointConfig endpointConfig;
-    private boolean async;
 
     private MessageState(Session session, EndpointConfig config) {
         this.session = session;
@@ -26,15 +25,15 @@ public class MessageState {
     }
 
     public Throwable getThrowable() {
-        return throwable;
+        return throwable.get();
     }
 
     public Object getMessage() {
-        return message;
+        return message.get();
     }
 
     public Boolean getLast() {
-        return last;
+        return last.get();
     }
 
     public Session getSession() {
@@ -42,11 +41,7 @@ public class MessageState {
     }
 
     public CloseReason getCloseReason() {
-        return closeReason;
-    }
-
-    public Boolean isAsync() {
-        return async;
+        return closeReason.get();
     }
 
     public EndpointConfig getEndpointConfig() {
@@ -73,27 +68,22 @@ public class MessageState {
         }
 
         public Builder message(Object message) {
-            state.message = message;
+            state.message.set(message);
             return this;
         }
 
         public Builder last(boolean last) {
-            state.last = last;
+            state.last.set(last);
             return this;
         }
 
         public Builder throwable(Throwable throwable) {
-            state.throwable = throwable;
+            state.throwable.set(throwable);
             return this;
         }
 
         public Builder closeReason(CloseReason closeReason) {
-            state.closeReason = closeReason;
-            return this;
-        }
-
-        public Builder async(Boolean async) {
-            state.async = async;
+            state.closeReason.set(closeReason);
             return this;
         }
     }
