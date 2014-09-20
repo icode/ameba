@@ -22,9 +22,9 @@ import java.security.Principal;
  */
 public class ParameterInjectionBinder extends AbstractBinder {
 
-    private MessageState messageState;
+    private ThreadLocal<MessageState> messageState;
 
-    public ParameterInjectionBinder(MessageState messageState) {
+    public ParameterInjectionBinder(ThreadLocal<MessageState> messageState) {
         this.messageState = messageState;
     }
 
@@ -331,15 +331,15 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
     static class MessageStateFactory implements Factory<MessageState> {
 
-        MessageState messageState;
+        ThreadLocal<MessageState> messageState;
 
-        MessageStateFactory(MessageState messageState) {
+        MessageStateFactory(ThreadLocal<MessageState> messageState) {
             this.messageState = messageState;
         }
 
         @Override
         public MessageState provide() {
-            return messageState;
+            return messageState.get();
         }
 
         @Override
