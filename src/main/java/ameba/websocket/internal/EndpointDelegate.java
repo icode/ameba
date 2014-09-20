@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.websocket.*;
+import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.*;
 import java.nio.ByteBuffer;
@@ -95,11 +96,12 @@ public class EndpointDelegate extends Endpoint {
                     if (factory.getClass().equals(ParameterInjectionBinder.MessageEndFactory.class)) {
                         isAsync = true;
                     }
-                    if (!factory.getClass().equals(ParameterInjectionBinder.MessageFactory.class)) {
-                        index++;
-                    } else {
-                        needMsg = true;
-                    }
+                    if (!needMsg)
+                        if (!factory.getClass().equals(ParameterInjectionBinder.MessageFactory.class)) {
+                            index++;
+                        } else {
+                            needMsg = true;
+                        }
                 }
                 messageType = needMsg ? method.getParameterTypes()[index < 0 ? 0 : index] : String.class;
 
@@ -115,9 +117,12 @@ public class EndpointDelegate extends Endpoint {
                     } else if (byte.class.equals(messageType.getComponentType())) {
                         handler = new AsyncMessageHandler<byte[]>() {
                         };
-                    } else {
-                        handler = new AsyncMessageHandler<Object>() {
+                    } else if (InputStream.class.equals(messageType)) {
+                        handler = new AsyncMessageHandler<InputStream>() {
                         };
+                    } else {
+                        throw new WebSocketExcption("Async message handler arguments can't be of type: " + messageType
+                                + ". Must be String, ByteBuffer, byte[] or InputStream.");
                     }
                 } else {
                     if (String.class.equals(messageType)) {
@@ -140,9 +145,11 @@ public class EndpointDelegate extends Endpoint {
 
                 session.addMessageHandler(handler);
             }
-        } catch (Throwable t) {
+        } catch (Throwable e) {
             IOUtils.closeQuietly(session);
-            throw new WebSocketExcption(t.getMessage(), t);
+            if (e instanceof RuntimeException)
+                throw (RuntimeException) e;
+            throw new WebSocketExcption(e);
         }
     }
 
@@ -219,6 +226,10 @@ public class EndpointDelegate extends Endpoint {
 
     @Override
     public void onError(Session session, Throwable thr) {
+        if (thr instanceof InvocationTargetException) {
+            thr = thr.getCause();
+        }
+
         logger.error("web socket has a err", thr);
     }
 

@@ -1,5 +1,6 @@
 package ameba.websocket.internal;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -44,16 +45,13 @@ public class ParameterInjectionBinder extends AbstractBinder {
     }
 
 
-    static class MessageEndValueFactoryProvider extends AbstractValueFactoryProvider {
-
-        @Inject
-        MessageState state;
+    static class MessageEndValueFactoryProvider extends WebSocketValueFactoryProvider {
 
         MessageEndFactory messageEndFactory;
 
         @Inject
         protected MessageEndValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
+            super(mpep, locator);
         }
 
         @Override
@@ -61,22 +59,18 @@ public class ParameterInjectionBinder extends AbstractBinder {
             Class type = parameter.getRawType();
 
             if (type.equals(Boolean.class) || type.equals(boolean.class))
-                return messageEndFactory == null ? (messageEndFactory = new MessageEndFactory(state)) : messageEndFactory;
+                return messageEndFactory == null ? (messageEndFactory = new MessageEndFactory()) : messageEndFactory;
 
             return null;
         }
     }
 
-    static class PrincipalValueFactoryProvider extends AbstractValueFactoryProvider {
-
-        @Inject
-        MessageState state;
-
+    static class PrincipalValueFactoryProvider extends WebSocketValueFactoryProvider {
         PrincipalFactory principalFactory;
 
         @Inject
         protected PrincipalValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
+            super(mpep, locator);
         }
 
         @Override
@@ -84,22 +78,19 @@ public class ParameterInjectionBinder extends AbstractBinder {
             Class type = parameter.getRawType();
 
             if (type.equals(Principal.class))
-                return principalFactory == null ? (principalFactory = new PrincipalFactory(state)) : principalFactory;
+                return principalFactory == null ? (principalFactory = new PrincipalFactory()) : principalFactory;
 
             return null;
         }
     }
 
-    static class SessionValueFactoryProvider extends AbstractValueFactoryProvider {
-
-        @Inject
-        MessageState state;
+    static class SessionValueFactoryProvider extends WebSocketValueFactoryProvider {
 
         SessionFactory sessionFactory;
 
         @Inject
         protected SessionValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
+            super(mpep, locator);
         }
 
         @Override
@@ -107,22 +98,19 @@ public class ParameterInjectionBinder extends AbstractBinder {
             Class type = parameter.getRawType();
 
             if (type.equals(Session.class))
-                return sessionFactory == null ? (sessionFactory = new SessionFactory(state)) : sessionFactory;
+                return sessionFactory == null ? (sessionFactory = new SessionFactory()) : sessionFactory;
 
             return null;
         }
     }
 
-    static class EndpointConfigValueFactoryProvider extends AbstractValueFactoryProvider {
-
-        @Inject
-        MessageState state;
+    static class EndpointConfigValueFactoryProvider extends WebSocketValueFactoryProvider {
 
         EndpointConfigFactory endpointConfigFactory;
 
         @Inject
         protected EndpointConfigValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
+            super(mpep, locator);
         }
 
         @Override
@@ -130,22 +118,19 @@ public class ParameterInjectionBinder extends AbstractBinder {
             Class type = parameter.getRawType();
 
             if (type.equals(EndpointConfig.class))
-                return endpointConfigFactory == null ? (endpointConfigFactory = new EndpointConfigFactory(state)) : endpointConfigFactory;
+                return endpointConfigFactory == null ? (endpointConfigFactory = new EndpointConfigFactory()) : endpointConfigFactory;
 
             return null;
         }
     }
 
-    static class AsyncRemoteEndpointValueFactoryProvider extends AbstractValueFactoryProvider {
-
-        @Inject
-        MessageState state;
+    static class AsyncRemoteEndpointValueFactoryProvider extends WebSocketValueFactoryProvider {
 
         AsyncRemoteEndpointFactory asyncRemoteEndpointFactory;
 
         @Inject
         protected AsyncRemoteEndpointValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
+            super(mpep, locator);
         }
 
         @Override
@@ -154,29 +139,26 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
             if (type.equals(RemoteEndpoint.Async.class)
                     || type.equals(RemoteEndpoint.class))
-                return asyncRemoteEndpointFactory == null ? (asyncRemoteEndpointFactory = new AsyncRemoteEndpointFactory(state)) : asyncRemoteEndpointFactory;
+                return asyncRemoteEndpointFactory == null ? (asyncRemoteEndpointFactory = new AsyncRemoteEndpointFactory()) : asyncRemoteEndpointFactory;
 
             return null;
         }
     }
 
-    static class BasicRemoteEndpointValueFactoryProvider extends AbstractValueFactoryProvider {
-
-        @Inject
-        MessageState state;
+    static class BasicRemoteEndpointValueFactoryProvider extends WebSocketValueFactoryProvider {
 
         BasicRemoteEndpointFactory basicRemoteEndpointFactory;
 
         @Inject
         protected BasicRemoteEndpointValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
+            super(mpep, locator);
         }
 
         @Override
         protected Factory<?> createValueFactory(Parameter parameter) {
             Class type = parameter.getRawType();
             if (type.equals(RemoteEndpoint.Basic.class))
-                return basicRemoteEndpointFactory == null ? (basicRemoteEndpointFactory = new BasicRemoteEndpointFactory(state)) : basicRemoteEndpointFactory;
+                return basicRemoteEndpointFactory == null ? (basicRemoteEndpointFactory = new BasicRemoteEndpointFactory()) : basicRemoteEndpointFactory;
 
             return null;
         }
@@ -189,7 +171,7 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
         @Inject
         protected MessageStateValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
+            super(mpep, locator, addDefaultSources());
         }
 
         @Override
@@ -202,15 +184,28 @@ public class ParameterInjectionBinder extends AbstractBinder {
         }
     }
 
-    static class PathParamValueFactoryProvider extends AbstractValueFactoryProvider {
-
+    static abstract class WebSocketValueFactoryProvider extends AbstractValueFactoryProvider {
         @Inject
         MessageState state;
+
+        protected WebSocketValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator, Parameter.Source... sources) {
+            super(mpep, locator, addDefaultSources(sources));
+        }
+    }
+
+
+    private static Parameter.Source[] addDefaultSources(Parameter.Source... sources) {
+        Parameter.Source[] defaults = new Parameter.Source[]{Parameter.Source.ENTITY, Parameter.Source.UNKNOWN};
+        return sources == null || sources.length == 0 ? defaults : ArrayUtils.addAll(defaults, sources);
+    }
+
+    static class PathParamValueFactoryProvider extends WebSocketValueFactoryProvider {
+
         PathParamFactory pathParamFactory;
 
         @Inject
         protected PathParamValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator) {
-            super(mpep, locator, Parameter.Source.PATH, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
+            super(mpep, locator, Parameter.Source.PATH);
         }
 
         @Override
@@ -219,15 +214,15 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
             if (!type.equals(String.class))
                 return null;
-            
+
             javax.ws.rs.PathParam pathParamRs = parameter.getAnnotation(javax.ws.rs.PathParam.class);
 
             if (pathParamRs != null && StringUtils.isNotBlank(pathParamRs.value()))
-                return pathParamFactory == null ? (pathParamFactory = new PathParamFactory(pathParamRs.value(), state)) : pathParamFactory;
+                return pathParamFactory == null ? (pathParamFactory = new PathParamFactory(pathParamRs.value())) : pathParamFactory;
             else {
                 PathParam pathParam = parameter.getAnnotation(PathParam.class);
                 if (pathParam != null && StringUtils.isNotBlank(pathParam.value()))
-                    return pathParamFactory == null ? (pathParamFactory = new PathParamFactory(pathParam.value(), state)) : pathParamFactory;
+                    return pathParamFactory == null ? (pathParamFactory = new PathParamFactory(pathParam.value())) : pathParamFactory;
             }
             return null;
         }
@@ -241,7 +236,7 @@ public class ParameterInjectionBinder extends AbstractBinder {
         @Inject
         protected MessageValueFactoryProvider(MultivaluedParameterExtractorProvider mpep, ServiceLocator locator,
                                               MessageState state) {
-            super(mpep, locator, Parameter.Source.ENTITY, Parameter.Source.UNKNOWN);
+            super(mpep, locator, addDefaultSources());
             messageFactory = new MessageFactory(state);
         }
 
@@ -257,11 +252,8 @@ public class ParameterInjectionBinder extends AbstractBinder {
     }
 
     private static abstract class AbstractValueFactory<V> implements Factory<V> {
+        @Inject
         MessageState messageState;
-
-        AbstractValueFactory(MessageState messageState) {
-            this.messageState = messageState;
-        }
 
         @Override
         public void dispose(V instance) {
@@ -273,8 +265,7 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
         String key;
 
-        PathParamFactory(String key, MessageState messageState) {
-            super(messageState);
+        PathParamFactory(String key) {
             this.key = key;
         }
 
@@ -286,9 +277,8 @@ public class ParameterInjectionBinder extends AbstractBinder {
 
     static class MessageFactory extends AbstractValueFactory<Object> {
 
-
-        MessageFactory(MessageState messageState) {
-            super(messageState);
+        MessageFactory(MessageState state) {
+            messageState = state;
         }
 
         @Override
@@ -298,10 +288,6 @@ public class ParameterInjectionBinder extends AbstractBinder {
     }
 
     static class PrincipalFactory extends AbstractValueFactory<Principal> {
-        PrincipalFactory(MessageState messageState) {
-            super(messageState);
-        }
-
         @Override
         public Principal provide() {
             return messageState.getSession().getUserPrincipal();
@@ -309,10 +295,6 @@ public class ParameterInjectionBinder extends AbstractBinder {
     }
 
     static class BasicRemoteEndpointFactory extends AbstractValueFactory<RemoteEndpoint.Basic> {
-        BasicRemoteEndpointFactory(MessageState messageState) {
-            super(messageState);
-        }
-
         @Override
         public RemoteEndpoint.Basic provide() {
             return messageState.getSession().getBasicRemote();
@@ -320,10 +302,6 @@ public class ParameterInjectionBinder extends AbstractBinder {
     }
 
     static class AsyncRemoteEndpointFactory extends AbstractValueFactory<RemoteEndpoint.Async> {
-        AsyncRemoteEndpointFactory(MessageState messageState) {
-            super(messageState);
-        }
-
         @Override
         public RemoteEndpoint.Async provide() {
             return messageState.getSession().getAsyncRemote();
@@ -331,10 +309,6 @@ public class ParameterInjectionBinder extends AbstractBinder {
     }
 
     static class EndpointConfigFactory extends AbstractValueFactory<EndpointConfig> {
-        EndpointConfigFactory(MessageState messageState) {
-            super(messageState);
-        }
-
         @Override
         public EndpointConfig provide() {
             return messageState.getEndpointConfig();
@@ -342,10 +316,6 @@ public class ParameterInjectionBinder extends AbstractBinder {
     }
 
     static class SessionFactory extends AbstractValueFactory<Session> {
-        SessionFactory(MessageState messageState) {
-            super(messageState);
-        }
-
         @Override
         public Session provide() {
             return messageState.getSession();
@@ -353,24 +323,28 @@ public class ParameterInjectionBinder extends AbstractBinder {
     }
 
     static class MessageEndFactory extends AbstractValueFactory<Object> {
-        MessageEndFactory(MessageState messageState) {
-            super(messageState);
-        }
-
         @Override
         public Object provide() {
             return messageState.getLast();
         }
     }
 
-    static class MessageStateFactory extends AbstractValueFactory<MessageState> {
+    static class MessageStateFactory implements Factory<MessageState> {
+
+        MessageState messageState;
+
         MessageStateFactory(MessageState messageState) {
-            super(messageState);
+            this.messageState = messageState;
         }
 
         @Override
         public MessageState provide() {
             return messageState;
+        }
+
+        @Override
+        public void dispose(MessageState instance) {
+            // not use
         }
     }
 }
