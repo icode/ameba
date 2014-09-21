@@ -235,7 +235,6 @@ public class EndpointDelegate extends Endpoint {
     }
 
     private class AsyncMessageHandler<M> implements MessageHandler.Partial<M> {
-
         @Override
         public void onMessage(M partialMessage, boolean last) {
             messageState.change().message(partialMessage)
