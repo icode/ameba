@@ -2,12 +2,15 @@ package ameba.websocket.internal;
 
 import ameba.util.ClassUtils;
 import ameba.util.IOUtils;
-import ameba.websocket.WebSocketExcption;
+import ameba.websocket.WebSocketException;
+import com.google.common.collect.Lists;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.Injections;
 import org.glassfish.jersey.server.internal.inject.ConfiguredValidator;
 import org.glassfish.jersey.server.model.Invocable;
+import org.glassfish.jersey.server.model.MethodHandler;
+import org.glassfish.jersey.server.model.Parameter;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.spi.internal.ParameterValueHelper;
 import org.slf4j.Logger;
@@ -18,6 +21,7 @@ import javax.inject.Provider;
 import javax.websocket.*;
 import java.io.InputStream;
 import java.io.Reader;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedAction;
@@ -35,7 +39,15 @@ public class EndpointDelegate extends Endpoint {
         @Override
         public Object invoke(Object target, Method method, Object[] args)
                 throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            return method.invoke(target, args);
+            boolean isPrivate = Modifier.isPrivate(method.getModifiers());
+            try {
+                if (isPrivate)
+                    method.setAccessible(true);
+                return method.invoke(target, args);
+            } finally {
+                if (isPrivate)
+                    method.setAccessible(false);
+            }
         }
     };
     private MessageState messageState;
@@ -49,6 +61,9 @@ public class EndpointDelegate extends Endpoint {
     private Object resourceInstance;
     private Method method;
     private Class<?> messageType;
+    private List<EventInvocation> onErrorList;
+    private List<EventInvocation> onCloseList;
+    private List<EventInvocation> onOpenList;
 
     protected void setResourceMethod(ResourceMethod resourceMethod) {
         this.resourceMethod = resourceMethod;
@@ -57,6 +72,27 @@ public class EndpointDelegate extends Endpoint {
     private void bindLocator() {
         serviceLocator = Injections.createLocator(serviceLocator,
                 new ParameterInjectionBinder(messageState));
+    }
+
+    private List<EventInvocation> findEventInvocation(Class<? extends Annotation> ann, Object... instance) {
+        List<EventInvocation> invocations = Lists.newArrayList();
+        if (instance != null) {
+            for (Object obj : instance) {
+                Class clazz = obj.getClass();
+                for (Method m : clazz.getDeclaredMethods()) {
+                    if (m.isAnnotationPresent(ann)) {
+                        invocations.add(EventInvocation.create(m, obj, serviceLocator));
+                    }
+                }
+            }
+        }
+        return invocations;
+    }
+
+    private void initEventList(Object... instance) {
+        onOpenList = findEventInvocation(OnOpen.class, instance);
+        onErrorList = findEventInvocation(OnError.class, instance);
+        onCloseList = findEventInvocation(OnClose.class, instance);
     }
 
     @Override
@@ -74,18 +110,23 @@ public class EndpointDelegate extends Endpoint {
 
             if (isMessageHandler(returnType)) {// 返回的是消息处理对象，添加之
                 MessageHandler handler = processHandler();
+                initEventList(handler);
                 addMessageHandler(handler);
             } else if (returnType.isArray() && isMessageHandler(returnType.getComponentType())) {// 返回的是一组消息处理对象，全部添加
                 MessageHandler[] handlers = processHandler();
+                initEventList(handlers);
                 for (MessageHandler handler : handlers) {
                     addMessageHandler(handler);
                 }
             } else if (isMessageHandlerCollection(returnType)) {// 返回的是一组消息处理对象，全部添加
                 Collection<MessageHandler> handlers = processHandler();
+                initEventList(handlers.toArray());
                 for (MessageHandler handler : handlers) {
                     addMessageHandler(handler);
                 }
             } else {
+                initEventList(resourceInstance);
+
                 MessageHandler handler;
                 int index = -1;
                 boolean isAsync = false;
@@ -119,7 +160,7 @@ public class EndpointDelegate extends Endpoint {
                         handler = new AsyncMessageHandler<InputStream>() {
                         };
                     } else {
-                        throw new WebSocketExcption("Async message handler arguments can't be of type: " + messageType
+                        throw new WebSocketException("Async message handler arguments can't be of type: " + messageType
                                 + ". Must be String, ByteBuffer, byte[] or InputStream.");
                     }
                 } else {
@@ -143,23 +184,44 @@ public class EndpointDelegate extends Endpoint {
 
                 session.addMessageHandler(handler);
             }
+
+            emmit(onOpenList, false);
         } catch (Throwable e) {
             IOUtils.closeQuietly(session);
             if (e instanceof RuntimeException)
                 throw (RuntimeException) e;
-            throw new WebSocketExcption(e);
+            throw new WebSocketException(e);
         }
     }
 
-    private void onClose() {
-
+    private void emmit(List<EventInvocation> eventInvocations, boolean isException) {
+        try {
+            for (EventInvocation invocation : eventInvocations) {
+                if (isException) {
+                    if (messageState.getThrowable() == null)
+                        break;
+                    boolean find = false;
+                    for (Parameter parameter : invocation.getInvocable().getParameters()) {
+                        if (parameter.getRawType().isAssignableFrom(messageState.getThrowable().getClass())) {
+                            find = true;
+                            break;
+                        }
+                    }
+                    if (!find)
+                        continue;
+                }
+                invocation.invoke();
+            }
+        } catch (Throwable t) {
+            onError(messageState.getSession(), t);
+        }
     }
 
     @Override
     public void onClose(Session session, CloseReason closeReason) {
         try {
             messageState.change().closeReason(closeReason);
-            onClose();
+            emmit(onCloseList, false);
         } finally {
             serviceLocator.shutdown();
         }
@@ -208,7 +270,13 @@ public class EndpointDelegate extends Endpoint {
                 try {
                     return DEFAULT_HANDLER.invoke(resourceInstance, method, args);
                 } catch (Throwable t) {
-                    throw new WebSocketExcption(t.getMessage(), t);
+                    if (t instanceof InvocationTargetException) {
+                        t = t.getCause();
+                    }
+                    if (t instanceof RuntimeException) {
+                        throw (RuntimeException) t;
+                    }
+                    throw new WebSocketException(t.getMessage(), t);
                 }
             }
         };
@@ -230,8 +298,69 @@ public class EndpointDelegate extends Endpoint {
         }
 
         messageState.change().throwable(thr);
+        emmit(onErrorList, true);
 
         logger.error("web socket has a err", thr);
+    }
+
+    private static class EventInvocation {
+        private Invocable invocable;
+        private List<Factory<?>> argsProviders;
+        private ServiceLocator serviceLocator;
+        private Object instance;
+
+        private EventInvocation(Invocable invocable, ServiceLocator serviceLocator) {
+            this.invocable = invocable;
+            this.serviceLocator = serviceLocator;
+        }
+
+        private static EventInvocation create(Method method, Object parentInstance, ServiceLocator serviceLocator) {
+            Invocable invo = Invocable.create(MethodHandler.create(parentInstance), method);
+            return new EventInvocation(invo, serviceLocator);
+        }
+
+        public Invocable getInvocable() {
+            return invocable;
+        }
+
+        public ServiceLocator getServiceLocator() {
+            return serviceLocator;
+        }
+
+        public Object getInstance() {
+            if (instance == null) {
+                instance = invocable.getHandler().getInstance(serviceLocator);
+            }
+            return instance;
+        }
+
+        public List<Factory<?>> getArgsProviders() {
+            if (argsProviders == null) {
+                argsProviders = invocable.getValueProviders(serviceLocator);
+            }
+            return argsProviders;
+        }
+
+        public void invoke() throws InvocationTargetException, IllegalAccessException {
+            final Object[] args = ParameterValueHelper.getParameterValues(getArgsProviders());
+            final Method m = invocable.getHandlingMethod();
+            new PrivilegedAction() {
+                @Override
+                public Object run() {
+                    try {
+                        return DEFAULT_HANDLER.invoke(getInstance(), m, args);
+                    } catch (Throwable t) {
+                        if (t instanceof InvocationTargetException) {
+                            t = t.getCause();
+                        }
+                        if (t instanceof RuntimeException) {
+                            throw (RuntimeException) t;
+                        }
+                        throw new WebSocketException(t.getMessage(), t);
+                    }
+                }
+            }.run();
+        }
     }
 
     private class AsyncMessageHandler<M> implements MessageHandler.Partial<M> {

@@ -1,7 +1,7 @@
 package ameba.websocket.internal;
 
 import ameba.websocket.WebSocket;
-import ameba.websocket.WebSocketExcption;
+import ameba.websocket.WebSocketException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.server.model.*;
 import org.slf4j.Logger;
@@ -95,7 +95,7 @@ public class WebSocketModelProcessor implements ModelProcessor {
                     } while ((resource = resource.getParent()) != null);
                 container.addEndpoint(new DefaultServerEndpointConfig(serviceLocator, resourceMethod, path.toString(), webSocketConf));
             } catch (DeploymentException e) {
-                throw new WebSocketExcption(e);
+                throw new WebSocketException(e);
             }
         }
     }

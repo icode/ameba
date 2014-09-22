@@ -113,7 +113,7 @@ public class Application extends ResourceConfig {
         }
 
         //配置日志器
-        configureLogger();
+        configureLogger(properties);
 
         Ameba.printInfo();
 
@@ -559,9 +559,9 @@ public class Application extends ResourceConfig {
     /**
      * 设置日志器
      */
-    private void configureLogger() {
+    private void configureLogger(Properties properties) {
         //set logback config file
-        URL loggerConfigFile = getResource(StringUtils.defaultIfBlank((String) getProperty("logger.config.file"), "conf/logback.groovy"));
+        URL loggerConfigFile = getResource(StringUtils.defaultIfBlank((String) properties.getProperty("logger.config.file"), "conf/logback.groovy"));
 
         if (loggerConfigFile == null) {
             loggerConfigFile = getResource("conf/logback-" + getMode().name().toLowerCase() + ".groovy");
@@ -571,7 +571,7 @@ public class Application extends ResourceConfig {
             LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
             context.reset();
             context.putProperty("appName", getApplicationName());
-            String appPackage = (String) getProperty("app.package");
+            String appPackage = (String) properties.getProperty("app.package");
             context.putProperty("appPackage", appPackage);
             GafferUtil.runGafferConfiguratorOn(context, this, loggerConfigFile);
         }
