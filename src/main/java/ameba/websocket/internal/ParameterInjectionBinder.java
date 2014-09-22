@@ -72,8 +72,6 @@ public class ParameterInjectionBinder extends AbstractBinder {
         }).in(Singleton.class);
         bind(QueryStringValueFactoryProvider.InjectResolver.class).to(new TypeLiteral<InjectionResolver<QueryString>>() {
         }).in(Singleton.class);
-        bind(SessionValueFactoryProvider.InjectResolver.class).to(new TypeLiteral<InjectionResolver<QueryString>>() {
-        }).in(Singleton.class);
 
         bind(JerseyClassAnalyzer.class)
                 .analyzeWith(JerseyClassAnalyzer.NAME)
@@ -142,13 +140,6 @@ public class ParameterInjectionBinder extends AbstractBinder {
                         : sessionFactory;
 
             return null;
-        }
-
-
-        static class InjectResolver extends ParamInjectionResolver<javax.ws.rs.core.Context> {
-            public InjectResolver() {
-                super(SessionValueFactoryProvider.class);
-            }
         }
     }
 
