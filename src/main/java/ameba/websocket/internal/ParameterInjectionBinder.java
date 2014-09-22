@@ -1,10 +1,8 @@
 package ameba.websocket.internal;
 
-import org.glassfish.hk2.api.Factory;
-import org.glassfish.hk2.api.InjectionResolver;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.api.TypeLiteral;
+import org.glassfish.hk2.api.*;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.JerseyClassAnalyzer;
 import org.glassfish.jersey.server.internal.inject.AbstractValueFactoryProvider;
 import org.glassfish.jersey.server.internal.inject.MultivaluedParameterExtractorProvider;
 import org.glassfish.jersey.server.internal.inject.ParamInjectionResolver;
@@ -34,13 +32,17 @@ public class ParameterInjectionBinder extends AbstractBinder {
     private static final String PATH_PARAM_ERR_MSG = "@PathParam parameter class must be String.";
     private static final String QUERY_PARAM_ERR_MSG = "@QueryParam parameter class must be String, String[] or List<String>";
     private MessageState messageState;
+    public static final String CLASS_ANALYZER_NAME = "AmebaWebSocketClassAnalyzer";
 
+    @Inject
+    ServiceLocator serviceLocator;
     public ParameterInjectionBinder(MessageState messageState) {
         this.messageState = messageState;
     }
 
     @Override
     protected void configure() {
+
         bind(messageState).to(MessageState.class);
         bindFactory(PrincipalFactory.class).to(Principal.class).in(Singleton.class);
         bindFactory(SessionFactory.class).to(Session.class).in(Singleton.class);
@@ -70,7 +72,14 @@ public class ParameterInjectionBinder extends AbstractBinder {
         }).in(Singleton.class);
         bind(QueryStringValueFactoryProvider.InjectResolver.class).to(new TypeLiteral<InjectionResolver<QueryString>>() {
         }).in(Singleton.class);
+        bind(SessionValueFactoryProvider.InjectResolver.class).to(new TypeLiteral<InjectionResolver<QueryString>>() {
+        }).in(Singleton.class);
 
+        bind(JerseyClassAnalyzer.class)
+                .analyzeWith(JerseyClassAnalyzer.NAME)
+                .named(CLASS_ANALYZER_NAME)
+                .to(ClassAnalyzer.class)
+                .in(Singleton.class);
     }
 
     static class MessageEndValueFactoryProvider extends WebSocketValueFactoryProvider {
@@ -133,6 +142,13 @@ public class ParameterInjectionBinder extends AbstractBinder {
                         : sessionFactory;
 
             return null;
+        }
+
+
+        static class InjectResolver extends ParamInjectionResolver<javax.ws.rs.core.Context> {
+            public InjectResolver() {
+                super(SessionValueFactoryProvider.class);
+            }
         }
     }
 

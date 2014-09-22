@@ -72,6 +72,7 @@ public class EndpointDelegate extends Endpoint {
     private void bindLocator() {
         serviceLocator = Injections.createLocator(serviceLocator,
                 new ParameterInjectionBinder(messageState));
+        serviceLocator.setDefaultClassAnalyzerName(ParameterInjectionBinder.CLASS_ANALYZER_NAME);
     }
 
     private List<EventInvocation> findEventInvocation(Class<? extends Annotation> ann, Object... instance) {
@@ -213,7 +214,10 @@ public class EndpointDelegate extends Endpoint {
                 invocation.invoke();
             }
         } catch (Throwable t) {
-            onError(messageState.getSession(), t);
+            if (!isException)
+                onError(messageState.getSession(), t);
+            else
+                logger.error("web socket onError has a error", t);
         }
     }
 
