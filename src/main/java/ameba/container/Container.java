@@ -1,6 +1,6 @@
 package ameba.container;
 
-import ameba.Application;
+import ameba.core.Application;
 import ameba.container.server.Connector;
 import ameba.util.ClassUtils;
 import org.glassfish.hk2.api.Factory;

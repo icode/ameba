@@ -44,7 +44,6 @@ public class ModelManager extends Enhancer {
     private List<ModelDescription> modelClassesDescList = Lists.newArrayList();
     private List<ModelEventListener> listeners = Lists.newArrayList();
     private String[] packages;
-
     private ModelManager(String[] packages) {
         this.packages = packages;
     }

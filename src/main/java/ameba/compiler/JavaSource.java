@@ -1,6 +1,6 @@
 package ameba.compiler;
 
-import ameba.Application;
+import ameba.core.Application;
 import ameba.util.IOUtils;
 
 import java.io.*;
@@ -28,12 +28,15 @@ public class JavaSource {
     }
 
     public static File getJava(String name, Application app) {
+        return getJava(name, app.getPackageRoot());
+    }
+
+    public static File getJava(String name, File pkgRoot) {
         String fileName = name;
         if (fileName.contains("$")) {
             fileName = fileName.substring(0, fileName.indexOf("$"));
         }
         fileName = fileName.replaceAll("\\.", "/") + JAVA_EXTENSION;
-        File pkgRoot = app.getPackageRoot();
         if (pkgRoot != null) {
             File javaFile = new File(pkgRoot, fileName);
             if (javaFile.exists()) {

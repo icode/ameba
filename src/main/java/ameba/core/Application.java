@@ -1,11 +1,13 @@
-package ameba;
+package ameba.core;
 
+import ameba.Ameba;
 import ameba.container.server.Connector;
 import ameba.event.Event;
 import ameba.event.SystemEventBus;
 import ameba.exceptions.AmebaException;
 import ameba.exceptions.ConfigErrorException;
 import ameba.feature.AmebaFeature;
+import ameba.util.ClassUtils;
 import ameba.util.IOUtils;
 import ameba.util.LinkedProperties;
 import ameba.util.Times;
@@ -13,12 +15,19 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.gaffer.GafferUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.primitives.Ints;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.model.ContractProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.internal.scanning.PackageNamesScanner;
+import org.glassfish.jersey.server.monitoring.ApplicationEvent;
+import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
+import org.glassfish.jersey.server.monitoring.RequestEvent;
+import org.glassfish.jersey.server.monitoring.RequestEventListener;
 import org.glassfish.jersey.server.spi.Container;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 import org.slf4j.Logger;
@@ -31,16 +40,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -57,9 +61,11 @@ import static ameba.util.IOUtils.*;
 public class Application extends ResourceConfig {
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static final String REGISTER_CONF_PREFIX = "app.register.";
+    private static final String ADDON_CONF_PREFIX = "app.addon.";
     private static final String JERSEY_CONF_NAME_PREFIX = "app.sys.core.";
     private static String INFO_SPLITOR = "---------------------------------------------------";
     protected boolean jmxEnabled;
+    List<SortEntry> addOnSorts = Lists.newArrayList();
     private String configFile;
     private Mode mode;
     private CharSequence applicationVersion;
@@ -67,6 +73,7 @@ public class Application extends ResourceConfig {
     private File packageRoot;
     private Container container;
     private long timestamp = System.currentTimeMillis();
+    private List<AddOn> addOns = Lists.newArrayList();
 
     public Application() {
         this("conf/application.conf");
@@ -120,8 +127,6 @@ public class Application extends ResourceConfig {
         logger.info("初始化...");
         logger.info("应用配置文件 {}", toExternalForm(appCfgUrl));
 
-        AmebaFeature.preConfigure(this);
-
         //读取模式配置
         readModeConfig(configMap);
 
@@ -138,14 +143,16 @@ public class Application extends ResourceConfig {
         //将临时配置对象放入应用程序配置
         addProperties(configMap);
 
+        addonSetup(configMap);
+
         //配置资源
-        configureResource(configMap);
+        configureResource();
 
         //配置特性
         configureFeature(configMap);
 
         //配置服务器相关
-        configureServer(properties);
+        configureServer();
 
         //清空临时配置
         configMap.clear();
@@ -155,7 +162,44 @@ public class Application extends ResourceConfig {
         properties.clear();
         properties = null;
 
+        //todo 抛出事件
+        register(new ApplicationEventListener() {
+            @Override
+            public void onEvent(ApplicationEvent event) {
+                ApplicationEvent.Type type = event.getType();
+                switch (type) {
+                    case INITIALIZATION_START:
+                        break;
+
+                    case INITIALIZATION_APP_FINISHED:
+                        break;
+
+                    case INITIALIZATION_FINISHED:
+                        break;
+
+                    case DESTROY_FINISHED:
+                        break;
+
+                    case RELOAD_FINISHED:
+                        break;
+                }
+            }
+
+            @Override
+            public RequestEventListener onRequest(RequestEvent requestEvent) {
+                return null;
+            }
+        });
+
+        register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(Application.this).to(Application.class);
+            }
+        });
+
         publishEvent(new ConfiguredEvent(this));
+        addonDone();
         logger.info("装载特性...");
     }
 
@@ -164,47 +208,167 @@ public class Application extends ResourceConfig {
         AmebaFeature.getEventBus().publish(event);
     }
 
-    public long getTimestamp() {
-        return timestamp;
-    }
+    private void addonSetup(Map<String, Object> configMap) {
+        for (String key : configMap.keySet()) {
+            if (key.startsWith(ADDON_CONF_PREFIX)) {
+                String className = (String) configMap.get(key);
+                if (StringUtils.isNotBlank(className)) {
+                    String name = key.substring(ADDON_CONF_PREFIX.length());
 
-    @SuppressWarnings("unchecked")
-    private void preConfigureFeature(Class clazz) {
-        if (AmebaFeature.class.isAssignableFrom(clazz)) {
-            try {
-                Method m = clazz.getMethod("preConfigure", Application.class);
-                if (Modifier.isStatic(m.getModifiers())) {
-                    m.invoke(null, Application.this);
+                    int sortSp = name.lastIndexOf(">");
+                    Integer sortPriority = Integer.MAX_VALUE / 2;
+                    if (sortSp != -1) {
+                        String sortStr = name.substring(sortSp + 1);
+                        if (sortStr.equalsIgnoreCase("last")) {
+                            sortPriority = Integer.MAX_VALUE;
+                        } else {
+                            sortPriority = Ints.tryParse(sortStr);
+                            if (sortPriority == null || sortPriority < 0 || sortPriority > Integer.MAX_VALUE) {
+                                throw new ConfigErrorException("插件配置出错，执行优先级设置错误，必须为last或数字（且大于-1小于" + Integer.MAX_VALUE + "）。配置 " + key);
+                            }
+                        }
+                    }
+
+                    if (sortSp != -1) {
+                        name = name.substring(0, sortSp);
+                    }
+                    addOnSorts.add(new SortEntry(sortPriority, className, name, key));
                 }
-            } catch (IllegalAccessException e) {
-                logger.warn("前期初始化特性出错[" + clazz.getName() + "]", e);
-            } catch (InvocationTargetException e) {
-                logger.warn("前期初始化特性出错[" + clazz.getName() + "]", e);
-            } catch (NoSuchMethodException e) {
-                logger.trace(clazz.getName() + " 类未发现需要前期配置项");
             }
         }
+
+        Collections.sort(addOnSorts);
+
+        for (SortEntry entry : addOnSorts) {
+            try {
+                Class addOnClass = ClassUtils.getClass(entry.className);
+                if (AddOn.class.isAssignableFrom(addOnClass)) {
+                    AddOn addOn = (AddOn) addOnClass.newInstance();
+                    addOns.add(addOn);
+                    addOn.setup(this);
+                } else {
+                    throw new ConfigErrorException("插件 " + entry.name + " 类配置必须实现ameba.core.AddOn,在鍵 " + entry.key + " 配置项。");
+                }
+            } catch (ClassNotFoundException e) {
+                throw new ConfigErrorException("插件 " + entry.name + " 未找到,在鍵 " + entry.key + " 配置项。");
+            } catch (InstantiationException e) {
+                throw new ConfigErrorException("插件 " + entry.name + " 无法初始化,在鍵 " + entry.key + " 配置项。");
+            } catch (IllegalAccessException e) {
+                throw new ConfigErrorException("插件 " + entry.name + " 无法初始化,在鍵 " + entry.key + " 配置项。");
+            } catch (Exception e) {
+                logger.error("插件 " + entry.name + " 出错,在鍵 " + entry.key + " 配置项。", e);
+            }
+        }
+    }
+
+    private void addonDone() {
+        for (AddOn addOn : addOns) {
+            try {
+                addOn.done(this);
+            } catch (Exception e) {
+                logger.error("插件出错,在 " + addOn.getClass(), e);
+            }
+        }
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 
     private void configureFeature(Map<String, Object> configMap) {
         logger.info("注册特性");
 
+        int suc = 0, fail = 0, beak = 0;
+
+        List<FeatureEntry> featureEntries = Lists.newArrayList();
+
+        for (String key : configMap.keySet()) {
+            if (key.startsWith(REGISTER_CONF_PREFIX)) {
+                String className = (String) configMap.get(key);
+                if (StringUtils.isNotBlank(className)) {
+                    String name = key.substring(REGISTER_CONF_PREFIX.length());
+
+                    int sortSp = name.lastIndexOf(">");
+                    Integer sortPriority = Integer.MAX_VALUE / 2;
+                    if (sortSp != -1) {
+                        String sortStr = name.substring(sortSp + 1);
+                        sortSp = name.lastIndexOf("!");
+                        if (sortSp != -1)
+                            sortStr = sortStr.substring(0, sortSp);
+                        if (sortStr.equalsIgnoreCase("last")) {
+                            sortPriority = Integer.MAX_VALUE;
+                        } else {
+                            sortPriority = Ints.tryParse(sortStr);
+                            if (sortPriority == null || sortPriority < 0 || sortPriority > Integer.MAX_VALUE) {
+                                throw new ConfigErrorException("特性配置出错，执行优先级设置错误，必须为last或数字（且大于-1小于" + Integer.MAX_VALUE + "）。配置 " + key);
+                            }
+                        }
+                    }
+
+                    int prioritySp = name.lastIndexOf("!");
+                    Integer diPriority = ContractProvider.NO_PRIORITY;
+                    if (prioritySp != -1) {
+                        diPriority = Ints.tryParse(name.substring(prioritySp + 1));
+                        if (diPriority == null || diPriority < 0 || diPriority > Integer.MAX_VALUE) {
+                            throw new ConfigErrorException("特性配置出错，DI优先级设置错误，必须为数字，且大于-1小于" + Integer.MAX_VALUE + "。配置 " + key);
+                        }
+                    }
+
+                    if (prioritySp != -1 || sortSp != -1) {
+                        if (prioritySp > sortSp) {
+                            name = name.substring(0, sortSp);
+                        } else if (prioritySp < sortSp) {
+                            if (prioritySp != -1) {
+                                name = name.substring(0, prioritySp);
+                            } else {
+                                name = name.substring(0, sortSp);
+                            }
+                        }
+                    }
+
+                    featureEntries.add(new FeatureEntry(diPriority, sortPriority, className, name));
+                }
+            }
+        }
+
+        Collections.sort(featureEntries);
+
+        for (FeatureEntry entry : featureEntries) {
+            try {
+                logger.debug("注册特性[{}({})]", entry.name, entry.className);
+                Class clazz = ClassUtils.getClass(entry.className);
+                if (isRegistered(clazz)) {
+                    beak++;
+                    logger.warn("并未注册装特性[{}({})]，因为该特性已存在", entry.name, clazz);
+                    continue;
+                }
+
+                register(clazz, entry.diPriority);
+                suc++;
+            } catch (ClassNotFoundException e) {
+                fail++;
+                if (!entry.name.startsWith("default."))
+                    logger.error("获取特性失败", e);
+                else
+                    logger.warn("未找到系统默认特性[" + entry.className + "]", e);
+            }
+        }
+
         String registerStr = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("app.registers"), ""));
         String[] registers;
-        int suc = 0, fail = 0, beak = 0;
         if (StringUtils.isNotBlank(registerStr)) {
             registers = registerStr.split(",");
             for (String register : registers) {
                 try {
                     logger.debug("注册特性[{}]", register);
-                    Class clazz = getClassLoader().loadClass(register);
+                    Class clazz = ClassUtils.getClass(register);
                     if (isRegistered(clazz)) {
                         beak++;
                         logger.warn("并未注册特性[{}]，因为该特性已存在", register);
                         continue;
                     }
 
-                    preConfigureFeature(clazz);
+                    //preConfigureFeature(clazz);
 
                     register(clazz);
                     suc++;
@@ -218,53 +382,29 @@ public class Application extends ResourceConfig {
             }
         }
 
-
-        for (String key : configMap.keySet()) {
-            if (key.startsWith(REGISTER_CONF_PREFIX)) {
-                String className = (String) getProperty(key);
-                if (StringUtils.isNotBlank(className)) {
-                    String name = key.substring(REGISTER_CONF_PREFIX.length());
-                    try {
-                        logger.debug("注册特性[{}({})]", name, className);
-                        Class clazz = getClassLoader().loadClass(className);
-                        if (isRegistered(clazz)) {
-                            beak++;
-                            logger.warn("并未注册装特性[{}({})]，因为该特性已存在", name, clazz);
-                            continue;
-                        }
-                        preConfigureFeature(clazz);
-                        register(clazz);
-                        suc++;
-                    } catch (ClassNotFoundException e) {
-                        fail++;
-                        if (!name.startsWith("default."))
-                            logger.error("获取特性失败", e);
-                        else
-                            logger.warn("未找到系统默认特性[" + className + "]", e);
-                    }
-                }
-            }
-        }
         logger.info("成功注册{}个特性，失败{}个，跳过{}个", suc, fail, beak);
     }
 
-    private void configureResource(Map<String, Object> configMap) {
+    private void configureResource() {
         String[] packages = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("resource.packages"), "")).split(",");
-        for (String key : configMap.keySet()) {
+        for (String key : getPropertyNames()) {
             if (key.startsWith("resource.packages.")) {
-                String pkgStr = (String) configMap.get(key);
-                if (StringUtils.isNotBlank(pkgStr)) {
-                    String[] pkgs = StringUtils.deleteWhitespace(pkgStr).split(",");
-                    for (String pkg : pkgs) {
-                        if (!ArrayUtils.contains(packages, pkg))
-                            packages = ArrayUtils.add(packages, pkg);
+                Object pkgObj = getProperty(key);
+                if (pkgObj instanceof String) {
+                    String pkgStr = (String) pkgObj;
+                    if (StringUtils.isNotBlank(pkgStr)) {
+                        String[] pkgs = StringUtils.deleteWhitespace(pkgStr).split(",");
+                        for (String pkg : pkgs) {
+                            if (!ArrayUtils.contains(packages, pkg))
+                                packages = ArrayUtils.add(packages, pkg);
+                        }
                     }
                 }
             }
         }
         packages = ArrayUtils.removeElement(packages, "");
         logger.info("设置资源扫描包:{}", StringUtils.join(packages, ","));
-        registerFinder(new PackageNamesScanner(getClassLoader(), packages, true));
+        registerFinder(new PackageNamesScanner(packages, true));
     }
 
     private void convertJerseyConfig(Map<String, Object> configMap) {
@@ -338,14 +478,13 @@ public class Application extends ResourceConfig {
         modeProperties = null;
     }
 
-    private void configureServer(Properties properties) {
-        jmxEnabled = Boolean.parseBoolean(properties.getProperty("app.jmx.enabled"));
-        if (jmxEnabled && properties.getProperty(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED) == null)
+    private void configureServer() {
+        jmxEnabled = Boolean.parseBoolean((String) getProperty("app.jmx.enabled"));
+        if (jmxEnabled && getProperty(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED) == null)
             property(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED, jmxEnabled);
         registerInstances(new ContainerLifecycleListener() {
             @Override
             public void onStartup(Container container) {
-                publishEvent(new ContainerStartupEvent(container, Application.this));
 
                 if (Application.this.container == null) {
                     Runtime r = Runtime.getRuntime();
@@ -399,6 +538,7 @@ public class Application extends ResourceConfig {
 
 
                 Application.this.container = container;
+                publishEvent(new ContainerStartupEvent(container, Application.this));
             }
 
             @Override
@@ -512,11 +652,11 @@ public class Application extends ResourceConfig {
     }
 
     public void reload() {
-        publishEvent(new ContainerBeginReloadEvent(container, this));
-        container.reload();
+        container.reload(this);
     }
 
     public void reload(ResourceConfig configuration) {
+        publishEvent(new ContainerBeginReloadEvent(container, this));
         container.reload(configuration);
     }
 
@@ -561,7 +701,7 @@ public class Application extends ResourceConfig {
      */
     private void configureLogger(Properties properties) {
         //set logback config file
-        URL loggerConfigFile = getResource(StringUtils.defaultIfBlank((String) properties.getProperty("logger.config.file"), "conf/logback.groovy"));
+        URL loggerConfigFile = getResource(StringUtils.defaultIfBlank(properties.getProperty("logger.config.file"), "conf/logback.groovy"));
 
         if (loggerConfigFile == null) {
             loggerConfigFile = getResource("conf/logback-" + getMode().name().toLowerCase() + ".groovy");
@@ -653,6 +793,40 @@ public class Application extends ResourceConfig {
     public static class ContainerShutdownEvent extends ContainerEvent {
         public ContainerShutdownEvent(Container container, Application app) {
             super(container, app);
+        }
+    }
+
+    private class SortEntry implements Comparable<SortEntry> {
+        Integer sortPriority;
+        String className;
+        String name;
+        String key;
+
+        private SortEntry(Integer sortPriority, String className, String name) {
+            this.sortPriority = sortPriority;
+            this.className = className;
+            this.name = name;
+        }
+
+        private SortEntry(Integer sortPriority, String className, String name, String key) {
+            this.sortPriority = sortPriority;
+            this.className = className;
+            this.name = name;
+            this.key = key;
+        }
+
+        @Override
+        public int compareTo(SortEntry entry) {
+            return Integer.compare(this.sortPriority, entry.sortPriority);
+        }
+    }
+
+    private class FeatureEntry extends SortEntry {
+        int diPriority;
+
+        private FeatureEntry(int diPriority, Integer sortPriority, String className, String name) {
+            super(sortPriority, className, name);
+            this.diPriority = diPriority;
         }
     }
 

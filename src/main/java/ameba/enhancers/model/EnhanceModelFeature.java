@@ -1,8 +1,6 @@
 package ameba.enhancers.model;
 
-import ameba.Application;
 import ameba.db.DataSourceFeature;
-import ameba.event.Listener;
 import ameba.feature.AmebaFeature;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -25,17 +23,6 @@ public class EnhanceModelFeature extends AmebaFeature {
 
     private static final Logger logger = LoggerFactory.getLogger(EnhanceModelFeature.class);
 
-    public static void preConfigure(final Application app) {
-        subscribeEvent(Application.ConfiguredEvent.class, new Listener<Application.ConfiguredEvent>() {
-            @Override
-            public void onReceive(Application.ConfiguredEvent event) {
-                if (app.isRegistered(EnhanceModelFeature.class)) {
-                    app.register(Enhance.class, Integer.MAX_VALUE);
-                }
-            }
-        });
-    }
-
     @Override
     public boolean configure(final FeatureContext context) {
         ModelManager.reset();
@@ -48,6 +35,7 @@ public class EnhanceModelFeature extends AmebaFeature {
                 ModelManager.create(name, modelPackages.split(","));
             }
         }
+
         return true;
     }
 

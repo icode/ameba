@@ -1,5 +1,6 @@
 package ameba.enhancers;
 
+import ameba.util.ClassUtils;
 import javassist.*;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.annotation.MemberValue;
@@ -22,6 +23,7 @@ public abstract class Enhancer {
     public static ClassPool newClassPool() {
         ClassPool classPool = new ClassPool();
         classPool.appendSystemPath();
+        classPool.appendClassPath(new LoaderClassPath(ClassUtils.getContextClassLoader()));
         classPool.appendClassPath(new LoaderClassPath(Enhancer.class.getClassLoader()));
         return classPool;
     }
