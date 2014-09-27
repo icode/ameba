@@ -90,8 +90,9 @@ public class WebSocketModelProcessor implements ModelProcessor {
                 Resource resource = resourceMethod.getParent();
                 if (resource != null)
                     do {
-                        if (path.length() != 0) path.insert(0, "/");
-                        path.insert(0, resource.getPath());
+                        if (path.length() != 0 && path.charAt(0) != '/') path.insert(0, "/");
+                        if (!resource.getPath().equals("/"))
+                            path.insert(0, resource.getPath());
                     } while ((resource = resource.getParent()) != null);
                 container.addEndpoint(new DefaultServerEndpointConfig(serviceLocator, resourceMethod, path.toString(), webSocketConf));
             } catch (DeploymentException e) {
