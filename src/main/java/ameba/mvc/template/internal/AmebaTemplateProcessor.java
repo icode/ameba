@@ -115,20 +115,20 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
             t = super.resolve("/" + PROTECTED_DIR + name, mediaType);
         }*/
 
-        if (t == null && name != null && name.startsWith("/")) {
+        if (t == null && name != null && name.startsWith(INNER_TPL_DIR)) {
             for (String ex : supportedExtensions) {
                 String file = name.endsWith(ex) ? name : name + ex;
                 InputStream in = IOUtils.getResourceAsStream(file);
                 try {
                     if (in != null) {
                         try {
-                            t = resolve(file.startsWith(INNER_TPL_DIR) ? null : file, new InputStreamReader(in, charset));
+                            t = resolve(new InputStreamReader(in, charset));
                             if (t != null)
                                 return t;
                         } finally {
                             IOUtils.closeQuietly(in);
                         }
-                    } else if (resolve(file, (Reader) null) == null && Ameba.getApp().getMode().isDev() && !file.startsWith(INNER_TPL_DIR)) {
+                    } else if (resolve(file, (Reader) null) == null && Ameba.getApp().getMode().isDev()) {
                         throw new TemplateNotFoundException("未找到模板:" + getBasePath() + file);
                     }
                 } catch (TemplateNotFoundException e) {

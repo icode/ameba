@@ -46,7 +46,7 @@ public class AssetsFeature implements Feature {
                 String[] uris = value.split(",");
                 List<String> uriList = Lists.newArrayList();
                 for (String uri : uris) {
-                    uriList.add(uri.startsWith("/") ? uri : "/" + uri);
+                    uriList.add(uri.endsWith("/") ? uri : uri + "/");
                 }
                 if (StringUtils.isNotBlank(value)) {
                     String[] _uris = assetsMap.get(routePath);
