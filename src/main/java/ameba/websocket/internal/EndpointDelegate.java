@@ -188,7 +188,8 @@ public class EndpointDelegate extends Endpoint {
 
             emmit(onOpenList, false);
         } catch (Throwable e) {
-            IOUtils.closeQuietly(session);
+            if (session.isOpen())
+                IOUtils.closeQuietly(session);
             if (e instanceof RuntimeException)
                 throw (RuntimeException) e;
             throw new WebSocketException(e);
@@ -197,22 +198,23 @@ public class EndpointDelegate extends Endpoint {
 
     private void emmit(List<EventInvocation> eventInvocations, boolean isException) {
         try {
-            for (EventInvocation invocation : eventInvocations) {
-                if (isException) {
-                    if (messageState.getThrowable() == null)
-                        break;
-                    boolean find = false;
-                    for (Parameter parameter : invocation.getInvocable().getParameters()) {
-                        if (parameter.getRawType().isAssignableFrom(messageState.getThrowable().getClass())) {
-                            find = true;
+            if (eventInvocations != null)
+                for (EventInvocation invocation : eventInvocations) {
+                    if (isException) {
+                        if (messageState.getThrowable() == null)
                             break;
+                        boolean find = false;
+                        for (Parameter parameter : invocation.getInvocable().getParameters()) {
+                            if (parameter.getRawType().isAssignableFrom(messageState.getThrowable().getClass())) {
+                                find = true;
+                                break;
+                            }
                         }
+                        if (!find)
+                            continue;
                     }
-                    if (!find)
-                        continue;
+                    invocation.invoke();
                 }
-                invocation.invoke();
-            }
         } catch (Throwable t) {
             if (!isException)
                 onError(messageState.getSession(), t);
@@ -232,9 +234,11 @@ public class EndpointDelegate extends Endpoint {
     }
 
     private void addMessageHandler(MessageHandler handler) {
-        Class clazz = handler.getClass();
-        messageType = ClassUtils.getGenericClass(clazz);
-        messageState.getSession().addMessageHandler(handler);
+        if (messageState.getSession().isOpen()) {
+            Class clazz = handler.getClass();
+            messageType = ClassUtils.getGenericClass(clazz);
+            messageState.getSession().addMessageHandler(handler);
+        }
     }
 
     private boolean isMessageHandler(Class clazz) {
