@@ -31,7 +31,7 @@ public class PatchingInterceptor implements ReaderInterceptor {
     /**
      * Supported PATCH data format.
      */
-    public static final String PATCH_MEDIA_TYPE = "application/json-patch+json";
+    public static final String PATCH_MEDIA_TYPE = MediaType.JSON_PATCH;
 
     private final UriInfo uriInfo;
     private final MessageBodyWorkers workers;
