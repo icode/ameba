@@ -106,7 +106,7 @@ public class EndpointDelegate extends Endpoint {
             invocable = resourceMethod.getInvocable();
             method = invocable.getHandlingMethod();
             Class resourceClass = invocable.getHandler().getHandlerClass();
-            resourceInstance = serviceLocator.createAndInitialize(resourceClass);
+            resourceInstance = serviceLocator.getService(resourceClass);
             Class returnType = method.getReturnType();
 
             if (isMessageHandler(returnType)) {// 返回的是消息处理对象，添加之
