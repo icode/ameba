@@ -105,7 +105,7 @@ public class EndpointDelegate extends Endpoint {
 
             invocable = resourceMethod.getInvocable();
             method = invocable.getHandlingMethod();
-            Class resourceClass = method.getDeclaringClass();
+            Class resourceClass = invocable.getHandler().getHandlerClass();
             resourceInstance = serviceLocator.createAndInitialize(resourceClass);
             Class returnType = method.getReturnType();
 
