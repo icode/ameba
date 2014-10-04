@@ -16,6 +16,7 @@ String appPackage = context.getProperty("appPackage");
 logger("org.glassfish.jersey.filter.LoggingFilter", INFO)
 logger("org.glassfish", WARN)
 logger("org.avaje.ebean", WARN)
+logger("org.avaje.ebean.SQL", TRACE)
 logger("httl", WARN)
 logger("ameba", DEBUG)
 if (appPackage != null)
