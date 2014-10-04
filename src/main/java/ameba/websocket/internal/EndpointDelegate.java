@@ -111,19 +111,25 @@ public class EndpointDelegate extends Endpoint {
 
             if (isMessageHandler(returnType)) {// 返回的是消息处理对象，添加之
                 MessageHandler handler = processHandler();
-                initEventList(handler);
-                addMessageHandler(handler);
+                if (handler != null) {
+                    initEventList(handler);
+                    addMessageHandler(handler);
+                }
             } else if (returnType.isArray() && isMessageHandler(returnType.getComponentType())) {// 返回的是一组消息处理对象，全部添加
                 MessageHandler[] handlers = processHandler();
-                initEventList(handlers);
-                for (MessageHandler handler : handlers) {
-                    addMessageHandler(handler);
+                if (handlers != null) {
+                    initEventList(handlers);
+                    for (MessageHandler handler : handlers) {
+                        addMessageHandler(handler);
+                    }
                 }
             } else if (isMessageHandlerCollection(returnType)) {// 返回的是一组消息处理对象，全部添加
                 Collection<MessageHandler> handlers = processHandler();
-                initEventList(handlers.toArray());
-                for (MessageHandler handler : handlers) {
-                    addMessageHandler(handler);
+                if (handlers != null) {
+                    initEventList(handlers.toArray());
+                    for (MessageHandler handler : handlers) {
+                        addMessageHandler(handler);
+                    }
                 }
             } else {
                 initEventList(resourceInstance);
@@ -186,7 +192,8 @@ public class EndpointDelegate extends Endpoint {
                 session.addMessageHandler(handler);
             }
 
-            emmit(onOpenList, false);
+            if (session.isOpen())
+                emmit(onOpenList, false);
         } catch (Throwable e) {
             if (session.isOpen())
                 IOUtils.closeQuietly(session);
