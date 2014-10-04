@@ -54,7 +54,8 @@ public class WebSocketModelProcessor implements ModelProcessor {
     }
 
     private Resource processResource(RuntimeResource resource) {
-        Resource.Builder resourceBuilder = Resource.builder(resource.getRegex());
+        Resource firstResource = resource.getResources().get(0);
+        Resource.Builder resourceBuilder = Resource.builder(firstResource.getPath());
         for (ResourceMethod resourceMethod : resource.getResourceMethods()) {
             addResourceMethod(resourceBuilder, resourceMethod);
         }
