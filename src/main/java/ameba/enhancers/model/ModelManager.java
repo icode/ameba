@@ -171,13 +171,15 @@ public class ModelManager extends Enhancer {
             classpool.importPackage(BASE_MODEL_PKG);
             CtClass clazz = classpool.makeClass(in);
 
-            if (clazz.isInterface()) {
+            if (clazz.isInterface()
+                    || clazz.getName().endsWith(".package")
+                    || clazz.isEnum()
+                    || clazz.isFrozen()
+                    || clazz.isPrimitive()
+                    || clazz.isAnnotation()
+                    || clazz.isArray()) {
                 return null;
             }
-            if (clazz.getName().endsWith(".package")) {
-                return null;
-            }
-
             ModelDescription cache = descCache.get(clazz.getURL().toExternalForm());
             if (cache != null) {
                 return cache;
