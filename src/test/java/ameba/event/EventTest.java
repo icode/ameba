@@ -29,17 +29,18 @@ public class EventTest {
             });
         }
         for (int i = 0; i < 5; i++) {
+            final int finalI = i;
             SystemEventBus.subscribe(TestEvent.class, new Listener<TestEvent>() {
                 @Override
                 public void onReceive(TestEvent event) {
-                    logger.info("receive message : {}", event.message);
+                    logger.info("receive message {} : {}", finalI, event.message);
                 }
             });
 
             SystemEventBus.subscribe(TestEvent1.class, new Listener<TestEvent1>() {
                 @Override
                 public void onReceive(TestEvent1 event) {
-                    logger.info("TestEvent1 receive message : {}", event.message);
+                    logger.info("TestEvent1 receive message {} : {}", finalI, event.message);
                 }
             });
         }

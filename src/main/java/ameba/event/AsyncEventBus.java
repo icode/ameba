@@ -23,12 +23,12 @@ public abstract class AsyncEventBus<E extends Event, S extends ActorRef> extends
 
     @Override
     public int compareSubscribers(S a, S b) {
-        return 1;
+        return 0;
     }
 
     @Override
     public int mapSize() {
-        return 0;
+        return 128;
     }
 
     @Override
