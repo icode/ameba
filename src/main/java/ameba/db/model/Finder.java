@@ -107,4 +107,8 @@ public abstract class Finder<ID, T> implements Query<T> {
      * Sets the OQL query to run
      */
     public abstract Query<T> setQuery(String oql);
+
+    public abstract Finder<ID,T> newFinder();
+
+    public abstract Finder<ID,T> reset();
 }

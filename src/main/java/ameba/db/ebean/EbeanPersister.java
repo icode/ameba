@@ -25,7 +25,6 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
         server = Ebean.getServer(getServerName());
     }
 
-
     @Override
     public void save() {
         server().save(getModel());

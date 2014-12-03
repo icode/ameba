@@ -88,14 +88,14 @@ public abstract class Persister<M extends Model> {
      * Updates this entity, by specifying the entity ID.
      */
     public void update(Object id) {
-        ((Model) getModel())._setId(id);
+        getModel()._setId(id);
     }
 
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
         if (other == null || other.getClass() != this.getClass()) return false;
-        Object id = ((Model) getModel())._getId();
+        Object id = getModel()._getId();
         Object otherId = ((Model) other)._getId();
         if (id == null) return false;
         if (otherId == null) return false;
@@ -104,7 +104,7 @@ public abstract class Persister<M extends Model> {
 
     @Override
     public int hashCode() {
-        Object id = ((Model) getModel())._getId();
+        Object id = getModel()._getId();
         return id == null ? super.hashCode() : id.hashCode();
     }
 

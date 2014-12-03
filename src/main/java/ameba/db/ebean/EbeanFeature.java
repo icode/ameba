@@ -10,7 +10,6 @@ import ameba.util.IOUtils;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
-import com.avaje.ebean.config.GlobalProperties;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.enhance.agent.InputStreamTransform;
 import com.avaje.ebean.enhance.agent.Transformer;
@@ -33,6 +32,7 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Properties;
 
 /**
  * @author 张立鑫 IntelligentCode
@@ -110,11 +110,12 @@ public class EbeanFeature extends TransactionFeature {
 
         //configure EBean
         final Configuration appConfig = context.getConfiguration();
+        Properties eBeanConfig = new Properties();
         for (String key : appConfig.getPropertyNames()) {
             if (key.startsWith("model.")) {
                 Object value = appConfig.getProperty(key);
                 if (null != value)
-                    GlobalProperties.put(key.replaceFirst("model\\.", "ebean."), String.valueOf(value));
+                    eBeanConfig.put(key.replaceFirst("model\\.", "ebean."), String.valueOf(value));
             }
         }
 
@@ -122,8 +123,9 @@ public class EbeanFeature extends TransactionFeature {
             final ServerConfig config = new ServerConfig();
             config.setPackages(null);
             config.setJars(null);
+            config.setRegisterJmxMBeans(Boolean.parseBoolean((String) appConfig.getProperty("app.jmx.enabled")));
 
-            //config.loadFromProperties();//设置默认配置
+            config.loadFromProperties(eBeanConfig);//设置默认配置
             config.setName(name);
             final boolean isProd = "product".equals(appConfig.getProperty("app.mode"));
             if (!isProd) {
