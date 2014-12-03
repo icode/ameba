@@ -108,12 +108,10 @@ public class EbeanFeature extends TransactionFeature {
     @Override
     public boolean configure(final FeatureContext context) {
         context.register(EbeanTransactional.class);
-
-        //configure EBean
         final Configuration appConfig = context.getConfiguration();
         final Properties eBeanConfig = new Properties();
 
-        //配置
+        //读取过滤ebean配置
         for (String key : appConfig.getPropertyNames()) {
             if (key.startsWith("db.")) {
                 Object value = appConfig.getProperty(key);
