@@ -10,6 +10,7 @@ import ameba.util.IOUtils;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
+import com.avaje.ebean.config.PropertiesWrapper;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.enhance.agent.InputStreamTransform;
 import com.avaje.ebean.enhance.agent.Transformer;
@@ -110,31 +111,32 @@ public class EbeanFeature extends TransactionFeature {
 
         //configure EBean
         final Configuration appConfig = context.getConfiguration();
-        Properties eBeanConfig = new Properties();
+        final Properties eBeanConfig = new Properties();
+
+        //配置
         for (String key : appConfig.getPropertyNames()) {
-            if (key.startsWith("model.")) {
+            if (key.startsWith("db.")) {
                 Object value = appConfig.getProperty(key);
-                if (null != value)
-                    eBeanConfig.put(key.replaceFirst("model\\.", "ebean."), String.valueOf(value));
+                if (null != value) {
+                    eBeanConfig.put(key, String.valueOf(value));
+                }
             }
         }
 
         for (final String name : DataSourceFeature.getDataSourceNames()) {
-            final ServerConfig config = new ServerConfig();
+            final ServerConfig config = new ServerConfig() {
+                @Override
+                public void loadFromProperties() {
+                    loadSettings(new PropertiesWrapper("db", name, eBeanConfig));
+                }
+            };
             config.setPackages(null);
             config.setJars(null);
             config.setRegisterJmxMBeans(Boolean.parseBoolean((String) appConfig.getProperty("app.jmx.enabled")));
 
-            config.loadFromProperties(eBeanConfig);//设置默认配置
             config.setName(name);
+            config.loadFromProperties(eBeanConfig);
             final boolean isProd = "product".equals(appConfig.getProperty("app.mode"));
-            if (!isProd) {
-                //转化部分公用属性
-                /*"debug.lazyLoadSize"*/
-                String value = (String) appConfig.getProperty("db." + name + ".debug.lazyLoadSize");
-                if (null != value)
-                    config.setLazyLoadBatchSize(Integer.valueOf(value));
-            }
 
             config.setDataSource(DataSourceFeature.getDataSource(name));//设置为druid数据源
             if (name.equals(Model.DB_DEFAULT_SERVER_NAME)) {
