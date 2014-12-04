@@ -10,12 +10,14 @@ import ameba.util.IOUtils;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
+import com.avaje.ebean.config.ContainerConfig;
 import com.avaje.ebean.config.PropertiesWrapper;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebean.enhance.agent.InputStreamTransform;
 import com.avaje.ebean.enhance.agent.Transformer;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
+import com.fasterxml.jackson.core.JsonFactory;
 import javassist.CannotCompileException;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -111,6 +113,8 @@ public class EbeanFeature extends TransactionFeature {
         final Configuration appConfig = context.getConfiguration();
         final Properties eBeanConfig = new Properties();
 
+        final JsonFactory jsonFactory = new JsonFactory();
+
         //读取过滤ebean配置
         for (String key : appConfig.getPropertyNames()) {
             if (key.startsWith("db.")) {
@@ -120,6 +124,11 @@ public class EbeanFeature extends TransactionFeature {
                 }
             }
         }
+
+
+        //TODO ebean容器读取配置还未实现，实现后设置配置读取的转换，这个容器是全局的
+        ContainerConfig containerConfig = new ContainerConfig();
+        containerConfig.loadFromProperties(eBeanConfig);
 
         for (final String name : DataSourceFeature.getDataSourceNames()) {
             final ServerConfig config = new ServerConfig() {
@@ -145,6 +154,8 @@ public class EbeanFeature extends TransactionFeature {
 
             config.setDdlGenerate(false);
             config.setDdlRun(false);
+            config.setJsonFactory(jsonFactory);
+            config.setContainerConfig(containerConfig);
 
             String value = (String) appConfig.getProperty("db." + name + ".ddl.generate");
             boolean genDdl = false;
