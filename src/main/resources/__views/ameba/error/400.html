@@ -36,7 +36,7 @@
 <h1>您发起了一个错误的请求</h1>
 
 <p id="detail">
-    ${model.request.UriInfo.absolutePath}
+    ${model.request.UriInfo.absolutePath.toString.unescapeUrl}
 </p>
 
 </body>

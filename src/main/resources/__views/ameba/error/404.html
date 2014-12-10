@@ -36,7 +36,7 @@
 <h1>请求地址不存在</h1>
 
 <p id="detail">
-    ${model.request.UriInfo.absolutePath}
+    ${model.request.UriInfo.absolutePath.toString.unescapeUrl}
 </p>
 
 </body>

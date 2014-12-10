@@ -37,7 +37,7 @@
 
 <p id="detail">
     没有办法啦，尝试联系管理员解决该问题。
-    ${model.request.UriInfo.absolutePath}
+    ${model.request.UriInfo.absolutePath.toString.unescapeUrl}
 </p>
 
 </body>
