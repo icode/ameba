@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * 错误处理页面配置
- * Created by icode on 14-3-25.
+ * @author icode
  */
 @ConstrainedTo(RuntimeType.SERVER)
 public class ErrorPageFeature implements Feature {

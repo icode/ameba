@@ -8,12 +8,17 @@ import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import javassist.*;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.ConstPool;
+import javassist.bytecode.annotation.Annotation;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.ResourceFinder;
 import org.glassfish.jersey.server.internal.scanning.PackageNamesScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.Entity;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +49,7 @@ public class ModelManager extends Enhancer {
     private List<ModelDescription> modelClassesDescList = Lists.newArrayList();
     private List<ModelEventListener> listeners = Lists.newArrayList();
     private String[] packages;
+
     private ModelManager(String[] packages) {
         this.packages = packages;
     }
@@ -67,7 +73,7 @@ public class ModelManager extends Enhancer {
         return manager;
     }
 
-    private static String decodeClassFile(ModelDescription desc){
+    private static String decodeClassFile(ModelDescription desc) {
         try {
             return URLDecoder.decode(desc.classFile, Charset.defaultCharset().name());
         } catch (UnsupportedEncodingException e) {
@@ -184,9 +190,22 @@ public class ModelManager extends Enhancer {
             if (cache != null) {
                 return cache;
             }
-//            if (!clazz.hasAnnotation(Entity.class)) {
-//                return null;
-//            }
+
+            boolean modelSub = clazz.subclassOf(classpool.getCtClass(Model.class.getName()));
+            boolean hasAnnon = clazz.hasAnnotation(Entity.class);
+            if (!hasAnnon && !modelSub) {
+                return null;
+            }
+            if (!hasAnnon) {
+                ClassFile classFile = clazz.getClassFile();
+                ConstPool constPool = classFile.getConstPool();
+                AnnotationsAttribute attr = (AnnotationsAttribute) classFile.getAttribute(AnnotationsAttribute.visibleTag);
+                if (attr == null) {
+                    attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+                }
+                attr.addAnnotation(new Annotation(Entity.class.getName(), constPool));
+                classFile.addAttribute(attr);
+            }
             logger.debug("增强模型类[{}]", clazz.getName());
 
             cache = new ModelDescription();

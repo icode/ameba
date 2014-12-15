@@ -14,28 +14,21 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 /**
- * Created by ICode on 14-3-6.
+ * @author icode
  */
 @MappedSuperclass
 public abstract class Model implements Serializable {
-    @Transient
-    private static final long serialVersionUID = 1L;
-    @Transient
     private static final HashMap<Class, Finder> FinderMap = Maps.newHashMap();
-    @Transient
     private static Constructor<? extends Finder> finderConstructor = null;
-    @Transient
     private static Constructor<? extends Persister> persisterConstructor = null;
+    public static String DB_DEFAULT_SERVER_NAME = "default";
     @Transient
     private final byte[] lock = new byte[0];
     @Transient
     private Method _idGetter = null;
     @Transient
     private Method _idSetter = null;
-    @Transient
-    public static String DB_DEFAULT_SERVER_NAME = "default";
 
-    @Transient
     protected static Constructor<? extends Finder> getFinderConstructor() {
         if (finderConstructor == null)
             synchronized (Model.class) {
@@ -52,24 +45,19 @@ public abstract class Model implements Serializable {
         return finderConstructor;
     }
 
-    @Transient
     protected static void putFinderCache(Class clzz, Finder finder) {
         FinderMap.put(clzz, finder);
     }
 
-    @Transient
     protected static Finder getFinderCache(Class clzz) {
         return FinderMap.get(clzz);
     }
 
-
-    @Transient
     @SuppressWarnings("unchecked")
     protected static <ID, T> Finder<ID, T> _getFinder(String server) {
         throw new NotImplementedException("model not enhanced!");
     }
 
-    @Transient
     @SuppressWarnings("unchecked")
     public static <ID, T> Finder<ID, T> withFinder(String server) {
         Finder<ID, T> finder = _getFinder(server);
@@ -79,12 +67,10 @@ public abstract class Model implements Serializable {
         return finder;
     }
 
-    @Transient
     public static <ID, T> Finder<ID, T> withFinder() {
         return withFinder(DB_DEFAULT_SERVER_NAME);
     }
 
-    @Transient
     protected static Constructor<? extends Persister> getPersisterConstructor() {
         if (persisterConstructor == null)
             synchronized (Model.class) {
@@ -101,7 +87,6 @@ public abstract class Model implements Serializable {
         return persisterConstructor;
     }
 
-    @Transient
     private Method _getIdGetter() throws NoSuchMethodException {
         if (_idGetter == null)
             synchronized (lock) {
@@ -111,7 +96,6 @@ public abstract class Model implements Serializable {
         return _idGetter;
     }
 
-    @Transient
     private Method _getIdSetter() throws NoSuchMethodException {
         if (_idSetter == null)
             synchronized (lock) {
@@ -122,7 +106,6 @@ public abstract class Model implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    @Transient
     <R> R _getId() {
         try {
             return (R) _getIdGetter().invoke(this);
@@ -133,7 +116,6 @@ public abstract class Model implements Serializable {
         }
     }
 
-    @Transient
     void _setId(Object id) {
         try {
             _getIdSetter().invoke(this, id);
@@ -145,7 +127,6 @@ public abstract class Model implements Serializable {
     }
 
 
-    @Transient
     @SuppressWarnings("unchecked")
     protected <M extends Model> Persister<M> _getPersister(String server) {
         Persister persister = null;
@@ -161,7 +142,6 @@ public abstract class Model implements Serializable {
         return persister;
     }
 
-    @Transient
     @SuppressWarnings("unchecked")
     public <M extends Model> Persister<M> withPersister(String server) {
         Persister<M> persister = _getPersister(server);
@@ -171,7 +151,6 @@ public abstract class Model implements Serializable {
         return persister;
     }
 
-    @Transient
     public <M extends Model> Persister<M> withPersister() {
         return withPersister(DB_DEFAULT_SERVER_NAME);
     }

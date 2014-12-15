@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * Created by ICode on 14-3-6.
+ * @author icode
  */
 public abstract class Persister<M extends Model> {
 

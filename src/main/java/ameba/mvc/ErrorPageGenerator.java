@@ -18,7 +18,7 @@ import java.util.HashMap;
 
 /**
  * 错误处理页面配置
- * Created by icode on 14-3-25.
+ * @author icode
  */
 @Provider
 @Singleton

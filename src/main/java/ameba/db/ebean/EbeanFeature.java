@@ -63,7 +63,7 @@ public class EbeanFeature extends TransactionFeature {
         }
 
         return (
-                "/*--- Created by Ameba DDL */\n" +
+                "/* Created by Ameba DDL */\n" +
                         "\n" +
                         "/*--- !Drop */\n" +
                         "\n" +
