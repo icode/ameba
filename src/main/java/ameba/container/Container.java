@@ -1,14 +1,16 @@
 package ameba.container;
 
-import ameba.core.Application;
 import ameba.container.server.Connector;
+import ameba.core.Application;
 import ameba.event.Event;
-import ameba.event.EventBus;
 import ameba.event.SystemEventBus;
+import ameba.feature.AmebaFeature;
 import ameba.util.ClassUtils;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,13 +25,9 @@ import java.util.List;
 public abstract class Container {
     public static final Logger logger = LoggerFactory.getLogger(Container.class);
 
-    protected Application application;
+    private Application application;
 
-    public static class StartEvent implements Event {
-
-    }
-
-    public Container(Application application) {
+    public Container(final Application application) {
         this.application = application;
         configureHttpServer();
         configureWebSocketContainerProvider();
@@ -50,7 +48,31 @@ public abstract class Container {
                 }).to(Container.class).proxy(false);
             }
         });
+        application.registerInstances(new ContainerLifecycleListener() {
+            @Override
+            public void onStartup(org.glassfish.jersey.server.spi.Container container) {
+                publishEvent(new StartupEvent(Container.this, application));
+                logger.trace("应用容器已经启动");
+            }
+
+            @Override
+            public void onReload(org.glassfish.jersey.server.spi.Container container) {
+                publishEvent(new ReloadEvent(Container.this, application));
+                logger.trace("应用容器重新加载");
+            }
+
+            @Override
+            public void onShutdown(org.glassfish.jersey.server.spi.Container container) {
+                publishEvent(new ShutdownEvent(Container.this, application));
+                logger.trace("应用容器已关闭");
+            }
+        });
         configureHttpContainer();
+    }
+
+    private static void publishEvent(Event event) {
+        SystemEventBus.publish(event);
+        AmebaFeature.getEventBus().publish(event);
     }
 
     @SuppressWarnings("unchecked")
@@ -90,9 +112,21 @@ public abstract class Container {
     protected abstract WebSocketContainerProvider getWebSocketContainerProvider();
 
     public void start() throws Exception {
-        SystemEventBus.publish(new StartEvent());
+        logger.trace("应用容器启动中...");
+        publishEvent(new StartEvent(this, application));
         doStart();
     }
+
+    public void reload() {
+        doReload(application);
+    }
+
+    public void reload(ResourceConfig configuration) {
+        publishEvent(new BeginReloadEvent(this, application));
+        doReload(configuration);
+    }
+
+    protected abstract void doReload(ResourceConfig configuration);
 
     protected abstract void doStart() throws Exception;
 
@@ -101,6 +135,55 @@ public abstract class Container {
     public abstract List<Connector> getConnectors();
 
     public abstract String getType();
+
+    public static class StartEvent extends ContainerEvent {
+
+        public StartEvent(Container container, Application app) {
+            super(container, app);
+        }
+    }
+
+    private static class ContainerEvent implements Event {
+        private Container container;
+        private Application app;
+
+        public ContainerEvent(Container container, Application app) {
+            this.container = container;
+            this.app = app;
+        }
+
+        public Container getContainer() {
+            return container;
+        }
+
+        public Application getApp() {
+            return app;
+        }
+    }
+
+    public static class StartupEvent extends ContainerEvent {
+        public StartupEvent(Container container, Application app) {
+            super(container, app);
+        }
+    }
+
+    public static class ReloadEvent extends ContainerEvent {
+        public ReloadEvent(Container container, Application app) {
+            super(container, app);
+        }
+    }
+
+    public static class BeginReloadEvent extends ContainerEvent {
+        public BeginReloadEvent(Container container, Application app) {
+            super(container, app);
+        }
+    }
+
+    public static class ShutdownEvent extends ContainerEvent {
+        public ShutdownEvent(Container container, Application app) {
+            super(container, app);
+        }
+    }
 
     public abstract class WebSocketContainerProvider implements Factory<ServerContainer> {
 

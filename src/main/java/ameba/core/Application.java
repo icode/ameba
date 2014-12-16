@@ -1,8 +1,10 @@
 package ameba.core;
 
 import ameba.Ameba;
+import ameba.container.Container;
 import ameba.container.server.Connector;
 import ameba.event.Event;
+import ameba.event.Listener;
 import ameba.event.SystemEventBus;
 import ameba.exceptions.AmebaException;
 import ameba.exceptions.ConfigErrorException;
@@ -28,8 +30,6 @@ import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.monitoring.RequestEvent;
 import org.glassfish.jersey.server.monitoring.RequestEventListener;
-import org.glassfish.jersey.server.spi.Container;
-import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -482,11 +482,19 @@ public class Application extends ResourceConfig {
         jmxEnabled = Boolean.parseBoolean((String) getProperty("app.jmx.enabled"));
         if (jmxEnabled && getProperty(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED) == null)
             property(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED, jmxEnabled);
-        registerInstances(new ContainerLifecycleListener() {
+        SystemEventBus.subscribe(Container.StartupEvent.class, new Listener<Container.StartupEvent>() {
             @Override
-            public void onStartup(Container container) {
+            public void onReceive(Container.StartupEvent event) {
+
+                boolean printStartMsg = false;
 
                 if (Application.this.container == null) {
+                    printStartMsg = true;
+                }
+
+                Application.this.container = event.getContainer();
+
+                if (printStartMsg) {
                     Runtime r = Runtime.getRuntime();
                     r.gc();
 
@@ -498,7 +506,7 @@ public class Application extends ResourceConfig {
                             .append(Ameba.getVersion())
                             .append("\n")
                             .append("HTTP容器   >   ")
-                            .append(StringUtils.defaultString(Ameba.getContainer().getType(), "Unknown"))
+                            .append(StringUtils.defaultString(container.getType(), "Unknown"))
                             .append("\n")
                             .append("启动用时    >   ")
                             .append(startUsedTime)
@@ -533,29 +541,14 @@ public class Application extends ResourceConfig {
                         logger.warn("请通过connector.[Name].port配置监听端口");
                     }
 
-                    logger.info("应用容器已启动\n{}\n{}\n{}",
+                    logger.info("应用已启动\n{}\n{}\n{}",
                             INFO_SPLITOR,
                             builder,
                             INFO_SPLITOR);
                 }
-
-
-                Application.this.container = container;
-                publishEvent(new ContainerStartupEvent(container, Application.this));
-            }
-
-            @Override
-            public void onReload(Container container) {
-                publishEvent(new ContainerReloadEvent(container, Application.this));
-                logger.trace("应用容器重新加载");
-            }
-
-            @Override
-            public void onShutdown(Container container) {
-                publishEvent(new ContainerShutdownEvent(container, Application.this));
-                logger.trace("应用容器已关闭");
             }
         });
+
     }
 
     private String toExternalForm(URL url) {
@@ -654,15 +647,6 @@ public class Application extends ResourceConfig {
         return url;
     }
 
-    public void reload() {
-        container.reload(this);
-    }
-
-    public void reload(ResourceConfig configuration) {
-        publishEvent(new ContainerBeginReloadEvent(container, this));
-        container.reload(configuration);
-    }
-
     public File getPackageRoot() {
         return packageRoot;
     }
@@ -692,7 +676,11 @@ public class Application extends ResourceConfig {
     }
 
     public List<Connector> getConnectors() {
-        return Ameba.getContainer().getConnectors();
+        return container.getConnectors();
+    }
+
+    public Container getContainer() {
+        return container;
     }
 
     public boolean isJmxEnabled() {
@@ -754,48 +742,6 @@ public class Application extends ResourceConfig {
 
         public Application getApp() {
             return app;
-        }
-    }
-
-    private static class ContainerEvent implements Event {
-        private Container container;
-        private Application app;
-
-        public ContainerEvent(Container container, Application app) {
-            this.container = container;
-            this.app = app;
-        }
-
-        Container getContainer() {
-            return container;
-        }
-
-        public Application getApp() {
-            return app;
-        }
-    }
-
-    public static class ContainerStartupEvent extends ContainerEvent {
-        public ContainerStartupEvent(Container container, Application app) {
-            super(container, app);
-        }
-    }
-
-    public static class ContainerReloadEvent extends ContainerEvent {
-        public ContainerReloadEvent(Container container, Application app) {
-            super(container, app);
-        }
-    }
-
-    public static class ContainerBeginReloadEvent extends ContainerEvent {
-        public ContainerBeginReloadEvent(Container container, Application app) {
-            super(container, app);
-        }
-    }
-
-    public static class ContainerShutdownEvent extends ContainerEvent {
-        public ContainerShutdownEvent(Container container, Application app) {
-            super(container, app);
         }
     }
 
