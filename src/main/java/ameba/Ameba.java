@@ -48,8 +48,6 @@ public class Ameba {
 
     public static void main(String[] args) throws Exception {
 
-        version = IOUtils.getJarImplVersion(Ameba.class);
-
         bootstrap();
 
         // register shutdown hook
@@ -64,6 +62,7 @@ public class Ameba {
     }
 
     public static void bootstrap() throws Exception {
+        version = IOUtils.getJarImplVersion(Ameba.class);
         bootstrap(new Application());
     }
 

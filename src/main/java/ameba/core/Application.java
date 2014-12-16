@@ -742,7 +742,7 @@ public class Application extends ResourceConfig {
         }
     }
 
-    public static class ConfiguredEvent extends Event {
+    public static class ConfiguredEvent implements Event {
         private Application app;
 
         public ConfiguredEvent(Application app) {
@@ -754,7 +754,7 @@ public class Application extends ResourceConfig {
         }
     }
 
-    private static class ContainerEvent extends Event {
+    private static class ContainerEvent implements Event {
         private Container container;
         private Application app;
 

@@ -60,7 +60,7 @@ public class EventTest {
         }
     }
 
-    public static class TestEvent extends Event {
+    public static class TestEvent implements Event {
         public String message;
 
         public TestEvent(String message) {
@@ -68,7 +68,7 @@ public class EventTest {
         }
     }
 
-    public static class TestEvent1 extends Event {
+    public static class TestEvent1 implements Event {
         public String message;
 
         public TestEvent1(String message) {

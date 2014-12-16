@@ -3,5 +3,5 @@ package ameba.event;
 /**
  * @author icode
  */
-public abstract class Event {
+public interface Event {
 }

@@ -2,6 +2,9 @@ package ameba.container;
 
 import ameba.core.Application;
 import ameba.container.server.Connector;
+import ameba.event.Event;
+import ameba.event.EventBus;
+import ameba.event.SystemEventBus;
 import ameba.util.ClassUtils;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -21,6 +24,10 @@ public abstract class Container {
     public static final Logger logger = LoggerFactory.getLogger(Container.class);
 
     protected Application application;
+
+    public static class StartEvent implements Event {
+
+    }
 
     public Container(Application application) {
         this.application = application;
@@ -82,7 +89,12 @@ public abstract class Container {
 
     protected abstract WebSocketContainerProvider getWebSocketContainerProvider();
 
-    public abstract void start() throws Exception;
+    public void start() throws Exception {
+        SystemEventBus.publish(new StartEvent());
+        doStart();
+    }
+
+    protected abstract void doStart() throws Exception;
 
     public abstract void shutdown() throws Exception;
 
