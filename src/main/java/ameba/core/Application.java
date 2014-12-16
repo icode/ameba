@@ -518,16 +518,19 @@ public class Application extends ResourceConfig {
                             .append(isJmxEnabled())
                             .append("\n")
                             .append("应用模式    >   ")
-                            .append(getMode());
+                            .append(getMode())
+                            .append("\n")
+                            .append("监听地址    >   ");
 
                     List<Connector> connectors = getConnectors();
                     if (connectors != null && connectors.size() > 0) {
-                        builder.append("\n")
-                                .append("监听地址    >   ");
                         for (Connector connector : connectors) {
                             builder.append("\n             ")
                                     .append(connector.getHttpServerBaseUri());
                         }
+                    } else {
+                        builder.append("\n             无");
+                        logger.warn("请通过connector.[Name].port配置监听端口");
                     }
 
                     logger.info("应用容器已启动\n{}\n{}\n{}",
