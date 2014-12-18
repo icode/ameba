@@ -1,9 +1,9 @@
-package ameba.enhancers.model;
+package ameba.enhancer.model;
 
 import ameba.db.model.Model;
-import ameba.enhancers.Enhancer;
-import ameba.enhancers.EnhancingException;
-import ameba.exceptions.UnexpectedException;
+import ameba.enhancer.Enhancer;
+import ameba.enhancer.EnhancingException;
+import ameba.exception.UnexpectedException;
 import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -304,7 +304,7 @@ public class ModelManager extends Enhancer {
                                     fieldType.getSimpleName() + ".class," + clazz.getSimpleName() + ".class});" +
                                     "   putFinderCache(" + clazz.getSimpleName() + ".class , finder);" +
                                     "} catch (Exception e) {" +
-                                    "    throw new ameba.exceptions.AmebaException(e);" +
+                                    "    throw new ameba.exception.AmebaException(e);" +
                                     "}" +
                                     "if (finder == null) {\n" +
                                     "    throw new ameba.db.model.Model.NotFinderFindException();\n" +

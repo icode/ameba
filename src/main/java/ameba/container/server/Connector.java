@@ -1,6 +1,6 @@
 package ameba.container.server;
 
-import ameba.exceptions.ConfigErrorException;
+import ameba.exception.ConfigErrorException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

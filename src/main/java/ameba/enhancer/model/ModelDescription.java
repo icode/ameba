@@ -1,4 +1,4 @@
-package ameba.enhancers.model;
+package ameba.enhancer.model;
 
 /**
  * @author icode

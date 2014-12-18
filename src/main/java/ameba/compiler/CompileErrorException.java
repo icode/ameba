@@ -1,6 +1,6 @@
 package ameba.compiler;
 
-import ameba.exceptions.AmebaException;
+import ameba.exception.AmebaException;
 
 public class CompileErrorException extends AmebaException {
     protected CompileErrorException(String message) {

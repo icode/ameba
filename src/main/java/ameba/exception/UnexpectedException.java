@@ -1,4 +1,4 @@
-package ameba.exceptions;
+package ameba.exception;
 
 /**
  * @author icode

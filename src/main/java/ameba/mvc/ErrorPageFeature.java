@@ -1,6 +1,6 @@
 package ameba.mvc;
 
-import ameba.exceptions.ConfigErrorException;
+import ameba.exception.ConfigErrorException;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package ameba.exceptions;
+package ameba.exception;
 
 import java.io.File;
 import java.util.List;

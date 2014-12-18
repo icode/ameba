@@ -2,7 +2,7 @@ package ameba;
 
 import ameba.container.Container;
 import ameba.core.Application;
-import ameba.exceptions.AmebaException;
+import ameba.exception.AmebaException;
 import ameba.util.IOUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;

@@ -1,6 +1,6 @@
-package ameba.enhancers;
+package ameba.enhancer;
 
-import ameba.exceptions.AmebaException;
+import ameba.exception.AmebaException;
 
 /**
  * @author icode

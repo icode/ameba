@@ -1,6 +1,6 @@
 package ameba.mvc.template;
 
-import ameba.exceptions.AmebaExceptionWithJavaSource;
+import ameba.exception.AmebaExceptionWithJavaSource;
 
 import java.io.File;
 import java.util.List;

@@ -1,6 +1,6 @@
 package ameba.websocket;
 
-import ameba.exceptions.AmebaException;
+import ameba.exception.AmebaException;
 
 /**
  * @author icode

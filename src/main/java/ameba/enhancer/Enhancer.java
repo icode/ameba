@@ -1,4 +1,4 @@
-package ameba.enhancers;
+package ameba.enhancer;
 
 import ameba.util.ClassUtils;
 import javassist.*;

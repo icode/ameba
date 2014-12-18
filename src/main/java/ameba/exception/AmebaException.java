@@ -1,4 +1,4 @@
-package ameba.exceptions;
+package ameba.exception;
 
 import ameba.Ameba;
 import com.google.common.collect.Lists;

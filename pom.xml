@@ -369,7 +369,7 @@
     </build>
 
     <properties>
-        <ameba.utils.version>RELEASE</ameba.utils.version>
+        <ameba.utils.version>0.1.6e</ameba.utils.version>
         <jdt.ecj.version>[4.4,5.0)</jdt.ecj.version>
         <json-patch.version>1.7</json-patch.version>
         <jersey.version>[2.12,3.0)</jersey.version>
