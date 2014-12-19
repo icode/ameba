@@ -1,5 +1,6 @@
 package ameba.db;
 
+import ameba.enhancer.model.EnhanceModelFeature;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 import com.google.common.collect.Maps;
@@ -54,6 +55,7 @@ public class DataSourceFeature implements Feature {
         for (String key : config.getPropertyNames()) {
             key = StringUtils.deleteWhitespace(key);
             key = key.replace("\\.{2,}", ".");
+            if (key.startsWith(EnhanceModelFeature.MODULE_MODELS_KEY_PREFIX)) continue;
             //db.[DataSourceName].[ConfigKey]
             String[] keys = key.split("\\.");
             if (keys.length > 2 && "db".equals(keys[0])) {

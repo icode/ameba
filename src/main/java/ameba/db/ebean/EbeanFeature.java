@@ -4,6 +4,7 @@ import ameba.db.DataSourceFeature;
 import ameba.db.TransactionFeature;
 import ameba.db.ebean.transaction.EbeanTransactional;
 import ameba.db.model.Model;
+import ameba.enhancer.model.EnhanceModelFeature;
 import ameba.enhancer.model.ModelDescription;
 import ameba.enhancer.model.ModelManager;
 import ameba.util.IOUtils;
@@ -20,6 +21,7 @@ import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
 import com.fasterxml.jackson.core.JsonFactory;
 import javassist.CannotCompileException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +47,7 @@ import java.util.Properties;
 public class EbeanFeature extends TransactionFeature {
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
     private static final int EBEAN_TRANSFORM_LOG_LEVEL = LoggerFactory.getLogger(Ebean.class).isDebugEnabled() ? 9 : 0;
+    private static String DEFAULT_DB_NAME = null;
 
     public EbeanFeature() {
         super(EbeanFinder.class, EbeanPersister.class);
@@ -107,10 +110,21 @@ public class EbeanFeature extends TransactionFeature {
         return result;
     }
 
+    public static String getDefaultDBName() {
+        return DEFAULT_DB_NAME;
+    }
+
     @Override
     public boolean configure(final FeatureContext context) {
         context.register(EbeanTransactional.class);
         final Configuration appConfig = context.getConfiguration();
+
+        DEFAULT_DB_NAME = (String) appConfig.getProperty("db.default");
+
+        if (StringUtils.isBlank(DEFAULT_DB_NAME)) {
+            DEFAULT_DB_NAME = Model.DB_DEFAULT_SERVER_NAME;
+        }
+
         final Properties eBeanConfig = new Properties();
 
         final JsonFactory jsonFactory = new JsonFactory();
@@ -146,7 +160,7 @@ public class EbeanFeature extends TransactionFeature {
             final boolean isProd = "product".equals(appConfig.getProperty("app.mode"));
 
             config.setDataSource(DataSourceFeature.getDataSource(name));//设置为druid数据源
-            if (name.equals(Model.DB_DEFAULT_SERVER_NAME)) {
+            if (name.equals(EbeanFeature.getDefaultDBName())) {
                 config.setDefaultServer(true);
             }
 
@@ -166,24 +180,41 @@ public class EbeanFeature extends TransactionFeature {
             if (null != value)
                 runDdl = Boolean.valueOf(value);
 
-            manager.addModelLoadedListener(new ModelEventListener(config, isProd, genDdl, runDdl));
+            ModelEventListener listener = new ModelEventListener(config, isProd, genDdl, runDdl);
+
+            listener.bindManager(manager);
+
+            if (config.isDefaultServer()) {
+                listener.bindManager(EnhanceModelFeature.getModulesModelManager());
+            }
         }
 
         return true;
     }
 
-    public static class ModelEventListener extends ModelManager.ModelEventListener {
+    private static class ModelEventListener extends ModelManager.ModelEventListener {
 
         ServerConfig config;
         boolean isProd;
         boolean runDdl;
         boolean genDdl;
+        int managerCount = 0;
 
         public ModelEventListener(ServerConfig config, boolean isProd, boolean genDdl, boolean runDdl) {
             this.config = config;
             this.isProd = isProd;
             this.runDdl = runDdl;
             this.genDdl = genDdl;
+        }
+
+        public void addManagerCount() {
+            managerCount++;
+        }
+
+        public void bindManager(ModelManager manager) {
+            if (manager == null) return;
+            manager.addModelLoadedListener(this);
+            addManagerCount();
         }
 
         @Override
@@ -197,9 +228,8 @@ public class EbeanFeature extends TransactionFeature {
 
         @Override
         protected void loaded(Class clazz, ModelDescription desc, int index, int size) {
-
             config.addClass(clazz);
-            if (index == size - 1) {//最后一个model进行初始化ebean
+            if (index == size - 1 && (--managerCount) == 0) {//最后一个manager+model进行初始化ebean
                 EbeanServer server = EbeanServerFactory.create(config);
                 // DDL
                 if (!isProd) {

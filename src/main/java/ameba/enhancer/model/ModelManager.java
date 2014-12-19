@@ -1,5 +1,6 @@
 package ameba.enhancer.model;
 
+import ameba.db.ebean.EbeanFeature;
 import ameba.db.model.Model;
 import ameba.enhancer.Enhancer;
 import ameba.enhancer.EnhancingException;
@@ -320,7 +321,7 @@ public class ModelManager extends Enhancer {
                                 clazz);
 
                         _getFinder.setModifiers(Modifier.setPublic(Modifier.STATIC));
-                        _getFinder.setBody("{return (Finder) " + GET_FINDER_M_NAME + "(\"" + Model.DB_DEFAULT_SERVER_NAME + "\");}");
+                        _getFinder.setBody("{return (Finder) " + GET_FINDER_M_NAME + "(\"" + EbeanFeature.getDefaultDBName() + "\");}");
                         clazz.addMethod(_getFinder);
                         idGetSetFixed = true;
                     }

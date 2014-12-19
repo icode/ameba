@@ -58,7 +58,7 @@ public abstract class Container {
             @Override
             public void onReload(org.glassfish.jersey.server.spi.Container container) {
                 publishEvent(new ReloadEvent(Container.this, application));
-                logger.trace("应用容器重新加载");
+                logger.trace("应用容器已重新加载");
             }
 
             @Override

@@ -1,17 +1,17 @@
 package ameba.mvc.template.internal;
 
 import ameba.Ameba;
+import ameba.core.Frameworks;
 import ameba.mvc.ErrorPageGenerator;
 import ameba.mvc.template.TemplateException;
 import ameba.mvc.template.TemplateNotFoundException;
 import ameba.util.IOUtils;
-import com.google.common.collect.Lists;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.internal.inject.Providers;
 import org.glassfish.jersey.message.MessageBodyWorkers;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.glassfish.jersey.server.mvc.spi.AbstractTemplateProcessor;
@@ -23,7 +23,6 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 import java.io.*;
@@ -81,9 +80,7 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
         if (viewableMessageBodyWriter == null)
             synchronized (this) {
                 if (viewableMessageBodyWriter == null) {
-                    viewableMessageBodyWriter =
-                            workers.getMessageBodyWriter(Viewable.class, Viewable.class,
-                                    new Annotation[]{}, null);
+                    viewableMessageBodyWriter = Frameworks.getViewableMessageBodyWriter(workers);
                 }
             }
         return viewableMessageBodyWriter;
@@ -93,15 +90,7 @@ public abstract class AmebaTemplateProcessor<T> extends AbstractTemplateProcesso
         if (errorPageGenerator == null)
             synchronized (this) {
                 if (errorPageGenerator == null) {
-                    final Set<ExceptionMapper> exceptionMappers = Sets.newLinkedHashSet();
-                    exceptionMappers.addAll(Providers.getCustomProviders(serviceLocator, ExceptionMapper.class));
-                    exceptionMappers.addAll(Providers.getProviders(serviceLocator, ExceptionMapper.class));
-                    for (ExceptionMapper t : exceptionMappers) {
-                        if (t instanceof ErrorPageGenerator) {
-                            this.errorPageGenerator = (ErrorPageGenerator) t;
-                            return this.errorPageGenerator;
-                        }
-                    }
+                    this.errorPageGenerator = Frameworks.getErrorPageGenerator(serviceLocator);
                 }
             }
         return errorPageGenerator;

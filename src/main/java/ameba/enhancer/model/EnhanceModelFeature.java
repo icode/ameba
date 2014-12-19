@@ -2,6 +2,7 @@ package ameba.enhancer.model;
 
 import ameba.db.DataSourceFeature;
 import ameba.feature.AmebaFeature;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
+import java.util.UUID;
 
 /**
  * @author 张立鑫 IntelligentCode
@@ -21,7 +23,15 @@ import javax.ws.rs.core.FeatureContext;
 @ConstrainedTo(RuntimeType.SERVER)
 public class EnhanceModelFeature extends AmebaFeature {
 
+    public static final String MODULE_MODELS_KEY_PREFIX = "db.default.models.";
+
     private static final Logger logger = LoggerFactory.getLogger(EnhanceModelFeature.class);
+
+    private static final String moduleModelManagerId = UUID.randomUUID().toString() + System.nanoTime();
+
+    public static ModelManager getModulesModelManager() {
+        return ModelManager.getManager(moduleModelManagerId);
+    }
 
     @Override
     public boolean configure(final FeatureContext context) {
@@ -35,6 +45,19 @@ public class EnhanceModelFeature extends AmebaFeature {
                 ModelManager.create(name, modelPackages.split(","));
             }
         }
+
+        String[] defaultModelsPkg = new String[0];
+
+        for (String key : config.getPropertyNames()) {
+            if (key.startsWith(MODULE_MODELS_KEY_PREFIX)) {
+                String modelPackages = (String) config.getProperty(key);
+                if (StringUtils.isNotBlank(modelPackages)) {
+                    defaultModelsPkg = ArrayUtils.addAll(defaultModelsPkg, modelPackages.split(","));
+                }
+            }
+        }
+
+        ModelManager.create(moduleModelManagerId, defaultModelsPkg);
 
         return true;
     }
