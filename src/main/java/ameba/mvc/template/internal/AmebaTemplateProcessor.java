@@ -44,7 +44,6 @@ import java.util.concurrent.ConcurrentMap;
 @Provider
 @Singleton
 public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> {
-    public static final String INNER_VIEW_DIR = "/__views/ameba/";
     private static Logger logger = LoggerFactory.getLogger(AmebaTemplateProcessor.class);
     private final ConcurrentMap<String, T> cache;
     private final String suffix;
@@ -88,8 +87,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
             }
         });
 
-        this.basePath = new String[basePaths.size()];
-        basePaths.toArray(this.basePath);
+        this.basePath = basePaths.toArray(new String[basePaths.size()]);
 
         Boolean cacheEnabled = PropertiesHelper.getValue(properties, MvcFeature.CACHE_TEMPLATES + this.suffix, Boolean.class, null);
         if (cacheEnabled == null) {
@@ -141,7 +139,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
 
     private Collection<String> getTemplatePaths(String name) {
 
-        Set<String> paths = Sets.newHashSet();
+        Set<String> paths = Sets.newLinkedHashSet();
 
         for (String path : basePath) {
             paths.addAll(getTemplatePaths(name, path));
@@ -152,12 +150,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
 
     private Collection<String> getTemplatePaths(String name, String basePath) {
         String lowerName = name.toLowerCase();
-        String templatePath = name;
-        if (!templatePath.startsWith(INNER_VIEW_DIR)) {
-            templatePath = basePath.endsWith("/") ? basePath + name.substring(1) : basePath + name;
-        } else if (templatePath.startsWith("/")) {
-            templatePath = templatePath.substring(1);
-        }
+        String templatePath = basePath.endsWith("/") ? basePath + name.substring(1) : basePath + name;
         Iterator var4 = this.supportedExtensions.iterator();
 
         String extension;

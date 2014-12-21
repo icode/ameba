@@ -1,6 +1,5 @@
 package ameba.mvc;
 
-import ameba.mvc.template.internal.AmebaTemplateProcessor;
 import ameba.mvc.template.internal.Viewables;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +25,7 @@ import java.util.HashMap;
 public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
     protected static final HashMap<Integer, String> errorTemplateMap = Maps.newHashMap();
     // 模板引擎会去掉第一个斜线
-    public static final String DEFAULT_ERROR_PAGE_DIR = AmebaTemplateProcessor.INNER_VIEW_DIR + "error/";
+    public static final String DEFAULT_ERROR_PAGE_DIR = "/error/";
     public static final String DEFAULT_404_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "404.httl";
     public static final String DEFAULT_5XX_PRODUCT_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "500.httl";
     public static final String DEFAULT_501_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "501.httl";
