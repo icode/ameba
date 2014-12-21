@@ -26,10 +26,21 @@ public class HttlMvcFeature implements Feature {
             context.register(NotFoundForward.class);
         }
 
-        context.property(MvcFeature.TEMPLATE_BASE_PATH + '.' + HttlViewProcessor.CONFIG_SUFFIX,
+        for (String key : context.getConfiguration().getPropertyNames()) {
+            if (key.startsWith("template.directory.")) {
+                context.property(MvcFeature.TEMPLATE_BASE_PATH + key.replaceFirst("template\\.directory", ""),
+                        context.getConfiguration().getProperty(key));
+
+            } else if (key.startsWith("template.cache.")) {
+                context.property(MvcFeature.CACHE_TEMPLATES + key.replaceFirst("template\\.cache", ""),
+                        context.getConfiguration().getProperty(key));
+            }
+        }
+
+        context.property(MvcFeature.TEMPLATE_BASE_PATH,
                 context.getConfiguration().getProperty("template.directory"));
 
-        context.property(MvcFeature.CACHE_TEMPLATES + '.' + HttlViewProcessor.CONFIG_SUFFIX,
+        context.property(MvcFeature.CACHE_TEMPLATES,
                 context.getConfiguration().getProperty("template.cache"));
 
 
