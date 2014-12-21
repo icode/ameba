@@ -15,6 +15,7 @@ import org.glassfish.jersey.internal.util.ReflectionHelper;
 import org.glassfish.jersey.internal.util.collection.DataStructures;
 import org.glassfish.jersey.internal.util.collection.Value;
 import org.glassfish.jersey.message.MessageBodyWorkers;
+import org.glassfish.jersey.server.mvc.MvcFeature;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.glassfish.jersey.server.mvc.internal.LocalizationMessages;
 import org.glassfish.jersey.server.mvc.internal.TemplateHelper;
@@ -75,15 +76,15 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         this.suffix = '.' + propertySuffix;
         this.servletContext = servletContext;
         Map properties = config.getProperties();
-        String basePath = PropertiesHelper.getValue(properties, "jersey.config.server.mvc.templateBasePath" + this.suffix, String.class, null);
+        String basePath = PropertiesHelper.getValue(properties, MvcFeature.TEMPLATE_BASE_PATH + this.suffix, String.class, null);
         if (basePath == null) {
-            basePath = PropertiesHelper.getValue(properties, "jersey.config.server.mvc.templateBasePath", "", null);
+            basePath = PropertiesHelper.getValue(properties, MvcFeature.TEMPLATE_BASE_PATH, "", null);
         }
 
         this.basePath = basePath;
-        Boolean cacheEnabled = PropertiesHelper.getValue(properties, "jersey.config.server.mvc.caching" + this.suffix, Boolean.class, null);
+        Boolean cacheEnabled = PropertiesHelper.getValue(properties, MvcFeature.CACHE_TEMPLATES  + this.suffix, Boolean.class, null);
         if (cacheEnabled == null) {
-            cacheEnabled = PropertiesHelper.getValue(properties, "jersey.config.server.mvc.caching", false, null);
+            cacheEnabled = PropertiesHelper.getValue(properties, MvcFeature.CACHE_TEMPLATES, false, null);
         }
 
         this.cache = cacheEnabled ? DataStructures.<String, T>createConcurrentMap() : null;
