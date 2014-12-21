@@ -1,9 +1,9 @@
 package ameba.mvc.template.internal;
 
 import ameba.core.Frameworks;
+import ameba.exception.AmebaException;
 import ameba.mvc.ErrorPageGenerator;
 import ameba.mvc.template.TemplateException;
-import ameba.mvc.template.TemplateNotFoundException;
 import ameba.util.IOUtils;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -15,6 +15,8 @@ import org.glassfish.jersey.internal.util.ReflectionHelper;
 import org.glassfish.jersey.internal.util.collection.DataStructures;
 import org.glassfish.jersey.internal.util.collection.Value;
 import org.glassfish.jersey.message.MessageBodyWorkers;
+import org.glassfish.jersey.server.ContainerRequest;
+import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.mvc.MvcFeature;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.glassfish.jersey.server.mvc.internal.LocalizationMessages;
@@ -23,19 +25,16 @@ import org.glassfish.jersey.server.mvc.spi.TemplateProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.ServletContext;
-import javax.ws.rs.core.Configuration;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.*;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
-import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
@@ -51,7 +50,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
     private final String suffix;
     private final Configuration config;
     private final ServletContext servletContext;
-    private final String basePath;
+    private final String[] basePath;
     private final Charset encoding;
     /**
      * Create an instance of the processor with injected {@link javax.ws.rs.core.Configuration config} and
@@ -81,8 +80,18 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
             basePath = PropertiesHelper.getValue(properties, MvcFeature.TEMPLATE_BASE_PATH, "", null);
         }
 
-        this.basePath = basePath;
-        Boolean cacheEnabled = PropertiesHelper.getValue(properties, MvcFeature.CACHE_TEMPLATES  + this.suffix, Boolean.class, null);
+        Collection<String> basePaths = Collections2.transform(Lists.newArrayList(basePath.split(",")), new Function<String, String>() {
+            @Nullable
+            @Override
+            public String apply(String s) {
+                return s.startsWith("/") ? s.substring(1) : s;
+            }
+        });
+
+        this.basePath = new String[basePaths.size()];
+        basePaths.toArray(this.basePath);
+
+        Boolean cacheEnabled = PropertiesHelper.getValue(properties, MvcFeature.CACHE_TEMPLATES + this.suffix, Boolean.class, null);
         if (cacheEnabled == null) {
             cacheEnabled = PropertiesHelper.getValue(properties, MvcFeature.CACHE_TEMPLATES, false, null);
         }
@@ -101,7 +110,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
 
     }
 
-    protected String getBasePath() {
+    protected String[] getBasePath() {
         return this.basePath;
     }
 
@@ -131,10 +140,23 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
 
 
     private Collection<String> getTemplatePaths(String name) {
+
+        Set<String> paths = Sets.newHashSet();
+
+        for (String path : basePath) {
+            paths.addAll(getTemplatePaths(name, path));
+        }
+
+        return paths;
+    }
+
+    private Collection<String> getTemplatePaths(String name, String basePath) {
         String lowerName = name.toLowerCase();
         String templatePath = name;
         if (!templatePath.startsWith(INNER_VIEW_DIR)) {
-            templatePath = this.basePath.endsWith("/") ? this.basePath + name.substring(1) : this.basePath + name;
+            templatePath = basePath.endsWith("/") ? basePath + name.substring(1) : basePath + name;
+        } else if (templatePath.startsWith("/")) {
+            templatePath = templatePath.substring(1);
         }
         Iterator var4 = this.supportedExtensions.iterator();
 
@@ -205,7 +227,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         return this.encoding;
     }
 
-    private T _resolve(String name) {
+    private T resolve(String name) {
         Iterator var2 = this.getTemplatePaths(name).iterator();
 
         while (true) {
@@ -246,18 +268,19 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
                 return this.resolve(template, reader);
             } catch (Exception e) {
                 logger.warn(LocalizationMessages.TEMPLATE_RESOLVE_ERROR(template), e);
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException) e;
-                } else {
-                    throw new TemplateException("find template error: " + template, e, e.getStackTrace()[0].getLineNumber());
-                }
-            } finally {
+                RuntimeException r;
                 try {
-                    reader.close();
-                } catch (IOException e) {
-                    logger.warn(LocalizationMessages.TEMPLATE_ERROR_CLOSING_READER(), e);
+                    r = createException(e, null);
+                } catch (Exception ex) {
+                    if (ex instanceof AmebaException) {
+                        r = (RuntimeException) ex;
+                    } else {
+                        r = new TemplateException("create resolve Exception error", ex, -1);
+                    }
                 }
-
+                throw r;
+            } finally {
+                IOUtils.closeQuietly(reader);
             }
         }
     }
@@ -267,42 +290,21 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
     public T resolve(String name, MediaType mediaType) {
         if (this.cache != null) {
             if (!this.cache.containsKey(name)) {
-                this.cache.putIfAbsent(name, this._resolve(name));
+                this.cache.putIfAbsent(name, this.resolve(name));
             }
 
             return this.cache.get(name);
         } else {
-            return this._resolve(name);
+            return this.resolve(name);
         }
     }
 
+    @Inject
+    private javax.inject.Provider<ContainerRequest> request;
 
-    protected abstract TemplateException createException(ParseException e);
+    protected abstract TemplateException createException(Exception e, T template);
 
-    protected T resolve(String templatePath, Reader reader) throws Exception {
-        try {
-            if (templatePath != null && templatePath.startsWith(this.basePath))
-                return _resolve(templatePath);
-            else
-                return resolve(reader);
-        } catch (Exception e) {
-            RuntimeException r;
-            if (e instanceof ParseException) {
-                r = createException((ParseException) e);
-            } else if (e instanceof IllegalStateException) {
-                return null;
-            } else {
-                r = new TemplateException("resolve template error: " + templatePath, e, e.getStackTrace()[0].getLineNumber());
-            }
-            throw r;
-        } finally {
-            IOUtils.closeQuietly(reader);
-        }
-    }
-
-    protected abstract T resolve(String templatePath) throws Exception;
-
-    protected abstract T resolve(Reader reader) throws Exception;
+    protected abstract T resolve(String templatePath, Reader reader) throws Exception;
 
     @Override
     public void writeTo(T templateReference, Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException {
@@ -310,41 +312,35 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
             writeTemplate(templateReference, viewable, mediaType, httpHeaders, out);
         } catch (Exception e) {
             RuntimeException r;
-            if (e instanceof ParseException) {
-                r = createException((ParseException) e);
-            } else {
-                String file = getTemplateFile(templateReference);
-                file = getBasePath() + file;
-                File tFile = new File(file);
-                String source = IOUtils.readFromResource(file);
-
-                List<String> sources;
-
-                if (!"".equals(source)) {
-                    sources = Lists.newArrayList(source.split("\n"));
+            try {
+                r = createException(e, templateReference);
+            } catch (Exception ex) {
+                if (ex instanceof AmebaException) {
+                    r = (RuntimeException) ex;
                 } else {
-                    sources = Lists.newArrayList();
-                }
-
-                if (e instanceof FileNotFoundException || e.getCause() instanceof FileNotFoundException) {
-                    r = new TemplateNotFoundException(e.getMessage(),
-                            e, -1, tFile, sources, -1);
-                } else {
-                    r = new TemplateException("Write template error in  " + file + ". " + e.getMessage(),
-                            e, -1, tFile, sources, -1);
+                    r = new TemplateException("create writeTo Exception error", ex, -1);
                 }
             }
-
             viewable = (Viewable) getErrorPageGenerator().toResponse(r).getEntity();
 
-            getViewableMessageBodyWriter().writeTo(viewable,
-                    Viewable.class, Viewable.class, new Annotation[]{},
-                    mediaType, httpHeaders,
-                    out);
+            try {
+                getViewableMessageBodyWriter().writeTo(viewable,
+                        Viewable.class, Viewable.class, new Annotation[]{},
+                        mediaType, httpHeaders,
+                        out);
+                request.get().getResponseWriter()
+                        .writeResponseStatusAndHeaders(
+                                -1,
+                                new ContainerResponse(
+                                        request.get(),
+                                        Response.serverError().build()
+                                )
+                        ).flush();
+            } catch (Exception ex) {
+                logger.error("send error message error", ex);
+            }
         }
     }
-
-    public abstract String getTemplateFile(T templateReference);
 
     public abstract void writeTemplate(T templateReference, Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws Exception;
 }

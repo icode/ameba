@@ -2,14 +2,18 @@ package ameba.mvc.template.internal;
 
 import ameba.Ameba;
 import ameba.mvc.template.TemplateException;
+import ameba.mvc.template.TemplateNotFoundException;
 import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import httl.Engine;
 import httl.Template;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.jvnet.hk2.annotations.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,9 +22,7 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
-import java.io.File;
-import java.io.OutputStream;
-import java.io.Reader;
+import java.io.*;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
@@ -39,8 +41,8 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
 
     public static final String CONFIG_SUFFIX = "httl";
     private static final String TEMPLATE_CONF_PREFIX = "template.";
-
     private static final Engine engine;
+    private static String REQ_TPL_PATH_KEY = HttlViewProcessor.class.getName() + ".template.path";
 
     static {
         Properties properties = new Properties();
@@ -70,6 +72,10 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
         engine = Engine.getEngine(properties);
     }
 
+    private static Logger logger = LoggerFactory.getLogger(HttlViewProcessor.class);
+    @Inject
+    private javax.inject.Provider<ContainerRequest> request;
+
 
     @Inject
     public HttlViewProcessor(Configuration config, @Optional ServletContext servletContext) {
@@ -94,23 +100,85 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
     }
 
     @Override
-    protected TemplateException createException(ParseException e) {
-        List<String> msgSource = Lists.newArrayList(e.getMessage().split("\n"));
-        File file = new File(getBasePath() + msgSource.get(2));
-        List<String> source = Lists.newArrayList();
-        source.add(msgSource.get(4));
-        source.add(msgSource.get(5));
-        Integer line;
-        try {
-            line = Integer.valueOf(msgSource.get(1).split(",")[1].split(":")[1].trim());
-        } catch (Exception ex) {
-            line = 0;
+    protected TemplateException createException(Exception e, Template template) {
+        TemplateException ecx;
+        if (e instanceof ParseException) {
+            List<String> msgSource = Lists.newArrayList(e.getMessage().split("\n"));
+            File file = getTemplateFile(template);
+            List<String> source = Lists.newArrayList();
+            source.add(msgSource.get(4));
+            source.add(msgSource.get(5));
+            Integer line;
+            try {
+                line = Integer.valueOf(msgSource.get(1).split(",")[1].split(":")[1].trim());
+            } catch (Exception ex) {
+                line = 0;
+            }
+            ecx = new TemplateException(msgSource.get(0) + "\n" + msgSource.get(1).replace(", in:", ""), e, line, file, source, 0);
+        } else if (template != null) {
+            List<String> sources;
+
+            String source = getTemplateSource(template);
+
+            if (StringUtils.isNotBlank(source)) {
+                sources = Lists.newArrayList(source.split("\n"));
+            } else {
+                sources = Lists.newArrayList();
+            }
+
+            File tFile = getTemplateFile(template);
+
+            if (e instanceof FileNotFoundException || e.getCause() instanceof FileNotFoundException) {
+                ecx = new TemplateNotFoundException(e.getMessage(),
+                        e, -1, tFile, sources, -1);
+            } else {
+                ecx = new TemplateException("Write template error in  " + tFile.getPath() + ". " + e.getMessage(),
+                        e, -1, tFile, sources, -1);
+            }
+        } else {
+            ecx = new TemplateException("template error", e, e.getStackTrace()[0].getLineNumber());
         }
-        return new TemplateException(msgSource.get(0) + "\n" + msgSource.get(1).replace(", in:", ""), e, line, file, source, 0);
+        return ecx;
     }
 
     @Override
-    protected Template resolve(String templatePath) throws Exception {
+    protected Template resolve(String templatePath, Reader reader) throws Exception {
+        Template template = null;
+        if (templatePath != null) {
+            try {
+                template = resolve(templatePath);
+            } catch (Exception e) {
+                if (reader != null) {
+                    template = resolve(reader);
+                } else {
+                    throw e;
+                }
+            }
+        } else if (reader != null) {
+            template = resolve(reader);
+        }
+
+        if (template != null) {
+            request.get().setProperty(REQ_TPL_PATH_KEY, templatePath);
+        }
+
+        return template;
+    }
+
+    private String getTemplateSource(Template template) {
+        try {
+            return template.getSource();
+        } catch (IOException e) {
+            logger.error("get template source code error", e);
+        }
+        return "";
+    }
+
+    private File getTemplateFile(Template template) {
+        return new File((String) request.get().getProperty(REQ_TPL_PATH_KEY));
+    }
+
+    private Template resolve(String templatePath) throws Exception {
         String dir = (String) engine.getProperty("template.directory");
         if (templatePath.startsWith(dir)) {
             templatePath = templatePath.substring(dir.length());
@@ -118,15 +186,9 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
         return engine.getTemplate(templatePath);
     }
 
-    @Override
-    protected Template resolve(Reader reader) throws Exception {
+    private Template resolve(Reader reader) throws Exception {
         String content = IOUtils.read(reader);
         return engine.parseTemplate(content);
-    }
-
-    @Override
-    public String getTemplateFile(Template templateReference) {
-        return templateReference.getName();
     }
 
     @Override

@@ -1,14 +1,12 @@
 package ameba.mvc.template;
 
-import ameba.exception.AmebaExceptionWithJavaSource;
-
 import java.io.File;
 import java.util.List;
 
 /**
  * @author icode
  */
-public class TemplateNotFoundException extends AmebaExceptionWithJavaSource {
+public class TemplateNotFoundException extends TemplateException {
     public TemplateNotFoundException(String message) {
         super(message);
     }
