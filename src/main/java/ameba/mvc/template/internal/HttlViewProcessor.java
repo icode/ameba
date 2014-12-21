@@ -6,6 +6,7 @@ import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import httl.Engine;
 import httl.Template;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.jvnet.hk2.annotations.Optional;
@@ -78,11 +79,18 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
     static String[] getExtends(Configuration config) {
         Map<String, Object> map = config.getProperties();
         String extension = (String) map.get("template.suffix");
+        extension = StringUtils.deleteWhitespace(extension);
 
-        if (StringUtils.isBlank(extension)) {
+        if (StringUtils.isEmpty(extension)) {
             return new String[]{".httl"};
+        } else {
+            extension = extension.toLowerCase();
         }
-        return extension.split(",");
+        String[] extensions = extension.split(",");
+        if (!ArrayUtils.contains(extensions, "httl") && !ArrayUtils.contains(extensions, ".httl")) {
+            extensions = ArrayUtils.add(extensions, "httl");
+        }
+        return extensions;
     }
 
     @Override
