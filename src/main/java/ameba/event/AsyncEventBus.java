@@ -49,7 +49,7 @@ public abstract class AsyncEventBus<E extends Event, S extends ActorRef> extends
     private static class Sub extends AsyncEventBus<Event, ActorRef> {
 
         private final ActorSystem actorSystem;
-        private final Map<AsyncListener, ActorRef> actorRefMap = Maps.newHashMap();
+        private final Map<AsyncListener, ActorRef> actorRefMap = Maps.newConcurrentMap();
 
         Sub(String actorSysName) {
             actorSystem = ActorSystem.create(actorSysName);

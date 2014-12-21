@@ -3,7 +3,6 @@ package ameba.core;
 import ameba.Ameba;
 import ameba.container.Container;
 import ameba.container.server.Connector;
-import ameba.event.Event;
 import ameba.event.Listener;
 import ameba.event.SystemEventBus;
 import ameba.exception.AmebaException;
@@ -23,18 +22,20 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.model.ContractProvider;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.*;
 import org.glassfish.jersey.server.internal.scanning.PackageNamesScanner;
+import org.glassfish.jersey.server.model.ResourceModel;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
-import org.glassfish.jersey.server.monitoring.RequestEvent;
 import org.glassfish.jersey.server.monitoring.RequestEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.inject.Singleton;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.ext.ExceptionMapper;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,6 +78,95 @@ public class Application extends ResourceConfig {
 
     public Application() {
         this("conf/application.conf");
+    }
+
+    public static class Event implements ameba.event.Event {
+
+        ApplicationEvent event;
+
+        public Event(ApplicationEvent event) {
+            this.event = event;
+        }
+
+        public ApplicationEvent.Type getType() {
+            return event.getType();
+        }
+
+        public ResourceConfig getResourceConfig() {
+            return event.getResourceConfig();
+        }
+
+        public ResourceModel getResourceModel() {
+            return event.getResourceModel();
+        }
+
+        public Set<Class<?>> getProviders() {
+            return event.getProviders();
+        }
+
+        public Set<Object> getRegisteredInstances() {
+            return event.getRegisteredInstances();
+        }
+
+        public Set<Class<?>> getRegisteredClasses() {
+            return event.getRegisteredClasses();
+        }
+    }
+
+    public static class RequestEvent implements ameba.event.Event {
+        org.glassfish.jersey.server.monitoring.RequestEvent event;
+
+        public RequestEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
+            this.event = event;
+        }
+
+        public org.glassfish.jersey.server.monitoring.RequestEvent.Type getType() {
+            return event.getType();
+        }
+
+        public org.glassfish.jersey.server.monitoring.RequestEvent.ExceptionCause getExceptionCause() {
+            return event.getExceptionCause();
+        }
+
+        public Iterable<ContainerResponseFilter> getContainerResponseFilters() {
+            return event.getContainerResponseFilters();
+        }
+
+        public ContainerRequest getContainerRequest() {
+            return event.getContainerRequest();
+        }
+
+        public boolean isResponseSuccessfullyMapped() {
+            return event.isResponseSuccessfullyMapped();
+        }
+
+        public Iterable<ContainerRequestFilter> getContainerRequestFilters() {
+            return event.getContainerRequestFilters();
+        }
+
+        public boolean isResponseWritten() {
+            return event.isResponseWritten();
+        }
+
+        public boolean isSuccess() {
+            return event.isSuccess();
+        }
+
+        public Throwable getException() {
+            return event.getException();
+        }
+
+        public ExceptionMapper<?> getExceptionMapper() {
+            return event.getExceptionMapper();
+        }
+
+        public ExtendedUriInfo getUriInfo() {
+            return event.getUriInfo();
+        }
+
+        public ContainerResponse getContainerResponse() {
+            return event.getContainerResponse();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -143,6 +233,31 @@ public class Application extends ResourceConfig {
         //将临时配置对象放入应用程序配置
         addProperties(configMap);
 
+        register(new ApplicationEventListener() {
+            @Override
+            public void onEvent(ApplicationEvent event) {
+                publishEvent(new Event(event));
+            }
+
+            @Override
+            public RequestEventListener onRequest(org.glassfish.jersey.server.monitoring.RequestEvent requestEvent) {
+                publishEvent(new RequestEvent(requestEvent));
+                return new RequestEventListener(){
+                    @Override
+                    public void onEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
+                        publishEvent(new RequestEvent(event));
+                    }
+                };
+            }
+        });
+
+        register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(Application.this).to(Application.class);
+            }
+        });
+
         addonSetup(configMap);
 
         //配置资源
@@ -156,54 +271,16 @@ public class Application extends ResourceConfig {
 
         //清空临时配置
         configMap.clear();
-        configMap = null;
 
         //清空临时读取的配置
         properties.clear();
-        properties = null;
-
-        //todo 抛出事件
-        register(new ApplicationEventListener() {
-            @Override
-            public void onEvent(ApplicationEvent event) {
-                ApplicationEvent.Type type = event.getType();
-                switch (type) {
-                    case INITIALIZATION_START:
-                        break;
-
-                    case INITIALIZATION_APP_FINISHED:
-                        break;
-
-                    case INITIALIZATION_FINISHED:
-                        break;
-
-                    case DESTROY_FINISHED:
-                        break;
-
-                    case RELOAD_FINISHED:
-                        break;
-                }
-            }
-
-            @Override
-            public RequestEventListener onRequest(RequestEvent requestEvent) {
-                return null;
-            }
-        });
-
-        register(new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bind(Application.this).to(Application.class);
-            }
-        });
 
         publishEvent(new ConfiguredEvent(this));
         addonDone();
         logger.info("装载特性...");
     }
 
-    private static void publishEvent(Event event) {
+    private static void publishEvent(ameba.event.Event event) {
         SystemEventBus.publish(event);
         AmebaFeature.getEventBus().publish(event);
     }
@@ -449,7 +526,6 @@ public class Application extends ResourceConfig {
 
         //清空转化的配置
         map.clear();
-        map = null;
     }
 
     @SuppressWarnings("unchecked")
@@ -475,7 +551,6 @@ public class Application extends ResourceConfig {
 
         //清空应用程序模式配置
         modeProperties.clear();
-        modeProperties = null;
     }
 
     private void configureServer() {
@@ -603,7 +678,6 @@ public class Application extends ResourceConfig {
             }
             configMap.putAll((Map) moduleProperties);
             moduleProperties.clear();
-            moduleProperties = null;
         } else {
             logger.info("未找到附加模块");
         }
@@ -733,7 +807,7 @@ public class Application extends ResourceConfig {
         }
     }
 
-    public static class ConfiguredEvent implements Event {
+    public static class ConfiguredEvent implements ameba.event.Event {
         private Application app;
 
         public ConfiguredEvent(Application app) {

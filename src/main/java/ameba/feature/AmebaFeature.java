@@ -1,5 +1,6 @@
 package ameba.feature;
 
+import ameba.container.Container;
 import ameba.event.Event;
 import ameba.event.EventBus;
 import ameba.event.Listener;
@@ -11,7 +12,23 @@ import javax.ws.rs.core.Feature;
  */
 public abstract class AmebaFeature implements Feature {
 
-    private static final EventBus EVENT_BUS = EventBus.createMix("ameba-feature");
+    private static EventBus EVENT_BUS;
+
+    private static void init() {
+        EVENT_BUS = EventBus.createMix("ameba-feature");
+
+        EVENT_BUS.subscribe(Container.BeginReloadEvent.class,
+                new Listener<Container.BeginReloadEvent>() {
+                    @Override
+                    public void onReceive(Container.BeginReloadEvent event) {
+                        init();
+                    }
+                });
+    }
+
+    static {
+        init();
+    }
 
     public static EventBus getEventBus() {
         return EVENT_BUS;

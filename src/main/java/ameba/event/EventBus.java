@@ -3,6 +3,7 @@ package ameba.event;
 import akka.actor.ActorRef;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,9 +16,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public abstract class EventBus {
 
+    private static final Logger logger = LoggerFactory.getLogger(EventBus.class);
     private final SetMultimap<Class<?>, Listener> listeners = HashMultimap.create();
     private final ReadWriteLock subscribersByTypeLock = new ReentrantReadWriteLock();
-    private static final Logger logger = LoggerFactory.getLogger(EventBus.class);
 
     private EventBus() {
     }
@@ -51,7 +52,7 @@ public abstract class EventBus {
 
     @SuppressWarnings("unchecked")
     public void publish(Event event) {
-        Set<Listener> listenerSet = listeners.get(event.getClass());
+        Set<Listener> listenerSet = Sets.newCopyOnWriteArraySet(listeners.get(event.getClass()));
         for (Listener listener : listenerSet) {
             try {
                 listener.onReceive(event);

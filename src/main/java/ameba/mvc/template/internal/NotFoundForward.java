@@ -1,20 +1,18 @@
 package ameba.mvc.template.internal;
 
-import ameba.mvc.template.TemplateException;
 import groovy.lang.Singleton;
-import org.glassfish.jersey.server.mvc.Viewable;
-import org.glassfish.jersey.server.mvc.spi.AbstractTemplateProcessor;
+import jersey.repackaged.com.google.common.collect.Sets;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.Providers;
+import org.glassfish.jersey.server.mvc.spi.TemplateProcessor;
 import org.glassfish.jersey.spi.ExtendedExceptionMapper;
-import org.jvnet.hk2.annotations.Optional;
 
 import javax.inject.Inject;
-import javax.servlet.ServletContext;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.text.ParseException;
+import java.util.Set;
 
 /**
  * 404 跳转到模板
@@ -26,41 +24,25 @@ import java.text.ParseException;
 @Singleton
 public class NotFoundForward implements ExtendedExceptionMapper<NotFoundException> {
 
+    Set<TemplateProcessor> templateProcessors;
     @Inject
     private javax.inject.Provider<UriInfo> uriInfo;
-
-    private AbstractTemplateProcessor<Boolean> templateProcessor;
+    @Inject
+    private ServiceLocator serviceLocator;
     private ThreadLocal<String> templatePath = new ThreadLocal<String>();
 
-    @Inject
-    public NotFoundForward(final Configuration config, @Optional final ServletContext servletContext) {
-        this.templateProcessor = new AmebaTemplateProcessor<Boolean>(config, servletContext, HttlViewProcessor.CONFIG_SUFFIX, HttlViewProcessor.getExtends(config)) {
+    private Set<TemplateProcessor> getTemplateProcessors() {
+        if (templateProcessors == null) {
+            synchronized (this) {
+                if (templateProcessors == null) {
+                    templateProcessors = Sets.newLinkedHashSet();
 
-            @Override
-            protected TemplateException createException(ParseException e) {
-                return null;
+                    templateProcessors.addAll(Providers.getCustomProviders(serviceLocator, TemplateProcessor.class));
+                    templateProcessors.addAll(Providers.getProviders(serviceLocator, TemplateProcessor.class));
+                }
             }
-
-            @Override
-            protected Boolean resolve(String templatePath) throws Exception {
-                return true;
-            }
-
-            @Override
-            protected Boolean resolve(Reader reader) throws Exception {
-                return true;
-            }
-
-            @Override
-            public String getTemplateFile(Boolean templateReference) {
-                return null;
-            }
-
-            @Override
-            public void writeTemplate(Boolean templateReference, Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws Exception {
-
-            }
-        };
+        }
+        return templateProcessors;
     }
 
     @Override
@@ -76,15 +58,20 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
     public boolean isMappable(NotFoundException exception) {
         String path = getCurrentPath();
         //受保护目录,不允许直接访问
-        if (path.startsWith(AmebaTemplateProcessor.PROTECTED_DIR)) return false;
+        if (path.startsWith(Viewables.PROTECTED_DIR)) return false;
         try {
-            Boolean has = templateProcessor.resolve(path, (MediaType) null);
-            if (has == null || !has) {
-                path = path + "/index";
-                has = templateProcessor.resolve(path, (MediaType) null);
+            for (TemplateProcessor templateProcessor : getTemplateProcessors()) {
+                Object has = templateProcessor.resolve(path, null);
+                if (has == null) {
+                    path = path + "/index";
+                    has = templateProcessor.resolve(path, null);
+                }
+                if (has != null) {
+                    templatePath.set(path);
+                    return true;
+                }
             }
-            templatePath.set(path);
-            return has != null && has;
+            return false;
         } catch (Exception e) {
             return false;
         }

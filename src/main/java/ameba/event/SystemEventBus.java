@@ -1,11 +1,32 @@
 package ameba.event;
 
+import ameba.container.Container;
+
 /**
  * @author icode
  */
 public class SystemEventBus {
 
-    private static final EventBus EVENT_BUS = EventBus.createMix("ameba-sys");
+    private static EventBus EVENT_BUS;
+
+    private SystemEventBus() {
+    }
+
+    private static void init() {
+        EVENT_BUS = EventBus.createMix("ameba-sys");
+
+        EVENT_BUS.subscribe(Container.BeginReloadEvent.class,
+                new Listener<Container.BeginReloadEvent>() {
+                    @Override
+                    public void onReceive(Container.BeginReloadEvent event) {
+                        init();
+                    }
+                });
+    }
+
+    static {
+        init();
+    }
 
     public static <E extends Event> void subscribe(Class<E> event, final Listener<E> listener) {
         EVENT_BUS.subscribe(event, listener);
