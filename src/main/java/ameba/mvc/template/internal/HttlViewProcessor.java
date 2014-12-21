@@ -80,7 +80,7 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
         String extension = (String) map.get("template.suffix");
 
         if (StringUtils.isBlank(extension)) {
-            return new String[]{".html"};
+            return new String[]{".httl"};
         }
         return extension.split(",");
     }
