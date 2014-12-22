@@ -314,9 +314,9 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
                     r = new TemplateException("create writeTo Exception error", ex, -1);
                 }
             }
-            viewable = (Viewable) getErrorPageGenerator().toResponse(r).getEntity();
 
             try {
+                viewable = (Viewable) getErrorPageGenerator().toResponse(r).getEntity();
                 getViewableMessageBodyWriter().writeTo(viewable,
                         Viewable.class, Viewable.class, new Annotation[]{},
                         mediaType, httpHeaders,
