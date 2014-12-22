@@ -54,7 +54,7 @@ public class DataSourceFeature implements Feature {
         Map<String, Map<String, String>> map = Maps.newHashMap();
         for (String key : config.getPropertyNames()) {
             key = StringUtils.deleteWhitespace(key);
-            key = key.replace("\\.{2,}", ".");
+            key = key.replaceAll("\\.{2,}", ".");
             if (key.startsWith(EnhanceModelFeature.MODULE_MODELS_KEY_PREFIX)) continue;
             //db.[DataSourceName].[ConfigKey]
             String[] keys = key.split("\\.");

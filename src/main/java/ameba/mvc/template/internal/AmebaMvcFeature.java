@@ -7,6 +7,7 @@ import org.glassfish.jersey.server.mvc.MvcFeature;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * @author 张立鑫 IntelligentCode
@@ -16,6 +17,7 @@ public class AmebaMvcFeature implements Feature {
 
     private static final String TPL_ENGINE_DIR_PR = "template.directory.engine.";
     private static final String TPL_DIR = "template.directory";
+    private static final String TPL_CACHE = "template.cache";
     private static final String TPL_MODULE_DIR_PR = "template.directory.module.";
 
 
@@ -29,7 +31,7 @@ public class AmebaMvcFeature implements Feature {
 
         for (String key : context.getConfiguration().getPropertyNames()) {
             if (key.startsWith(TPL_ENGINE_DIR_PR)) {//模板引擎默认路径
-                String engine = key.replaceFirst("template\\.directory\\.engine", "");
+                String engine = key.replaceFirst(Pattern.quote(TPL_ENGINE_DIR_PR.substring(0, TPL_ENGINE_DIR_PR.length() - 1)), "");
                 String confKey = MvcFeature.TEMPLATE_BASE_PATH + engine;
                 String value = (String) context.getConfiguration().getProperty(confKey);
                 String append = (String) context.getConfiguration().getProperty(key);
@@ -41,7 +43,7 @@ public class AmebaMvcFeature implements Feature {
                 }
                 tempConf.put(confKey, value);
             } else if (key.startsWith(TPL_MODULE_DIR_PR)) {//模块自定义模板路径
-                String confKey = key.replaceFirst("template\\.directory\\.module\\.", "");
+                String confKey = key.replaceFirst(Pattern.quote(TPL_MODULE_DIR_PR), "");
                 int i = confKey.indexOf(".");
                 if (i != -1) {
                     String engine = confKey.substring(0, i);
@@ -56,8 +58,8 @@ public class AmebaMvcFeature implements Feature {
                     }
                     tempConf.put(confKey, value);
                 }
-            } else if (key.startsWith("template.cache.")) {
-                tempConf.put(MvcFeature.CACHE_TEMPLATES + key.replaceFirst("template\\.cache", ""),
+            } else if (key.startsWith(TPL_CACHE + ".")) {
+                tempConf.put(MvcFeature.CACHE_TEMPLATES + key.replaceFirst(Pattern.quote(TPL_CACHE), ""),
                         (String) context.getConfiguration().getProperty(key));
             }
         }
@@ -70,7 +72,7 @@ public class AmebaMvcFeature implements Feature {
                 context.getConfiguration().getProperty(TPL_DIR));
 
         context.property(MvcFeature.CACHE_TEMPLATES,
-                context.getConfiguration().getProperty("template.cache"));
+                context.getConfiguration().getProperty(TPL_CACHE));
 
         return true;
     }

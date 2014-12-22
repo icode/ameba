@@ -22,7 +22,7 @@ public class JavaSource {
         this.qualifiedClassName = qualifiedClassName;
         this.outputDir = outputDir;
         this.inputDir = inputDir;
-        String fileName = qualifiedClassName.replaceAll("\\.", "/");
+        String fileName = qualifiedClassName.replace(".", "/");
         this.javaFile = new File(inputDir, fileName + JAVA_EXTENSION);
         this.classFile = new File(outputDir, fileName + CLASS_EXTENSION);
     }
@@ -36,7 +36,7 @@ public class JavaSource {
         if (fileName.contains("$")) {
             fileName = fileName.substring(0, fileName.indexOf("$"));
         }
-        fileName = fileName.replaceAll("\\.", "/") + JAVA_EXTENSION;
+        fileName = fileName.replace(".", "/") + JAVA_EXTENSION;
         if (pkgRoot != null) {
             File javaFile = new File(pkgRoot, fileName);
             if (javaFile.exists()) {

@@ -502,7 +502,7 @@ public class Application extends ResourceConfig {
             if (key.startsWith(JERSEY_CONF_NAME_PREFIX)) {
                 String name = key.substring(JERSEY_CONF_NAME_PREFIX.length());
                 //转化键到jersey配置
-                name = name.replaceAll("\\.", "_").toUpperCase();
+                name = name.replace(".", "_").toUpperCase();
                 Field filed = staticFieldsMap.get(name);
                 if (null != filed) {
                     filed.setAccessible(true);
