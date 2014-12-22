@@ -24,7 +24,6 @@ import java.util.Set;
 @Singleton
 public class NotFoundForward implements ExtendedExceptionMapper<NotFoundException> {
 
-    Set<TemplateProcessor> templateProcessors;
     @Inject
     private javax.inject.Provider<UriInfo> uriInfo;
     @Inject
@@ -32,16 +31,10 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
     private ThreadLocal<String> templatePath = new ThreadLocal<String>();
 
     private Set<TemplateProcessor> getTemplateProcessors() {
-        if (templateProcessors == null) {
-            synchronized (this) {
-                if (templateProcessors == null) {
-                    templateProcessors = Sets.newLinkedHashSet();
+        Set<TemplateProcessor> templateProcessors = Sets.newLinkedHashSet();
 
-                    templateProcessors.addAll(Providers.getCustomProviders(serviceLocator, TemplateProcessor.class));
-                    templateProcessors.addAll(Providers.getProviders(serviceLocator, TemplateProcessor.class));
-                }
-            }
-        }
+        templateProcessors.addAll(Providers.getCustomProviders(serviceLocator, TemplateProcessor.class));
+        templateProcessors.addAll(Providers.getProviders(serviceLocator, TemplateProcessor.class));
         return templateProcessors;
     }
 
