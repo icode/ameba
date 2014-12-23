@@ -94,7 +94,7 @@ public class ModelManager extends Enhancer {
                     try {
                         logger.trace("load {} model manager class {}", name, decodeClassFile(desc));
                         desc.clazz = classpool.makeClass(in).toClass();
-                        manager.fireModelLoaded(desc.clazz, desc, index, size);
+                        manager.fireModelLoad(desc.clazz, desc, index, size);
                     } catch (IOException e) {
                         logger.warn("load model class file [" + decodeClassFile(desc) + "] error", e);
                     } catch (CannotCompileException e) {
@@ -104,12 +104,13 @@ public class ModelManager extends Enhancer {
                         IOUtils.closeQuietly(in);
                     }
                 } else {
-                    manager.fireModelLoaded(desc.clazz, desc, index, size);
+                    manager.fireModelLoad(desc.clazz, desc, index, size);
                     index++;
                 }
                 logger.trace("clear {} model manager class {} desc", name, decodeClassFile(desc));
                 desc.classBytecode = null;
             }
+            manager.fireDone();
         }
     }
 
@@ -131,9 +132,15 @@ public class ModelManager extends Enhancer {
         }
     }
 
-    private void fireModelLoaded(Class clazz, ModelDescription desc, int index, int size) {
+    private void fireModelLoad(Class clazz, ModelDescription desc, int index, int size) {
         for (ModelEventListener listener : listeners) {
-            listener.loaded(clazz, desc, index, size);
+            listener.load(clazz, desc, index, size);
+        }
+    }
+
+    private void fireDone() {
+        for (ModelEventListener listener : listeners) {
+            listener.done();
         }
     }
 
@@ -384,9 +391,37 @@ public class ModelManager extends Enhancer {
     }
 
     public static abstract class ModelEventListener {
-        protected abstract byte[] enhancing(ModelDescription desc);
+        private int managerCount = 0;
 
-        protected abstract void loaded(Class clazz, ModelDescription desc, int index, int size);
+        public int incrementBindManagerCount() {
+            return ++managerCount;
+        }
+
+        public int decrementBindManagerCount() {
+            return --managerCount;
+        }
+
+        public void bindManager(ModelManager manager) {
+            if (manager == null) return;
+            manager.addModelLoadedListener(this);
+            incrementBindManagerCount();
+        }
+
+        public int getBindManagerCount() {
+            return managerCount;
+        }
+
+        protected byte[] enhancing(ModelDescription desc) {
+            return desc.getClassByteCode();
+        }
+
+        protected void load(Class clazz, ModelDescription desc, int index, int size) {
+
+        }
+
+        protected void done() {
+
+        }
     }
 
 

@@ -46,7 +46,6 @@ import java.util.Properties;
 @ConstrainedTo(RuntimeType.SERVER)
 public class EbeanFeature extends TransactionFeature {
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
-    private static final int EBEAN_TRANSFORM_LOG_LEVEL = LoggerFactory.getLogger(Ebean.class).isDebugEnabled() ? 9 : 0;
     private static String DEFAULT_DB_NAME = null;
 
     public EbeanFeature() {
@@ -84,30 +83,6 @@ public class EbeanFeature extends TransactionFeature {
 
     public static String generateEvolutionScript(String serverName, ServerConfig config) {
         return generateEvolutionScript(Ebean.getServer(serverName), config);
-    }
-
-    private static byte[] ehModel(ModelDescription desc) throws URISyntaxException, IOException, IllegalClassFormatException,
-            ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
-            InvocationTargetException, CannotCompileException {
-        Transformer transformer = new Transformer("", "debug=" + EBEAN_TRANSFORM_LOG_LEVEL);
-        InputStreamTransform streamTransform = new InputStreamTransform(transformer, Ebean.class.getClassLoader());
-        InputStream in;
-        if (desc.getClassByteCode() != null) {
-            in = new ByteArrayInputStream(desc.getClassByteCode());
-        } else {
-            in = new URL(desc.getClassFile()).openStream();
-        }
-        byte[] result = null;
-        try {
-            result = streamTransform.transform(desc.getClassSimpleName(), in);
-        } finally {
-            IOUtils.closeQuietly(in);
-        }
-        if (result == null) {
-            logger.debug("{} class not entity.", desc.getClassName());
-            result = desc.getClassByteCode();
-        }
-        return result;
     }
 
     public static String getDefaultDBName() {
@@ -198,8 +173,6 @@ public class EbeanFeature extends TransactionFeature {
         boolean isProd;
         boolean runDdl;
         boolean genDdl;
-        int managerCount = 0;
-
         public ModelEventListener(ServerConfig config, boolean isProd, boolean genDdl, boolean runDdl) {
             this.config = config;
             this.isProd = isProd;
@@ -207,29 +180,14 @@ public class EbeanFeature extends TransactionFeature {
             this.genDdl = genDdl;
         }
 
-        public void addManagerCount() {
-            managerCount++;
-        }
-
-        public void bindManager(ModelManager manager) {
-            if (manager == null) return;
-            manager.addModelLoadedListener(this);
-            addManagerCount();
-        }
-
         @Override
-        protected byte[] enhancing(ModelDescription desc) {
-            try {
-                return ehModel(desc);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        protected void loaded(Class clazz, ModelDescription desc, int index, int size) {
+        protected void load(Class clazz, ModelDescription desc, int index, int size) {
             config.addClass(clazz);
-            if (index == size - 1 && (--managerCount) == 0) {//最后一个manager+model进行初始化ebean
+        }
+
+        @Override
+        protected void done() {
+            if (decrementBindManagerCount() == 0) {//最后一个manager+model进行初始化ebean
                 EbeanServer server = EbeanServerFactory.create(config);
                 // DDL
                 if (!isProd) {
