@@ -1,6 +1,6 @@
 package ameba.mvc.template.internal;
 
-import ameba.mvc.route.RouteHelper;
+import ameba.core.Requests;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 /**
@@ -24,7 +24,7 @@ public class Viewables {
     }
 
     private static String getPath() {
-        return "/" + RouteHelper.getCurrentRequestContext().getUriInfo().getPath();
+        return "/" + Requests.getUriInfo().getPath();
     }
 
     private static String getPath(String name) {

@@ -250,6 +250,7 @@ public class Application extends ResourceConfig {
                 };
             }
         });
+        register(Requests.CurrentRequestFilter.class);
 
         register(new AbstractBinder() {
             @Override

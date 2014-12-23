@@ -70,7 +70,7 @@ public abstract class Container {
         configureHttpContainer();
     }
 
-    private static void publishEvent(Event event) {
+    protected static void publishEvent(Event event) {
         SystemEventBus.publish(event);
         AmebaFeature.getEventBus().publish(event);
     }

@@ -10,6 +10,7 @@ import org.glassfish.jersey.server.model.ResourceModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -269,6 +270,10 @@ public class StatViewFeature implements Feature {
     @Singleton
     @DsAuthorization
     public static class DsStatViewResource {
+
+        @Inject
+        UriInfo uriInfo;
+
         @POST
         @Path("submitLogin")
         @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -295,12 +300,17 @@ public class StatViewFeature implements Feature {
                     path = "/" + path;
             }
 
-            if (path.indexOf(".json") >= 0) {
-                return Response.ok(genServiceResponse(path)).type(MediaType.APPLICATION_JSON_TYPE).build();
+            if (!path.contains(".")) {
+                return Response.ok(genServiceResponse(path + getQueryString())).type(MediaType.APPLICATION_JSON_TYPE).build();
             }
 
             // find file in resources path
             return returnResourceFile(path);
+        }
+
+        private String getQueryString() {
+            String query = uriInfo.getRequestUri().getRawQuery();
+            return (uriInfo.getPath().contains(".json") ? "" : ".json") + (StringUtils.isNotBlank(query) ? "?" + query : "");
         }
 
         @POST
@@ -308,8 +318,8 @@ public class StatViewFeature implements Feature {
         public Response postService(@PathParam("path") String path) throws IOException {
             if (!path.startsWith("/"))
                 path = "/" + path;
-            if (path.indexOf(".json") >= 0) {
-                return Response.ok(genServiceResponse(path)).type(MediaType.APPLICATION_JSON_TYPE).build();
+            if (!path.contains(".")) {
+                return Response.ok(genServiceResponse(path + getQueryString())).type(MediaType.APPLICATION_JSON_TYPE).build();
             }
             return returnResourceFile(path);
         }
