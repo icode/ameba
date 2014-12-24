@@ -290,13 +290,6 @@
             <version>${httl.version}</version>
         </dependency>
 
-
-        <dependency>
-            <groupId>org.eclipse.jdt.core.compiler</groupId>
-            <artifactId>ecj</artifactId>
-            <version>${jdt.ecj.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.amebastack</groupId>
             <artifactId>ameba-utils</artifactId>
@@ -364,7 +357,6 @@
 
     <properties>
         <ameba.utils.version>0.1.6e</ameba.utils.version>
-        <jdt.ecj.version>[4.4,5.0)</jdt.ecj.version>
         <json-patch.version>1.7</json-patch.version>
         <jersey.version>[2.12,3.0)</jersey.version>
         <slf4j.version>[1.7.7,2.0.0)</slf4j.version>
