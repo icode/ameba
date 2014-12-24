@@ -12,7 +12,7 @@ public abstract class AddOn {
         return EVENT_BUS;
     }
 
-    public abstract void setup(Application application);
+    public void setup(Application application) {}
 
-    public abstract void done(Application application);
+    public void done(Application application) {}
 }
