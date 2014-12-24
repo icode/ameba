@@ -690,6 +690,17 @@ public class Application extends ResourceConfig {
         if (urls.hasMoreElements()) {
             InputStream in = null;
             url = urls.nextElement();
+
+            if (urls.hasMoreElements()) {
+                List<String> urlList = Lists.newArrayList(toExternalForm(url));
+                while (urls.hasMoreElements()) {
+                    urlList.add(urls.nextElement().toExternalForm());
+                }
+                String errorMsg = "存在多个程序配置,请使用唯一的程序配置文件:\n" + StringUtils.join(urlList, "\n");
+                logger.error(errorMsg);
+                throw new ConfigErrorException(errorMsg);
+            }
+
             try {
                 logger.trace("读取[{}]文件配置", toExternalForm(url));
                 in = url.openStream();
@@ -706,16 +717,6 @@ public class Application extends ResourceConfig {
                 logger.error("读取[{}]出错", toExternalForm(url));
             }
             closeQuietly(in);
-
-            if (urls.hasMoreElements()) {
-                List<String> urlList = Lists.newArrayList(toExternalForm(url));
-                while (urls.hasMoreElements()) {
-                    urlList.add(urls.nextElement().toExternalForm());
-                }
-                String errorMsg = "存在多个程序配置,请使用唯一的程序配置文件:\n" + StringUtils.join(urlList, "\n");
-                logger.error(errorMsg);
-                throw new ConfigErrorException(errorMsg);
-            }
         } else {
             logger.warn("未找到{}文件,请何实", confFile);
         }

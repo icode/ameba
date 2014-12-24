@@ -15,7 +15,7 @@ public class AmebaException extends RuntimeException {
     }
 
 
-    protected AmebaException(Throwable cause) {
+    public AmebaException(Throwable cause) {
         super(cause);
     }
 

@@ -1,8 +1,6 @@
 package ameba.db.model;
 
 import ameba.db.TransactionFeature;
-import ameba.db.ebean.EbeanFeature;
-import ameba.enhancer.model.ModelManager;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -23,6 +21,12 @@ public abstract class Model implements Serializable {
     private static Constructor<? extends Finder> finderConstructor = null;
     private static Constructor<? extends Persister> persisterConstructor = null;
     public static String DB_DEFAULT_SERVER_NAME = "default";
+    public static final String ID_SETTER_NAME = "__setId__";
+    public static final String ID_GETTER_NAME = "__getId__";
+    public static final String GET_FINDER_M_NAME = "withFinder";
+    public static final String FINDER_C_NAME = "ameba.db.model.Finder";
+    public final static String BASE_MODEL_PKG = "ameba.db.model";
+
     @Transient
     private final byte[] lock = new byte[0];
     @Transient
@@ -69,7 +73,7 @@ public abstract class Model implements Serializable {
     }
 
     public static <ID, T> Finder<ID, T> withFinder() {
-        return withFinder(EbeanFeature.getDefaultDBName());
+        return withFinder(ModelManager.getDefaultDBName());
     }
 
     protected static Constructor<? extends Persister> getPersisterConstructor() {
@@ -92,7 +96,7 @@ public abstract class Model implements Serializable {
         if (_idGetter == null)
             synchronized (lock) {
                 if (_idGetter == null)
-                    _idGetter = this.getClass().getDeclaredMethod(ModelManager.ID_GETTER_NAME);
+                    _idGetter = this.getClass().getDeclaredMethod(ID_GETTER_NAME);
             }
         return _idGetter;
     }
@@ -101,7 +105,7 @@ public abstract class Model implements Serializable {
         if (_idSetter == null)
             synchronized (lock) {
                 if (_idSetter == null)
-                    _idSetter = this.getClass().getDeclaredMethod(ModelManager.ID_SETTER_NAME, _getIdGetter().getReturnType());
+                    _idSetter = this.getClass().getDeclaredMethod(ID_SETTER_NAME, _getIdGetter().getReturnType());
             }
         return _idSetter;
     }
@@ -153,7 +157,7 @@ public abstract class Model implements Serializable {
     }
 
     public <M extends Model> Persister<M> withPersister() {
-        return withPersister(EbeanFeature.getDefaultDBName());
+        return withPersister(ModelManager.getDefaultDBName());
     }
 
     public static class NotPersisterFindException extends RuntimeException {
