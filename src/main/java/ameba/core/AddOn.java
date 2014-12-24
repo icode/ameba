@@ -1,6 +1,8 @@
 package ameba.core;
 
+import ameba.event.Event;
 import ameba.event.EventBus;
+import ameba.event.Listener;
 
 /**
  * @author icode
@@ -12,7 +14,22 @@ public abstract class AddOn {
         return EVENT_BUS;
     }
 
-    public void setup(Application application) {}
+    protected static <E extends Event> void subscribeEvent(Class<E> eventClass, final Listener<E> listener) {
+        EVENT_BUS.subscribe(eventClass, listener);
+    }
 
-    public void done(Application application) {}
+    protected static <E extends Event> void unsubscribeEvent(Class<E> eventClass, final Listener<E> listener) {
+        EVENT_BUS.unsubscribe(eventClass, listener);
+    }
+
+    protected static void publishEvent(Event event) {
+        EVENT_BUS.publish(event);
+    }
+
+    public void setup(Application application) {
+    }
+
+    public void done(Application application) {
+    }
+
 }
