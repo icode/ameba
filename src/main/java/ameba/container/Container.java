@@ -72,7 +72,7 @@ public abstract class Container {
 
     protected static void publishEvent(Event event) {
         SystemEventBus.publish(event);
-        AmebaFeature.getEventBus().publish(event);
+        AmebaFeature.publishEvent(event);
     }
 
     @SuppressWarnings("unchecked")

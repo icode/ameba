@@ -283,7 +283,7 @@ public class Application extends ResourceConfig {
 
     private static void publishEvent(ameba.event.Event event) {
         SystemEventBus.publish(event);
-        AmebaFeature.getEventBus().publish(event);
+        AmebaFeature.publishEvent(event);
     }
 
     private void addonSetup(Map<String, Object> configMap) {

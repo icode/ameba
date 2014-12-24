@@ -30,10 +30,6 @@ public abstract class AmebaFeature implements Feature {
         init();
     }
 
-    public static EventBus getEventBus() {
-        return EVENT_BUS;
-    }
-
     protected static <E extends Event> void subscribeEvent(Class<E> eventClass, final Listener<E> listener) {
         EVENT_BUS.subscribe(eventClass, listener);
     }
@@ -42,7 +38,7 @@ public abstract class AmebaFeature implements Feature {
         EVENT_BUS.unsubscribe(eventClass, listener);
     }
 
-    protected static void publishEvent(Event event) {
+    public static void publishEvent(Event event) {
         EVENT_BUS.publish(event);
     }
 }
