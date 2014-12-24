@@ -4,6 +4,7 @@ import ameba.db.DataSourceFeature;
 import ameba.db.TransactionFeature;
 import ameba.db.ebean.transaction.EbeanTransactional;
 import ameba.db.model.ModelManager;
+import ameba.util.IOUtils;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
@@ -13,11 +14,17 @@ import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
 import com.fasterxml.jackson.core.JsonFactory;
+import org.apache.commons.io.FileUtils;
+import org.glassfish.jersey.internal.util.PropertiesHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.ConstrainedTo;
 import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.FeatureContext;
+import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 /**
@@ -26,6 +33,8 @@ import java.util.Properties;
  */
 @ConstrainedTo(RuntimeType.SERVER)
 public class EbeanFeature extends TransactionFeature {
+
+    private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
 
     public EbeanFeature() {
         super(EbeanFinder.class, EbeanPersister.class);
@@ -114,7 +123,71 @@ public class EbeanFeature extends TransactionFeature {
                 config.addClass(clazz);
             }
 
-            EbeanServerFactory.create(config);
+            final boolean genDdl = PropertiesHelper.getValue(appConfig.getProperties(),
+                    "db." + name + ".ddl.generate", false, Boolean.class, null);
+
+            final boolean runDdl = PropertiesHelper.getValue(appConfig.getProperties(),
+                    "db." + name + ".ddl.run", false, Boolean.class, null);
+
+            final boolean isProd = "product".equals(appConfig.getProperty("app.mode"));
+
+            EbeanServer server = EbeanServerFactory.create(config);
+            // DDL
+            if (!isProd) {
+                if (genDdl) {
+                    final String basePath = IOUtils.getResource("").getPath() + "conf/evolutions/" + server.getName() + "/";
+                    DdlGenerator ddl = new DdlGenerator() {
+                        @Override
+                        protected String getDropFileName() {
+                            return basePath + "drop.sql";
+                        }
+
+                        @Override
+                        protected String getCreateFileName() {
+                            return basePath + "create.sql";
+                        }
+
+                        @Override
+                        public String generateDropDdl() {
+                            return "/* Generated Drop Table DDL By Ameba */\n\n" +
+                                    super.generateDropDdl();
+                        }
+
+                        @Override
+                        public String generateCreateDdl() {
+                            return "/* Generated Create Table DDL By Ameba */\n\n" +
+                                    super.generateCreateDdl();
+                        }
+
+                        @Override
+                        public void generateDdl() {
+                            writeDrop(getDropFileName());
+                            writeCreate(getCreateFileName());
+                        }
+
+                        @Override
+                        public void runDdl() {
+                            if (runDdl) {
+                                try {
+                                    runScript(true, readFile(getDropFileName()));
+                                    runScript(false, readFile(getCreateFileName()));
+                                } catch (IOException e) {
+                                    String msg = "Error reading drop/create script from file system";
+                                    throw new RuntimeException(msg, e);
+                                }
+                            }
+                        }
+                    };
+                    ddl.setup((SpiEbeanServer) server, config.getDatabasePlatform(), config);
+                    try {
+                        FileUtils.forceMkdir(new File(basePath));
+                        ddl.generateDdl();
+                        ddl.runDdl();
+                    } catch (IOException e) {
+                        logger.error("Create ddl error", e);
+                    }
+                }
+            }
         }
 
         return true;

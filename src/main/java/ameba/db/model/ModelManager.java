@@ -4,8 +4,11 @@ import ameba.db.DataSourceFeature;
 import ameba.exception.AmebaException;
 import ameba.feature.AmebaFeature;
 import ameba.util.ClassUtils;
+import ameba.util.IOUtils;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import javassist.ClassPool;
+import javassist.CtClass;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.ResourceFinder;
 import org.glassfish.jersey.server.internal.scanning.PackageNamesScanner;
@@ -14,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.FeatureContext;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -23,16 +28,14 @@ import java.util.Set;
  */
 public class ModelManager extends AmebaFeature {
 
-    private static Logger logger = LoggerFactory.getLogger(ModelManager.class);
-
     public static final String MODULE_MODELS_KEY_PREFIX = "db.default.models.";
+    private static Logger logger = LoggerFactory.getLogger(ModelManager.class);
     private static String DEFAULT_DB_NAME = null;
+    private static Map<String, Set<Class>> modelMap = Maps.newLinkedHashMap();
 
     public static String getDefaultDBName() {
         return DEFAULT_DB_NAME;
     }
-
-    private static Map<String, Set<Class>> modelMap = Maps.newLinkedHashMap();
 
     public static Set<Class> getModels(String name) {
         return modelMap.get(name);
@@ -42,6 +45,7 @@ public class ModelManager extends AmebaFeature {
     public boolean configure(FeatureContext context) {
         modelMap.clear();
 
+        ClassPool classPool = ClassPool.getDefault();
         Configuration config = context.getConfiguration();
         DEFAULT_DB_NAME = (String) config.getProperty("db.default");
 
@@ -76,16 +80,23 @@ public class ModelManager extends AmebaFeature {
                 Set<Class> classes = Sets.newHashSet();
                 ResourceFinder scanner = new PackageNamesScanner(pkgs.toArray(new String[pkgs.size()]), true);
                 while (scanner.hasNext()) {
-                    String fullName = scanner.next();
-                    if (!fullName.endsWith(".class")) {
+                    if (!scanner.next().endsWith(".class")) {
                         continue;
                     }
-                    String className = fullName.substring(0, fullName.length() - 6).replace("/", ".");
-                    logger.debug("load class : {}", className);
+                    InputStream in = scanner.open();
                     try {
-                        classes.add(ClassUtils.getClass(className));
-                    } catch (ClassNotFoundException e) {
-                        throw new AmebaException(e);
+                        CtClass ctClass = classPool.makeClass(in);
+                        String className = ctClass.getClassFile().getName();
+                        logger.trace("load class : {}", className);
+                        try {
+                            classes.add(ClassUtils.getClass(className));
+                        } catch (ClassNotFoundException e) {
+                            throw new AmebaException(e);
+                        }
+                    } catch (IOException e) {
+                        throw new AmebaException("load model error", e);
+                    } finally {
+                        IOUtils.closeQuietly(in);
                     }
                 }
                 modelMap.put(name, classes);
