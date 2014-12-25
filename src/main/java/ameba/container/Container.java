@@ -118,11 +118,11 @@ public abstract class Container {
     }
 
     public void reload() {
-        doReload(application);
+        doReload(application.getConfig());
     }
 
     public void reload(ResourceConfig configuration) {
-        publishEvent(new BeginReloadEvent(this, application));
+        publishEvent(new BeginReloadEvent(this, application, configuration));
         doReload(configuration);
     }
 
@@ -174,8 +174,15 @@ public abstract class Container {
     }
 
     public static class BeginReloadEvent extends ContainerEvent {
-        public BeginReloadEvent(Container container, Application app) {
+        ResourceConfig newConfig;
+
+        public BeginReloadEvent(Container container, Application app, ResourceConfig newConfig) {
             super(container, app);
+            this.newConfig = newConfig;
+        }
+
+        public ResourceConfig getNewConfig() {
+            return newConfig;
         }
     }
 

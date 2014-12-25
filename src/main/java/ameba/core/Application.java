@@ -24,6 +24,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.model.ContractProvider;
 import org.glassfish.jersey.server.*;
 import org.glassfish.jersey.server.internal.scanning.PackageNamesScanner;
+import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceModel;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
@@ -33,8 +34,10 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.inject.Singleton;
+import javax.ws.rs.RuntimeType;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.Feature;
 import javax.ws.rs.ext.ExceptionMapper;
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +62,7 @@ import static ameba.util.IOUtils.*;
  * @since 13-8-6 下午8:42
  */
 @Singleton
-public class Application extends ResourceConfig {
+public class Application {
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static final String REGISTER_CONF_PREFIX = "app.register.";
     private static final String ADDON_CONF_PREFIX = "app.addon.";
@@ -75,98 +78,10 @@ public class Application extends ResourceConfig {
     private Container container;
     private long timestamp = System.currentTimeMillis();
     private List<AddOn> addOns = Lists.newArrayList();
+    private ResourceConfig config;
 
     public Application() {
         this("conf/application.conf");
-    }
-
-    public static class Event implements ameba.event.Event {
-
-        ApplicationEvent event;
-
-        public Event(ApplicationEvent event) {
-            this.event = event;
-        }
-
-        public ApplicationEvent.Type getType() {
-            return event.getType();
-        }
-
-        public ResourceConfig getResourceConfig() {
-            return event.getResourceConfig();
-        }
-
-        public ResourceModel getResourceModel() {
-            return event.getResourceModel();
-        }
-
-        public Set<Class<?>> getProviders() {
-            return event.getProviders();
-        }
-
-        public Set<Object> getRegisteredInstances() {
-            return event.getRegisteredInstances();
-        }
-
-        public Set<Class<?>> getRegisteredClasses() {
-            return event.getRegisteredClasses();
-        }
-    }
-
-    public static class RequestEvent implements ameba.event.Event {
-        org.glassfish.jersey.server.monitoring.RequestEvent event;
-
-        public RequestEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
-            this.event = event;
-        }
-
-        public org.glassfish.jersey.server.monitoring.RequestEvent.Type getType() {
-            return event.getType();
-        }
-
-        public org.glassfish.jersey.server.monitoring.RequestEvent.ExceptionCause getExceptionCause() {
-            return event.getExceptionCause();
-        }
-
-        public Iterable<ContainerResponseFilter> getContainerResponseFilters() {
-            return event.getContainerResponseFilters();
-        }
-
-        public ContainerRequest getContainerRequest() {
-            return event.getContainerRequest();
-        }
-
-        public boolean isResponseSuccessfullyMapped() {
-            return event.isResponseSuccessfullyMapped();
-        }
-
-        public Iterable<ContainerRequestFilter> getContainerRequestFilters() {
-            return event.getContainerRequestFilters();
-        }
-
-        public boolean isResponseWritten() {
-            return event.isResponseWritten();
-        }
-
-        public boolean isSuccess() {
-            return event.isSuccess();
-        }
-
-        public Throwable getException() {
-            return event.getException();
-        }
-
-        public ExceptionMapper<?> getExceptionMapper() {
-            return event.getExceptionMapper();
-        }
-
-        public ExtendedUriInfo getUriInfo() {
-            return event.getUriInfo();
-        }
-
-        public ContainerResponse getContainerResponse() {
-            return event.getContainerResponse();
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -175,7 +90,7 @@ public class Application extends ResourceConfig {
         if (Ameba.getApp() != null) {
             throw new AmebaException("已经存在一个应用实例");
         }
-
+        config = new ResourceConfig();
         configFile = confFile;
         logger.trace("初始化...");
         Map<String, Object> configMap = Maps.newLinkedHashMap();
@@ -242,7 +157,7 @@ public class Application extends ResourceConfig {
             @Override
             public RequestEventListener onRequest(org.glassfish.jersey.server.monitoring.RequestEvent requestEvent) {
                 publishEvent(new RequestEvent(requestEvent));
-                return new RequestEventListener(){
+                return new RequestEventListener() {
                     @Override
                     public void onEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
                         publishEvent(new RequestEvent(event));
@@ -256,6 +171,13 @@ public class Application extends ResourceConfig {
             @Override
             protected void configure() {
                 bind(Application.this).to(Application.class);
+            }
+        });
+
+        SystemEventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
+            @Override
+            public void onReceive(Container.BeginReloadEvent event) {
+                config = event.getNewConfig();
             }
         });
 
@@ -284,6 +206,14 @@ public class Application extends ResourceConfig {
     private static void publishEvent(ameba.event.Event event) {
         SystemEventBus.publish(event);
         AmebaFeature.publishEvent(event);
+    }
+
+    public String getApplicationName() {
+        return config.getApplicationName();
+    }
+
+    public ResourceConfig getConfig() {
+        return config;
     }
 
     private void addonSetup(Map<String, Object> configMap) {
@@ -723,6 +653,166 @@ public class Application extends ResourceConfig {
         return url;
     }
 
+    public ResourceConfig register(Class<?> componentClass) {
+        return config.register(componentClass);
+    }
+
+    public ResourceConfig register(Object component) {
+        return config.register(component);
+    }
+
+    public ResourceConfig setProperties(Map<String, ?> properties) {
+        return config.setProperties(properties);
+    }
+
+    public ResourceConfig registerClasses(Class<?>... classes) {
+        return config.registerClasses(classes);
+    }
+
+    public ResourceConfig packages(boolean recursive, String... packages) {
+        return config.packages(recursive, packages);
+    }
+
+    public ResourceConfig register(Object component, int bindingPriority) {
+        return config.register(component, bindingPriority);
+    }
+
+    public ServerConfig getConfiguration() {
+        return config.getConfiguration();
+    }
+
+    public ResourceConfig files(boolean recursive, String... files) {
+        return config.files(recursive, files);
+    }
+
+    public ResourceConfig setClassLoader(ClassLoader classLoader) {
+        return config.setClassLoader(classLoader);
+    }
+
+    public ResourceConfig setApplicationName(String applicationName) {
+        return config.setApplicationName(applicationName);
+    }
+
+    public ClassLoader getClassLoader() {
+        return config.getClassLoader();
+    }
+
+    public ResourceConfig registerInstances(Object... instances) {
+        return config.registerInstances(instances);
+    }
+
+    public ResourceConfig packages(String... packages) {
+        return config.packages(packages);
+    }
+
+    public ResourceConfig register(Object component, Map<Class<?>, Integer> contracts) {
+        return config.register(component, contracts);
+    }
+
+    public Set<Resource> getResources() {
+        return config.getResources();
+    }
+
+    public Set<Object> getSingletons() {
+        return config.getSingletons();
+    }
+
+    public Collection<String> getPropertyNames() {
+        return config.getPropertyNames();
+    }
+
+    public ResourceConfig register(Class<?> componentClass, Class<?>... contracts) {
+        return config.register(componentClass, contracts);
+    }
+
+    public ResourceConfig files(String... files) {
+        return config.files(files);
+    }
+
+    public Set<Class<?>> getClasses() {
+        return config.getClasses();
+    }
+
+    public ResourceConfig register(Object component, Class<?>... contracts) {
+        return config.register(component, contracts);
+    }
+
+    public boolean isRegistered(Class<?> componentClass) {
+        return config.isRegistered(componentClass);
+    }
+
+    public ResourceConfig registerResources(Set<Resource> resources) {
+        return config.registerResources(resources);
+    }
+
+    public boolean isEnabled(Feature feature) {
+        return config.isEnabled(feature);
+    }
+
+    public Map<Class<?>, Integer> getContracts(Class<?> componentClass) {
+        return config.getContracts(componentClass);
+    }
+
+    public Object getProperty(String name) {
+        return config.getProperty(name);
+    }
+
+    public ResourceConfig addProperties(Map<String, Object> properties) {
+        return config.addProperties(properties);
+    }
+
+    public ResourceConfig registerFinder(ResourceFinder resourceFinder) {
+        return config.registerFinder(resourceFinder);
+    }
+
+    public ResourceConfig register(Class<?> componentClass, int bindingPriority) {
+        return config.register(componentClass, bindingPriority);
+    }
+
+    public ResourceConfig registerResources(Resource... resources) {
+        return config.registerResources(resources);
+    }
+
+    public RuntimeType getRuntimeType() {
+        return config.getRuntimeType();
+    }
+
+    public boolean isRegistered(Object component) {
+        return config.isRegistered(component);
+    }
+
+    public Map<String, Object> getProperties() {
+        return config.getProperties();
+    }
+
+    public ResourceConfig property(String name, Object value) {
+        return config.property(name, value);
+    }
+
+    public ResourceConfig registerInstances(Set<Object> instances) {
+        return config.registerInstances(instances);
+    }
+
+    public Set<Object> getInstances() {
+        return config.getInstances();
+    }
+
+    public ResourceConfig register(Class<?> componentClass, Map<Class<?>, Integer> contracts) {
+        return config.register(componentClass, contracts);
+    }
+
+    public ResourceConfig registerClasses(Set<Class<?>> classes) {
+        return config.registerClasses(classes);
+    }
+
+    public boolean isEnabled(Class<? extends Feature> featureClass) {
+        return config.isEnabled(featureClass);
+    }
+
+    public boolean isProperty(String name) {
+        return config.isProperty(name);
+    }
+
     public File getPackageRoot() {
         return packageRoot;
     }
@@ -806,6 +896,95 @@ public class Application extends ResourceConfig {
 
         public boolean isTest() {
             return this == TEST;
+        }
+    }
+
+    public static class Event implements ameba.event.Event {
+
+        ApplicationEvent event;
+
+        public Event(ApplicationEvent event) {
+            this.event = event;
+        }
+
+        public ApplicationEvent.Type getType() {
+            return event.getType();
+        }
+
+        public ResourceConfig getResourceConfig() {
+            return event.getResourceConfig();
+        }
+
+        public ResourceModel getResourceModel() {
+            return event.getResourceModel();
+        }
+
+        public Set<Class<?>> getProviders() {
+            return event.getProviders();
+        }
+
+        public Set<Object> getRegisteredInstances() {
+            return event.getRegisteredInstances();
+        }
+
+        public Set<Class<?>> getRegisteredClasses() {
+            return event.getRegisteredClasses();
+        }
+    }
+
+    public static class RequestEvent implements ameba.event.Event {
+        org.glassfish.jersey.server.monitoring.RequestEvent event;
+
+        public RequestEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
+            this.event = event;
+        }
+
+        public org.glassfish.jersey.server.monitoring.RequestEvent.Type getType() {
+            return event.getType();
+        }
+
+        public org.glassfish.jersey.server.monitoring.RequestEvent.ExceptionCause getExceptionCause() {
+            return event.getExceptionCause();
+        }
+
+        public Iterable<ContainerResponseFilter> getContainerResponseFilters() {
+            return event.getContainerResponseFilters();
+        }
+
+        public ContainerRequest getContainerRequest() {
+            return event.getContainerRequest();
+        }
+
+        public boolean isResponseSuccessfullyMapped() {
+            return event.isResponseSuccessfullyMapped();
+        }
+
+        public Iterable<ContainerRequestFilter> getContainerRequestFilters() {
+            return event.getContainerRequestFilters();
+        }
+
+        public boolean isResponseWritten() {
+            return event.isResponseWritten();
+        }
+
+        public boolean isSuccess() {
+            return event.isSuccess();
+        }
+
+        public Throwable getException() {
+            return event.getException();
+        }
+
+        public ExceptionMapper<?> getExceptionMapper() {
+            return event.getExceptionMapper();
+        }
+
+        public ExtendedUriInfo getUriInfo() {
+            return event.getUriInfo();
+        }
+
+        public ContainerResponse getContainerResponse() {
+            return event.getContainerResponse();
         }
     }
 

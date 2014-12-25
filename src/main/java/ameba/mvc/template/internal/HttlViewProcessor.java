@@ -1,6 +1,6 @@
 package ameba.mvc.template.internal;
 
-import ameba.Ameba;
+import ameba.core.Application;
 import ameba.mvc.template.TemplateException;
 import ameba.mvc.template.TemplateNotFoundException;
 import ameba.util.IOUtils;
@@ -41,41 +41,11 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
 
     public static final String CONFIG_SUFFIX = "httl";
     private static final String TEMPLATE_CONF_PREFIX = "template.";
-    private static final Engine engine;
+    private static Engine engine;
     private static String REQ_TPL_PATH_KEY = HttlViewProcessor.class.getName() + ".template.path";
-
-    static {
-        Properties properties = new Properties();
-        Map<String, Object> map = Ameba.getApp().getProperties();
-
-        properties.put("template.suffix", StringUtils.join(getExtends(Ameba.getApp())));
-
-        String encoding = (String) map.get("app.encoding");
-
-        if (StringUtils.isNotBlank(encoding)) {
-            properties.put("input.encoding", encoding);
-            properties.put("output.encoding", encoding);
-            properties.put("message.encoding", encoding);
-        }
-
-        for (String key : map.keySet()) {
-            if (key.startsWith(TEMPLATE_CONF_PREFIX)) {
-                String name;
-                if (key.equals("template.suffix") || key.equals("template.directory") || key.equals("template.parser")) {
-                    name = key;
-                } else {
-                    name = key.substring(TEMPLATE_CONF_PREFIX.length());
-                }
-                properties.put(name, map.get(key));
-            }
-        }
-        engine = Engine.getEngine(properties);
-    }
-
     private static Logger logger = LoggerFactory.getLogger(HttlViewProcessor.class);
     @Inject
     private javax.inject.Provider<ContainerRequest> request;
-
 
     @Inject
     public HttlViewProcessor(Configuration config, @Optional ServletContext servletContext) {
@@ -203,5 +173,36 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
         if (httpHeaders != null)
             setContentType(mediaType.equals(MediaType.WILDCARD_TYPE) ? MediaType.TEXT_HTML_TYPE : mediaType, httpHeaders);
         template.render(model, outputStream);
+    }
+
+    public static class AddOn extends ameba.core.AddOn {
+        @Override
+        public void done(Application application) {
+            Properties properties = new Properties();
+            Map<String, Object> map = application.getProperties();
+
+            properties.put("template.suffix", StringUtils.join(getExtends(application.getConfig())));
+
+            String encoding = (String) map.get("app.encoding");
+
+            if (StringUtils.isNotBlank(encoding)) {
+                properties.put("input.encoding", encoding);
+                properties.put("output.encoding", encoding);
+                properties.put("message.encoding", encoding);
+            }
+
+            for (String key : map.keySet()) {
+                if (key.startsWith(TEMPLATE_CONF_PREFIX)) {
+                    String name;
+                    if (key.equals("template.suffix") || key.equals("template.directory") || key.equals("template.parser")) {
+                        name = key;
+                    } else {
+                        name = key.substring(TEMPLATE_CONF_PREFIX.length());
+                    }
+                    properties.put(name, map.get(key));
+                }
+            }
+            engine = Engine.getEngine(properties);
+        }
     }
 }
