@@ -17,7 +17,7 @@ public class AmebaMvcFeature implements Feature {
 
     private static final String TPL_ENGINE_DIR_PR = "template.directory.engine.";
     private static final String TPL_DIR = "template.directory";
-    private static final String TPL_CACHE = "template.cache";
+    private static final String TPL_CACHE = "template.caching";
     private static final String TPL_MODULE_DIR_PR = "template.directory.module.";
 
 
