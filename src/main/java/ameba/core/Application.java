@@ -148,36 +148,14 @@ public class Application {
         //将临时配置对象放入应用程序配置
         addProperties(configMap);
 
-        register(new ApplicationEventListener() {
-            @Override
-            public void onEvent(ApplicationEvent event) {
-                publishEvent(new Event(event));
-            }
+        registerInstance();
 
-            @Override
-            public RequestEventListener onRequest(org.glassfish.jersey.server.monitoring.RequestEvent requestEvent) {
-                publishEvent(new RequestEvent(requestEvent));
-                return new RequestEventListener() {
-                    @Override
-                    public void onEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
-                        publishEvent(new RequestEvent(event));
-                    }
-                };
-            }
-        });
         register(Requests.CurrentRequestFilter.class);
-
-        register(new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bind(Application.this).to(Application.class);
-            }
-        });
-
         SystemEventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
             @Override
             public void onReceive(Container.BeginReloadEvent event) {
                 config = event.getNewConfig();
+                registerInstance();
             }
         });
 
@@ -201,6 +179,32 @@ public class Application {
         publishEvent(new ConfiguredEvent(this));
         addonDone();
         logger.info("装载特性...");
+    }
+
+    private void registerInstance(){
+        register(new ApplicationEventListener() {
+            @Override
+            public void onEvent(ApplicationEvent event) {
+                publishEvent(new Event(event));
+            }
+
+            @Override
+            public RequestEventListener onRequest(org.glassfish.jersey.server.monitoring.RequestEvent requestEvent) {
+                publishEvent(new RequestEvent(requestEvent));
+                return new RequestEventListener() {
+                    @Override
+                    public void onEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
+                        publishEvent(new RequestEvent(event));
+                    }
+                };
+            }
+        });
+        register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(Application.this).to(Application.class);
+            }
+        });
     }
 
     private static void publishEvent(ameba.event.Event event) {
@@ -240,6 +244,7 @@ public class Application {
                     if (sortSp != -1) {
                         name = name.substring(0, sortSp);
                     }
+
                     addOnSorts.add(new SortEntry(sortPriority, className, name, key));
                 }
             }
@@ -248,6 +253,7 @@ public class Application {
         Collections.sort(addOnSorts);
 
         for (SortEntry entry : addOnSorts) {
+            logger.debug("注册插件 [{}({})}", entry.key, entry.className);
             try {
                 Class addOnClass = ClassUtils.getClass(entry.className);
                 if (AddOn.class.isAssignableFrom(addOnClass)) {

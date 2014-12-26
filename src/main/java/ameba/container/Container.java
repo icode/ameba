@@ -31,42 +31,7 @@ public abstract class Container {
         this.application = application;
         configureHttpServer();
         configureWebSocketContainerProvider();
-        application.register(new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bindFactory(getWebSocketContainerProvider()).to(ServerContainer.class).proxy(false);
-                bindFactory(new Factory<Container>() {
-                    @Override
-                    public Container provide() {
-                        return Container.this;
-                    }
-
-                    @Override
-                    public void dispose(Container instance) {
-
-                    }
-                }).to(Container.class).proxy(false);
-            }
-        });
-        application.registerInstances(new ContainerLifecycleListener() {
-            @Override
-            public void onStartup(org.glassfish.jersey.server.spi.Container container) {
-                publishEvent(new StartupEvent(Container.this, application));
-                logger.trace("应用容器已经启动");
-            }
-
-            @Override
-            public void onReload(org.glassfish.jersey.server.spi.Container container) {
-                publishEvent(new ReloadEvent(Container.this, application));
-                logger.trace("应用容器已重新加载");
-            }
-
-            @Override
-            public void onShutdown(org.glassfish.jersey.server.spi.Container container) {
-                publishEvent(new ShutdownEvent(Container.this, application));
-                logger.trace("应用容器已关闭");
-            }
-        });
+        registerBinder(application.getConfig());
         configureHttpContainer();
     }
 
@@ -93,6 +58,45 @@ public abstract class Container {
         } finally {
             logger.debug("HTTP容器为 {}", provider);
         }
+    }
+
+    public void registerBinder(ResourceConfig configuration) {
+        configuration.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bindFactory(getWebSocketContainerProvider()).to(ServerContainer.class).proxy(false);
+                bindFactory(new Factory<Container>() {
+                    @Override
+                    public Container provide() {
+                        return Container.this;
+                    }
+
+                    @Override
+                    public void dispose(Container instance) {
+
+                    }
+                }).to(Container.class).proxy(false);
+            }
+        });
+        configuration.registerInstances(new ContainerLifecycleListener() {
+            @Override
+            public void onStartup(org.glassfish.jersey.server.spi.Container container) {
+                publishEvent(new StartupEvent(Container.this, application));
+                logger.trace("应用容器已经启动");
+            }
+
+            @Override
+            public void onReload(org.glassfish.jersey.server.spi.Container container) {
+                publishEvent(new ReloadEvent(Container.this, application));
+                logger.trace("应用容器已重新加载");
+            }
+
+            @Override
+            public void onShutdown(org.glassfish.jersey.server.spi.Container container) {
+                publishEvent(new ShutdownEvent(Container.this, application));
+                logger.trace("应用容器已关闭");
+            }
+        });
     }
 
     public Application getApplication() {
@@ -123,6 +127,7 @@ public abstract class Container {
 
     public void reload(ResourceConfig configuration) {
         publishEvent(new BeginReloadEvent(this, application, configuration));
+        registerBinder(configuration);
         doReload(configuration);
     }
 
