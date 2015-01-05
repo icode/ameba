@@ -56,7 +56,7 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
             for (TemplateProcessor templateProcessor : getTemplateProcessors()) {
                 Object has = templateProcessor.resolve(path, null);
                 if (has == null) {
-                    path = path + "/index";
+                    path = path + (path.endsWith("/") ? "" : "/") + "index";
                     has = templateProcessor.resolve(path, null);
                 }
                 if (has != null) {
