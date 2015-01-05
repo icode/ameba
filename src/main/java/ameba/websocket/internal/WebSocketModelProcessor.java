@@ -13,6 +13,7 @@ import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
 import javax.ws.rs.core.Configuration;
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * @author icode
@@ -54,8 +55,25 @@ public class WebSocketModelProcessor implements ModelProcessor {
     }
 
     private Resource processResource(RuntimeResource resource) {
-        Resource firstResource = resource.getResources().get(0);
+        List<Resource> resourceList = resource.getResources();
+        Resource firstResource = resourceList.get(0);
         Resource.Builder resourceBuilder = Resource.builder(firstResource.getPath());
+
+        for (Resource res : resourceList) {
+            for (Class clazz : res.getHandlerClasses()) {
+                WebSocket webSocketConf = (WebSocket) clazz.getAnnotation(WebSocket.class);
+                if (webSocketConf != null) {
+                    logger.trace("find web socket dispatcher in {} class", clazz);
+                    /*try {
+                        container.addEndpoint(new DefaultServerEndpointConfig(serviceLocator,
+                                getResourcePath(res), webSocketConf));
+                    } catch (DeploymentException e) {
+                        throw new WebSocketException(e);
+                    }*/
+                }
+            }
+        }
+
         for (ResourceMethod resourceMethod : resource.getResourceMethods()) {
             addResourceMethod(resourceBuilder, resourceMethod);
         }
@@ -80,6 +98,21 @@ public class WebSocketModelProcessor implements ModelProcessor {
         }
     }
 
+    private String getResourcePath(Resource resource) {
+        StringBuilder path = new StringBuilder();
+        if (resource != null)
+            do {
+                if (path.length() != 0 && path.charAt(0) != '/') path.insert(0, "/");
+                if (!resource.getPath().equals("/"))
+                    path.insert(0, resource.getPath());
+            } while ((resource = resource.getParent()) != null);
+        return path.toString();
+    }
+
+    private String getResourcePath(ResourceMethod resourceMethod) {
+        return getResourcePath(resourceMethod.getParent());
+    }
+
     private void processWebSocketEndpoint(ResourceMethod resourceMethod) {
         Invocable invocation = resourceMethod.getInvocable();
         Method handlingMethod = invocation.getHandlingMethod();
@@ -91,15 +124,8 @@ public class WebSocketModelProcessor implements ModelProcessor {
             logger.trace("find web socket in {} class, method {}",
                     handlingMethod.getDeclaringClass().getName(), handlingMethod.toGenericString());
             try {
-                StringBuilder path = new StringBuilder();
-                Resource resource = resourceMethod.getParent();
-                if (resource != null)
-                    do {
-                        if (path.length() != 0 && path.charAt(0) != '/') path.insert(0, "/");
-                        if (!resource.getPath().equals("/"))
-                            path.insert(0, resource.getPath());
-                    } while ((resource = resource.getParent()) != null);
-                container.addEndpoint(new DefaultServerEndpointConfig(serviceLocator, resourceMethod, path.toString(), webSocketConf));
+                container.addEndpoint(new DefaultServerEndpointConfig(serviceLocator, resourceMethod,
+                        getResourcePath(resourceMethod), webSocketConf));
             } catch (DeploymentException e) {
                 throw new WebSocketException(e);
             }

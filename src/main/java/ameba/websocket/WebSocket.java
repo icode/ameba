@@ -14,14 +14,15 @@ import java.lang.annotation.Target;
  * @author icode
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.TYPE})
 public @interface WebSocket {
 
     /**
      * Enable Engine.io support
+     *
      * @return Engine.io enabled
      */
-    boolean withEngineIO() default false;
+    boolean withSockJS() default false;
 
     /**
      * The ordered array of web socket protocols this endpoint supports.
@@ -64,4 +65,12 @@ public @interface WebSocket {
     public Class<? extends DefaultServerEndpointConfig.Configurator> configurator() default DefaultServerEndpointConfig.Configurator.class;
 
     public Class<? extends Extension>[] extensions() default {};
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD})
+    public static @interface On {
+        String value();
+        public Class<? extends Encoder>[] encoders() default {};
+        public Class<? extends Decoder>[] decoders() default {};
+    }
 }

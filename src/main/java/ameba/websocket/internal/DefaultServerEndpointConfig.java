@@ -68,8 +68,10 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
             @Override
             public <T> T getEndpointInstance(Class<T> endpointClass) throws InstantiationException {
                 T endpoint = configurator.getEndpointInstance(endpointClass);
-                if (endpoint instanceof EndpointDelegate) {
-                    ((EndpointDelegate) endpoint).setResourceMethod(resourceMethod);
+                if (resourceMethod != null) {
+                    if (endpoint instanceof ResourceMethodEndpointDelegate) {
+                        ((ResourceMethodEndpointDelegate) endpoint).setResourceMethod(resourceMethod);
+                    }
                 }
                 return endpoint;
             }
@@ -81,7 +83,7 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
     }
 
     public DefaultServerEndpointConfig(ServiceLocator serviceLocator, ResourceMethod resourceMethod, String path, WebSocket webSocketConf) {
-        this(serviceLocator, resourceMethod, EndpointDelegate.class, path, webSocketConf);
+        this(serviceLocator, resourceMethod, ResourceMethodEndpointDelegate.class, path, webSocketConf);
     }
 
 
