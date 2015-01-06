@@ -2,6 +2,7 @@ package ameba.websocket.internal;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.Context;
@@ -15,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -277,7 +277,7 @@ public class MessageScope implements Context<RequestScoped> {
         private final AtomicInteger referenceCounter;
 
         private Instance() {
-            this.store = new HashMap<ActiveDescriptor<?>, Object>();
+            this.store = Maps.newHashMap();
             this.referenceCounter = new AtomicInteger(1);
         }
 
