@@ -92,11 +92,17 @@ public abstract class EndpointDelegate extends Endpoint {
         });
     }
 
-    protected void runInScope(final Runnable task){
+    protected void runInScope(final Runnable task) {
         requestScope.runInScope(reqInstance, new Runnable() {
             @Override
             public void run() {
-                getMessageScope().runInScope(task);
+                MessageScope.Instance instance = getMessageScope().suspendCurrent();
+                if (instance == null) {
+                    instance = getMessageScope().createInstance();
+                } else {
+                    instance.release();
+                }
+                getMessageScope().runInScope(instance, task);
             }
         });
     }
@@ -191,6 +197,7 @@ public abstract class EndpointDelegate extends Endpoint {
                 }
             }
         });
+        reqInstance = null;
     }
 
     protected void onClose() {
