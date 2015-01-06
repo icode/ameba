@@ -7,6 +7,7 @@ import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.jersey.internal.util.collection.Ref;
+import org.glassfish.jersey.process.internal.RequestScope;
 import org.glassfish.jersey.server.model.Invocable;
 import org.glassfish.jersey.server.model.MethodHandler;
 import org.glassfish.jersey.server.model.Parameter;
@@ -54,6 +55,13 @@ public abstract class EndpointDelegate extends Endpoint {
     private ServiceLocator serviceLocator;
     @Inject
     private MessageScope messageScope;
+    @Inject
+    private RequestScope requestScope;
+    private RequestScope.Instance reqInstance;
+
+    public RequestScope getRequestScope() {
+        return requestScope;
+    }
 
     public ServiceLocator getServiceLocator() {
         return serviceLocator;
@@ -72,10 +80,28 @@ public abstract class EndpointDelegate extends Endpoint {
     }
 
     @Override
-    public void onOpen(Session session, EndpointConfig config) {
+    public final void onOpen(final Session session, final EndpointConfig config) {
         this.session = session;
         this.endpointConfig = config;
+        reqInstance = getRequestScope().createInstance();
+        runInScope(new Runnable() {
+            @Override
+            public void run() {
+                onOpen();
+            }
+        });
     }
+
+    protected void runInScope(final Runnable task){
+        requestScope.runInScope(reqInstance, new Runnable() {
+            @Override
+            public void run() {
+                getMessageScope().runInScope(task);
+            }
+        });
+    }
+
+    protected abstract void onOpen();
 
     protected MessageState getMessageState() {
         return getMessageStateRef().get();
@@ -153,31 +179,46 @@ public abstract class EndpointDelegate extends Endpoint {
     }
 
     @Override
-    public void onClose(Session session, final CloseReason closeReason) {
-        messageScope.runInScope(new Runnable() {
+    public final void onClose(Session session, final CloseReason closeReason) {
+        runInScope(new Runnable() {
             @Override
             public void run() {
                 getMessageState().change().closeReason(closeReason);
-                emmit(onCloseList, false);
+                try {
+                    onClose();
+                } finally {
+                    emmit(onCloseList, false);
+                }
             }
         });
     }
 
+    protected void onClose() {
+
+    }
+
     @Override
-    public void onError(Session session, Throwable thr) {
+    public final void onError(Session session, Throwable thr) {
         if (thr instanceof InvocationTargetException) {
             thr = thr.getCause();
         }
         final Throwable finalThr = thr;
-        messageScope.runInScope(new Runnable() {
+        runInScope(new Runnable() {
             @Override
             public void run() {
                 getMessageState().change().throwable(finalThr);
-                emmit(onErrorList, true);
-
-                logger.error("web socket has a err", finalThr);
+                try {
+                    onError();
+                } finally {
+                    emmit(onErrorList, true);
+                    logger.error("web socket has a err", finalThr);
+                }
             }
         });
+    }
+
+    protected void onError() {
+
     }
 
     private MessageState.Builder createMessageStateBuilder() {
