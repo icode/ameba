@@ -2,7 +2,9 @@ package ameba.websocket.internal;
 
 import ameba.websocket.WebSocket;
 import ameba.websocket.WebSocketException;
+import ameba.websocket.WebSocketFeature;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +94,8 @@ public class WebSocketModelProcessor implements ModelProcessor {
 
     private void addResourceMethod(Resource.Builder resourceBuilder, ResourceMethod resourceMethod) {
         if (resourceMethod.getInvocable().getHandlingMethod().isAnnotationPresent(WebSocket.class)) {
-            processWebSocketEndpoint(resourceMethod);
+            if (WebSocketFeature.isEnabled())
+                processWebSocketEndpoint(resourceMethod);
         } else {
             resourceBuilder.addMethod(resourceMethod);
         }

@@ -1,5 +1,6 @@
 package ameba.websocket.internal;
 
+import ameba.websocket.WebSocketFeature;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.internal.inject.ReferencingFactory;
 import org.glassfish.jersey.internal.util.collection.Ref;
@@ -13,16 +14,19 @@ import javax.inject.Singleton;
  * @author icode
  */
 public class WebSocketBinder extends AbstractBinder {
+
     @Override
     protected void configure() {
         bind(WebSocketModelProcessor.class).to(ModelProcessor.class).in(Singleton.class);
 
-        bindFactory(MessageStateReferencingFactory.class).to(MessageState.class)
-                .proxy(false).in(MessageScoped.class);
-        bindFactory(ReferencingFactory.<MessageState>referenceFactory())
-                .to(EndpointDelegate.MESSAGE_STATE_TYPE).in(MessageScoped.class);
+        if (WebSocketFeature.isEnabled()) {
+            bindFactory(MessageStateReferencingFactory.class).to(MessageState.class)
+                    .proxy(false).in(MessageScoped.class);
+            bindFactory(ReferencingFactory.<MessageState>referenceFactory())
+                    .to(EndpointDelegate.MESSAGE_STATE_TYPE).in(MessageScoped.class);
 
-        bind(new MessageScope()).to(MessageScope.class);
+            bind(new MessageScope()).to(MessageScope.class);
+        }
     }
 
 

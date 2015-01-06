@@ -1,5 +1,6 @@
 package ameba.websocket.internal;
 
+import ameba.util.ClassUtils;
 import ameba.websocket.WebSocketException;
 import com.google.common.collect.Lists;
 import org.glassfish.hk2.api.Factory;
@@ -25,9 +26,7 @@ import java.util.List;
  */
 public abstract class EndpointDelegate extends Endpoint {
 
-    static final Type MESSAGE_STATE_TYPE = (new TypeLiteral<Ref<MessageState>>() {
-    }).getType();
-    private static final Logger logger = LoggerFactory.getLogger(EndpointDelegate.class);
+    public static final String MESSAGE_HANDLER_WHOLE_OR_PARTIAL = "MessageHandler must implement MessageHandler.Whole or MessageHandler.Partial.";
     protected static final InvocationHandler DEFAULT_HANDLER = new InvocationHandler() {
         @Override
         public Object invoke(Object target, Method method, Object[] args)
@@ -43,24 +42,39 @@ public abstract class EndpointDelegate extends Endpoint {
             }
         }
     };
+    static final Type MESSAGE_STATE_TYPE = (new TypeLiteral<Ref<MessageState>>() {
+    }).getType();
+    private static final Logger logger = LoggerFactory.getLogger(EndpointDelegate.class);
+    protected List<EventInvocation> onErrorList;
+    protected List<EventInvocation> onCloseList;
+    protected List<EventInvocation> onOpenList;
+    protected Session session;
+    protected EndpointConfig endpointConfig;
     @Inject
     private ServiceLocator serviceLocator;
     @Inject
     private MessageScope messageScope;
-    protected List<EventInvocation> onErrorList;
-    protected List<EventInvocation> onCloseList;
-    protected List<EventInvocation> onOpenList;
 
-    protected void initMessageScope(final Session session, final EndpointConfig config) {
-        getMessageStateRef().set(MessageState.builder(session, config).build());
+    public ServiceLocator getServiceLocator() {
+        return serviceLocator;
     }
 
-    protected void initMessageScope(MessageState messageState) {
-        getMessageStateRef().set(MessageState.from(messageState).build());
+    public MessageScope getMessageScope() {
+        return messageScope;
     }
 
     protected Ref<MessageState> getMessageStateRef() {
         return serviceLocator.<Ref<MessageState>>getService(MESSAGE_STATE_TYPE);
+    }
+
+    private void initMessageScope(MessageState messageState) {
+        getMessageStateRef().set(messageState);
+    }
+
+    @Override
+    public void onOpen(Session session, EndpointConfig config) {
+        this.session = session;
+        this.endpointConfig = config;
     }
 
     protected MessageState getMessageState() {
@@ -80,6 +94,29 @@ public abstract class EndpointDelegate extends Endpoint {
             }
         }
         return invocations;
+    }
+
+
+    protected void addMessageHandler(MessageHandler handler) {
+        final Class<?> handlerClass = ClassUtils.getGenericClass(handler.getClass());
+        addMessageHandler(handlerClass, handler);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> void addMessageHandler(Class<T> messageClass, final MessageHandler handler) {
+        if (handler instanceof MessageHandler.Whole) { //WHOLE MESSAGE HANDLER
+            serviceLocator.inject(handler);
+            serviceLocator.postConstruct(handler);
+            getMessageState().getSession().addMessageHandler(messageClass,
+                    new BasicMessageHandler<T>((MessageHandler.Whole<T>) handler));
+        } else if (handler instanceof MessageHandler.Partial) { // PARTIAL MESSAGE HANDLER
+            serviceLocator.inject(handler);
+            serviceLocator.postConstruct(handler);
+            getMessageState().getSession().addMessageHandler(messageClass,
+                    new AsyncMessageHandler<T>((MessageHandler.Partial<T>) handler));
+        } else {
+            throw new WebSocketException(MESSAGE_HANDLER_WHOLE_OR_PARTIAL);
+        }
     }
 
     protected void initEventList(Object... instance) {
@@ -116,13 +153,14 @@ public abstract class EndpointDelegate extends Endpoint {
     }
 
     @Override
-    public void onClose(Session session, CloseReason closeReason) {
-        try {
-            getMessageState().change().closeReason(closeReason);
-            emmit(onCloseList, false);
-        } finally {
-            serviceLocator.shutdown();
-        }
+    public void onClose(Session session, final CloseReason closeReason) {
+        messageScope.runInScope(new Runnable() {
+            @Override
+            public void run() {
+                getMessageState().change().closeReason(closeReason);
+                emmit(onCloseList, false);
+            }
+        });
     }
 
     @Override
@@ -130,13 +168,21 @@ public abstract class EndpointDelegate extends Endpoint {
         if (thr instanceof InvocationTargetException) {
             thr = thr.getCause();
         }
+        final Throwable finalThr = thr;
+        messageScope.runInScope(new Runnable() {
+            @Override
+            public void run() {
+                getMessageState().change().throwable(finalThr);
+                emmit(onErrorList, true);
 
-        getMessageState().change().throwable(thr);
-        emmit(onErrorList, true);
-
-        logger.error("web socket has a err", thr);
+                logger.error("web socket has a err", finalThr);
+            }
+        });
     }
 
+    private MessageState.Builder createMessageStateBuilder() {
+        return MessageState.builder(session, endpointConfig);
+    }
 
     private static class EventInvocation {
         private Invocable invocable;
@@ -195,6 +241,51 @@ public abstract class EndpointDelegate extends Endpoint {
                     }
                 }
             }.run();
+        }
+    }
+
+    protected class AsyncMessageHandler<M> implements MessageHandler.Partial<M> {
+
+
+        private Partial<M> handler;
+
+        public AsyncMessageHandler(Partial<M> handler) {
+            this.handler = handler;
+        }
+
+        @Override
+        public void onMessage(final M partialMessage, final boolean last) {
+            messageScope.runInScope(new Runnable() {
+                @Override
+                public void run() {
+                    MessageState state = createMessageStateBuilder()
+                            .message(partialMessage)
+                            .last(last).build();
+                    initMessageScope(state);
+                    handler.onMessage(partialMessage, last);
+                }
+            });
+        }
+    }
+
+    protected class BasicMessageHandler<M> implements MessageHandler.Whole<M> {
+        private Whole<M> handler;
+
+        public BasicMessageHandler(Whole<M> handler) {
+            this.handler = handler;
+        }
+
+        @Override
+        public void onMessage(final M partialMessage) {
+            messageScope.runInScope(new Runnable() {
+                @Override
+                public void run() {
+                    MessageState state = createMessageStateBuilder()
+                            .message(partialMessage).build();
+                    initMessageScope(state);
+                    handler.onMessage(partialMessage);
+                }
+            });
         }
     }
 

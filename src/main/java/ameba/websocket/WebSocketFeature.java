@@ -16,6 +16,12 @@ public class WebSocketFeature implements Feature {
     public static final String WEB_SOCKET_ENABLED_CONF = "websocket.enabled";
     private static final Logger logger = LoggerFactory.getLogger(WebSocketFeature.class);
 
+    private static boolean enabled;
+
+    public static boolean isEnabled() {
+        return enabled;
+    }
+
     @Override
     public boolean configure(FeatureContext context) {
         final Configuration config = context.getConfiguration();
@@ -24,12 +30,12 @@ public class WebSocketFeature implements Feature {
             return false;
         }
 
-        if (!"false".equals(config.getProperty(WEB_SOCKET_ENABLED_CONF))) {
-            context.register(new WebSocketBinder());
-            return true;
-        }
+        enabled = !"false".equals(config.getProperty(WEB_SOCKET_ENABLED_CONF));
 
-        logger.debug("WebSocket 未启用");
+        context.register(new WebSocketBinder());
+
+        if (!enabled)
+            logger.debug("WebSocket 未启用");
         return false;
     }
 }

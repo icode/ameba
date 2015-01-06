@@ -26,7 +26,7 @@ import static com.google.common.base.Preconditions.checkState;
  * @author icode
  */
 @Singleton
-public class MessageScope implements Context<RequestScoped> {
+public class MessageScope implements Context<MessageScoped> {
 
     private static Logger logger = LoggerFactory.getLogger(MessageScope.class);
 

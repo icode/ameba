@@ -67,6 +67,7 @@ public class Application {
     private static final String REGISTER_CONF_PREFIX = "app.register.";
     private static final String ADDON_CONF_PREFIX = "app.addon.";
     private static final String JERSEY_CONF_NAME_PREFIX = "app.sys.core.";
+    public static final String DEFAULT_APP_NAME = "Ameba";
     private static String INFO_SPLITOR = "---------------------------------------------------";
     protected boolean jmxEnabled;
     List<SortEntry> addOnSorts = Lists.newArrayList();
@@ -118,7 +119,7 @@ public class Application {
         }
 
         //设置应用程序名称
-        setApplicationName(StringUtils.defaultString(properties.getProperty("app.name"), "ameba"));
+        setApplicationName(StringUtils.defaultString(properties.getProperty("app.name"), DEFAULT_APP_NAME));
         applicationVersion = properties.getProperty("app.version");
         if (StringUtils.isBlank(applicationVersion)) {
             applicationVersion = new UnknownVersion();
@@ -874,8 +875,10 @@ public class Application {
             LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
             context.reset();
             context.putProperty("appName", getApplicationName());
-            String appPackage = (String) properties.getProperty("app.package");
+            String appPackage = properties.getProperty("app.package");
             context.putProperty("appPackage", appPackage);
+            String traceEnabled = properties.getProperty("ameba.trace.enabled");
+            context.putProperty("ameba.trace.enabled", traceEnabled);
             GafferUtil.runGafferConfiguratorOn(context, this, loggerConfigFile);
         }
 
