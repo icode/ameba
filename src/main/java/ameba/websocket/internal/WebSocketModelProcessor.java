@@ -4,7 +4,6 @@ import ameba.websocket.WebSocket;
 import ameba.websocket.WebSocketException;
 import ameba.websocket.WebSocketFeature;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +41,21 @@ public class WebSocketModelProcessor implements ModelProcessor {
 
     private ResourceModel processModel(final ResourceModel resourceModel) {
         ResourceModel.Builder modelBuilder = new ResourceModel.Builder(false);
+
+        for (Resource resource : resourceModel.getRootResources()) {
+            for (Class clazz : resource.getHandlerClasses()) {
+                WebSocket webSocketConf = (WebSocket) clazz.getAnnotation(WebSocket.class);
+                if (webSocketConf != null) {
+                    logger.trace("find web socket dispatcher in {} class", clazz);
+                /*try {
+                    container.addEndpoint(new DefaultServerEndpointConfig(serviceLocator,
+                            getResourcePath(res), webSocketConf));
+                } catch (DeploymentException e) {
+                    throw new WebSocketException(e);
+                }*/
+                }
+            }
+        }
         for (RuntimeResource resource : resourceModel.getRuntimeResourceModel().getRuntimeResources()) {
             Resource newResource = processResource(resource);
             if (hasResource(newResource))
@@ -61,20 +75,6 @@ public class WebSocketModelProcessor implements ModelProcessor {
         Resource firstResource = resourceList.get(0);
         Resource.Builder resourceBuilder = Resource.builder(firstResource.getPath());
 
-        for (Resource res : resourceList) {
-            for (Class clazz : res.getHandlerClasses()) {
-                WebSocket webSocketConf = (WebSocket) clazz.getAnnotation(WebSocket.class);
-                if (webSocketConf != null) {
-                    logger.trace("find web socket dispatcher in {} class", clazz);
-                    /*try {
-                        container.addEndpoint(new DefaultServerEndpointConfig(serviceLocator,
-                                getResourcePath(res), webSocketConf));
-                    } catch (DeploymentException e) {
-                        throw new WebSocketException(e);
-                    }*/
-                }
-            }
-        }
 
         for (ResourceMethod resourceMethod : resource.getResourceMethods()) {
             addResourceMethod(resourceBuilder, resourceMethod);

@@ -69,7 +69,11 @@ public @interface WebSocket {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD})
     public static @interface On {
-        String value();
+        /**
+         * 映射的action/event名称，如果为空则通方法名
+         * @return mapping name
+         */
+        String value() default "";
         public Class<? extends Encoder>[] encoders() default {};
         public Class<? extends Decoder>[] decoders() default {};
     }
