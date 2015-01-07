@@ -46,6 +46,8 @@ public abstract class AmebaFeature implements Feature {
     }
 
     protected <E extends Event> void unsubscribeEvent(Class<E> eventClass, final Listener<E> listener) {
+        locator.inject(listener);
+        locator.postConstruct(listener);
         EVENT_BUS.unsubscribe(eventClass, listener);
     }
 

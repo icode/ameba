@@ -122,6 +122,7 @@ public abstract class Container {
     }
 
     public void reload() {
+        publishEvent(new BeginReloadEvent(this, application, application.getConfig()));
         doReload(application.getConfig());
     }
 
