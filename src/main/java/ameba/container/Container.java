@@ -29,8 +29,8 @@ public abstract class Container {
 
     public Container(final Application application) {
         this.application = application;
-        configureHttpServer();
         configureWebSocketContainerProvider();
+        configureHttpServer();
         registerBinder(application.getConfig());
         configureHttpContainer();
     }
