@@ -32,16 +32,18 @@ public class WebSocketModelProcessor implements ModelProcessor {
     @Inject
     public WebSocketModelProcessor(Configuration configuration) {
         for (Class clazz : configuration.getClasses()) {
-            WebSocket webSocketConf = (WebSocket) clazz.getAnnotation(WebSocket.class);
             Path pathConf = (Path) clazz.getAnnotation(Path.class);
-            if (webSocketConf != null && pathConf != null) {
-                logger.trace("find web socket dispatcher in {} class", clazz);
-            /*try {
-                container.addEndpoint(new DefaultServerEndpointConfig(serviceLocator,
-                        getResourcePath(res), webSocketConf));
-            } catch (DeploymentException e) {
-                throw new WebSocketException(e);
-            }*/
+            if (pathConf != null) {
+                WebSocket webSocketConf = (WebSocket) clazz.getAnnotation(WebSocket.class);
+                if (webSocketConf != null) {
+                    logger.trace("find web socket dispatcher in {} class", clazz);
+                    /*try {
+                        container.addEndpoint(new DefaultServerEndpointConfig(serviceLocator,
+                                getResourcePath(res), webSocketConf));
+                    } catch (DeploymentException e) {
+                        throw new WebSocketException(e);
+                    }*/
+                }
             }
         }
     }
