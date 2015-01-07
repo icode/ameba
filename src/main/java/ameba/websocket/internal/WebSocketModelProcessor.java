@@ -12,6 +12,7 @@ import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Configuration;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -28,6 +29,23 @@ public class WebSocketModelProcessor implements ModelProcessor {
     @Inject
     private ServerContainer container;
 
+    @Inject
+    public WebSocketModelProcessor(Configuration configuration) {
+        for (Class clazz : configuration.getClasses()) {
+            WebSocket webSocketConf = (WebSocket) clazz.getAnnotation(WebSocket.class);
+            Path pathConf = (Path) clazz.getAnnotation(Path.class);
+            if (webSocketConf != null && pathConf != null) {
+                logger.trace("find web socket dispatcher in {} class", clazz);
+            /*try {
+                container.addEndpoint(new DefaultServerEndpointConfig(serviceLocator,
+                        getResourcePath(res), webSocketConf));
+            } catch (DeploymentException e) {
+                throw new WebSocketException(e);
+            }*/
+            }
+        }
+    }
+
     @Override
     public ResourceModel processResourceModel(ResourceModel resourceModel, Configuration configuration) {
         ResourceModel result = processModel(resourceModel);
@@ -42,20 +60,6 @@ public class WebSocketModelProcessor implements ModelProcessor {
     private ResourceModel processModel(final ResourceModel resourceModel) {
         ResourceModel.Builder modelBuilder = new ResourceModel.Builder(false);
 
-        for (Resource resource : resourceModel.getRootResources()) {
-            for (Class clazz : resource.getHandlerClasses()) {
-                WebSocket webSocketConf = (WebSocket) clazz.getAnnotation(WebSocket.class);
-                if (webSocketConf != null) {
-                    logger.trace("find web socket dispatcher in {} class", clazz);
-                /*try {
-                    container.addEndpoint(new DefaultServerEndpointConfig(serviceLocator,
-                            getResourcePath(res), webSocketConf));
-                } catch (DeploymentException e) {
-                    throw new WebSocketException(e);
-                }*/
-                }
-            }
-        }
         for (RuntimeResource resource : resourceModel.getRuntimeResourceModel().getRuntimeResources()) {
             Resource newResource = processResource(resource);
             if (hasResource(newResource))
