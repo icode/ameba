@@ -186,18 +186,22 @@ public abstract class EndpointDelegate extends Endpoint {
 
     @Override
     public final void onClose(Session session, final CloseReason closeReason) {
-        runInScope(new Runnable() {
-            @Override
-            public void run() {
-                getMessageState().change().closeReason(closeReason);
-                try {
-                    onClose();
-                } finally {
-                    emmit(onCloseList, false);
+        try {
+            runInScope(new Runnable() {
+                @Override
+                public void run() {
+                    getMessageState().change().closeReason(closeReason);
+                    try {
+                        onClose();
+                    } finally {
+                        emmit(onCloseList, false);
+                    }
                 }
-            }
-        });
-        reqInstance = null;
+            });
+        } finally {
+            reqInstance.release();
+            reqInstance = null;
+        }
     }
 
     protected void onClose() {

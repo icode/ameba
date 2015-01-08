@@ -1,5 +1,7 @@
 package ameba.db;
 
+import ameba.core.AddOn;
+import ameba.core.Application;
 import ameba.db.model.ModelManager;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
@@ -22,9 +24,7 @@ import java.util.Set;
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-07
  */
-@Singleton
-@ConstrainedTo(RuntimeType.SERVER)
-public class DataSourceFeature implements Feature {
+public class DataSourceFeature extends AddOn {
 
     private static final Map<String, DataSource> dataSourceMap = Maps.newHashMap();
     private static final Logger logger = LoggerFactory.getLogger(DataSourceFeature.class);
@@ -49,8 +49,8 @@ public class DataSourceFeature implements Feature {
     }
 
     @Override
-    public boolean configure(final FeatureContext context) {
-        Configuration config = context.getConfiguration();
+    public void setup(final Application app) {
+        Configuration config = app.getConfiguration();
         Map<String, Map<String, String>> map = Maps.newHashMap();
         for (String key : config.getPropertyNames()) {
             key = StringUtils.deleteWhitespace(key);
@@ -70,9 +70,6 @@ public class DataSourceFeature implements Feature {
             }
         }
 
-        //用于重新加载
-        dataSourceMap.clear();
-
         for (String name : map.keySet()) {
             try {
                 Map<String, String> conf = map.get(name);
@@ -88,6 +85,5 @@ public class DataSourceFeature implements Feature {
                 logger.error("配置数据源出错", e);
             }
         }
-        return true;
     }
 }

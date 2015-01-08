@@ -151,7 +151,7 @@ public class Application {
 
         registerInstance();
 
-        register(Requests.CurrentRequestFilter.class);
+        register(Requests.BindRequest.class);
         SystemEventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
             @Override
             public void onReceive(Container.BeginReloadEvent event) {

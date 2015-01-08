@@ -4,17 +4,15 @@ import ameba.container.server.Request;
 import org.glassfish.jersey.internal.PropertiesDelegate;
 import org.glassfish.jersey.message.MessageBodyWorkers;
 import org.glassfish.jersey.message.internal.*;
+import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.glassfish.jersey.server.spi.ContainerResponseWriter;
 import org.glassfish.jersey.server.spi.RequestScopedInitializer;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.ws.rs.ProcessingException;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.*;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -26,24 +24,13 @@ import java.util.*;
  */
 public class Requests {
 
-    private Requests(){}
-    private static final ThreadLocal<Request> reqLocal = new ThreadLocal<Request>();
+    private static Provider<ContainerRequest> requestProvider;
 
-    static class CurrentRequestFilter implements ContainerRequestFilter, ContainerResponseFilter {
-
-        @Override
-        public void filter(ContainerRequestContext requestContext) throws IOException {
-            reqLocal.set((Request) requestContext);
-        }
-
-        @Override
-        public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-            reqLocal.remove();
-        }
+    private Requests() {
     }
 
     private static Request getRequest() {
-        return reqLocal.get();
+        return (Request) requestProvider.get();
     }
 
     public static String getRealAddress(String realIpHeader) {
@@ -52,10 +39,6 @@ public class Requests {
 
     public static String getRealAddress() {
         return getRequest().getRemoteRealAddr();
-    }
-
-    public static String getAddress() {
-        return getRequest().getRemoteAddr();
     }
 
     public static String getRemoteAddr() {
@@ -68,6 +51,10 @@ public class Requests {
 
     public static URI getRequestUri() {
         return getRequest().getRequestUri();
+    }
+
+    public static void setRequestUri(URI requestUri) throws IllegalStateException {
+        getRequest().setRequestUri(requestUri);
     }
 
     public static MediaType getMediaType() {
@@ -118,10 +105,6 @@ public class Requests {
         return getRequest().getCookies();
     }
 
-    public static void setSecurityContext(SecurityContext context) {
-        getRequest().setSecurityContext(context);
-    }
-
     public static boolean hasEntity() {
         return getRequest().hasEntity();
     }
@@ -142,10 +125,6 @@ public class Requests {
         return getRequest().remove(name);
     }
 
-    public static void setRequestUri(URI requestUri) throws IllegalStateException {
-        getRequest().setRequestUri(requestUri);
-    }
-
     public static void setWriter(ContainerResponseWriter responseWriter) {
         getRequest().setWriter(responseWriter);
     }
@@ -160,6 +139,10 @@ public class Requests {
 
     public static SecurityContext getSecurityContext() {
         return getRequest().getSecurityContext();
+    }
+
+    public static void setSecurityContext(SecurityContext context) {
+        getRequest().setSecurityContext(context);
     }
 
     public static EntityTag getEntityTag() {
@@ -226,12 +209,12 @@ public class Requests {
         return getRequest().getMethod();
     }
 
-    public static URI getBaseUri() {
-        return getRequest().getBaseUri();
+    public static void setMethod(String method) throws IllegalStateException {
+        getRequest().setMethod(method);
     }
 
-    public static void setEntityStream(InputStream input) {
-        getRequest().setEntityStream(input);
+    public static URI getBaseUri() {
+        return getRequest().getBaseUri();
     }
 
     public static ExtendedUriInfo getUriInfo() {
@@ -278,10 +261,6 @@ public class Requests {
         return getRequest().getRequestHeaders();
     }
 
-    public static void setMethod(String method) throws IllegalStateException {
-        getRequest().setMethod(method);
-    }
-
     public static RequestScopedInitializer getRequestScopedInitializer() {
         return getRequest().getRequestScopedInitializer();
     }
@@ -310,6 +289,10 @@ public class Requests {
         return getRequest().getEntityStream();
     }
 
+    public static void setEntityStream(InputStream input) {
+        getRequest().setEntityStream(input);
+    }
+
     public static void setMethodWithoutException(String method) {
         getRequest().setMethodWithoutException(method);
     }
@@ -328,6 +311,10 @@ public class Requests {
 
     public static MessageBodyWorkers getWorkers() {
         return getRequest().getWorkers();
+    }
+
+    public static void setWorkers(MessageBodyWorkers workers) {
+        getRequest().setWorkers(workers);
     }
 
     public static List<Locale> getAcceptableLanguages() {
@@ -366,10 +353,6 @@ public class Requests {
         getRequest().setRequestUri(baseUri, requestUri);
     }
 
-    public static void setWorkers(MessageBodyWorkers workers) {
-        getRequest().setWorkers(workers);
-    }
-
     public static Set<Link> getLinks() {
         return getRequest().getLinks();
     }
@@ -380,5 +363,18 @@ public class Requests {
 
     public static ContainerResponseWriter getResponseWriter() {
         return getRequest().getResponseWriter();
+    }
+
+    static class BindRequest implements Feature {
+
+        @Inject
+        public BindRequest(Provider<ContainerRequest> reqProvider) {
+            requestProvider = reqProvider;
+        }
+
+        @Override
+        public boolean configure(FeatureContext context) {
+            return true;
+        }
     }
 }

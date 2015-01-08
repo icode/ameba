@@ -1,6 +1,10 @@
 package ameba.db.model;
 
+import ameba.container.Container;
+import ameba.core.AddOn;
+import ameba.core.Application;
 import ameba.db.DataSourceFeature;
+import ameba.event.Listener;
 import ameba.exception.AmebaException;
 import ameba.feature.AmebaFeature;
 import ameba.util.ClassUtils;
@@ -26,7 +30,7 @@ import java.util.Set;
 /**
  * @author icode
  */
-public class ModelManager extends AmebaFeature {
+public class ModelManager extends AddOn {
 
     public static final String MODULE_MODELS_KEY_PREFIX = "db.default.models.";
     private static Logger logger = LoggerFactory.getLogger(ModelManager.class);
@@ -42,11 +46,21 @@ public class ModelManager extends AmebaFeature {
     }
 
     @Override
-    public boolean configure(FeatureContext context) {
+    public void setup(final Application application) {
+        loadModels(application);
+        subscribeEvent(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
+            @Override
+            public void onReceive(Container.BeginReloadEvent event) {
+                loadModels(application);
+            }
+        });
+    }
+
+    private void loadModels(Application application){
         modelMap.clear();
 
         ClassPool classPool = ClassPool.getDefault();
-        Configuration config = context.getConfiguration();
+        Configuration config = application.getConfiguration();
         DEFAULT_DB_NAME = (String) config.getProperty("db.default");
 
         if (StringUtils.isBlank(DEFAULT_DB_NAME)) {
@@ -105,7 +119,5 @@ public class ModelManager extends AmebaFeature {
         }
 
         defaultModelsPkg.clear();
-
-        return true;
     }
 }
