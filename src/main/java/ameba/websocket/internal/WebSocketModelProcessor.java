@@ -1,5 +1,6 @@
 package ameba.websocket.internal;
 
+import ameba.core.ws.rs.PATCH;
 import ameba.websocket.WebSocket;
 import ameba.websocket.WebSocketException;
 import ameba.websocket.WebSocketFeature;
@@ -12,8 +13,9 @@ import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Configuration;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -99,10 +101,31 @@ public class WebSocketModelProcessor implements ModelProcessor {
     }
 
     private void addResourceMethod(Resource.Builder resourceBuilder, ResourceMethod resourceMethod) {
-        if (resourceMethod.getInvocable().getHandlingMethod().isAnnotationPresent(WebSocket.class)) {
-            if (WebSocketFeature.isEnabled())
+        boolean isWebSocket = getAnnotation(WebSocket.class, resourceMethod) != null;
+
+        if (isWebSocket) {
+            if (WebSocketFeature.isEnabled()) {
                 processWebSocketEndpoint(resourceMethod);
+            }
         } else {
+            Invocable invocation = resourceMethod.getInvocable();
+            Method handlingMethod = invocation.getHandlingMethod();
+            if(handlingMethod.getReturnType().isAnnotationPresent(WebSocket.class)){
+                if (WebSocketFeature.isEnabled()) {
+                    logger.trace("find sub web socket dispatcher in {} class, method {}",
+                            handlingMethod.getDeclaringClass().getName(), handlingMethod.toGenericString());
+                }
+            }
+        }
+
+        if ((!isWebSocket && getAnnotation(Path.class, resourceMethod) != null)
+                || getAnnotation(POST.class, resourceMethod) != null
+                || getAnnotation(GET.class, resourceMethod) != null
+                || getAnnotation(DELETE.class, resourceMethod) != null
+                || getAnnotation(OPTIONS.class, resourceMethod) != null
+                || getAnnotation(PUT.class, resourceMethod) != null
+                || getAnnotation(PATCH.class, resourceMethod) != null
+                || getAnnotation(HEAD.class, resourceMethod) != null) {
             resourceBuilder.addMethod(resourceMethod);
         }
     }
@@ -122,13 +145,16 @@ public class WebSocketModelProcessor implements ModelProcessor {
         return getResourcePath(resourceMethod.getParent());
     }
 
+    private <T extends Annotation> T getAnnotation(Class<T> annCls, ResourceMethod resourceMethod) {
+        Invocable invocation = resourceMethod.getInvocable();
+        Method handlingMethod = invocation.getHandlingMethod();
+        return handlingMethod.getAnnotation(annCls);
+    }
+
     private void processWebSocketEndpoint(ResourceMethod resourceMethod) {
         Invocable invocation = resourceMethod.getInvocable();
         Method handlingMethod = invocation.getHandlingMethod();
-        WebSocket webSocketConf = handlingMethod.getAnnotation(WebSocket.class);
-        if (webSocketConf == null) {
-            webSocketConf = invocation.getDefinitionMethod().getAnnotation(WebSocket.class);
-        }
+        WebSocket webSocketConf = getAnnotation(WebSocket.class, resourceMethod);
         if (webSocketConf != null) {
             logger.trace("find web socket in {} class, method {}",
                     handlingMethod.getDeclaringClass().getName(), handlingMethod.toGenericString());

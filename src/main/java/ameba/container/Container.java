@@ -29,6 +29,7 @@ public abstract class Container {
 
     public Container(final Application application) {
         this.application = application;
+        prepare();
         configureWebSocketContainerProvider();
         configureHttpServer();
         registerBinder(application.getConfig());
@@ -104,6 +105,8 @@ public abstract class Container {
     }
 
     public abstract ServiceLocator getServiceLocator();
+
+    protected abstract void prepare();
 
     protected abstract void configureHttpServer();
 
