@@ -16,6 +16,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.gaffer.GafferUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -63,14 +64,13 @@ import static ameba.util.IOUtils.*;
  */
 @Singleton
 public class Application {
+    public static final String DEFAULT_APP_NAME = "Ameba";
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static final String REGISTER_CONF_PREFIX = "app.register.";
     private static final String ADDON_CONF_PREFIX = "app.addon.";
     private static final String JERSEY_CONF_NAME_PREFIX = "app.sys.core.";
-    public static final String DEFAULT_APP_NAME = "Ameba";
     private static String INFO_SPLITOR = "---------------------------------------------------";
     protected boolean jmxEnabled;
-    List<SortEntry> addOnSorts = Lists.newArrayList();
     private String configFile;
     private Mode mode;
     private CharSequence applicationVersion;
@@ -78,7 +78,7 @@ public class Application {
     private File packageRoot;
     private Container container;
     private long timestamp = System.currentTimeMillis();
-    private List<AddOn> addOns = Lists.newArrayList();
+    private Set<AddOn> addOns = Sets.newHashSet();
     private ResourceConfig config;
 
     public Application() {
@@ -160,7 +160,7 @@ public class Application {
             }
         });
 
-        addonSetup(configMap);
+        addOnSetup(configMap);
 
         //配置资源
         configureResource();
@@ -178,11 +178,16 @@ public class Application {
         properties.clear();
 
         publishEvent(new ConfiguredEvent(this));
-        addonDone();
+        addOnDone();
         logger.info("装载特性...");
     }
 
-    private void registerInstance(){
+    private static void publishEvent(ameba.event.Event event) {
+        SystemEventBus.publish(event);
+        AmebaFeature.publishEvent(event);
+    }
+
+    private void registerInstance() {
         register(new ApplicationEventListener() {
             @Override
             public void onEvent(ApplicationEvent event) {
@@ -208,11 +213,6 @@ public class Application {
         });
     }
 
-    private static void publishEvent(ameba.event.Event event) {
-        SystemEventBus.publish(event);
-        AmebaFeature.publishEvent(event);
-    }
-
     public String getApplicationName() {
         return config.getApplicationName();
     }
@@ -221,7 +221,8 @@ public class Application {
         return config;
     }
 
-    private void addonSetup(Map<String, Object> configMap) {
+    private void addOnSetup(Map<String, Object> configMap) {
+        Set<SortEntry> addOnSorts = Sets.newTreeSet();
         for (String key : configMap.keySet()) {
             if (key.startsWith(ADDON_CONF_PREFIX)) {
                 String className = (String) configMap.get(key);
@@ -251,16 +252,15 @@ public class Application {
             }
         }
 
-        Collections.sort(addOnSorts);
-
         for (SortEntry entry : addOnSorts) {
             logger.debug("注册插件 [{}({})}", entry.key, entry.className);
             try {
                 Class addOnClass = ClassUtils.getClass(entry.className);
                 if (AddOn.class.isAssignableFrom(addOnClass)) {
                     AddOn addOn = (AddOn) addOnClass.newInstance();
-                    addOns.add(addOn);
-                    addOn.setup(this);
+                    boolean f = addOns.add(addOn);
+                    if (f)
+                        addOn.setup(this);
                 } else {
                     throw new ConfigErrorException("插件 " + entry.name + " 类配置必须实现ameba.core.AddOn,在鍵 " + entry.key + " 配置项。");
                 }
@@ -276,7 +276,7 @@ public class Application {
         }
     }
 
-    private void addonDone() {
+    private void addOnDone() {
         for (AddOn addOn : addOns) {
             try {
                 addOn.done(this);
@@ -295,7 +295,7 @@ public class Application {
 
         int suc = 0, fail = 0, beak = 0;
 
-        List<FeatureEntry> featureEntries = Lists.newArrayList();
+        Set<FeatureEntry> featureEntries = Sets.newTreeSet();
 
         for (String key : configMap.keySet()) {
             if (key.startsWith(REGISTER_CONF_PREFIX)) {
@@ -345,8 +345,6 @@ public class Application {
                 }
             }
         }
-
-        Collections.sort(featureEntries);
 
         for (FeatureEntry entry : featureEntries) {
             try {
@@ -892,6 +890,10 @@ public class Application {
         rootLogger.setLevel(Level.ALL);
     }
 
+    public Set<AddOn> getAddOns() {
+        return addOns;
+    }
+
     public enum Mode {
         DEV, PRODUCT, TEST;
 
@@ -1030,7 +1032,13 @@ public class Application {
 
         @Override
         public int compareTo(SortEntry entry) {
-            return Integer.compare(this.sortPriority, entry.sortPriority);
+            if (this.className.equals(entry.className)) {
+                return 0;
+            }
+            int index = Integer.compare(this.sortPriority, entry.sortPriority);
+            if (index == 0)
+                return 1;
+            return index;
         }
     }
 

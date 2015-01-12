@@ -1,6 +1,7 @@
 package ameba.mvc;
 
 import ameba.exception.ConfigErrorException;
+import ameba.util.ClassUtils;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,12 +30,12 @@ public class ErrorPageFeature implements Feature {
         Map<String, Object> config = featureContext.getConfiguration().getProperties();
         String defaultTemplate = null;
         String clazz = (String) config.get(GEN_CONF_KEY);
-        Class clz = null;
+        Class clz;
         if (StringUtils.isBlank(clazz)) {
             clz = ErrorPageGenerator.class;
         } else {
             try {
-                clz = Class.forName(clazz);
+                clz = ClassUtils.getClass(clazz);
             } catch (ClassNotFoundException e) {
                 throw new ConfigErrorException(GEN_CONF_KEY + "config error,not found class " + clazz,
                         GEN_CONF_KEY, e);
