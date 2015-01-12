@@ -5,7 +5,6 @@ import ameba.core.AddOn;
 import ameba.core.Application;
 import ameba.db.DataSourceFeature;
 import ameba.event.Listener;
-import ameba.event.SystemEventBus;
 import ameba.exception.AmebaException;
 import ameba.util.ClassUtils;
 import ameba.util.IOUtils;
@@ -47,7 +46,7 @@ public class ModelManager extends AddOn {
     @Override
     public void setup(final Application application) {
         loadModels(application);
-        SystemEventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
+        subscribeSystemEvent(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
             @Override
             public void onReceive(Container.BeginReloadEvent event) {
                 loadModels(application);
