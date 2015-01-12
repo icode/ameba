@@ -5,8 +5,8 @@ import ameba.core.AddOn;
 import ameba.core.Application;
 import ameba.db.DataSourceFeature;
 import ameba.event.Listener;
+import ameba.event.SystemEventBus;
 import ameba.exception.AmebaException;
-import ameba.feature.AmebaFeature;
 import ameba.util.ClassUtils;
 import ameba.util.IOUtils;
 import com.google.common.collect.Maps;
@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Configuration;
-import javax.ws.rs.core.FeatureContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -48,7 +47,7 @@ public class ModelManager extends AddOn {
     @Override
     public void setup(final Application application) {
         loadModels(application);
-        subscribeEvent(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
+        SystemEventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
             @Override
             public void onReceive(Container.BeginReloadEvent event) {
                 loadModels(application);

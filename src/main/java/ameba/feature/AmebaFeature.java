@@ -4,6 +4,7 @@ import ameba.container.Container;
 import ameba.event.Event;
 import ameba.event.EventBus;
 import ameba.event.Listener;
+import ameba.event.SystemEventBus;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
@@ -19,7 +20,7 @@ public abstract class AmebaFeature implements Feature {
     private static void init() {
         EVENT_BUS = EventBus.createMix("ameba-feature");
 
-        EVENT_BUS.subscribe(Container.BeginReloadEvent.class,
+        SystemEventBus.subscribe(Container.BeginReloadEvent.class,
                 new Listener<Container.BeginReloadEvent>() {
                     @Override
                     public void onReceive(Container.BeginReloadEvent event) {
@@ -36,6 +37,8 @@ public abstract class AmebaFeature implements Feature {
     private ServiceLocator locator;
 
     protected <E extends Event> void subscribeEvent(Class<E> eventClass, final Listener<E> listener) {
+        locator.inject(listener);
+        locator.postConstruct(listener);
         EVENT_BUS.subscribe(eventClass, listener);
     }
 
@@ -46,8 +49,7 @@ public abstract class AmebaFeature implements Feature {
     }
 
     protected <E extends Event> void unsubscribeEvent(Class<E> eventClass, final Listener<E> listener) {
-        locator.inject(listener);
-        locator.postConstruct(listener);
+        locator.preDestroy(listener);
         EVENT_BUS.unsubscribe(eventClass, listener);
     }
 

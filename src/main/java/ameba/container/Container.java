@@ -4,7 +4,6 @@ import ameba.container.server.Connector;
 import ameba.core.Application;
 import ameba.event.Event;
 import ameba.event.SystemEventBus;
-import ameba.feature.AmebaFeature;
 import ameba.util.ClassUtils;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -34,11 +33,6 @@ public abstract class Container {
         configureHttpServer();
         registerBinder(application.getConfig());
         configureHttpContainer();
-    }
-
-    protected static void publishEvent(Event event) {
-        SystemEventBus.publish(event);
-        AmebaFeature.publishEvent(event);
     }
 
     @SuppressWarnings("unchecked")
@@ -82,19 +76,19 @@ public abstract class Container {
         configuration.registerInstances(new ContainerLifecycleListener() {
             @Override
             public void onStartup(org.glassfish.jersey.server.spi.Container container) {
-                publishEvent(new StartupEvent(Container.this, application));
+                SystemEventBus.publish(new StartupEvent(Container.this, application));
                 logger.trace("应用容器已经启动");
             }
 
             @Override
             public void onReload(org.glassfish.jersey.server.spi.Container container) {
-                publishEvent(new ReloadEvent(Container.this, application));
+                SystemEventBus.publish(new ReloadEvent(Container.this, application));
                 logger.trace("应用容器已重新加载");
             }
 
             @Override
             public void onShutdown(org.glassfish.jersey.server.spi.Container container) {
-                publishEvent(new ShutdownEvent(Container.this, application));
+                SystemEventBus.publish(new ShutdownEvent(Container.this, application));
                 logger.trace("应用容器已关闭");
             }
         });
@@ -120,17 +114,17 @@ public abstract class Container {
 
     public void start() throws Exception {
         logger.trace("应用容器启动中...");
-        publishEvent(new StartEvent(this, application));
+        SystemEventBus.publish(new StartEvent(this, application));
         doStart();
     }
 
     public void reload() {
-        publishEvent(new BeginReloadEvent(this, application, application.getConfig()));
+        SystemEventBus.publish(new BeginReloadEvent(this, application, application.getConfig()));
         doReload(application.getConfig());
     }
 
     public void reload(ResourceConfig configuration) {
-        publishEvent(new BeginReloadEvent(this, application, configuration));
+        SystemEventBus.publish(new BeginReloadEvent(this, application, configuration));
         registerBinder(configuration);
         doReload(configuration);
     }

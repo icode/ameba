@@ -177,30 +177,25 @@ public class Application {
         //清空临时读取的配置
         properties.clear();
 
-        publishEvent(new ConfiguredEvent(this));
+        SystemEventBus.publish(new ConfiguredEvent(this));
         addOnDone();
         logger.info("装载特性...");
-    }
-
-    private static void publishEvent(ameba.event.Event event) {
-        SystemEventBus.publish(event);
-        AmebaFeature.publishEvent(event);
     }
 
     private void registerInstance() {
         register(new ApplicationEventListener() {
             @Override
             public void onEvent(ApplicationEvent event) {
-                publishEvent(new Event(event));
+                SystemEventBus.publish(new Event(event));
             }
 
             @Override
             public RequestEventListener onRequest(org.glassfish.jersey.server.monitoring.RequestEvent requestEvent) {
-                publishEvent(new RequestEvent(requestEvent));
+                AmebaFeature.publishEvent(new RequestEvent(requestEvent));
                 return new RequestEventListener() {
                     @Override
                     public void onEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
-                        publishEvent(new RequestEvent(event));
+                        AmebaFeature.publishEvent(new RequestEvent(event));
                     }
                 };
             }
