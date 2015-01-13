@@ -59,12 +59,12 @@ public abstract class Model implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    protected static <ID, T> Finder<ID, T> _getFinder(String server) {
+    protected static <ID, T extends Model> Finder<ID, T> _getFinder(String server) {
         throw new NotImplementedException("model not enhanced!");
     }
 
     @SuppressWarnings("unchecked")
-    public static <ID, T> Finder<ID, T> withFinder(String server) {
+    public static <ID, T extends Model> Finder<ID, T> withFinder(String server) {
         Finder<ID, T> finder = _getFinder(server);
         if (finder == null) {
             throw new NotFinderFindException();
@@ -72,7 +72,7 @@ public abstract class Model implements Serializable {
         return finder;
     }
 
-    public static <ID, T> Finder<ID, T> withFinder() {
+    public static <ID, T extends Model> Finder<ID, T> withFinder() {
         return withFinder(ModelManager.getDefaultDBName());
     }
 

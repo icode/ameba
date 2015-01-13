@@ -42,7 +42,7 @@ public abstract class Persister<M extends Model> {
      * Changes the model server.
      */
     @SuppressWarnings("unchecked")
-    public Persister<M> on(String server) {
+    public <E extends M> Persister<M> on(String server) {
         try {
             return (Persister<M>) this.getClass().getConstructor(String.class, Model.class).newInstance(server, model);
         } catch (InstantiationException e) {

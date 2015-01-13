@@ -23,7 +23,7 @@ public abstract class Finder<ID, T> {
 
 
     /**
-     * Creates a finder for entity of modelType <code>T</code> with ID of modelType <code>ID</code>, using a specific Ebean server.
+     * Creates a finder for entity of modelType <code>T</code> with <I extends ID> I of modelType <code>ID</code>, using a specific Ebean server.
      */
     public Finder(String serverName, Class<ID> idType, Class<T> modelType) {
         if (StringUtils.isBlank(serverName)) {
@@ -45,8 +45,9 @@ public abstract class Finder<ID, T> {
         return idType;
     }
 
-    public Class<T> getModelType() {
-        return modelType;
+    @SuppressWarnings("unchecked")
+    public <M extends T> Class<M> getModelType() {
+        return (Class<M>) modelType;
     }
 
     public String getServerName() {
@@ -57,7 +58,7 @@ public abstract class Finder<ID, T> {
      * Changes the model server.
      */
     @SuppressWarnings("unchecked")
-    public Finder<ID, T> on(String server) {
+    public <M extends T> Finder<ID, M> on(String server) {
         try {
             return this.getClass().getConstructor(String.class, Class.class, Class.class).newInstance(server, idType, modelType);
         } catch (InstantiationException e) {
@@ -78,144 +79,144 @@ public abstract class Finder<ID, T> {
     /**
      * Retrieves all entities of the given type.
      */
-    public abstract List<T> all();
+    public abstract <M extends T> List<M> all();
 
     /**
      * Retrieves an entity by ID.
      */
-    public abstract T byId(ID id);
+    public abstract <M extends T> M byId(ID id);
 
     /**
      * Retrieves an entity reference for this ID.
      */
-    public abstract T ref(ID id);
+    public abstract <M extends T> M ref(ID id);
 
     /**
      * Creates a filter for sorting and filtering lists of entities locally without going back to the database.
      */
-    public abstract Filter<T> filter();
+    public abstract <M extends T> Filter<M> filter();
 
     /**
      * Creates a query.
      */
-    public abstract Query<T> query();
+    public abstract <M extends T> Query<M> query();
 
     /**
      * Returns the next identity value.
      */
-    public abstract ID nextId();
+    public abstract <I extends ID> I nextId();
 
     /**
      * Sets the OQL query to run
      */
-    public abstract Query<T> setQuery(String oql);
+    public abstract <M extends T> Query<M> setQuery(String oql);
 
-    public abstract Query<T> setRawSql(RawSql var1);
+    public abstract <M extends T> Query<M> setRawSql(RawSql var1);
 
-    public abstract Query<T> setPersistenceContextScope(PersistenceContextScope var1);
+    public abstract <M extends T> Query<M> setPersistenceContextScope(PersistenceContextScope var1);
 
-    public abstract Query<T> setAutofetch(boolean var1);
+    public abstract <M extends T> Query<M> setAutofetch(boolean var1);
 
-    public abstract Query<T> setLazyLoadBatchSize(int var1);
+    public abstract <M extends T> Query<M> setLazyLoadBatchSize(int var1);
 
-    public abstract Query<T> select(String var1);
+    public abstract <M extends T> Query<M> select(String var1);
 
-    public abstract Query<T> fetch(String var1, String var2);
+    public abstract <M extends T> Query<M> fetch(String var1, String var2);
 
-    public abstract Query<T> fetch(String var1, String var2, FetchConfig var3);
+    public abstract <M extends T> Query<M> fetch(String var1, String var2, FetchConfig var3);
 
-    public abstract Query<T> fetch(String var1);
+    public abstract <M extends T> Query<M> fetch(String var1);
 
-    public abstract Query<T> fetch(String var1, FetchConfig var2);
+    public abstract <M extends T> Query<M> fetch(String var1, FetchConfig var2);
 
-    public abstract Query<T> apply(PathProperties var1);
+    public abstract <M extends T> Query<M> apply(PathProperties var1);
 
     public abstract List<Object> findIds();
 
-    public abstract QueryIterator<T> findIterate();
+    public abstract <M extends T> QueryIterator<M> findIterate();
 
     public abstract void findEach(QueryEachConsumer<T> var1);
 
     public abstract void findEachWhile(QueryEachWhileConsumer<T> var1);
 
-    public abstract List<T> findList();
+    public abstract <M extends T> List<M> findList();
 
-    public abstract Set<T> findSet();
+    public abstract <M extends T> Set<M> findSet();
 
-    public abstract Map<?, T> findMap();
+    public abstract <M extends T> Map<?, M> findMap();
 
-    public abstract <K> Map<K, T> findMap(String var1, Class<K> var2);
+    public abstract <K, M extends T> Map<K, M> findMap(String var1, Class<K> var2);
 
-    public abstract T findUnique();
+    public abstract <M extends T> M findUnique();
 
     public abstract int findRowCount();
 
-    public abstract FutureRowCount<T> findFutureRowCount();
+    public abstract <M extends T> FutureRowCount<M> findFutureRowCount();
 
-    public abstract FutureIds<T> findFutureIds();
+    public abstract <M extends T> FutureIds<M> findFutureIds();
 
-    public abstract FutureList<T> findFutureList();
+    public abstract <M extends T> FutureList<M> findFutureList();
 
-    public abstract PagedList<T> findPagedList(int var1, int var2);
+    public abstract <M extends T> PagedList<M> findPagedList(int var1, int var2);
 
-    public abstract Query<T> setParameter(String var1, Object var2);
+    public abstract <M extends T> Query<M> setParameter(String var1, Object var2);
 
-    public abstract Query<T> setParameter(int var1, Object var2);
+    public abstract <M extends T> Query<M> setParameter(int var1, Object var2);
 
-    public abstract Query<T> setId(Object var1);
+    public abstract <M extends T> Query<M> setId(Object var1);
 
-    public abstract Query<T> where(String var1);
+    public abstract <M extends T> Query<M> where(String var1);
 
-    public abstract  Query<T> where(Expression var1);
+    public abstract <M extends T> Query<M> where(Expression var1);
 
-    public abstract ExpressionList<T> where();
+    public abstract <M extends T> ExpressionList<M> where();
 
-    public abstract ExpressionList<T> filterMany(String var1);
+    public abstract <M extends T> ExpressionList<M> filterMany(String var1);
 
-    public abstract ExpressionList<T> having();
+    public abstract <M extends T> ExpressionList<M> having();
 
-    public abstract Query<T> having(String var1);
+    public abstract <M extends T> Query<M> having(String var1);
 
-    public abstract Query<T> having(Expression var1);
+    public abstract <M extends T> Query<M> having(Expression var1);
 
-    public abstract Query<T> orderBy(String var1);
+    public abstract <M extends T> Query<M> orderBy(String var1);
 
-    public abstract Query<T> order(String var1);
+    public abstract <M extends T> Query<M> order(String var1);
 
-    public abstract OrderBy<T> order();
+    public abstract <M extends T> OrderBy<M> order();
 
-    public abstract OrderBy<T> orderBy();
+    public abstract <M extends T> OrderBy<M> orderBy();
 
-    public abstract Query<T> setOrder(OrderBy<T> var1);
+    public abstract <M extends T> Query<M> setOrder(OrderBy<T> var1);
 
-    public abstract Query<T> setOrderBy(OrderBy<T> var1);
+    public abstract <M extends T> Query<M> setOrderBy(OrderBy<T> var1);
 
-    public abstract Query<T> setDistinct(boolean var1);
+    public abstract <M extends T> Query<M> setDistinct(boolean var1);
 
     public abstract ExpressionFactory getExpressionFactory();
 
     public abstract int getFirstRow();
 
-    public abstract Query<T> setFirstRow(int var1);
+    public abstract <M extends T> Query<M> setFirstRow(int var1);
 
     public abstract int getMaxRows();
 
-    public abstract Query<T> setMaxRows(int var1);
+    public abstract <M extends T> Query<M> setMaxRows(int var1);
 
-    public abstract Query<T> setMapKey(String var1);
+    public abstract <M extends T> Query<M> setMapKey(String var1);
 
-    public abstract Query<T> setUseCache(boolean var1);
+    public abstract <M extends T> Query<M> setUseCache(boolean var1);
 
-    public abstract Query<T> setUseQueryCache(boolean var1);
+    public abstract <M extends T> Query<M> setUseQueryCache(boolean var1);
 
-    public abstract Query<T> setReadOnly(boolean var1);
+    public abstract <M extends T> Query<M> setReadOnly(boolean var1);
 
-    public abstract Query<T> setLoadBeanCache(boolean var1);
+    public abstract <M extends T> Query<M> setLoadBeanCache(boolean var1);
 
-    public abstract Query<T> setTimeout(int var1);
+    public abstract <M extends T> Query<M> setTimeout(int var1);
 
-    public abstract Query<T> setBufferFetchSizeHint(int var1);
+    public abstract <M extends T> Query<M> setBufferFetchSizeHint(int var1);
 
-    public abstract Query<T> setForUpdate(boolean var1);
+    public abstract <M extends T> Query<M> setForUpdate(boolean var1);
 
 }
