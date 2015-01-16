@@ -10,14 +10,14 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author icode
  */
 @MappedSuperclass
 public abstract class Model implements Serializable {
-    private static final HashMap<Class, Finder> FinderMap = Maps.newHashMap();
+    private static final Map<Class, Finder> FinderMap = Maps.newConcurrentMap();
     private static Constructor<? extends Finder> finderConstructor = null;
     private static Constructor<? extends Persister> persisterConstructor = null;
     public static String DB_DEFAULT_SERVER_NAME = "default";
