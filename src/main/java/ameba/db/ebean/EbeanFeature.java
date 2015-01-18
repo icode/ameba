@@ -37,7 +37,7 @@ public class EbeanFeature extends TransactionFeature {
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
 
     public EbeanFeature() {
-        super(EbeanFinder.class, EbeanPersister.class);
+        super(EbeanFinder.class, EbeanPersister.class, EbeanUpdater.class);
     }
 
     /**

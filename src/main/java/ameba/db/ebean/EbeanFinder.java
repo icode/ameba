@@ -7,6 +7,8 @@ import com.avaje.ebean.text.PathProperties;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Base-class for model-mapped models that provides convenience methods.
@@ -15,9 +17,18 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     private EbeanServer server;
 
+    private Query<T> query;
+
     public EbeanFinder(String serverName, Class<ID> idType, Class<T> type) {
         super(serverName, idType, type);
         server = Ebean.getServer(getServerName());
+    }
+
+    private Query<T> _query() {
+        if (query == null) {
+            query = query();
+        }
+        return query;
     }
 
     @Override
@@ -68,7 +79,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     public <M extends T> Query<M> query() {
         return (Query<M>) server().find(getModelType());
     }
-    
+
     /**
      * Returns the next identity value.
      */
@@ -79,7 +90,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setPersistenceContextScope(PersistenceContextScope persistenceContextScope) {
-        return (Query<M>) query().setPersistenceContextScope(persistenceContextScope);
+        return (Query<M>) _query().setPersistenceContextScope(persistenceContextScope);
     }
 
     /**
@@ -87,7 +98,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> fetch(String path) {
-        return (Query<M>) query().fetch(path);
+        return (Query<M>) _query().fetch(path);
     }
 
     /**
@@ -95,12 +106,12 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> fetch(String path, FetchConfig joinConfig) {
-        return (Query<M>) query().fetch(path, joinConfig);
+        return (Query<M>) _query().fetch(path, joinConfig);
     }
 
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> apply(PathProperties pathProperties) {
-        return (Query<M>) query().apply(pathProperties);
+        return (Query<M>) _query().apply(pathProperties);
     }
 
     /**
@@ -108,7 +119,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> fetch(String path, String fetchProperties) {
-        return (Query<M>) query().fetch(path, fetchProperties);
+        return (Query<M>) _query().fetch(path, fetchProperties);
     }
 
     /**
@@ -116,7 +127,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> fetch(String assocProperty, String fetchProperties, FetchConfig fetchConfig) {
-        return (Query<M>) query().fetch(assocProperty, fetchProperties, fetchConfig);
+        return (Query<M>) _query().fetch(assocProperty, fetchProperties, fetchConfig);
     }
 
     /**
@@ -124,7 +135,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> ExpressionList<M> filterMany(String propertyName) {
-        return (ExpressionList<M>) query().filterMany(propertyName);
+        return (ExpressionList<M>) _query().filterMany(propertyName);
     }
 
     /**
@@ -132,7 +143,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> FutureIds<M> findFutureIds() {
-        return (FutureIds<M>) query().findFutureIds();
+        return (FutureIds<M>) _query().findFutureIds();
     }
 
     /**
@@ -140,7 +151,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> FutureList<M> findFutureList() {
-        return (FutureList<M>) query().findFutureList();
+        return (FutureList<M>) _query().findFutureList();
     }
 
     /**
@@ -148,14 +159,14 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> FutureRowCount<M> findFutureRowCount() {
-        return (FutureRowCount<M>) query().findFutureRowCount();
+        return (FutureRowCount<M>) _query().findFutureRowCount();
     }
 
     /**
      * Executes a query and returns the results as a list of IDs.
      */
     public List<Object> findIds() {
-        return query().findIds();
+        return _query().findIds();
     }
 
     /**
@@ -163,7 +174,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> List<M> findList() {
-        return (List<M>) query().findList();
+        return (List<M>) _query().findList();
     }
 
     /**
@@ -171,7 +182,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Map<?, M> findMap() {
-        return (Map<?, M>) query().findMap();
+        return (Map<?, M>) _query().findMap();
     }
 
     /**
@@ -179,19 +190,19 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <K, M extends T> Map<K, M> findMap(String a, Class<K> b) {
-        return (Map<K, M>) query().findMap(a, b);
+        return (Map<K, M>) _query().findMap(a, b);
     }
 
     @SuppressWarnings("unchecked")
     public <M extends T> PagedList<M> findPagedList(int i, int i2) {
-        return (PagedList<M>) query().findPagedList(i, i2);
+        return (PagedList<M>) _query().findPagedList(i, i2);
     }
 
     /**
      * Returns the number of entities this query should return.
      */
     public int findRowCount() {
-        return query().findRowCount();
+        return _query().findRowCount();
     }
 
     /**
@@ -199,7 +210,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Set<M> findSet() {
-        return (Set<M>) query().findSet();
+        return (Set<M>) _query().findSet();
     }
 
     /**
@@ -207,48 +218,48 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> M findUnique() {
-        return (M) query().findUnique();
+        return (M) _query().findUnique();
     }
 
     public void findEach(QueryEachConsumer<T> consumer) {
-        query().findEach(consumer);
+        _query().findEach(consumer);
     }
 
     public void findEachWhile(QueryEachWhileConsumer<T> consumer) {
-        query().findEachWhile(consumer);
+        _query().findEachWhile(consumer);
     }
 
     @SuppressWarnings("unchecked")
-    public <M extends T> QueryIterator<M>  findIterate() {
-        return (QueryIterator<M>) query().findIterate();
+    public <M extends T> QueryIterator<M> findIterate() {
+        return (QueryIterator<M>) _query().findIterate();
     }
 
     /**
      * Returns the <code>ExpressionFactory</code> used by this query.
      */
     public ExpressionFactory getExpressionFactory() {
-        return query().getExpressionFactory();
+        return _query().getExpressionFactory();
     }
 
     /**
      * Returns the first row value.
      */
     public int getFirstRow() {
-        return query().getFirstRow();
+        return _query().getFirstRow();
     }
 
     /**
      * Returns the SQL that was generated for executing this query.
      */
     public String getGeneratedSql() {
-        return query().getGeneratedSql();
+        return _query().getGeneratedSql();
     }
 
     /**
      * Returns the maximum of rows for this query.
      */
     public int getMaxRows() {
-        return query().getMaxRows();
+        return _query().getMaxRows();
     }
 
     /**
@@ -256,7 +267,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> ExpressionList<M> having() {
-        return (ExpressionList<M>) query().having();
+        return (ExpressionList<M>) _query().having();
     }
 
     /**
@@ -264,7 +275,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> having(com.avaje.ebean.Expression addExpressionToHaving) {
-        return (Query<M>) query().having(addExpressionToHaving);
+        return (Query<M>) _query().having(addExpressionToHaving);
     }
 
     /**
@@ -272,7 +283,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> having(String addToHavingClause) {
-        return (Query<M>) query().having(addToHavingClause);
+        return (Query<M>) _query().having(addToHavingClause);
     }
 
     /**
@@ -281,8 +292,8 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * This is exactly the same as {@link #orderBy}.
      */
     @SuppressWarnings("unchecked")
-    public <M extends T> OrderBy<M>  order() {
-        return (OrderBy<M>) query().order();
+    public <M extends T> OrderBy<M> order() {
+        return (OrderBy<M>) _query().order();
     }
 
     /**
@@ -292,7 +303,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> order(String orderByClause) {
-        return (Query<M>) query().order(orderByClause);
+        return (Query<M>) _query().order(orderByClause);
     }
 
     /**
@@ -301,8 +312,8 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * This is exactly the same as {@link #order}.
      */
     @SuppressWarnings("unchecked")
-    public <M extends T> OrderBy<M>  orderBy() {
-        return (OrderBy<M>) query().orderBy();
+    public <M extends T> OrderBy<M> orderBy() {
+        return (OrderBy<M>) _query().orderBy();
     }
 
     /**
@@ -312,7 +323,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> orderBy(String orderByClause) {
-        return (Query<M>) query().orderBy(orderByClause);
+        return (Query<M>) _query().orderBy(orderByClause);
     }
 
     /**
@@ -320,7 +331,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> select(String fetchProperties) {
-        return (Query<M>) query().select(fetchProperties);
+        return (Query<M>) _query().select(fetchProperties);
     }
 
     /**
@@ -328,12 +339,12 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setAutofetch(boolean autofetch) {
-        return (Query<M>) query().setAutofetch(autofetch);
+        return (Query<M>) _query().setAutofetch(autofetch);
     }
 
     /**
      * Set the default lazy loading batch size to use.
-     * <p>
+     * <p/>
      * When lazy loading is invoked on beans loaded by this query then this sets the
      * batch size used to load those beans.
      *
@@ -341,7 +352,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setLazyLoadBatchSize(int lazyLoadBatchSize) {
-        return (Query<M>) query().setLazyLoadBatchSize(lazyLoadBatchSize);
+        return (Query<M>) _query().setLazyLoadBatchSize(lazyLoadBatchSize);
     }
 
     /**
@@ -349,7 +360,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setBufferFetchSizeHint(int fetchSize) {
-        return (Query<M>) query().setBufferFetchSizeHint(fetchSize);
+        return (Query<M>) _query().setBufferFetchSizeHint(fetchSize);
     }
 
     /**
@@ -357,7 +368,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setDistinct(boolean isDistinct) {
-        return (Query<M>) query().setDistinct(isDistinct);
+        return (Query<M>) _query().setDistinct(isDistinct);
     }
 
     /**
@@ -365,7 +376,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setFirstRow(int firstRow) {
-        return (Query<M>) query().setFirstRow(firstRow);
+        return (Query<M>) _query().setFirstRow(firstRow);
     }
 
     /**
@@ -373,7 +384,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setId(Object id) {
-        return (Query<M>) query().setId(id);
+        return (Query<M>) _query().setId(id);
     }
 
     /**
@@ -381,7 +392,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setLoadBeanCache(boolean loadBeanCache) {
-        return (Query<M>) query().setLoadBeanCache(loadBeanCache);
+        return (Query<M>) _query().setLoadBeanCache(loadBeanCache);
     }
 
     /**
@@ -389,7 +400,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setMapKey(String mapKey) {
-        return (Query<M>) query().setMapKey(mapKey);
+        return (Query<M>) _query().setMapKey(mapKey);
     }
 
     /**
@@ -397,7 +408,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setMaxRows(int maxRows) {
-        return (Query<M>) query().setMaxRows(maxRows);
+        return (Query<M>) _query().setMaxRows(maxRows);
     }
 
     /**
@@ -407,7 +418,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setOrder(OrderBy<T> orderBy) {
-        return (Query<M>) query().setOrder(orderBy);
+        return (Query<M>) _query().setOrder(orderBy);
     }
 
     /**
@@ -417,7 +428,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setOrderBy(OrderBy<T> orderBy) {
-        return (Query<M>) query().setOrderBy(orderBy);
+        return (Query<M>) _query().setOrderBy(orderBy);
     }
 
     /**
@@ -425,7 +436,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setParameter(int position, Object value) {
-        return (Query<M>) query().setParameter(position, value);
+        return (Query<M>) _query().setParameter(position, value);
     }
 
     /**
@@ -433,7 +444,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setParameter(String name, Object value) {
-        return (Query<M>) query().setParameter(name, value);
+        return (Query<M>) _query().setParameter(name, value);
     }
 
     /**
@@ -441,7 +452,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setQuery(String oql) {
-        return (Query<M>) server().createQuery(getModelType(), oql);
+        return (Query<M>) (query = server().createQuery(getModelType(), oql));
     }
 
     /**
@@ -449,7 +460,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setRawSql(RawSql rawSql) {
-        return (Query<M>) query().setRawSql(rawSql);
+        return (Query<M>) _query().setRawSql(rawSql);
     }
 
     /**
@@ -457,7 +468,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setReadOnly(boolean readOnly) {
-        return (Query<M>) query().setReadOnly(readOnly);
+        return (Query<M>) _query().setReadOnly(readOnly);
     }
 
     /**
@@ -465,7 +476,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setTimeout(int secs) {
-        return (Query<M>) query().setTimeout(secs);
+        return (Query<M>) _query().setTimeout(secs);
     }
 
     /**
@@ -473,7 +484,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setUseCache(boolean useBeanCache) {
-        return (Query<M>) query().setUseCache(useBeanCache);
+        return (Query<M>) _query().setUseCache(useBeanCache);
     }
 
     /**
@@ -481,7 +492,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setUseQueryCache(boolean useQueryCache) {
-        return (Query<M>) query().setUseQueryCache(useQueryCache);
+        return (Query<M>) _query().setUseQueryCache(useQueryCache);
     }
 
     /**
@@ -489,7 +500,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> ExpressionList<M> where() {
-        return (ExpressionList<M>) query().where();
+        return (ExpressionList<M>) _query().where();
     }
 
     /**
@@ -497,7 +508,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> where(com.avaje.ebean.Expression expression) {
-        return (Query<M>) query().where(expression);
+        return (Query<M>) _query().where(expression);
     }
 
     /**
@@ -505,7 +516,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> where(String addToWhereClause) {
-        return (Query<M>) query().where(addToWhereClause);
+        return (Query<M>) _query().where(addToWhereClause);
     }
 
     /**
@@ -513,7 +524,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setForUpdate(boolean forUpdate) {
-        return (Query<M>) query().setForUpdate(forUpdate);
+        return (Query<M>) _query().setForUpdate(forUpdate);
     }
 
     @Override

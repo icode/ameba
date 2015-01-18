@@ -17,7 +17,7 @@ import java.util.Map;
  */
 @MappedSuperclass
 public abstract class Model implements Serializable {
-    private static final Map<Class, Finder> FinderMap = Maps.newConcurrentMap();
+    private static final Map<Class, GSCache> GSMap = Maps.newConcurrentMap();
     private static Constructor<? extends Finder> finderConstructor = null;
     private static Constructor<? extends Persister> persisterConstructor = null;
     public static String DB_DEFAULT_SERVER_NAME = "default";
@@ -27,8 +27,6 @@ public abstract class Model implements Serializable {
     public static final String FINDER_C_NAME = "ameba.db.model.Finder";
     public final static String BASE_MODEL_PKG = "ameba.db.model";
 
-    @Transient
-    private final byte[] lock = new byte[0];
     @Transient
     private Method _idGetter = null;
     @Transient
@@ -48,14 +46,6 @@ public abstract class Model implements Serializable {
                     }
             }
         return finderConstructor;
-    }
-
-    protected static void putFinderCache(Class clzz, Finder finder) {
-        FinderMap.put(clzz, finder);
-    }
-
-    protected static Finder getFinderCache(Class clzz) {
-        return FinderMap.get(clzz);
     }
 
     @SuppressWarnings("unchecked")
@@ -92,22 +82,41 @@ public abstract class Model implements Serializable {
         return persisterConstructor;
     }
 
+    private GSCache getGSCache() {
+        GSCache cache = GSMap.get(this.getClass());
+        if (cache == null) {
+            cache = new GSCache();
+            GSMap.put(this.getClass(), cache);
+        }
+        return cache;
+    }
+
     private Method _getIdGetter() throws NoSuchMethodException {
-        if (_idGetter == null)
-            synchronized (lock) {
-                if (_idGetter == null)
-                    _idGetter = this.getClass().getDeclaredMethod(ID_GETTER_NAME);
+        if (_idGetter == null) {
+            GSCache cache = getGSCache();
+            if (cache.getter == null) {
+                cache.getter = this.getClass().getDeclaredMethod(ID_GETTER_NAME);
             }
+            _idGetter = cache.getter;
+        }
+
         return _idGetter;
     }
 
     private Method _getIdSetter() throws NoSuchMethodException {
-        if (_idSetter == null)
-            synchronized (lock) {
-                if (_idSetter == null)
-                    _idSetter = this.getClass().getDeclaredMethod(ID_SETTER_NAME, _getIdGetter().getReturnType());
+        if (_idSetter == null) {
+            GSCache cache = getGSCache();
+            if (cache.setter == null) {
+                cache.setter = this.getClass().getDeclaredMethod(ID_SETTER_NAME, _getIdGetter().getReturnType());
             }
+            _idSetter = cache.setter;
+        }
         return _idSetter;
+    }
+
+    private static class GSCache {
+        Method getter;
+        Method setter;
     }
 
     @SuppressWarnings("unchecked")
@@ -134,16 +143,16 @@ public abstract class Model implements Serializable {
 
     @SuppressWarnings("unchecked")
     protected <M extends Model> Persister<M> _getPersister(String server) {
-        Persister persister = null;
-            try {
-                persister = getPersisterConstructor().newInstance(server, this);
-            } catch (InstantiationException e) {
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
+        Persister persister;
+        try {
+            persister = getPersisterConstructor().newInstance(server, this);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
         return persister;
     }
 
@@ -169,6 +178,12 @@ public abstract class Model implements Serializable {
     public static class NotFinderFindException extends RuntimeException {
         public NotFinderFindException() {
             super("_getFinder method not return Persister instance");
+        }
+    }
+
+    public static class NotUpdaterFindException extends RuntimeException {
+        public NotUpdaterFindException() {
+            super("_getUpdater method not return Updater instance");
         }
     }
 }
