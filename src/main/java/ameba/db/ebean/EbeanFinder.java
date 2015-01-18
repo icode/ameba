@@ -13,11 +13,17 @@ import java.util.Set;
  */
 public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
-    EbeanServer server;
+    private EbeanServer server;
 
     public EbeanFinder(String serverName, Class<ID> idType, Class<T> type) {
         super(serverName, idType, type);
         server = Ebean.getServer(getServerName());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <M extends T> Finder<ID, M> on(String server) {
+        return new EbeanFinder<ID, M>(server, getIdType(), (Class<M>) getModelType());
     }
 
     private EbeanServer server() {
@@ -508,6 +514,11 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> setForUpdate(boolean forUpdate) {
         return (Query<M>) query().setForUpdate(forUpdate);
+    }
+
+    @Override
+    public void deleteById(ID id) {
+        server().delete(id);
     }
 
 }

@@ -14,7 +14,7 @@ import java.util.Iterator;
  */
 public class EbeanPersister<M extends Model> extends Persister<M> {
 
-    EbeanServer server;
+    private EbeanServer server;
 
     private EbeanServer server() {
         return server;
@@ -23,6 +23,12 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
     public EbeanPersister(String serverName, M model) {
         super(serverName, model);
         server = Ebean.getServer(getServerName());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <E extends M> Persister<E> on(String server) {
+        return new EbeanPersister<E>(server, (E) getModel());
     }
 
     @Override
@@ -54,26 +60,6 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
     @Override
     public void delete() {
         server().delete(getModel());
-    }
-
-    @Override
-    public int delete(Class<?> beanType, Object id) {
-        return server().delete(beanType, id);
-    }
-
-    @Override
-    public void delete(Class<?> beanType, Collection<?> ids) {
-        server().delete(beanType, ids);
-    }
-
-    @Override
-    public int delete(Iterator<?> it) throws OptimisticLockException {
-        return server().delete(it);
-    }
-
-    @Override
-    public int delete(Collection<?> c) throws OptimisticLockException {
-        return server().delete(c);
     }
 
     @Override
