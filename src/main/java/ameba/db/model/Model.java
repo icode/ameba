@@ -18,13 +18,13 @@ import java.util.Map;
 @MappedSuperclass
 public abstract class Model implements Serializable {
     private static final Map<Class, GSCache> GSMap = Maps.newConcurrentMap();
-    private static Constructor<? extends Finder> finderConstructor = null;
-    private static Constructor<? extends Persister> persisterConstructor = null;
     public static String DB_DEFAULT_SERVER_NAME = "default";
     public static final String ID_SETTER_NAME = "__setId__";
     public static final String ID_GETTER_NAME = "__getId__";
     public static final String GET_FINDER_M_NAME = "withFinder";
+    public static final String GET_UPDATE_M_NAME = "withUpdater";
     public static final String FINDER_C_NAME = "ameba.db.model.Finder";
+    public static final String UPDATER_C_NAME = "ameba.db.model.Updater";
     public final static String BASE_MODEL_PKG = "ameba.db.model";
 
     @Transient
@@ -33,19 +33,7 @@ public abstract class Model implements Serializable {
     private Method _idSetter = null;
 
     protected static Constructor<? extends Finder> getFinderConstructor() {
-        if (finderConstructor == null)
-            synchronized (Model.class) {
-                if (finderConstructor == null)
-                    try {
-                        finderConstructor = TransactionFeature.getFinderClass()
-                                .getConstructor(String.class, Class.class, Class.class);
-                    } catch (RuntimeException e) {
-                        throw e;
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-            }
-        return finderConstructor;
+        return TransactionFeature.getFinderConstructor();
     }
 
     @SuppressWarnings("unchecked")
@@ -67,19 +55,7 @@ public abstract class Model implements Serializable {
     }
 
     protected static Constructor<? extends Persister> getPersisterConstructor() {
-        if (persisterConstructor == null)
-            synchronized (Model.class) {
-                if (persisterConstructor == null)
-                    try {
-                        persisterConstructor = TransactionFeature.getPersisterClass()
-                                .getConstructor(String.class, Model.class);
-                    } catch (RuntimeException e) {
-                        throw e;
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-            }
-        return persisterConstructor;
+        return TransactionFeature.getPersisterConstructor();
     }
 
     private GSCache getGSCache() {
@@ -143,9 +119,8 @@ public abstract class Model implements Serializable {
 
     @SuppressWarnings("unchecked")
     protected <M extends Model> Persister<M> _getPersister(String server) {
-        Persister persister;
         try {
-            persister = getPersisterConstructor().newInstance(server, this);
+            return getPersisterConstructor().newInstance(server, this);
         } catch (InstantiationException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
@@ -153,7 +128,6 @@ public abstract class Model implements Serializable {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        return persister;
     }
 
     @SuppressWarnings("unchecked")
@@ -167,6 +141,28 @@ public abstract class Model implements Serializable {
 
     public <M extends Model> Persister<M> withPersister() {
         return withPersister(ModelManager.getDefaultDBName());
+    }
+
+    protected static Constructor<? extends Updater> getUpdaterConstructor() {
+        return TransactionFeature.getUpdaterConstructor();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static <M extends Model> Updater<M> _getUpdater(String server, String sql) {
+        throw new NotImplementedException("model not enhanced!");
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <M extends Model> Updater<M> withUpdater(String server, String sql) {
+        Updater<M> updater = _getUpdater(server, sql);
+        if (updater == null) {
+            throw new NotUpdaterFindException();
+        }
+        return updater;
+    }
+
+    public static <M extends Model> Updater<M> withUpdater(String sql) {
+        return withUpdater(ModelManager.getDefaultDBName(), sql);
     }
 
     public static class NotPersisterFindException extends RuntimeException {
