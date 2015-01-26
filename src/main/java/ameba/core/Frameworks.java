@@ -16,9 +16,6 @@ import java.util.Set;
  * @author icode
  */
 public class Frameworks {
-    private MessageBodyWriter<Viewable> viewableMessageBodyWriter;
-    private ErrorPageGenerator errorPageGenerator;
-
     private Frameworks() {
     }
 
