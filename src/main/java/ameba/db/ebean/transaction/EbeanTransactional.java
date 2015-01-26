@@ -1,7 +1,16 @@
 package ameba.db.ebean.transaction;
 
 import ameba.db.TransactionFilter;
+import ameba.db.annotation.Transactional;
+import ameba.db.model.ModelManager;
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.Transaction;
+import com.avaje.ebean.TxIsolation;
+
+import javax.inject.Inject;
+import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.core.Context;
 
 
 /**
@@ -11,23 +20,43 @@ import com.avaje.ebean.Ebean;
  * @since 2013-08-07
  */
 public class EbeanTransactional extends TransactionFilter {
+
+    @Context
+    private ResourceInfo resourceInfo;
+
+    private Transaction[] transactions;
+
     @Override
     protected void begin() {
-        Ebean.beginTransaction();
+        Transactional transactional = resourceInfo.getResourceMethod().getAnnotation(Transactional.class);
+        String[] serverNames = transactional.servers();
+        if (serverNames.length > 0) {
+            transactions = new Transaction[serverNames.length];
+            Transactional.Isolation[] isolation = transactional.isolations();
+            for (int i = 0; i < serverNames.length; i++) {
+                TxIsolation txIsolation = isolation.length > i ? TxIsolation.fromLevel(isolation[i].getLevel()) : TxIsolation.DEFAULT;
+                transactions[i] = Ebean.getServer(serverNames[i]).beginTransaction(txIsolation);
+            }
+        } else {
+            transactions = new Transaction[]{Ebean.getServer(ModelManager.getDefaultDBName()).beginTransaction()};
+        }
     }
 
     @Override
     protected void commit() {
-        Ebean.commitTransaction();
+        for (Transaction transaction : transactions)
+            transaction.commit();
     }
 
     @Override
     protected void rollback() {
-        Ebean.rollbackTransaction();
+        for (Transaction transaction : transactions)
+            transaction.rollback();
     }
 
     @Override
     protected void end() {
-        Ebean.endTransaction();
+        for (Transaction transaction : transactions)
+            transaction.end();
     }
 }
