@@ -39,6 +39,11 @@ public class Ameba {
     }
 
     public static String getVersion() {
+
+        if (version == null){
+            version = IOUtils.getJarImplVersion(Ameba.class);
+        }
+
         return version;
     }
 
@@ -62,7 +67,6 @@ public class Ameba {
     }
 
     public static void bootstrap() throws Exception {
-        version = IOUtils.getJarImplVersion(Ameba.class);
         bootstrap(new Application());
     }
 
