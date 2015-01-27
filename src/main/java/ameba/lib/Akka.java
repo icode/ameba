@@ -15,7 +15,7 @@ public class Akka {
     public static class AddOn extends ameba.core.AddOn {
         @Override
         public void setup(Application application) {
-            String name = StringUtils.defaultString(application.getApplicationName(), "Ameba");
+            String name = StringUtils.defaultString(application.getApplicationName(), "ameba");
             system = ActorSystem.create(name);
         }
     }
