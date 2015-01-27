@@ -1,10 +1,10 @@
 package ameba.event;
 
 import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.event.japi.LookupEventBus;
+import ameba.lib.Akka;
 import com.google.common.collect.Maps;
 
 import java.util.Map;
@@ -17,8 +17,8 @@ public abstract class AsyncEventBus<E extends Event, S extends ActorRef> extends
     private AsyncEventBus() {
     }
 
-    public static AsyncEventBus<Event, ActorRef> create(String actorSysName) {
-        return new Sub(actorSysName);
+    public static AsyncEventBus<Event, ActorRef> create() {
+        return new Sub();
     }
 
     @Override
@@ -48,15 +48,10 @@ public abstract class AsyncEventBus<E extends Event, S extends ActorRef> extends
 
     private static class Sub extends AsyncEventBus<Event, ActorRef> {
 
-        private final ActorSystem actorSystem;
         private final Map<AsyncListener, ActorRef> actorRefMap = Maps.newConcurrentMap();
 
-        Sub(String actorSysName) {
-            actorSystem = ActorSystem.create(actorSysName);
-        }
-
         public boolean subscribe(Class<? extends Event> eventClass, final AsyncListener listener) {
-            ActorRef actor = actorSystem.actorOf(Props.create(EventHandler.class, listener));
+            ActorRef actor = Akka.system().actorOf(Props.create(EventHandler.class, listener));
             boolean suc = subscribe(actor, eventClass);
             if (suc)
                 actorRefMap.put(listener, actor);
