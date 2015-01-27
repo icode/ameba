@@ -39,12 +39,14 @@ public abstract class AmebaFeature implements Feature {
                     new Listener<Container.BeginReloadEvent>() {
                         @Override
                         public void onReceive(Container.BeginReloadEvent event) {
-                            if (listeners != null)
+                            if (listeners != null) {
                                 for (Class ev : listeners.keySet()) {
                                     for (Listener listener : listeners.get(ev)) {
                                         EVENT_BUS.unsubscribe(ev, listener);
                                     }
                                 }
+                                listeners.clear();
+                            }
                         }
                     });
         }
