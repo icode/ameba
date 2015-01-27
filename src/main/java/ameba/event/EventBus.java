@@ -23,8 +23,8 @@ public abstract class EventBus {
     private EventBus() {
     }
 
-    public static EventBus createMix(String busName) {
-        return new Mixed(busName);
+    public static EventBus createMix() {
+        return new Mixed();
     }
 
     public static EventBus create() {
@@ -66,8 +66,8 @@ public abstract class EventBus {
 
         private final AsyncEventBus<Event, ActorRef> asyncEventBus;
 
-        Mixed(String busName) {
-            asyncEventBus = AsyncEventBus.create(busName);
+        Mixed() {
+            asyncEventBus = AsyncEventBus.create();
         }
 
         public <E extends Event> void subscribe(Class<E> event, final Listener<E> listener) {

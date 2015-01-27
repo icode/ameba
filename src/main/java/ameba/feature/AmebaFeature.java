@@ -18,7 +18,7 @@ public abstract class AmebaFeature implements Feature {
     private static EventBus EVENT_BUS;
 
     private static void init() {
-        EVENT_BUS = EventBus.createMix("ameba-feature");
+        EVENT_BUS = EventBus.createMix();
 
         SystemEventBus.subscribe(Container.BeginReloadEvent.class,
                 new Listener<Container.BeginReloadEvent>() {

@@ -9,7 +9,7 @@ import ameba.event.SystemEventBus;
  * @author icode
  */
 public abstract class AddOn {
-    private static EventBus EVENT_BUS = EventBus.createMix("ameba-add-on");
+    private static EventBus EVENT_BUS = EventBus.createMix();
 
     protected static <E extends Event> void subscribeEvent(Class<E> eventClass, final Listener<E> listener) {
         EVENT_BUS.subscribe(eventClass, listener);

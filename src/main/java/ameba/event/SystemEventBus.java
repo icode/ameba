@@ -5,7 +5,7 @@ package ameba.event;
  */
 public class SystemEventBus {
 
-    private static EventBus EVENT_BUS = EventBus.createMix("ameba-sys");
+    private static EventBus EVENT_BUS = EventBus.createMix();
 
     private SystemEventBus() {
     }
