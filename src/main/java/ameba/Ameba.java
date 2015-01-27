@@ -48,7 +48,7 @@ public class Ameba {
     }
 
     public static void printInfo() {
-        logger.info(LOGO, version);
+        logger.info(LOGO, getVersion());
     }
 
     public static void main(String[] args) throws Exception {
