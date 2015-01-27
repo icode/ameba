@@ -1,5 +1,8 @@
 package ameba.event;
 
+import ameba.core.AddOn;
+import ameba.core.TestApp;
+import ameba.lib.Akka;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +16,10 @@ public class EventTest {
 
     @Test
     public void publish() {
+
+        AddOn addOn = new Akka.AddOn();
+        addOn.setup(new TestApp());
+
         for (int i = 0; i < 10; i++) {
             SystemEventBus.subscribe(TestEvent.class, new AsyncListener<TestEvent>() {
                 @Override
