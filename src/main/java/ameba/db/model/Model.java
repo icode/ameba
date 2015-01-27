@@ -1,6 +1,9 @@
 package ameba.db.model;
 
+import ameba.container.Container;
 import ameba.db.TransactionFeature;
+import ameba.event.Listener;
+import ameba.event.SystemEventBus;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -18,14 +21,24 @@ import java.util.Map;
 @MappedSuperclass
 public abstract class Model implements Serializable {
     private static final Map<Class, GSCache> GSMap = Maps.newConcurrentMap();
+
+    static {
+        SystemEventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
+            @Override
+            public void onReceive(Container.BeginReloadEvent event) {
+                GSMap.clear();
+            }
+        });
+    }
+
     public static String DB_DEFAULT_SERVER_NAME = "default";
     public static final String ID_SETTER_NAME = "__setId__";
     public static final String ID_GETTER_NAME = "__getId__";
     public static final String GET_FINDER_M_NAME = "withFinder";
     public static final String GET_UPDATE_M_NAME = "withUpdater";
-    public static final String FINDER_C_NAME = "ameba.db.model.Finder";
-    public static final String UPDATER_C_NAME = "ameba.db.model.Updater";
-    public final static String BASE_MODEL_PKG = "ameba.db.model";
+    public final static String BASE_MODEL_PKG = Model.class.getPackage().getName();
+    public static final String FINDER_C_NAME = BASE_MODEL_PKG + ".Finder";
+    public static final String UPDATER_C_NAME = BASE_MODEL_PKG + ".Updater";
 
     @Transient
     private Method _idGetter = null;
