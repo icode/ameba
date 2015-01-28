@@ -8,6 +8,7 @@ import ameba.lib.Akka;
 import com.google.common.collect.Maps;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author icode
@@ -46,27 +47,60 @@ public abstract class AsyncEventBus<E extends Event, S extends ActorRef> extends
 
     public abstract boolean unsubscribe(Class<? extends E> eventClass, final AsyncListener listener);
 
+    public abstract void unsubscribe(Class<? extends E> eventClass);
+
     private static class Sub extends AsyncEventBus<Event, ActorRef> {
 
-        private final Map<AsyncListener, ActorRef> actorRefMap = Maps.newConcurrentMap();
+        private final EventActorMap eventActorMap = new EventActorMap();
 
         public boolean subscribe(Class<? extends Event> eventClass, final AsyncListener listener) {
-            ActorRef actor = Akka.system().actorOf(Props.create(EventHandler.class, listener));
+            final ActorRef actor = Akka.system().actorOf(Props.create(EventHandler.class, listener));
             boolean suc = subscribe(actor, eventClass);
-            if (suc)
-                actorRefMap.put(listener, actor);
+            if (suc) {
+                eventActorMap.put(eventClass, listener, actor);
+            }
             return suc;
         }
 
         public boolean unsubscribe(Class<? extends Event> eventClass, final AsyncListener listener) {
-            ActorRef actor = actorRefMap.get(listener);
-            if (actor != null) {
-                boolean suc = unsubscribe(actor, eventClass);
-                if (suc)
-                    actorRefMap.remove(listener);
-                return suc;
+            Map<AsyncListener, ActorRef> eventEntry = eventActorMap.get(eventClass);
+            if (eventEntry != null) {
+                ActorRef actorRef = eventEntry.get(listener);
+                if (actorRef != null) {
+                    boolean suc = unsubscribe(actorRef, eventClass);
+                    if (suc) {
+                        eventEntry.remove(listener);
+                    }
+                    return suc;
+                }
             }
+
             return false;
+        }
+
+        @Override
+        public void unsubscribe(Class<? extends Event> eventClass) {
+            Map<AsyncListener, ActorRef> eventEntries = eventActorMap.get(eventClass);
+            if (eventEntries != null) {
+                for (ActorRef actorRef : eventEntries.values()) {
+                    unsubscribe(actorRef, eventClass);
+                }
+                eventActorMap.remove(eventClass);
+            }
+        }
+
+        private static class EventActorMap extends ConcurrentHashMap<Class<? extends Event>, Map<AsyncListener, ActorRef>> {
+
+            public Map<AsyncListener, ActorRef> put(Class<? extends Event> key, AsyncListener listener, ActorRef actorRef) {
+                Map<AsyncListener, ActorRef> o = get(key);
+                if (o == null) {
+                    o = Maps.newConcurrentMap();
+                    put(key, o);
+                }
+                o.put(listener, actorRef);
+                return o;
+            }
+
         }
 
         public static class EventHandler extends UntypedActor {

@@ -7,13 +7,11 @@ import ameba.event.EventBus;
 import ameba.event.Listener;
 import ameba.event.SystemEventBus;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.Feature;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author icode
@@ -21,7 +19,7 @@ import java.util.Map;
 public abstract class AmebaFeature implements Feature {
 
     private static EventBus EVENT_BUS = EventBus.createMix();
-    private static Map<Class<? extends Event>, List<Listener>> listeners;
+    private static List<Class<? extends Event>> listeners;
 
     @Inject
     private ServiceLocator locator;
@@ -34,16 +32,14 @@ public abstract class AmebaFeature implements Feature {
 
     private void initDev() {
         if (listeners == null) {
-            listeners = Maps.newConcurrentMap();
+            listeners = Lists.newArrayList();
             SystemEventBus.subscribe(Container.BeginReloadEvent.class,
                     new Listener<Container.BeginReloadEvent>() {
                         @Override
                         public void onReceive(Container.BeginReloadEvent event) {
                             if (listeners != null) {
-                                for (Class ev : listeners.keySet()) {
-                                    for (Listener listener : listeners.get(ev)) {
-                                        EVENT_BUS.unsubscribe(ev, listener);
-                                    }
+                                for (Class ev : listeners) {
+                                    EVENT_BUS.unsubscribe(ev);
                                 }
                                 listeners.clear();
                             }
@@ -55,12 +51,7 @@ public abstract class AmebaFeature implements Feature {
     private <E extends Event> void subscribe(Class<E> eventClass, final Listener<E> listener) {
         if (application.getMode().isDev()) {
             initDev();
-            List<Listener> list = listeners.get(eventClass);
-            if (list == null) {
-                list = Lists.newArrayList();
-                listeners.put(eventClass, list);
-            }
-            list.add(listener);
+            listeners.add(eventClass);
         }
         EVENT_BUS.subscribe(eventClass, listener);
     }
@@ -80,8 +71,7 @@ public abstract class AmebaFeature implements Feature {
     protected <E extends Event> void unsubscribeEvent(Class<E> eventClass, final Listener<E> listener) {
         locator.preDestroy(listener);
         if (application.getMode().isDev()) {
-            List<Listener> list = listeners.get(eventClass);
-            if (list != null) list.remove(listener);
+            listeners.remove(eventClass);
         }
         EVENT_BUS.unsubscribe(eventClass, listener);
     }

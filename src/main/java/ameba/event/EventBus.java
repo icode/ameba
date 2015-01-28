@@ -50,6 +50,15 @@ public abstract class EventBus {
         }
     }
 
+    public <E extends Event> void unsubscribe(Class<E> event) {
+        subscribersByTypeLock.writeLock().lock();
+        try {
+            listeners.removeAll(event);
+        } finally {
+            subscribersByTypeLock.writeLock().unlock();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public void publish(Event event) {
         Set<Listener> listenerSet = Sets.newCopyOnWriteArraySet(listeners.get(event.getClass()));
@@ -84,6 +93,12 @@ public abstract class EventBus {
             } else {
                 super.unsubscribe(event, listener);
             }
+        }
+
+        @Override
+        public <E extends Event> void unsubscribe(Class<E> event) {
+            super.unsubscribe(event);
+            asyncEventBus.unsubscribe(event);
         }
 
         public void publish(Event event) {
