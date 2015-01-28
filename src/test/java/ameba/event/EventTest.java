@@ -1,6 +1,5 @@
 package ameba.event;
 
-import ameba.Ameba;
 import ameba.core.AddOn;
 import ameba.core.Application;
 import ameba.lib.Akka;
@@ -19,7 +18,6 @@ public class EventTest {
     public void publish() {
 
         AddOn addOn = new Akka.AddOn();
-        Ameba.printInfo();
         addOn.setup(new Application());
 
         for (int i = 0; i < 10; i++) {
