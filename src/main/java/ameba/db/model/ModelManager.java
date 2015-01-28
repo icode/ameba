@@ -3,7 +3,7 @@ package ameba.db.model;
 import ameba.container.Container;
 import ameba.core.AddOn;
 import ameba.core.Application;
-import ameba.db.DataSourceFeature;
+import ameba.db.DataSource;
 import ameba.event.Listener;
 import ameba.exception.AmebaException;
 import ameba.util.ClassUtils;
@@ -79,7 +79,7 @@ public class ModelManager extends AddOn {
             }
         }
 
-        for (String name : DataSourceFeature.getDataSourceNames()) {
+        for (String name : DataSource.getDataSourceNames()) {
             String modelPackages = (String) config.getProperty("db." + name + ".models");
             if (StringUtils.isNotBlank(modelPackages)) {
                 Set<String> pkgs = Sets.newHashSet(StringUtils.deleteWhitespace(modelPackages).split(","));

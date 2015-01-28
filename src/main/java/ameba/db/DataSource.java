@@ -10,13 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Singleton;
-import javax.sql.DataSource;
-import javax.ws.rs.ConstrainedTo;
-import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Configuration;
-import javax.ws.rs.core.Feature;
-import javax.ws.rs.core.FeatureContext;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,10 +18,10 @@ import java.util.Set;
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-07
  */
-public class DataSourceFeature extends AddOn {
+public class DataSource extends AddOn {
 
-    private static final Map<String, DataSource> dataSourceMap = Maps.newHashMap();
-    private static final Logger logger = LoggerFactory.getLogger(DataSourceFeature.class);
+    private static final Map<String, javax.sql.DataSource> dataSourceMap = Maps.newHashMap();
+    private static final Logger logger = LoggerFactory.getLogger(DataSource.class);
 
     /**
      * 根据数据源名称获取数据源
@@ -35,7 +29,7 @@ public class DataSourceFeature extends AddOn {
      * @param name
      * @return
      */
-    public static DataSource getDataSource(String name) {
+    public static javax.sql.DataSource getDataSource(String name) {
         return dataSourceMap.get(name);
     }
 
@@ -77,7 +71,7 @@ public class DataSourceFeature extends AddOn {
                 if (StringUtils.isBlank(value)) {
                     conf.put("init", "true");
                 }
-                DataSource ds = DruidDataSourceFactory.createDataSource(conf);
+                javax.sql.DataSource ds = DruidDataSourceFactory.createDataSource(conf);
                 if (DruidDataSource.class.isInstance(ds))
                     ((DruidDataSource) ds).setName(name);
                 dataSourceMap.put(name, ds);

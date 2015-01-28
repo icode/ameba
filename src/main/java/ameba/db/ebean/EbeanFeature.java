@@ -1,6 +1,6 @@
 package ameba.db.ebean;
 
-import ameba.db.DataSourceFeature;
+import ameba.db.DataSource;
 import ameba.db.TransactionFeature;
 import ameba.db.ebean.transaction.EbeanTransactional;
 import ameba.db.model.ModelManager;
@@ -97,7 +97,7 @@ public class EbeanFeature extends TransactionFeature {
         ContainerConfig containerConfig = new ContainerConfig();
         containerConfig.loadFromProperties(eBeanConfig);
 
-        for (final String name : DataSourceFeature.getDataSourceNames()) {
+        for (final String name : DataSource.getDataSourceNames()) {
             final ServerConfig config = new ServerConfig() {
                 @Override
                 public void loadFromProperties() {
@@ -109,7 +109,7 @@ public class EbeanFeature extends TransactionFeature {
             config.setRegisterJmxMBeans(Boolean.parseBoolean((String) appConfig.getProperty("app.jmx.enabled")));
             config.setName(name);
             config.loadFromProperties(eBeanConfig);
-            config.setDataSource(DataSourceFeature.getDataSource(name));//设置为druid数据源
+            config.setDataSource(DataSource.getDataSource(name));//设置为druid数据源
             config.setDdlGenerate(false);
             config.setDdlRun(false);
             config.setJsonFactory(jsonFactory);
