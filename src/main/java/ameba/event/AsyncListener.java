@@ -12,7 +12,7 @@ public abstract class AsyncListener<E extends Event> implements Listener<E> {
 
     UntypedActor actor;
 
-    public ActorRef self() {
+    public ActorRef actor() {
         return actor.self();
     }
 
@@ -28,7 +28,7 @@ public abstract class AsyncListener<E extends Event> implements Listener<E> {
         actor.aroundPostRestart(reason);
     }
 
-    public ActorRef getSelf() {
+    public ActorRef getActor() {
         return actor.getSelf();
     }
 
