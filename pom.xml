@@ -163,11 +163,6 @@
             <version>${druid.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.glassfish.web</groupId>
-            <artifactId>el-impl</artifactId>
-            <version>2.2</version>
-        </dependency>
         <!-- MVC -->
         <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>
@@ -220,7 +215,7 @@
         <dependency>
             <groupId>javax.websocket</groupId>
             <artifactId>javax.websocket-api</artifactId>
-            <version>1.1</version>
+            <version>${javax.websocket.version}</version>
             <scope>provided</scope>
         </dependency>
         <!-- XML/JSON support -->
@@ -365,6 +360,7 @@
         <druid.version>[1.0.9,2.0.0)</druid.version>
         <groovy.version>[2.3.4,3.0.0)</groovy.version>
         <httl.version>[1.0.11,2.0.0)</httl.version>
+        <javax.websocket.version>[1.0.11,2.0.0)</javax.websocket.version>
         <jackson.core.version>[2.4.2,3.0.0)</jackson.core.version>
         <jackson.provider.version>${jackson.core.version}</jackson.provider.version>
         <bean.validator.version>[5.1.1.Final,6.0.0)</bean.validator.version>
