@@ -1,14 +1,12 @@
 package ameba.db.ebean.transaction;
 
-import ameba.db.TransactionFilter;
+import ameba.db.TransactionInterceptor;
 import ameba.db.annotation.Transactional;
 import ameba.db.model.ModelManager;
 import com.avaje.ebean.Ebean;
-import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxIsolation;
 
-import javax.inject.Inject;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 
@@ -19,7 +17,7 @@ import javax.ws.rs.core.Context;
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-07
  */
-public class EbeanTransactional extends TransactionFilter {
+public class EbeanTransactional extends TransactionInterceptor {
 
     @Context
     private ResourceInfo resourceInfo;

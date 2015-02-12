@@ -7,8 +7,6 @@ import com.avaje.ebean.text.PathProperties;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Base-class for model-mapped models that provides convenience methods.
@@ -77,7 +75,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Query<M> query() {
-        return (Query<M>) server().find(getModelType());
+        return (Query<M>) server().createQuery(getModelType());
     }
 
     /**
