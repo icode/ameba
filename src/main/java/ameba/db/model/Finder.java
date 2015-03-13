@@ -15,7 +15,6 @@ import java.util.Set;
  */
 public abstract class Finder<ID, T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(Finder.class);
     private final Class<ID> idType;
     private final Class<T> modelType;
     private final String serverName;
@@ -60,11 +59,6 @@ public abstract class Finder<ID, T> {
     public abstract <M extends T> Finder<ID, M> on(String server);
 
     /**
-     * Retrieves all entities of the given type.
-     */
-    public abstract <M extends T> List<M> all();
-
-    /**
      * Retrieves an entity by ID.
      */
     public abstract <M extends T> M byId(ID id);
@@ -77,12 +71,12 @@ public abstract class Finder<ID, T> {
     /**
      * Creates a filter for sorting and filtering lists of entities locally without going back to the database.
      */
-    public abstract <M extends T> Filter<M> filter();
+    public abstract Filter<T> filter();
 
     /**
      * Creates a query.
      */
-    public abstract <M extends T> Query<M> query();
+    public abstract Query<T> query();
 
     /**
      * Returns the next identity value.
@@ -92,31 +86,31 @@ public abstract class Finder<ID, T> {
     /**
      * Sets the OQL query to run
      */
-    public abstract <M extends T> Query<M> setQuery(String oql);
+    public abstract Query<T> setQuery(String oql);
 
-    public abstract <M extends T> Query<M> setRawSql(RawSql rawSql);
+    public abstract Query<T> setRawSql(RawSql rawSql);
 
-    public abstract <M extends T> Query<M> setPersistenceContextScope(PersistenceContextScope scope);
+    public abstract Query<T> setPersistenceContextScope(PersistenceContextScope scope);
 
-    public abstract <M extends T> Query<M> setAutofetch(boolean autofetch);
+    public abstract Query<T> setAutofetch(boolean autofetch);
 
-    public abstract <M extends T> Query<M> setLazyLoadBatchSize(int size);
+    public abstract Query<T> setLazyLoadBatchSize(int size);
 
-    public abstract <M extends T> Query<M> select(String fetchProperties);
+    public abstract Query<T> select(String fetchProperties);
 
-    public abstract <M extends T> Query<M> fetch(String path, String fetchProperties);
+    public abstract Query<T> fetch(String path, String fetchProperties);
 
-    public abstract <M extends T> Query<M> fetch(String assocProperty, String fetchProperties, FetchConfig fetchConfig);
+    public abstract Query<T> fetch(String assocProperty, String fetchProperties, FetchConfig fetchConfig);
 
-    public abstract <M extends T> Query<M> fetch(String path);
+    public abstract Query<T> fetch(String path);
 
-    public abstract <M extends T> Query<M> fetch(String path, FetchConfig joinConfig);
+    public abstract Query<T> fetch(String path, FetchConfig joinConfig);
 
-    public abstract <M extends T> Query<M> apply(PathProperties pathProperties);
+    public abstract Query<T> apply(PathProperties pathProperties);
 
     public abstract List<Object> findIds();
 
-    public abstract <M extends T> QueryIterator<M> findIterate();
+    public abstract QueryIterator<T> findIterate();
 
     public abstract void findEach(QueryEachConsumer<T> consumer);
 
@@ -134,73 +128,73 @@ public abstract class Finder<ID, T> {
 
     public abstract int findRowCount();
 
-    public abstract <M extends T> FutureRowCount<M> findFutureRowCount();
+    public abstract FutureRowCount<T> findFutureRowCount();
 
-    public abstract <M extends T> FutureIds<M> findFutureIds();
+    public abstract FutureIds<T> findFutureIds();
 
-    public abstract <M extends T> FutureList<M> findFutureList();
+    public abstract FutureList<T> findFutureList();
 
-    public abstract <M extends T> PagedList<M> findPagedList(int pageIndex, int pageSize);
+    public abstract PagedList<T> findPagedList(int pageIndex, int pageSize);
 
-    public abstract <M extends T> Query<M> setParameter(String name, Object value);
+    public abstract Query<T> setParameter(String name, Object value);
 
-    public abstract <M extends T> Query<M> setParameter(int position, Object value);
+    public abstract Query<T> setParameter(int position, Object value);
 
-    public abstract <M extends T> Query<M> setId(Object id);
+    public abstract Query<T> setId(Object id);
 
-    public abstract <M extends T> Query<M> where(String addToWhereClause);
+    public abstract Query<T> where(String addToWhereClause);
 
-    public abstract <M extends T> Query<M> where(Expression expression);
+    public abstract Query<T> where(Expression expression);
 
-    public abstract <M extends T> ExpressionList<M> where();
+    public abstract ExpressionList<T> where();
 
-    public abstract <M extends T> ExpressionList<M> filterMany(String propertyName);
+    public abstract ExpressionList<T> filterMany(String propertyName);
 
-    public abstract <M extends T> ExpressionList<M> having();
+    public abstract ExpressionList<T> having();
 
-    public abstract <M extends T> Query<M> having(String addToHavingClause);
+    public abstract Query<T> having(String addToHavingClause);
 
-    public abstract <M extends T> Query<M> having(Expression addExpressionToHaving);
+    public abstract Query<T> having(Expression addExpressionToHaving);
 
-    public abstract <M extends T> Query<M> orderBy(String orderByClause);
+    public abstract Query<T> orderBy(String orderByClause);
 
-    public abstract <M extends T> Query<M> order(String orderByClause);
+    public abstract Query<T> order(String orderByClause);
 
-    public abstract <M extends T> OrderBy<M> order();
+    public abstract OrderBy<T> order();
 
-    public abstract <M extends T> OrderBy<M> orderBy();
+    public abstract OrderBy<T> orderBy();
 
-    public abstract <M extends T> Query<M> setOrder(OrderBy<T> orderBy);
+    public abstract Query<T> setOrder(OrderBy<T> orderBy);
 
-    public abstract <M extends T> Query<M> setOrderBy(OrderBy<T> orderBy);
+    public abstract Query<T> setOrderBy(OrderBy<T> orderBy);
 
-    public abstract <M extends T> Query<M> setDistinct(boolean isDistinct);
+    public abstract Query<T> setDistinct(boolean isDistinct);
 
     public abstract ExpressionFactory getExpressionFactory();
 
     public abstract int getFirstRow();
 
-    public abstract <M extends T> Query<M> setFirstRow(int firstRow);
+    public abstract Query<T> setFirstRow(int firstRow);
 
     public abstract int getMaxRows();
 
-    public abstract <M extends T> Query<M> setMaxRows(int maxRows);
+    public abstract Query<T> setMaxRows(int maxRows);
 
-    public abstract <M extends T> Query<M> setMapKey(String mapKey);
+    public abstract Query<T> setMapKey(String mapKey);
 
-    public abstract <M extends T> Query<M> setUseCache(boolean useBeanCache);
+    public abstract Query<T> setUseCache(boolean useBeanCache);
 
-    public abstract <M extends T> Query<M> setUseQueryCache(boolean useQueryCache);
+    public abstract Query<T> setUseQueryCache(boolean useQueryCache);
 
-    public abstract <M extends T> Query<M> setReadOnly(boolean readOnly);
+    public abstract Query<T> setReadOnly(boolean readOnly);
 
-    public abstract <M extends T> Query<M> setLoadBeanCache(boolean loadBeanCache);
+    public abstract Query<T> setLoadBeanCache(boolean loadBeanCache);
 
-    public abstract <M extends T> Query<M> setTimeout(int secs);
+    public abstract Query<T> setTimeout(int secs);
 
-    public abstract <M extends T> Query<M> setBufferFetchSizeHint(int fetchSize);
+    public abstract Query<T> setBufferFetchSizeHint(int fetchSize);
 
-    public abstract <M extends T> Query<M> setForUpdate(boolean forUpdate);
+    public abstract Query<T> setForUpdate(boolean forUpdate);
 
     public abstract void deleteById(ID id);
 
