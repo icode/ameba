@@ -45,19 +45,6 @@ public class ModelManager extends AddOn {
 
     @Override
     public void setup(final Application application) {
-        loadModels(application);
-        subscribeSystemEvent(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
-            @Override
-            public void onReceive(Container.BeginReloadEvent event) {
-                loadModels(application);
-            }
-        });
-    }
-
-    private void loadModels(Application application){
-        modelMap.clear();
-
-        ClassPool classPool = ClassPool.getDefault();
         Configuration config = application.getConfiguration();
         DEFAULT_DB_NAME = (String) config.getProperty("db.default");
 
@@ -82,40 +69,50 @@ public class ModelManager extends AddOn {
         for (String name : DataSource.getDataSourceNames()) {
             String modelPackages = (String) config.getProperty("db." + name + ".models");
             if (StringUtils.isNotBlank(modelPackages)) {
-                Set<String> pkgs = Sets.newHashSet(StringUtils.deleteWhitespace(modelPackages).split(","));
+                final Set<String> pkgs = Sets.newHashSet(StringUtils.deleteWhitespace(modelPackages).split(","));
 
                 //db.default.models.pkg=
                 //db.default.models+=
                 if (getDefaultDBName().equalsIgnoreCase(name)) {
                     pkgs.addAll(defaultModelsPkg);
                 }
-                Set<Class> classes = Sets.newHashSet();
-                ResourceFinder scanner = new PackageNamesScanner(pkgs.toArray(new String[pkgs.size()]), true);
-                while (scanner.hasNext()) {
-                    if (!scanner.next().endsWith(".class")) {
-                        continue;
+
+                application.packages(pkgs.toArray(new String[pkgs.size()]));
+
+                final Set<Class> classes = Sets.newHashSet();
+                subscribeSystemEvent(Container.ReloadEvent.class, new Listener<Container.ReloadEvent>() {
+                    @Override
+                    public void onReceive(Container.ReloadEvent event) {
+                        classes.clear();
                     }
-                    InputStream in = scanner.open();
-                    try {
-                        CtClass ctClass = classPool.makeClass(in);
-                        String className = ctClass.getClassFile().getName();
-                        logger.trace("load class : {}", className);
-                        try {
-                            classes.add(ClassUtils.getClass(className));
-                        } catch (ClassNotFoundException e) {
-                            throw new AmebaException(e);
-                        }
-                    } catch (IOException e) {
-                        throw new AmebaException("load model error", e);
-                    } finally {
-                        IOUtils.closeQuietly(in);
+                });
+
+                subscribeSystemEvent(Application.ClassFoundEvent.class, new Listener<Application.ClassFoundEvent>() {
+                    @Override
+                    public void onReceive(Application.ClassFoundEvent event) {
+                        event.accept(new Application.ClassFoundEvent.ClassAccept() {
+                            @Override
+                            public boolean accept(Application.ClassFoundEvent.ClassInfo info) {
+                                for (String st : pkgs) {
+                                    if (!st.endsWith(".")) st += ".";
+                                    String className = info.getClassName();
+                                    if (className.startsWith(st)) {
+                                        logger.trace("load class : {}", className);
+                                        classes.add(info.toClass());
+                                        return true;
+                                    }
+                                }
+
+                                return false;
+                            }
+                        });
                     }
-                }
+                });
                 modelMap.put(name, classes);
-                pkgs.clear();
             }
         }
 
         defaultModelsPkg.clear();
     }
+
 }

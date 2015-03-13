@@ -18,12 +18,19 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
+import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtClass;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.OsgiRegistry;
+import org.glassfish.jersey.internal.util.ReflectionHelper;
 import org.glassfish.jersey.model.ContractProvider;
 import org.glassfish.jersey.server.*;
+import org.glassfish.jersey.server.internal.LocalizationMessages;
+import org.glassfish.jersey.server.internal.scanning.AnnotationAcceptingListener;
 import org.glassfish.jersey.server.internal.scanning.PackageNamesScanner;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceModel;
@@ -35,20 +42,22 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.inject.Singleton;
+import javax.ws.rs.Path;
 import javax.ws.rs.RuntimeType;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.ext.ExceptionMapper;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import javax.ws.rs.ext.Provider;
+import java.io.*;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
 import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -69,6 +78,7 @@ public class Application {
     private static final String REGISTER_CONF_PREFIX = "app.register.";
     private static final String ADDON_CONF_PREFIX = "app.addon.";
     private static final String JERSEY_CONF_NAME_PREFIX = "app.sys.core.";
+    private static final String SCAN_CLASSES_CACHE_FILE = "conf/classes.list";
     private static String INFO_SPLITOR = "---------------------------------------------------";
     protected boolean jmxEnabled;
     private String configFile;
@@ -80,6 +90,7 @@ public class Application {
     private long timestamp = System.currentTimeMillis();
     private Set<AddOn> addOns = Sets.newHashSet();
     private ResourceConfig config;
+    private Set<String> scanPkgs;
 
     public Application() {
         this("conf/application.conf");
@@ -178,8 +189,113 @@ public class Application {
         properties.clear();
 
         SystemEventBus.publish(new ConfiguredEvent(this));
+
+        scanClasses();
+
+        if (getMode().isDev())
+            SystemEventBus.subscribe(Container.ReloadEvent.class, new Listener<Container.ReloadEvent>() {
+                @Override
+                public void onReceive(Container.ReloadEvent event) {
+                    scanClasses();
+                }
+            });
+
         addOnDone();
         logger.info("装载特性...");
+    }
+
+    private void scanClasses() {
+        URL cacheList = IOUtils.getResource(SCAN_CLASSES_CACHE_FILE);
+        if (cacheList == null || getMode().isDev()) {
+            logger.debug("scan files ...");
+            final PackageNamesScanner scanner = new PackageNamesScanner(scanPkgs.toArray(new String[scanPkgs.size()]), true);
+            Set<String> foundClasses = Sets.newHashSet();
+            List<String> acceptClasses = Lists.newArrayList();
+            while (scanner.hasNext()) {
+                ClassFoundEvent.ClassInfo info = new ClassFoundEvent.ClassInfo() {
+
+                    InputStream in;
+
+                    @Override
+                    public InputStream getFileStream() {
+                        if (in == null) {
+                            in = scanner.open();
+                        }
+                        return in;
+                    }
+
+                    @Override
+                    void closeFileStream() {
+                        closeQuietly(in);
+                    }
+                };
+                info.fileName = scanner.next();
+                String className = info.getCtClass().getName();
+                if (!foundClasses.contains(className)) {
+                    ClassFoundEvent event = new ClassFoundEvent(info);
+                    SystemEventBus.publish(event);
+                    info.closeFileStream();
+
+                    if (event.accept) {
+                        acceptClasses.add(className);
+                    }
+                }
+                foundClasses.add(className);
+            }
+            foundClasses.clear();
+            OutputStream out = null;
+            try {
+                File cacheFile = new File(IOUtils.getResource("/").getPath() + SCAN_CLASSES_CACHE_FILE);
+
+                if (cacheFile.isDirectory()) {
+                    FileUtils.deleteQuietly(cacheFile);
+                }
+
+                out = FileUtils.openOutputStream(cacheFile);
+
+                IOUtils.writeLines(acceptClasses, null, out);
+            } catch (FileNotFoundException e) {
+                logger.error("write class cache file error", e);
+            } catch (IOException e) {
+                logger.error("write class cache file error", e);
+            } finally {
+                closeQuietly(out);
+            }
+        } else {
+            logger.debug("read files from scan cache ...");
+            InputStream in = null;
+            try {
+                in = cacheList.openStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                if (reader.ready()) {
+                    String fileName = reader.readLine();
+                    while (fileName != null) {
+                        if (StringUtils.isBlank(fileName)) continue;
+                        final InputStream fin = IOUtils.getResourceAsStream(fileName.replace(".", "/").concat(".class"));
+                        ClassFoundEvent.ClassInfo info = new ClassFoundEvent.ClassInfo() {
+                            @Override
+                            public InputStream getFileStream() {
+                                return fin;
+                            }
+
+                            @Override
+                            void closeFileStream() {
+                                closeQuietly(fin);
+                            }
+                        };
+                        info.fileName = fileName.substring(fileName.lastIndexOf(".") + 1).concat(".class");
+                        SystemEventBus.publish(new ClassFoundEvent(info, true));
+                        info.closeFileStream();
+                        fileName = reader.readLine();
+                    }
+                }
+                closeQuietly(reader);
+            } catch (IOException e) {
+                logger.error("read classes cache list error", e);
+            } finally {
+                closeQuietly(in);
+            }
+        }
     }
 
     private void registerInstance() {
@@ -376,8 +492,6 @@ public class Application {
                         continue;
                     }
 
-                    //preConfigureFeature(clazz);
-
                     register(clazz);
                     suc++;
                 } catch (ClassNotFoundException e) {
@@ -412,7 +526,36 @@ public class Application {
         }
         packages = ArrayUtils.removeElement(packages, "");
         logger.info("设置资源扫描包:{}", StringUtils.join(packages, ","));
-        registerFinder(new PackageNamesScanner(packages, true));
+        packages(packages);
+
+        final List<ClassFoundEvent.ClassInfo> resources = Lists.newArrayList();
+
+        SystemEventBus.subscribe(ClassFoundEvent.class, new Listener<ClassFoundEvent>() {
+            @Override
+            public void onReceive(ClassFoundEvent event) {
+                event.accept(new ClassFoundEvent.ClassAccept() {
+                    @Override
+                    public boolean accept(ClassFoundEvent.ClassInfo info) {
+                        if (info.isPublic()) {
+                            if (info.containsAnnotations(Path.class, Provider.class)) {
+                                resources.add(info);
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                });
+            }
+        });
+
+        addOns.add(new AddOn() {
+            @Override
+            public void done(Application application) {
+                for (ClassFoundEvent.ClassInfo info : resources) {
+                    register(info.toClass());
+                }
+            }
+        });
     }
 
     private void convertJerseyConfig(Map<String, Object> configMap) {
@@ -473,7 +616,7 @@ public class Application {
             } catch (IOException e) {
                 logger.warn("读取[conf/" + mode.name().toLowerCase() + ".conf]出错", e);
             } finally {
-                IOUtils.closeQuietly(in);
+                closeQuietly(in);
             }
         }
         if (modeProperties.size() > 0)
@@ -653,60 +796,69 @@ public class Application {
         return url;
     }
 
-    public ResourceConfig register(Class<?> componentClass) {
-        return config.register(componentClass);
+    public Application register(Class<?> componentClass) {
+        config.register(componentClass);
+        return this;
     }
 
-    public ResourceConfig register(Object component) {
-        return config.register(component);
+    public Application register(Object component) {
+        config.register(component);
+        return this;
     }
 
-    public ResourceConfig setProperties(Map<String, ?> properties) {
-        return config.setProperties(properties);
+    public Application setProperties(Map<String, ?> properties) {
+        config.setProperties(properties);
+        return this;
     }
 
-    public ResourceConfig registerClasses(Class<?>... classes) {
-        return config.registerClasses(classes);
+    public Application registerClasses(Class<?>... classes) {
+        config.registerClasses(classes);
+        return this;
     }
 
-    public ResourceConfig packages(boolean recursive, String... packages) {
-        return config.packages(recursive, packages);
-    }
-
-    public ResourceConfig register(Object component, int bindingPriority) {
-        return config.register(component, bindingPriority);
+    public Application register(Object component, int bindingPriority) {
+        config.register(component, bindingPriority);
+        return this;
     }
 
     public ServerConfig getConfiguration() {
         return config.getConfiguration();
     }
 
-    public ResourceConfig files(boolean recursive, String... files) {
-        return config.files(recursive, files);
+    public Application setClassLoader(ClassLoader classLoader) {
+        config.setClassLoader(classLoader);
+        return this;
     }
 
-    public ResourceConfig setClassLoader(ClassLoader classLoader) {
-        return config.setClassLoader(classLoader);
-    }
-
-    public ResourceConfig setApplicationName(String applicationName) {
-        return config.setApplicationName(applicationName);
+    public Application setApplicationName(String applicationName) {
+        config.setApplicationName(applicationName);
+        return this;
     }
 
     public ClassLoader getClassLoader() {
         return config.getClassLoader();
     }
 
-    public ResourceConfig registerInstances(Object... instances) {
-        return config.registerInstances(instances);
+    public Application registerInstances(Object... instances) {
+        config.registerInstances(instances);
+        return this;
     }
 
-    public ResourceConfig packages(String... packages) {
-        return config.packages(packages);
+    public Application packages(String... packages) {
+        if (scanPkgs == null) {
+            scanPkgs = Sets.newHashSet();
+        }
+        Collections.addAll(scanPkgs, packages);
+        return this;
     }
 
-    public ResourceConfig register(Object component, Map<Class<?>, Integer> contracts) {
-        return config.register(component, contracts);
+    public Set<String> getPackages() {
+        return scanPkgs;
+    }
+
+    public Application register(Object component, Map<Class<?>, Integer> contracts) {
+        config.register(component, contracts);
+        return this;
     }
 
     public Set<Resource> getResources() {
@@ -721,28 +873,27 @@ public class Application {
         return config.getPropertyNames();
     }
 
-    public ResourceConfig register(Class<?> componentClass, Class<?>... contracts) {
-        return config.register(componentClass, contracts);
-    }
-
-    public ResourceConfig files(String... files) {
-        return config.files(files);
+    public Application register(Class<?> componentClass, Class<?>... contracts) {
+        config.register(componentClass, contracts);
+        return this;
     }
 
     public Set<Class<?>> getClasses() {
         return config.getClasses();
     }
 
-    public ResourceConfig register(Object component, Class<?>... contracts) {
-        return config.register(component, contracts);
+    public Application register(Object component, Class<?>... contracts) {
+        config.register(component, contracts);
+        return this;
     }
 
     public boolean isRegistered(Class<?> componentClass) {
         return config.isRegistered(componentClass);
     }
 
-    public ResourceConfig registerResources(Set<Resource> resources) {
-        return config.registerResources(resources);
+    public Application registerResources(Set<Resource> resources) {
+        config.registerResources(resources);
+        return this;
     }
 
     public boolean isEnabled(Feature feature) {
@@ -757,20 +908,24 @@ public class Application {
         return config.getProperty(name);
     }
 
-    public ResourceConfig addProperties(Map<String, Object> properties) {
-        return config.addProperties(properties);
+    public Application addProperties(Map<String, Object> properties) {
+        config.addProperties(properties);
+        return this;
     }
 
-    public ResourceConfig registerFinder(ResourceFinder resourceFinder) {
-        return config.registerFinder(resourceFinder);
+    public Application registerFinder(ResourceFinder resourceFinder) {
+        config.registerFinder(resourceFinder);
+        return this;
     }
 
-    public ResourceConfig register(Class<?> componentClass, int bindingPriority) {
-        return config.register(componentClass, bindingPriority);
+    public Application register(Class<?> componentClass, int bindingPriority) {
+        config.register(componentClass, bindingPriority);
+        return this;
     }
 
-    public ResourceConfig registerResources(Resource... resources) {
-        return config.registerResources(resources);
+    public Application registerResources(Resource... resources) {
+        config.registerResources(resources);
+        return this;
     }
 
     public RuntimeType getRuntimeType() {
@@ -785,24 +940,28 @@ public class Application {
         return config.getProperties();
     }
 
-    public ResourceConfig property(String name, Object value) {
-        return config.property(name, value);
+    public Application property(String name, Object value) {
+        config.property(name, value);
+        return this;
     }
 
-    public ResourceConfig registerInstances(Set<Object> instances) {
-        return config.registerInstances(instances);
+    public Application registerInstances(Set<Object> instances) {
+        config.registerInstances(instances);
+        return this;
     }
 
     public Set<Object> getInstances() {
         return config.getInstances();
     }
 
-    public ResourceConfig register(Class<?> componentClass, Map<Class<?>, Integer> contracts) {
-        return config.register(componentClass, contracts);
+    public Application register(Class<?> componentClass, Map<Class<?>, Integer> contracts) {
+        config.register(componentClass, contracts);
+        return this;
     }
 
-    public ResourceConfig registerClasses(Set<Class<?>> classes) {
-        return config.registerClasses(classes);
+    public Application registerClasses(Set<Class<?>> classes) {
+        config.registerClasses(classes);
+        return this;
     }
 
     public boolean isEnabled(Class<? extends Feature> featureClass) {
@@ -1034,6 +1193,131 @@ public class Application {
             if (index == 0)
                 return 1;
             return index;
+        }
+    }
+
+    public static class ClassFoundEvent implements ameba.event.Event {
+        private boolean accept;
+        private boolean cacheMode = false;
+        private ClassInfo classInfo;
+
+        private ClassFoundEvent(ClassInfo classInfo, boolean cacheMode) {
+            this.cacheMode = cacheMode;
+            this.classInfo = classInfo;
+        }
+
+        private ClassFoundEvent(ClassInfo classInfo) {
+            this.classInfo = classInfo;
+        }
+
+        public interface ClassAccept {
+            /**
+             * 如果是需要的class则返回true
+             *
+             * @return 是否需要该class
+             */
+            boolean accept(ClassInfo info);
+        }
+
+        public static abstract class ClassInfo {
+            private CtClass ctClass;
+            private String fileName;
+            private Object[] annotations;
+
+            public String getFileName() {
+                return fileName;
+            }
+
+            public CtClass getCtClass() {
+                if (ctClass == null) {
+                    try {
+                        ctClass = ClassPool.getDefault().makeClass(getFileStream());
+                    } catch (IOException e) {
+                        throw new AmebaException("make class error", e);
+                    }
+                }
+                return ctClass;
+            }
+
+            public String getClassName() {
+                return getCtClass().getName();
+            }
+
+            public Object[] getAnnotations() {
+                if (annotations == null) {
+                    annotations = getCtClass().getAvailableAnnotations();
+                }
+                return annotations;
+            }
+
+            public boolean containsAnnotations(Class<? extends Annotation>... annotationClass) {
+                if (ArrayUtils.isEmpty(annotationClass)) {
+                    return false;
+                }
+
+                for (Object anno : getAnnotations()) {
+                    for (Class cls : annotationClass) {
+                        if (((Annotation) anno).annotationType().equals(cls)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            public boolean isPublic() {
+                return javassist.Modifier.isPublic(getCtClass().getModifiers());
+            }
+
+            public Class toClass() {
+                return getClassForName(getCtClass().getName());
+            }
+
+            public Class getClassForName(final String className) {
+                try {
+                    final OsgiRegistry osgiRegistry = ReflectionHelper.getOsgiRegistryInstance();
+
+                    if (osgiRegistry != null) {
+                        return osgiRegistry.classForNameWithException(className);
+                    } else {
+                        return AccessController.doPrivileged(ReflectionHelper.classForNameWithExceptionPEA(className));
+                    }
+                } catch (final ClassNotFoundException ex) {
+                    throw new RuntimeException(LocalizationMessages.ERROR_SCANNING_CLASS_NOT_FOUND(className), ex);
+                } catch (final PrivilegedActionException pae) {
+                    final Throwable cause = pae.getCause();
+                    if (cause instanceof ClassNotFoundException) {
+                        throw new RuntimeException(LocalizationMessages.ERROR_SCANNING_CLASS_NOT_FOUND(className), cause);
+                    } else if (cause instanceof RuntimeException) {
+                        throw (RuntimeException) cause;
+                    } else {
+                        throw new RuntimeException(cause);
+                    }
+                }
+            }
+
+            public abstract InputStream getFileStream();
+
+            abstract void closeFileStream();
+        }
+
+
+        public InputStream getFileStream() {
+            return classInfo.getFileStream();
+        }
+
+        public void accept(ClassAccept accept) {
+            try {
+                boolean re = accept.accept(classInfo);
+                if (!this.accept && re)
+                    this.accept = true;
+            } catch (Exception e) {
+                logger.error("class accept error", e);
+            }
+        }
+
+        public boolean isCacheMode() {
+            return cacheMode;
         }
     }
 
