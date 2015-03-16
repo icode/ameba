@@ -25,6 +25,24 @@ public class EventTest {
         private void doAsyncSomething(TestEvent e) {
             logger.info("Async AnnotationSub receive message : {}", e.message);
         }
+
+        @Subscribe
+        private void doSomething2(TestEvent e) {
+            logger.info("CoC AnnotationSub receive message : {}", e.message);
+        }
+
+        @Subscribe(async = true)
+        private void doAsyncSomething2(TestEvent e) {
+            logger.info("Async CoC AnnotationSub receive message : {}", e.message);
+        }
+
+        @Subscribe
+        private void doSomething3(TestEvent e, TestEvent1 e1) {
+            if (e != null)
+                logger.info("doSomething3 CoC AnnotationSub receive TestEvent message : {}", e.message);
+            if (e1 != null)
+                logger.info("doSomething3 CoC AnnotationSub receive TestEvent1 message : {}", e1.message);
+        }
     }
 
     @Test
@@ -80,7 +98,7 @@ public class EventTest {
 
         try {
             synchronized (this) {
-                wait(500);
+                wait(1800);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();

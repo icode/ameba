@@ -11,6 +11,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Subscribe {
-    Class<? extends Event>[] value();
+    Class<? extends Event>[] value() default {};
     boolean async() default false;
 }

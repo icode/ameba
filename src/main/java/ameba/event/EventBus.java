@@ -3,17 +3,18 @@ package ameba.event;
 import akka.actor.ActorRef;
 import ameba.exception.AmebaException;
 import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
 import com.google.common.collect.*;
 import com.google.common.reflect.TypeToken;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.PredicateUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -55,7 +56,7 @@ public abstract class EventBus {
             for (Method superClazzMethod : superClazz.getDeclaredMethods()) {
                 if (superClazzMethod.isAnnotationPresent(Subscribe.class)
                         && !superClazzMethod.isBridge()) {
-                        identifiers.add(superClazzMethod);
+                    identifiers.add(superClazzMethod);
                 }
             }
         }
@@ -63,33 +64,43 @@ public abstract class EventBus {
     }
 
     /**
-     *
      * subscribe event by {@link Subscribe} annotation
-     *
+     * <p/>
      * <pre>{@code
-     *
+     * <p/>
      * class SubEevent {
-     *
+     * <p/>
      *     public SubEevent(){
      *         EventBus.subscribe(this);
      *     }
-     *
+     * <p/>
      *     @@Subscribe({ Container.ReloadEvent.class })
      *     private void doSome(MyEvent e){
      *         ....
      *     }
      * }
-     *
+     * <p/>
      * class SubEevent2 {
-     *
+     * <p/>
      *     @@Subscribe({ Container.ReloadEvent.class })
      *     private void doSome(){
      *         ....
      *     }
+     * <p/>
+     *     @@Subscribe
+     *     private void doSome(Container.ReloadEvent e){
+     *         ....
+     *     }
+     * <p/>
+     *     @@Subscribe(async=true)
+     *     private void doSome(Container.ReloadEvent e, Container.ReloadEvent1 e1){
+     *         // handle ReloadEvent and ReloadEvent1 event
+     *         ....
+     *     }
      * }
-     *
+     * <p/>
      * EventBus.subscribe(SubEevent2.class);
-     *
+     * <p/>
      * }</pre>
      *
      * @param obj class or instance
@@ -118,31 +129,42 @@ public abstract class EventBus {
         List<Method> methods = getAnnotatedMethods(objClass);
         for (final Method method : methods) {
             Subscribe subscribe = method.getAnnotation(Subscribe.class);
-            if (subscribe != null && subscribe.value().length > 0) {
-                method.setAccessible(true);
+            if (subscribe != null) {
                 Class[] argsClass = method.getParameterTypes();
-                final Boolean[] needEvent = new Boolean[argsClass.length];
+                final Class[] needEvent = new Class[argsClass.length];
+                Class<? extends Event>[] events = subscribe.value();
+
                 for (int i = 0; i < argsClass.length; i++) {
-                    needEvent[i] = Event.class.isAssignableFrom(argsClass[i]);
+                    if (Event.class.isAssignableFrom(argsClass[i])) {
+                        needEvent[i] = argsClass[i];
+                    }
                 }
-                for (Class<? extends Event> event : subscribe.value()) {
+
+                if (subscribe.value().length == 0) {
+                    events = needEvent;
+                }
+
+                method.setAccessible(true);
+                for (final Class<? extends Event> event : events) {
+                    if (event == null) continue;
                     Listener listener = new Listener() {
                         @Override
-                        public void onReceive(Event event) {
+                        public void onReceive(Event ev) {
                             Object[] args = new Object[needEvent.length];
                             try {
                                 for (int i = 0; i < needEvent.length; i++) {
-                                    if (needEvent[i]) {
-                                        args[i] = event;
+                                    if (needEvent[i] != null && needEvent[i].isAssignableFrom(event)) {
+                                        args[i] = ev;
                                     }
                                 }
                                 method.invoke(finalObj, args);
                             } catch (IllegalAccessException e) {
-                                throw new AmebaException("subscribe event error, " + method.getName()
+                                throw new AmebaException("handle event error, " + method.getName()
                                         + " method must be not have arguments or extends from Event argument", e);
                             } catch (InvocationTargetException e) {
-                                throw new AmebaException("subscribe event error, " + method.getName()
-                                        + " method must be not have arguments or extends from Event argument", e);
+                                throw new AmebaException("handle " + method.getName() + " event error. ", e);
+                            } catch (Exception e) {
+                                throw new AmebaException("handle " + method.getName() + " event error. ", e);
                             }
                         }
                     };
