@@ -50,16 +50,16 @@ public abstract class EventBus {
     }
 
     private List<Method> getAnnotatedMethods(Class<?> clazz) {
-        Set<? extends Class<?>> supers = TypeToken.of(clazz).getTypes().rawTypes();
+//        Set<? extends Class<?>> supers = TypeToken.of(clazz).getTypes().rawTypes();
         List<Method> identifiers = Lists.newArrayList();
-        for (Class<?> superClazz : supers) {
-            for (Method superClazzMethod : superClazz.getDeclaredMethods()) {
+//        for (Class<?> superClazz : supers) {
+            for (Method superClazzMethod : clazz.getDeclaredMethods()) {
                 if (superClazzMethod.isAnnotationPresent(Subscribe.class)
                         && !superClazzMethod.isBridge()) {
                     identifiers.add(superClazzMethod);
                 }
             }
-        }
+//        }
         return identifiers;
     }
 

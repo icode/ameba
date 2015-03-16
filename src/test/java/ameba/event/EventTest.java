@@ -37,12 +37,23 @@ public class EventTest {
         }
 
         @Subscribe
-        private void doSomething3(TestEvent e, TestEvent1 e1) {
+        public void doSomething3(TestEvent e, TestEvent1 e1) {
             if (e != null)
                 logger.info("doSomething3 CoC AnnotationSub receive TestEvent message : {}", e.message);
             if (e1 != null)
                 logger.info("doSomething3 CoC AnnotationSub receive TestEvent1 message : {}", e1.message);
         }
+    }
+
+    public static class ChildSub extends AnnotationSub {
+        @Subscribe
+        public void doSomething3(TestEvent e, TestEvent1 e1) {
+            if (e != null)
+                logger.info("doSomething3 CoC AnnotationSub receive TestEvent message : {}", e.message);
+            if (e1 != null)
+                logger.info("doSomething3 CoC AnnotationSub receive TestEvent1 message : {}", e1.message);
+        }
+
     }
 
     @Test
@@ -54,6 +65,7 @@ public class EventTest {
         EventBus eventBus = EventBus.createMix();
 
         eventBus.subscribe(new AnnotationSub());
+        eventBus.subscribe(new ChildSub());
 
         eventBus.subscribe(AnnotationSub.class);
 
