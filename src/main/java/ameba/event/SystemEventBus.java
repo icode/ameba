@@ -14,6 +14,10 @@ public class SystemEventBus {
         EVENT_BUS.subscribe(event, listener);
     }
 
+    public static void subscribe(Object object) {
+        EVENT_BUS.subscribe(object);
+    }
+
     public static <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener) {
         EVENT_BUS.unsubscribe(event, listener);
     }

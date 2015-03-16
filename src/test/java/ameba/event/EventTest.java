@@ -14,6 +14,19 @@ public class EventTest {
 
     private static final Logger logger = LoggerFactory.getLogger(EventTest.class);
 
+
+    public static class AnnotationSub {
+        @Subscribe(TestEvent.class)
+        private void doSomething(TestEvent e) {
+            logger.info("AnnotationSub receive message : {}", e.message);
+        }
+
+        @Subscribe(value = TestEvent.class, async = true)
+        private void doAsyncSomething(TestEvent e) {
+            logger.info("Async AnnotationSub receive message : {}", e.message);
+        }
+    }
+
     @Test
     public void publish() {
 
@@ -22,18 +35,23 @@ public class EventTest {
 
         EventBus eventBus = EventBus.createMix();
 
+        eventBus.subscribe(new AnnotationSub());
+
+        eventBus.subscribe(AnnotationSub.class);
+
         for (int i = 0; i < 10; i++) {
+            final int finalI = i;
             eventBus.subscribe(TestEvent.class, new AsyncListener<TestEvent>() {
                 @Override
                 public void onReceive(TestEvent event) {
-                    logger.info("async receive message : {}", event.message);
+                    logger.info("async receive message {} : {}", finalI, event.message);
                 }
             });
 
             eventBus.subscribe(TestEvent1.class, new AsyncListener<TestEvent1>() {
                 @Override
                 public void onReceive(TestEvent1 event) {
-                    logger.info("TestEvent1 async receive message : {}", event.message);
+                    logger.info("TestEvent1 async receive message {} : {}", finalI, event.message);
                 }
             });
         }

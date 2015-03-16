@@ -56,6 +56,16 @@ public abstract class AmebaFeature implements Feature {
         EVENT_BUS.subscribe(eventClass, listener);
     }
 
+    public void subscribeEvent(Object object) {
+        if (object instanceof Class) {
+            object = locator.createAndInitialize((Class) object);
+        } else {
+            locator.inject(object);
+            locator.postConstruct(object);
+        }
+        EVENT_BUS.subscribe(object);
+    }
+
     protected <E extends Event> void subscribeEvent(Class<E> eventClass, final Listener<E> listener) {
         locator.inject(listener);
         locator.postConstruct(listener);

@@ -77,7 +77,8 @@ public class ModelManager extends AddOn {
                     pkgs.addAll(defaultModelsPkg);
                 }
 
-                application.packages(pkgs.toArray(new String[pkgs.size()]));
+                final String[] startsPackages = pkgs.toArray(new String[pkgs.size()]);
+                application.packages(startsPackages);
 
                 final Set<Class> classes = Sets.newHashSet();
                 subscribeSystemEvent(Container.ReloadEvent.class, new Listener<Container.ReloadEvent>() {
@@ -93,16 +94,11 @@ public class ModelManager extends AddOn {
                         event.accept(new Application.ClassFoundEvent.ClassAccept() {
                             @Override
                             public boolean accept(Application.ClassFoundEvent.ClassInfo info) {
-                                for (String st : pkgs) {
-                                    if (!st.endsWith(".")) st += ".";
-                                    String className = info.getClassName();
-                                    if (className.startsWith(st)) {
-                                        logger.trace("load class : {}", className);
-                                        classes.add(info.toClass());
-                                        return true;
-                                    }
+                                if (info.startsWithPackage(startsPackages)) {
+                                    logger.trace("load class : {}", info.getClassName());
+                                    classes.add(info.toClass());
+                                    return true;
                                 }
-
                                 return false;
                             }
                         });

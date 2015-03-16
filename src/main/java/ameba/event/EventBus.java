@@ -1,12 +1,19 @@
 package ameba.event;
 
 import akka.actor.ActorRef;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
+import ameba.exception.AmebaException;
+import com.google.common.base.Objects;
+import com.google.common.collect.*;
+import com.google.common.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -17,7 +24,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public abstract class EventBus {
 
     private static final Logger logger = LoggerFactory.getLogger(EventBus.class);
-    private final SetMultimap<Class<?>, Listener> listeners = HashMultimap.create();
+    private final SetMultimap<Class<?>, Listener> listeners = LinkedHashMultimap.create();
     private final ReadWriteLock subscribersByTypeLock = new ReentrantReadWriteLock();
 
     private EventBus() {
@@ -39,6 +46,114 @@ public abstract class EventBus {
         } finally {
             subscribersByTypeLock.writeLock().unlock();
         }
+    }
+
+    private List<Method> getAnnotatedMethods(Class<?> clazz) {
+        Set<? extends Class<?>> supers = TypeToken.of(clazz).getTypes().rawTypes();
+        List<Method> identifiers = Lists.newArrayList();
+        for (Class<?> superClazz : supers) {
+            for (Method superClazzMethod : superClazz.getDeclaredMethods()) {
+                if (superClazzMethod.isAnnotationPresent(Subscribe.class)
+                        && !superClazzMethod.isBridge()) {
+                        identifiers.add(superClazzMethod);
+                }
+            }
+        }
+        return identifiers;
+    }
+
+    /**
+     *
+     * subscribe event by {@link Subscribe} annotation
+     *
+     * <pre>{@code
+     *
+     * class SubEevent {
+     *
+     *     public SubEevent(){
+     *         EventBus.subscribe(this);
+     *     }
+     *
+     *     @@Subscribe({ Container.ReloadEvent.class })
+     *     private void doSome(MyEvent e){
+     *         ....
+     *     }
+     * }
+     *
+     * class SubEevent2 {
+     *
+     *     @@Subscribe({ Container.ReloadEvent.class })
+     *     private void doSome(){
+     *         ....
+     *     }
+     * }
+     *
+     * EventBus.subscribe(SubEevent2.class);
+     *
+     * }</pre>
+     *
+     * @param obj class or instance
+     */
+    @SuppressWarnings("unchecked")
+    public void subscribe(Object obj) {
+        if (obj == null) {
+            return;
+        }
+        Class objClass;
+        if (obj instanceof Class) {
+            objClass = (Class) obj;
+            try {
+                obj = objClass.newInstance();
+            } catch (InstantiationException e) {
+                throw new AmebaException("subscribe event error, "
+                        + objClass.getName() + " must be have a public void arguments constructor", e);
+            } catch (IllegalAccessException e) {
+                throw new AmebaException("subscribe event error, "
+                        + objClass.getName() + " must be have a public void arguments constructor", e);
+            }
+        } else {
+            objClass = obj.getClass();
+        }
+        final Object finalObj = obj;
+        List<Method> methods = getAnnotatedMethods(objClass);
+        for (final Method method : methods) {
+            Subscribe subscribe = method.getAnnotation(Subscribe.class);
+            if (subscribe != null && subscribe.value().length > 0) {
+                method.setAccessible(true);
+                Class[] argsClass = method.getParameterTypes();
+                final Boolean[] needEvent = new Boolean[argsClass.length];
+                for (int i = 0; i < argsClass.length; i++) {
+                    needEvent[i] = Event.class.isAssignableFrom(argsClass[i]);
+                }
+                for (Class<? extends Event> event : subscribe.value()) {
+                    Listener listener = new Listener() {
+                        @Override
+                        public void onReceive(Event event) {
+                            Object[] args = new Object[needEvent.length];
+                            try {
+                                for (int i = 0; i < needEvent.length; i++) {
+                                    if (needEvent[i]) {
+                                        args[i] = event;
+                                    }
+                                }
+                                method.invoke(finalObj, args);
+                            } catch (IllegalAccessException e) {
+                                throw new AmebaException("subscribe event error, " + method.getName()
+                                        + " method must be not have arguments or extends from Event argument", e);
+                            } catch (InvocationTargetException e) {
+                                throw new AmebaException("subscribe event error, " + method.getName()
+                                        + " method must be not have arguments or extends from Event argument", e);
+                            }
+                        }
+                    };
+                    subscribe(event, listener, subscribe);
+                }
+            }
+        }
+    }
+
+    protected <E extends Event> void subscribe(Class<E> event, final Listener<E> listener, Subscribe subscribe) {
+        subscribe(event, listener);
     }
 
     public <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener) {
@@ -82,6 +197,20 @@ public abstract class EventBus {
         public <E extends Event> void subscribe(Class<E> event, final Listener<E> listener) {
             if (listener instanceof AsyncListener) {
                 asyncEventBus.subscribe(event, (AsyncListener) listener);
+            } else {
+                super.subscribe(event, listener);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        protected <E extends Event> void subscribe(Class<E> event, final Listener<E> listener, Subscribe subscribe) {
+            if (subscribe.async()) {
+                asyncEventBus.subscribe(event, new AsyncListener<E>() {
+                    @Override
+                    public void onReceive(E event) {
+                        listener.onReceive(event);
+                    }
+                });
             } else {
                 super.subscribe(event, listener);
             }

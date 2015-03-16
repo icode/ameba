@@ -19,6 +19,10 @@ public abstract class AddOn {
         EVENT_BUS.unsubscribe(eventClass, listener);
     }
 
+    public static void subscribeEvent(Object object) {
+        EVENT_BUS.subscribe(object);
+    }
+
     protected static <E extends Event> void subscribeSystemEvent(Class<E> eventClass, final Listener<E> listener) {
         SystemEventBus.subscribe(eventClass, listener);
     }
@@ -27,6 +31,9 @@ public abstract class AddOn {
         SystemEventBus.unsubscribe(eventClass, listener);
     }
 
+    public static void subscribeSystemEvent(Object object) {
+        SystemEventBus.subscribe(object);
+    }
 
     public static void publishEvent(Event event) {
         EVENT_BUS.publish(event);

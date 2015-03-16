@@ -701,9 +701,10 @@ public class Application {
     }
 
     private String toExternalForm(URL url) {
+        if (url == null) return null;
         try {
             return URLDecoder.decode(url.toExternalForm(), Charset.defaultCharset().name());
-        } catch (UnsupportedEncodingException e) {
+        } catch (Exception e) {
             return url.toExternalForm();
         }
     }
@@ -1294,6 +1295,17 @@ public class Application {
                         throw new RuntimeException(cause);
                     }
                 }
+            }
+
+            public boolean startsWithPackage(String... pkgs){
+                for (String st : pkgs) {
+                    if (!st.endsWith(".")) st += ".";
+                    String className = getClassName();
+                    if (className.startsWith(st)) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             public abstract InputStream getFileStream();
