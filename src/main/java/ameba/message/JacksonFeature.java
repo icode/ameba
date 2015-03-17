@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.jaxrs.base.JsonMappingExceptionMapper;
 import com.fasterxml.jackson.jaxrs.base.JsonParseExceptionMapper;
 import com.fasterxml.jackson.jaxrs.cfg.Annotations;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
@@ -46,7 +47,7 @@ public class JacksonFeature implements Feature {
 
         if (!config.isRegistered(JacksonJaxbJsonProvider.class)) {
             context.register(JsonParseExceptionMapper.class);
-            context.register(JsonMappingException.class);
+            context.register(JsonMappingExceptionMapper.class);
             context.register(JacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
             context.register(JacksonXMLProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
         }
@@ -66,6 +67,7 @@ public class JacksonFeature implements Feature {
     }
 
     public static void configureMapper(ObjectMapper mapper) {
+        mapper.findAndRegisterModules();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
@@ -77,7 +79,7 @@ public class JacksonFeature implements Feature {
 
         protected static XmlMapper createDefaultMapper() {
             JacksonXmlModule module = new JacksonXmlModule();
-            module.setDefaultUseWrapper(false);
+            module.setDefaultUseWrapper(true);
             return new XmlMapper(module);
         }
 
