@@ -78,9 +78,7 @@ public class JacksonFeature implements Feature {
     public static class JacksonXMLProvider extends JacksonJaxbXMLProvider {
 
         protected static XmlMapper createDefaultMapper() {
-            JacksonXmlModule module = new JacksonXmlModule();
-            module.setDefaultUseWrapper(true);
-            return new XmlMapper(module);
+            return new XmlMapper();
         }
 
         public JacksonXMLProvider() {
