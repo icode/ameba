@@ -100,7 +100,8 @@ public abstract class Container {
 
     public abstract ServiceLocator getServiceLocator();
 
-    protected void prepare(){}
+    protected void prepare() {
+    }
 
     protected abstract void configureHttpServer();
 

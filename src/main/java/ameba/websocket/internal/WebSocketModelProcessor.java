@@ -110,7 +110,7 @@ public class WebSocketModelProcessor implements ModelProcessor {
         } else {
             Invocable invocation = resourceMethod.getInvocable();
             Method handlingMethod = invocation.getHandlingMethod();
-            if(handlingMethod.getReturnType().isAnnotationPresent(WebSocket.class)){
+            if (handlingMethod.getReturnType().isAnnotationPresent(WebSocket.class)) {
                 if (WebSocketFeature.isEnabled()) {
                     logger.trace("find sub web socket dispatcher in {} class, method {}",
                             handlingMethod.getDeclaringClass().getName(), handlingMethod.toGenericString());

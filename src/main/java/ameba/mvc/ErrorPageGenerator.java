@@ -18,6 +18,7 @@ import java.util.HashMap;
 
 /**
  * 错误处理页面配置
+ *
  * @author icode
  */
 @Provider
@@ -104,7 +105,7 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
     }
 
     private Viewable createViewable(String tplName, ContainerRequestContext request,
-                                      int status, Throwable exception) {
+                                    int status, Throwable exception) {
         Error error = new Error(
                 request,
                 status,

@@ -8,7 +8,8 @@ import org.apache.commons.lang3.StringUtils;
  * @author icode
  */
 public class Akka {
-    private Akka(){}
+    private Akka() {
+    }
 
     private static ActorSystem system;
 

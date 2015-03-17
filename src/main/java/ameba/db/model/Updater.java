@@ -65,8 +65,7 @@ public abstract class Updater<M extends Model> {
      * will be a SQLException wrapped up in a PersistenceException.
      * </p>
      *
-     * @param secs
-     *          the timeout in seconds. Zero implies unlimited.
+     * @param secs the timeout in seconds. Zero implies unlimited.
      */
     public abstract Update<M> setTimeout(int secs);
 
@@ -84,20 +83,16 @@ public abstract class Updater<M extends Model> {
      * Set a value for each ? you have in the sql.
      * </p>
      *
-     * @param position
-     *          the index position of the parameter starting with 1.
-     * @param value
-     *          the parameter value to bind.
+     * @param position the index position of the parameter starting with 1.
+     * @param value    the parameter value to bind.
      */
     public abstract Update<M> set(int position, Object value);
 
     /**
      * Set and ordered bind parameter (same as bind).
      *
-     * @param position
-     *          the index position of the parameter starting with 1.
-     * @param value
-     *          the parameter value to bind.
+     * @param position the index position of the parameter starting with 1.
+     * @param value    the parameter value to bind.
      */
     public abstract Update<M> setParameter(int position, Object value);
 
@@ -121,10 +116,8 @@ public abstract class Updater<M extends Model> {
      * A more succinct version of setParameter() to be consistent with Query.
      * </p>
      *
-     * @param name
-     *          the parameter name.
-     * @param value
-     *          the parameter value.
+     * @param name  the parameter name.
+     * @param value the parameter value.
      */
     public abstract Update<M> set(String name, Object value);
 
@@ -140,10 +133,8 @@ public abstract class Updater<M extends Model> {
      * A more succinct version of setNullParameter().
      * </p>
      *
-     * @param name
-     *          the parameter name.
-     * @param jdbcType
-     *          the type of the property being bound.
+     * @param name     the parameter name.
+     * @param jdbcType the type of the property being bound.
      */
     public abstract Update<M> setNull(String name, int jdbcType);
 

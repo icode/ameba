@@ -2,13 +2,10 @@ package ameba.event;
 
 import akka.actor.ActorRef;
 import ameba.exception.AmebaException;
-import com.google.common.base.Objects;
-import com.google.common.base.Predicate;
-import com.google.common.collect.*;
-import com.google.common.reflect.TypeToken;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.PredicateUtils;
-import org.apache.commons.lang3.ArrayUtils;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,12 +50,12 @@ public abstract class EventBus {
 //        Set<? extends Class<?>> supers = TypeToken.of(clazz).getTypes().rawTypes();
         List<Method> identifiers = Lists.newArrayList();
 //        for (Class<?> superClazz : supers) {
-            for (Method superClazzMethod : clazz.getDeclaredMethods()) {
-                if (superClazzMethod.isAnnotationPresent(Subscribe.class)
-                        && !superClazzMethod.isBridge()) {
-                    identifiers.add(superClazzMethod);
-                }
+        for (Method superClazzMethod : clazz.getDeclaredMethods()) {
+            if (superClazzMethod.isAnnotationPresent(Subscribe.class)
+                    && !superClazzMethod.isBridge()) {
+                identifiers.add(superClazzMethod);
             }
+        }
 //        }
         return identifiers;
     }

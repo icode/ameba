@@ -18,7 +18,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
-import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import org.apache.commons.io.FileUtils;
@@ -30,7 +29,6 @@ import org.glassfish.jersey.internal.util.ReflectionHelper;
 import org.glassfish.jersey.model.ContractProvider;
 import org.glassfish.jersey.server.*;
 import org.glassfish.jersey.server.internal.LocalizationMessages;
-import org.glassfish.jersey.server.internal.scanning.AnnotationAcceptingListener;
 import org.glassfish.jersey.server.internal.scanning.PackageNamesScanner;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceModel;
@@ -78,7 +76,7 @@ public class Application {
     private static final String REGISTER_CONF_PREFIX = "app.register.";
     private static final String ADDON_CONF_PREFIX = "app.addon.";
     private static final String JERSEY_CONF_NAME_PREFIX = "app.sys.core.";
-    private static final String SCAN_CLASSES_CACHE_FILE = "conf/classes.list";
+    private static final String SCAN_CLASSES_CACHE_FILE = IOUtils.getResource("/").getPath() + "conf/classes.list";
     private static String INFO_SPLITOR = "---------------------------------------------------";
     protected boolean jmxEnabled;
     private String configFile;
@@ -245,7 +243,7 @@ public class Application {
             foundClasses.clear();
             OutputStream out = null;
             try {
-                File cacheFile = new File(IOUtils.getResource("/").getPath() + SCAN_CLASSES_CACHE_FILE);
+                File cacheFile = new File(SCAN_CLASSES_CACHE_FILE);
 
                 if (cacheFile.isDirectory()) {
                     FileUtils.deleteQuietly(cacheFile);
@@ -507,6 +505,7 @@ public class Application {
         logger.info("成功注册{}个特性，失败{}个，跳过{}个", suc, fail, beak);
     }
 
+    @SuppressWarnings("unchecked")
     private void configureResource() {
         String[] packages = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("resource.packages"), "")).split(",");
         for (String key : getPropertyNames()) {
@@ -1251,6 +1250,7 @@ public class Application {
                 return annotations;
             }
 
+            @SuppressWarnings("unchecked")
             public boolean containsAnnotations(Class<? extends Annotation>... annotationClass) {
                 if (ArrayUtils.isEmpty(annotationClass)) {
                     return false;
@@ -1297,7 +1297,7 @@ public class Application {
                 }
             }
 
-            public boolean startsWithPackage(String... pkgs){
+            public boolean startsWithPackage(String... pkgs) {
                 for (String st : pkgs) {
                     if (!st.endsWith(".")) st += ".";
                     String className = getClassName();

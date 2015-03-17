@@ -9,7 +9,10 @@ import java.util.List;
 public interface SourceAttachment {
 
     File getSourceFile();
+
     List<String> getSource();
+
     Integer getLineNumber();
+
     Integer getLineIndex();
 }

@@ -5,10 +5,6 @@ import ameba.db.model.Persister;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 
-import javax.persistence.OptimisticLockException;
-import java.util.Collection;
-import java.util.Iterator;
-
 /**
  * Base-class for model-mapped models that provides convenience methods.
  */

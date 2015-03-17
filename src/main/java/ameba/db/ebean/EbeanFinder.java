@@ -81,7 +81,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return (I) server().nextId(getModelType());
     }
 
-    
+
     public Query<T> setPersistenceContextScope(PersistenceContextScope persistenceContextScope) {
         return _query().setPersistenceContextScope(persistenceContextScope);
     }
@@ -100,7 +100,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return _query().fetch(path, joinConfig);
     }
 
-    
+
     public Query<T> apply(PathProperties pathProperties) {
         return _query().apply(pathProperties);
     }
@@ -178,7 +178,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return (Map<K, M>) _query().findMap(a, b);
     }
 
-    
+
     public PagedList<T> findPagedList(int i, int i2) {
         return _query().findPagedList(i, i2);
     }
@@ -214,7 +214,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         _query().findEachWhile(consumer);
     }
 
-    
+
     public QueryIterator<T> findIterate() {
         return _query().findIterate();
     }

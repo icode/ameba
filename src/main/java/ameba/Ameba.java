@@ -40,7 +40,7 @@ public class Ameba {
 
     public static String getVersion() {
 
-        if (version == null){
+        if (version == null) {
             version = IOUtils.getJarImplVersion(Ameba.class);
         }
 

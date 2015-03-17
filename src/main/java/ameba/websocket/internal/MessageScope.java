@@ -10,7 +10,6 @@ import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.jersey.internal.Errors;
 import org.glassfish.jersey.internal.util.LazyUid;
 import org.glassfish.jersey.internal.util.Producer;
-import org.glassfish.jersey.process.internal.RequestScoped;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

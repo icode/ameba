@@ -1,6 +1,5 @@
 package ameba.websocket.internal;
 
-import ameba.util.ClassUtils;
 import ameba.util.IOUtils;
 import ameba.websocket.WebSocketException;
 import org.glassfish.hk2.api.Factory;

@@ -12,5 +12,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Subscribe {
     Class<? extends Event>[] value() default {};
+
     boolean async() default false;
 }

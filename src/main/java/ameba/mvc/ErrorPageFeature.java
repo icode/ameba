@@ -16,6 +16,7 @@ import java.util.Map;
 
 /**
  * 错误处理页面配置
+ *
  * @author icode
  */
 @ConstrainedTo(RuntimeType.SERVER)

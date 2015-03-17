@@ -10,7 +10,7 @@ public class RsAddOnFeature implements Feature {
     @Override
     public boolean configure(FeatureContext context) {
 
-        if (!context.getConfiguration().isRegistered(OptionsAcceptPatchHeaderFilter.class)){
+        if (!context.getConfiguration().isRegistered(OptionsAcceptPatchHeaderFilter.class)) {
             context.register(OptionsAcceptPatchHeaderFilter.class);
             context.register(PatchingInterceptor.class);
         }
