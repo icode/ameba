@@ -66,7 +66,6 @@ public class JacksonFeature implements Feature {
     }
 
     public static void configureMapper(ObjectMapper mapper) {
-        mapper.findAndRegisterModules();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
@@ -88,6 +87,7 @@ public class JacksonFeature implements Feature {
 
         public JacksonXMLProvider(XmlMapper mapper, Annotations[] annotationsToUse) {
             super(mapper, annotationsToUse);
+            setAnnotationsToUse(annotationsToUse);
             configureMapper(mapper);
         }
     }
