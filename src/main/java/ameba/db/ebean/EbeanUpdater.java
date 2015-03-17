@@ -4,6 +4,7 @@ import ameba.db.model.Model;
 import ameba.db.model.Updater;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Update;
 
 /**
@@ -12,11 +13,17 @@ import com.avaje.ebean.Update;
 public class EbeanUpdater<M extends Model> extends Updater<M> {
 
     private Update<M> update;
+    private EbeanServer server;
 
     public EbeanUpdater(String serverName, Class<M> modelType, String sql) {
         super(serverName, modelType, sql);
-        EbeanServer server = Ebean.getServer(getServerName());
-        update = server.createUpdate(getModelType(), getSql());
+        server = Ebean.getServer(getServerName());
+    }
+
+    protected Update<M> getUpdate() {
+        if (update == null)
+            update = server.createUpdate(getModelType(), getSql());
+        return update;
     }
 
     @Override
@@ -27,66 +34,71 @@ public class EbeanUpdater<M extends Model> extends Updater<M> {
 
     @Override
     public String getName() {
-        return update.getName();
+        return getUpdate().getName();
+    }
+
+    @Override
+    public SqlUpdate sqlUpdate() {
+        return server.createSqlUpdate(getSql());
     }
 
     @Override
     public Update<M> setNotifyCache(boolean notifyCache) {
-        return update.setNotifyCache(notifyCache);
+        return getUpdate().setNotifyCache(notifyCache);
     }
 
     @Override
     public Update<M> setTimeout(int secs) {
-        return update.setTimeout(secs);
+        return getUpdate().setTimeout(secs);
     }
 
     @Override
     public int execute() {
-        return update.execute();
+        return getUpdate().execute();
     }
 
     @Override
     public Update<M> set(int position, Object value) {
-        return update.set(position, value);
+        return getUpdate().set(position, value);
     }
 
     @Override
     public Update<M> setParameter(int position, Object value) {
-        return update.setParameter(position, value);
+        return getUpdate().setParameter(position, value);
     }
 
     @Override
     public Update<M> setNull(int position, int jdbcType) {
-        return update.setNull(position, jdbcType);
+        return getUpdate().setNull(position, jdbcType);
     }
 
     @Override
     public Update<M> setNullParameter(int position, int jdbcType) {
-        return update.setNullParameter(position, jdbcType);
+        return getUpdate().setNullParameter(position, jdbcType);
     }
 
     @Override
     public Update<M> set(String name, Object value) {
-        return update.set(name, value);
+        return getUpdate().set(name, value);
     }
 
     @Override
     public Update<M> setParameter(String name, Object param) {
-        return update.setParameter(name, param);
+        return getUpdate().setParameter(name, param);
     }
 
     @Override
     public Update<M> setNull(String name, int jdbcType) {
-        return update.setNull(name, jdbcType);
+        return getUpdate().setNull(name, jdbcType);
     }
 
     @Override
     public Update<M> setNullParameter(String name, int jdbcType) {
-        return update.setNullParameter(name, jdbcType);
+        return getUpdate().setNullParameter(name, jdbcType);
     }
 
     @Override
     public String getGeneratedSql() {
-        return update.getGeneratedSql();
+        return getUpdate().getGeneratedSql();
     }
 }

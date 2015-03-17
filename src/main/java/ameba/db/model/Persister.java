@@ -63,7 +63,6 @@ public abstract class Persister<M extends Model> {
      */
     public abstract void update();
 
-
     /**
      * Updates this entity, by specifying the entity ID.
      */

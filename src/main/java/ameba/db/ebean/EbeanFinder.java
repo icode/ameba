@@ -30,7 +30,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     }
 
     @Override
-    
+    @SuppressWarnings("unchecked")
     public <M extends T> Finder<ID, M> on(String server) {
         return new EbeanFinder<ID, M>(server, getIdType(), (Class<M>) getModelType());
     }
@@ -42,7 +42,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Retrieves an entity by ID.
      */
-    
+    @SuppressWarnings("unchecked")
     public <M extends T> M byId(ID id) {
         return (M) server().find(getModelType(), id);
     }
@@ -50,7 +50,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Retrieves an entity reference for this ID.
      */
-    
+    @SuppressWarnings("unchecked")
     public <M extends T> M ref(ID id) {
         return (M) server().getReference(getModelType(), id);
     }
@@ -58,7 +58,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Creates a filter for sorting and filtering lists of entities locally without going back to the database.
      */
-    
     public Filter<T> filter() {
         return server().filter(getModelType());
     }
@@ -66,15 +65,18 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Creates a query.
      */
-    
     public Query<T> query() {
         return server().createQuery(getModelType());
+    }
+
+    public SqlQuery sqlQuery(String sql) {
+        return server().createSqlQuery(sql);
     }
 
     /**
      * Returns the next identity value.
      */
-    
+    @SuppressWarnings("unchecked")
     public <I extends ID> I nextId() {
         return (I) server().nextId(getModelType());
     }
@@ -87,7 +89,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Specifies a path to load including all its properties.
      */
-    
     public Query<T> fetch(String path) {
         return _query().fetch(path);
     }
@@ -95,7 +96,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Additionally specifies a <code>JoinConfig</code> to specify a 'query join' and/or define the lazy loading query.
      */
-    
     public Query<T> fetch(String path, FetchConfig joinConfig) {
         return _query().fetch(path, joinConfig);
     }
@@ -108,7 +108,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Specifies a path to fetch with a specific list properties to include, to load a partial object.
      */
-    
     public Query<T> fetch(String path, String fetchProperties) {
         return _query().fetch(path, fetchProperties);
     }
@@ -116,7 +115,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Additionally specifies a <code>FetchConfig</code> to use a separate query or lazy loading to load this path.
      */
-    
     public Query<T> fetch(String assocProperty, String fetchProperties, FetchConfig fetchConfig) {
         return _query().fetch(assocProperty, fetchProperties, fetchConfig);
     }
@@ -124,7 +122,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Applies a filter on the 'many' property list rather than the root level objects.
      */
-    
     public ExpressionList<T> filterMany(String propertyName) {
         return _query().filterMany(propertyName);
     }
@@ -132,7 +129,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Executes a find IDs query in a background thread.
      */
-    
     public FutureIds<T> findFutureIds() {
         return _query().findFutureIds();
     }
@@ -140,7 +136,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Executes a find list query in a background thread.
      */
-    
     public FutureList<T> findFutureList() {
         return _query().findFutureList();
     }
@@ -148,7 +143,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Executes a find row count query in a background thread.
      */
-    
     public FutureRowCount<T> findFutureRowCount() {
         return _query().findFutureRowCount();
     }
@@ -163,7 +157,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Executes the query and returns the results as a list of objects.
      */
-    
+    @SuppressWarnings("unchecked")
     public <M extends T> List<M> findList() {
         return (List<M>) _query().findList();
     }
@@ -171,7 +165,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Executes the query and returns the results as a map of objects.
      */
-    
+    @SuppressWarnings("unchecked")
     public <M extends T> Map<?, M> findMap() {
         return (Map<?, M>) _query().findMap();
     }
@@ -179,7 +173,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Executes the query and returns the results as a map of the objects.
      */
-    
+    @SuppressWarnings("unchecked")
     public <K, M extends T> Map<K, M> findMap(String a, Class<K> b) {
         return (Map<K, M>) _query().findMap(a, b);
     }
@@ -199,7 +193,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Executes the query and returns the results as a set of objects.
      */
-    
+    @SuppressWarnings("unchecked")
     public <M extends T> Set<M> findSet() {
         return (Set<M>) _query().findSet();
     }
@@ -207,7 +201,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Executes the query and returns the results as either a single bean or <code>null</code>, if no matching bean is found.
      */
-    
+    @SuppressWarnings("unchecked")
     public <M extends T> M findUnique() {
         return (M) _query().findUnique();
     }
@@ -256,7 +250,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Returns the query's <code>having</code> clause.
      */
-    
     public ExpressionList<T> having() {
         return _query().having();
     }
@@ -264,7 +257,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Adds an expression to the <code>having</code> clause and returns the query.
      */
-    
     public Query<T> having(com.avaje.ebean.Expression addExpressionToHaving) {
         return _query().having(addExpressionToHaving);
     }
@@ -272,7 +264,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Adds clauses to the <code>having</code> clause and returns the query.
      */
-    
     public Query<T> having(String addToHavingClause) {
         return _query().having(addToHavingClause);
     }
@@ -282,7 +273,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * <p/>
      * This is exactly the same as {@link #orderBy}.
      */
-    
     public OrderBy<T> order() {
         return _query().order();
     }
@@ -292,7 +282,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * <p/>
      * This is exactly the same as {@link #orderBy(String)}.
      */
-    
     public Query<T> order(String orderByClause) {
         return _query().order(orderByClause);
     }
@@ -302,7 +291,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * <p/>
      * This is exactly the same as {@link #order}.
      */
-    
     public OrderBy<T> orderBy() {
         return _query().orderBy();
     }
@@ -312,7 +300,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * <p/>
      * This is exactly the same as {@link #order(String)}.
      */
-    
     public Query<T> orderBy(String orderByClause) {
         return _query().orderBy(orderByClause);
     }
@@ -320,7 +307,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Explicitly sets a comma delimited list of the properties to fetch on the 'main' entity bean, to load a partial object.
      */
-    
     public Query<T> select(String fetchProperties) {
         return _query().select(fetchProperties);
     }
@@ -328,7 +314,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Explicitly specifies whether to use 'Autofetch' for this query.
      */
-    
     public Query<T> setAutofetch(boolean autofetch) {
         return _query().setAutofetch(autofetch);
     }
@@ -341,7 +326,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      *
      * @param lazyLoadBatchSize the number of beans to lazy load in a single batch
      */
-    
     public Query<T> setLazyLoadBatchSize(int lazyLoadBatchSize) {
         return _query().setLazyLoadBatchSize(lazyLoadBatchSize);
     }
@@ -349,7 +333,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets a hint, which for JDBC translates to <code>Statement.fetchSize()</code>.
      */
-    
     public Query<T> setBufferFetchSizeHint(int fetchSize) {
         return _query().setBufferFetchSizeHint(fetchSize);
     }
@@ -357,7 +340,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets whether this query uses <code>DISTINCT</code>.
      */
-    
     public Query<T> setDistinct(boolean isDistinct) {
         return _query().setDistinct(isDistinct);
     }
@@ -365,7 +347,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets the first row to return for this query.
      */
-    
     public Query<T> setFirstRow(int firstRow) {
         return _query().setFirstRow(firstRow);
     }
@@ -373,7 +354,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets the ID value to query.
      */
-    
     public Query<T> setId(Object id) {
         return _query().setId(id);
     }
@@ -381,7 +361,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * When set to <code>true</code>, all the beans from this query are loaded into the bean cache.
      */
-    
     public Query<T> setLoadBeanCache(boolean loadBeanCache) {
         return _query().setLoadBeanCache(loadBeanCache);
     }
@@ -389,7 +368,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets the property to use as keys for a map.
      */
-    
     public Query<T> setMapKey(String mapKey) {
         return _query().setMapKey(mapKey);
     }
@@ -397,7 +375,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets the maximum number of rows to return in the query.
      */
-    
     public Query<T> setMaxRows(int maxRows) {
         return _query().setMaxRows(maxRows);
     }
@@ -407,7 +384,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * <p/>
      * This is exactly the same as {@link #setOrderBy(com.avaje.ebean.OrderBy)}.
      */
-    
     public Query<T> setOrder(OrderBy<T> orderBy) {
         return _query().setOrder(orderBy);
     }
@@ -417,7 +393,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * <p/>
      * This is exactly the same as {@link #setOrder(com.avaje.ebean.OrderBy)}.
      */
-    
     public Query<T> setOrderBy(OrderBy<T> orderBy) {
         return _query().setOrderBy(orderBy);
     }
@@ -425,7 +400,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets an ordered bind parameter according to its position.
      */
-    
     public Query<T> setParameter(int position, Object value) {
         return _query().setParameter(position, value);
     }
@@ -433,7 +407,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets a named bind parameter.
      */
-    
     public Query<T> setParameter(String name, Object value) {
         return _query().setParameter(name, value);
     }
@@ -441,7 +414,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets the OQL query to run
      */
-    
     public Query<T> setQuery(String oql) {
         return (query = server().createQuery(getModelType(), oql));
     }
@@ -449,7 +421,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets <code>RawSql</code> to use for this query.
      */
-    
     public Query<T> setRawSql(RawSql rawSql) {
         return _query().setRawSql(rawSql);
     }
@@ -457,7 +428,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets whether the returned beans will be read-only.
      */
-    
     public Query<T> setReadOnly(boolean readOnly) {
         return _query().setReadOnly(readOnly);
     }
@@ -465,7 +435,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets a timeout on this query.
      */
-    
     public Query<T> setTimeout(int secs) {
         return _query().setTimeout(secs);
     }
@@ -473,7 +442,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets whether to use the bean cache.
      */
-    
     public Query<T> setUseCache(boolean useBeanCache) {
         return _query().setUseCache(useBeanCache);
     }
@@ -481,7 +449,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Sets whether to use the query cache.
      */
-    
     public Query<T> setUseQueryCache(boolean useQueryCache) {
         return _query().setUseQueryCache(useQueryCache);
     }
@@ -489,7 +456,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Adds expressions to the <code>where</code> clause with the ability to chain on the <code>ExpressionList</code>.
      */
-    
     public ExpressionList<T> where() {
         return _query().where();
     }
@@ -497,7 +463,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Adds a single <code>Expression</code> to the <code>where</code> clause and returns the query.
      */
-    
     public Query<T> where(com.avaje.ebean.Expression expression) {
         return _query().where(expression);
     }
@@ -505,7 +470,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Adds additional clauses to the <code>where</code> clause.
      */
-    
     public Query<T> where(String addToWhereClause) {
         return _query().where(addToWhereClause);
     }
@@ -513,7 +477,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Execute the select with "for update" which should lock the record "on read"
      */
-    
     public Query<T> setForUpdate(boolean forUpdate) {
         return _query().setForUpdate(forUpdate);
     }

@@ -1,5 +1,6 @@
 package ameba.db.model;
 
+import com.avaje.ebean.SqlUpdate;
 import com.avaje.ebean.Update;
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,6 +44,8 @@ public abstract class Updater<M extends Model> {
      * Return the name if it is a named update.
      */
     public abstract String getName();
+
+    public abstract SqlUpdate sqlUpdate();
 
     /**
      * Set this to false if you do not want the cache to invalidate related

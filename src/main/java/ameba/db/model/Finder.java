@@ -78,6 +78,8 @@ public abstract class Finder<ID, T> {
      */
     public abstract Query<T> query();
 
+    public abstract SqlQuery sqlQuery(String sql);
+
     /**
      * Returns the next identity value.
      */
@@ -173,6 +175,8 @@ public abstract class Finder<ID, T> {
     public abstract ExpressionFactory getExpressionFactory();
 
     public abstract int getFirstRow();
+
+    public abstract String getGeneratedSql();
 
     public abstract Query<T> setFirstRow(int firstRow);
 
