@@ -1,5 +1,6 @@
 package ameba.db.ebean;
 
+import ameba.core.Application;
 import ameba.db.DataSource;
 import ameba.db.TransactionFeature;
 import ameba.db.ebean.transaction.EbeanTransactional;
@@ -21,8 +22,6 @@ import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.ConstrainedTo;
-import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.FeatureContext;
 import java.io.File;
@@ -33,13 +32,14 @@ import java.util.Properties;
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-07
  */
-@ConstrainedTo(RuntimeType.SERVER)
 public class EbeanFeature extends TransactionFeature {
 
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
 
-    public EbeanFeature() {
-        super(EbeanFinder.class, EbeanPersister.class, EbeanUpdater.class);
+    static {
+        setFinderClass(EbeanFinder.class);
+        setPersisterClass(EbeanPersister.class);
+        setUpdaterClass(EbeanUpdater.class);
     }
 
     /**

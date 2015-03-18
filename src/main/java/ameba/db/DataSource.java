@@ -2,7 +2,6 @@ package ameba.db;
 
 import ameba.core.AddOn;
 import ameba.core.Application;
-import ameba.db.model.Model;
 import ameba.db.model.ModelManager;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidDataSourceFactory;

@@ -3,7 +3,6 @@ package ameba.db.ebean.transaction;
 import ameba.db.DataSource;
 import ameba.db.TransactionInterceptor;
 import ameba.db.annotation.Transactional;
-import ameba.db.model.ModelManager;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxIsolation;
