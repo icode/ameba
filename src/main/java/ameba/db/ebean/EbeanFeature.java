@@ -4,6 +4,7 @@ import ameba.db.DataSource;
 import ameba.db.TransactionFeature;
 import ameba.db.ebean.transaction.EbeanTransactional;
 import ameba.db.model.ModelManager;
+import ameba.message.internal.JacksonUtils;
 import ameba.util.IOUtils;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
@@ -15,6 +16,7 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
 import com.fasterxml.jackson.core.JsonFactory;
 import org.apache.commons.io.FileUtils;
+import org.avaje.ebeanorm.jackson.JacksonEbeanModule;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +117,7 @@ public class EbeanFeature extends TransactionFeature {
             config.setJsonFactory(jsonFactory);
             config.setContainerConfig(containerConfig);
 
-            if (name.equals(ModelManager.getDefaultDBName())) {
+            if (name.equals(DataSource.getDefaultDataSourceName())) {
                 config.setDefaultServer(true);
             }
 
@@ -132,6 +134,14 @@ public class EbeanFeature extends TransactionFeature {
             final boolean isProd = "product".equals(appConfig.getProperty("app.mode"));
 
             EbeanServer server = EbeanServerFactory.create(config);
+
+            JacksonUtils.addDefaultModule(new JacksonEbeanModule(server.json()) {
+                @Override
+                public String getModuleName() {
+                    return super.getModuleName() + "-" + name + "-server";
+                }
+            });
+
             // DDL
             if (!isProd) {
                 if (genDdl) {

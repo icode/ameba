@@ -23,12 +23,7 @@ public class ModelManager extends AddOn {
 
     public static final String MODULE_MODELS_KEY_PREFIX = "db.default.models.";
     private static Logger logger = LoggerFactory.getLogger(ModelManager.class);
-    private static String DEFAULT_DB_NAME = null;
     private static Map<String, Set<Class>> modelMap = Maps.newLinkedHashMap();
-
-    public static String getDefaultDBName() {
-        return DEFAULT_DB_NAME;
-    }
 
     public static Set<Class> getModels(String name) {
         return modelMap.get(name);
@@ -37,14 +32,6 @@ public class ModelManager extends AddOn {
     @Override
     public void setup(final Application application) {
         Configuration config = application.getConfiguration();
-        DEFAULT_DB_NAME = (String) config.getProperty("db.default");
-
-        if (StringUtils.isBlank(DEFAULT_DB_NAME)) {
-            DEFAULT_DB_NAME = Model.DB_DEFAULT_SERVER_NAME;
-        } else {
-            DEFAULT_DB_NAME = StringUtils.deleteWhitespace(DEFAULT_DB_NAME).split(",")[0];
-        }
-
 
         Set<String> defaultModelsPkg = Sets.newLinkedHashSet();
         //db.default.models.pkg=
@@ -64,7 +51,7 @@ public class ModelManager extends AddOn {
 
                 //db.default.models.pkg=
                 //db.default.models+=
-                if (getDefaultDBName().equalsIgnoreCase(name)) {
+                if (DataSource.getDefaultDataSourceName().equalsIgnoreCase(name)) {
                     pkgs.addAll(defaultModelsPkg);
                 }
 

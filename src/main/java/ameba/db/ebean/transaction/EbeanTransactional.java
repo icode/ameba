@@ -1,5 +1,6 @@
 package ameba.db.ebean.transaction;
 
+import ameba.db.DataSource;
 import ameba.db.TransactionInterceptor;
 import ameba.db.annotation.Transactional;
 import ameba.db.model.ModelManager;
@@ -36,7 +37,7 @@ public class EbeanTransactional extends TransactionInterceptor {
                 transactions[i] = Ebean.getServer(serverNames[i]).beginTransaction(txIsolation);
             }
         } else {
-            transactions = new Transaction[]{Ebean.getServer(ModelManager.getDefaultDBName()).beginTransaction()};
+            transactions = new Transaction[]{Ebean.getServer(DataSource.getDefaultDataSourceName()).beginTransaction()};
         }
     }
 

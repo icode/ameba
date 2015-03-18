@@ -2,6 +2,7 @@ package ameba.db;
 
 import ameba.core.AddOn;
 import ameba.core.Application;
+import ameba.db.model.Model;
 import ameba.db.model.ModelManager;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
@@ -22,6 +23,11 @@ public class DataSource extends AddOn {
 
     private static final Map<String, javax.sql.DataSource> dataSourceMap = Maps.newHashMap();
     private static final Logger logger = LoggerFactory.getLogger(DataSource.class);
+    private static String DEFAULT_DS_NAME = "default";
+
+    public static String getDefaultDataSourceName() {
+        return DEFAULT_DS_NAME;
+    }
 
     /**
      * 根据数据源名称获取数据源
@@ -45,6 +51,13 @@ public class DataSource extends AddOn {
     @Override
     public void setup(final Application app) {
         Configuration config = app.getConfiguration();
+
+        String dsName = (String) config.getProperty("db.default");
+
+        if (StringUtils.isNotBlank(dsName)) {
+            DEFAULT_DS_NAME = StringUtils.deleteWhitespace(dsName);
+        }
+
         Map<String, Map<String, String>> map = Maps.newHashMap();
         for (String key : config.getPropertyNames()) {
             key = StringUtils.deleteWhitespace(key);
