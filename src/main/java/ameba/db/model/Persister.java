@@ -68,21 +68,6 @@ public abstract class Persister<M extends Model> {
         on(server).delete();
     }
 
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) return true;
-        if (other == null || other.getClass() != this.getClass()) return false;
-        Object id = getModel()._get_model_id();
-        Object otherId = ((Model) other)._get_model_id();
-        return id != null && otherId != null && id.equals(otherId);
-    }
-
-    @Override
-    public int hashCode() {
-        Object id = getModel()._get_model_id();
-        return id == null ? super.hashCode() : id.hashCode();
-    }
-
     /**
      * Deletes this entity.
      */

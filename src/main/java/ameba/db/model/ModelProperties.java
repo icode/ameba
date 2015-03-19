@@ -14,6 +14,4 @@ public class ModelProperties {
     public static final String UPDATER_C_NAME = BASE_MODEL_PKG + ".Updater";
     public static final String PERSISTER_C_NAME = BASE_MODEL_PKG + ".Persister";
     public static final String BASE_MODEL_NAME = BASE_MODEL_PKG + ".Model";
-    public static final String MODEL_ID_SETTER_NAME = "_set_model_id";
-    public static final String MODEL_ID_GETTER_NAME = "_get_model_id";
 }
