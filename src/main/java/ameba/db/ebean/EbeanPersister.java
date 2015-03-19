@@ -48,12 +48,6 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
     }
 
     @Override
-    public void update(Object id) {
-        super.update(id);
-        server().update(getModel());
-    }
-
-    @Override
     public void delete() {
         server().delete(getModel());
     }

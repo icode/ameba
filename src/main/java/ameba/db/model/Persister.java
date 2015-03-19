@@ -56,13 +56,6 @@ public abstract class Persister<M extends Model> {
      */
     public abstract void update();
 
-    /**
-     * Updates this entity, by specifying the entity ID.
-     */
-    public void update(Object id) {
-        getModel()._set_model_id(id);
-    }
-
     public void update(String server) {
         on(server).update();
     }
