@@ -61,6 +61,7 @@ public @interface Transactional {
          * <p>
          * Note that -1 denotes the default isolation level.
          * </p>
+         * @return level
          */
         public int getLevel() {
             return level;

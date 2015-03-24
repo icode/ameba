@@ -1214,6 +1214,7 @@ public class Application {
             /**
              * 如果是需要的class则返回true
              *
+             * @param info class info
              * @return 是否需要该class
              */
             boolean accept(ClassInfo info);

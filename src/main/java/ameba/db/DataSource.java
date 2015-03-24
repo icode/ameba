@@ -31,8 +31,8 @@ public class DataSource extends AddOn {
     /**
      * 根据数据源名称获取数据源
      *
-     * @param name
-     * @return
+     * @param name data source name
+     * @return DataSource
      */
     public static javax.sql.DataSource getDataSource(String name) {
         return dataSourceMap.get(name);
@@ -41,7 +41,7 @@ public class DataSource extends AddOn {
     /**
      * 获取所有数据源名称
      *
-     * @return
+     * @return data source name set
      */
     public static Set<String> getDataSourceNames() {
         return dataSourceMap.keySet();

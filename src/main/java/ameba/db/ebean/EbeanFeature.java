@@ -50,6 +50,11 @@ public class EbeanFeature extends TransactionFeature {
 
     /**
      * Helper method that generates the required evolution to properly run Ebean.
+     *
+     * @param server ebean server
+     * @param config server config
+     * @param ddl    ddl generator
+     * @return ddl
      */
     public static String generateEvolutionScript(EbeanServer server, ServerConfig config, DdlGenerator ddl) {
         ddl.setup((SpiEbeanServer) server, config.getDatabasePlatform(), config);
@@ -73,10 +78,24 @@ public class EbeanFeature extends TransactionFeature {
         );
     }
 
+    /**
+     * 生成sql语句
+     *
+     * @param server ebean server
+     * @param config server config
+     * @return ddl
+     */
     public static String generateEvolutionScript(EbeanServer server, ServerConfig config) {
         return generateEvolutionScript(server, config, new DdlGenerator());
     }
 
+    /**
+     * 生成sql语句
+     *
+     * @param serverName ebean server name
+     * @param config     server config
+     * @return ddl
+     */
     public static String generateEvolutionScript(String serverName, ServerConfig config) {
         return generateEvolutionScript(Ebean.getServer(serverName), config);
     }

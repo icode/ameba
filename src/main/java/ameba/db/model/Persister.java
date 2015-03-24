@@ -31,6 +31,9 @@ public abstract class Persister<M extends Model> {
 
     /**
      * Changes the model server.
+     *
+     * @param server server name
+     * @param <E>    model
      */
     public abstract <E extends M> Persister<E> on(String server);
 
@@ -41,13 +44,15 @@ public abstract class Persister<M extends Model> {
 
     /**
      * Persist a many-to-many association.
+     *
+     * @param path path
      */
     public abstract void saveManyToManyAssociations(String path);
 
     /**
      * Deletes a many-to-many association
      *
-     * @parama path name of the many-to-many association we want to delete
+     * @param path name of the many-to-many association we want to delete
      */
     public abstract void deleteManyToManyAssociations(String path);
 

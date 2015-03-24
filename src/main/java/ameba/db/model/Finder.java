@@ -52,28 +52,39 @@ public abstract class Finder<ID, T> {
 
     /**
      * Changes the model server.
+     *
+     * @param <M> model
      */
     @SuppressWarnings("unchecked")
     public abstract <M extends T> Finder<ID, M> on(String server);
 
     /**
      * Retrieves an entity by ID.
+     *
+     * @param <M> model
      */
     public abstract <M extends T> M byId(ID id);
 
     /**
      * Retrieves an entity reference for this ID.
+     *
+     * @param <M> model
      */
     public abstract <M extends T> M ref(ID id);
 
     /**
      * Creates a filter for sorting and filtering lists of entities locally without going back to the database.
+     *
+     * @return Filter<T>
      */
     public abstract Filter<T> filter();
 
     public abstract Query<T> query();
+
     /**
      * Creates a query.
+     *
+     * @return Query<T>
      */
     public abstract Query<T> createQuery();
 
@@ -86,6 +97,8 @@ public abstract class Finder<ID, T> {
 
     /**
      * Sets the OQL query to run
+     *
+     * @param oql oql
      */
     public abstract Query<T> setQuery(String oql);
 

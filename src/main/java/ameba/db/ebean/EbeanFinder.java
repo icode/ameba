@@ -270,8 +270,9 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * Returns the <code>order by</code> clause so that you can append an ascending or descending property to the <code>order by</code> clause.
-     * <p/>
      * This is exactly the same as {@link #orderBy}.
+     *
+     * @return OrderBy
      */
     public OrderBy<T> order() {
         return query().order();
@@ -279,8 +280,10 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * Sets the <code>order by</code> clause, replacing the existing <code>order by</code> clause if there is one.
-     * <p/>
      * This is exactly the same as {@link #orderBy(String)}.
+     *
+     * @param orderByClause order by oql
+     * @return Query
      */
     public Query<T> order(String orderByClause) {
         return query().order(orderByClause);
@@ -288,7 +291,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * Returns the <code>order by</code> clause so that you can append an ascending or descending property to the <code>order by</code> clause.
-     * <p/>
      * This is exactly the same as {@link #order}.
      */
     public OrderBy<T> orderBy() {
@@ -297,7 +299,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * Set the <code>order by</code> clause replacing the existing <code>order by</code> clause if there is one.
-     * <p/>
+     *
      * This is exactly the same as {@link #order(String)}.
      */
     public Query<T> orderBy(String orderByClause) {
@@ -320,7 +322,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * Set the default lazy loading batch size to use.
-     * <p/>
+     *
      * When lazy loading is invoked on beans loaded by this query then this sets the
      * batch size used to load those beans.
      *
@@ -381,7 +383,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * Replaces any existing <code>order by</code> clause using an <code>OrderBy</code> object.
-     * <p/>
+     *
      * This is exactly the same as {@link #setOrderBy(com.avaje.ebean.OrderBy)}.
      */
     public Query<T> setOrder(OrderBy<T> orderBy) {
@@ -390,7 +392,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * Set an OrderBy object to replace any existing <code>order by</code> clause.
-     * <p/>
+     *
      * This is exactly the same as {@link #setOrder(com.avaje.ebean.OrderBy)}.
      */
     public Query<T> setOrderBy(OrderBy<T> orderBy) {
