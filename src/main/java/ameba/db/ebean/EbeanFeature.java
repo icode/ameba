@@ -5,6 +5,7 @@ import ameba.db.TransactionFeature;
 import ameba.db.ebean.internal.EbeanModelWriter;
 import ameba.db.ebean.transaction.EbeanTransactional;
 import ameba.db.model.ModelManager;
+import ameba.exception.ConfigErrorException;
 import ameba.message.internal.JacksonUtils;
 import ameba.util.IOUtils;
 import com.avaje.ebean.Ebean;
@@ -27,6 +28,7 @@ import javax.ws.rs.core.FeatureContext;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author icode
@@ -147,7 +149,12 @@ public class EbeanFeature extends TransactionFeature {
                 config.setDefaultServer(true);
             }
 
-            for (Class clazz : ModelManager.getModels(name)) {
+
+            Set<Class> classes = ModelManager.getModels(name);
+            if (classes == null) {
+                throw new ConfigErrorException("please config db.{name}.models property");
+            }
+            for (Class clazz : classes) {
                 config.addClass(clazz);
             }
 
