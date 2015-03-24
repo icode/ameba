@@ -1,7 +1,8 @@
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.core.ConsoleAppender
 
-import static ch.qos.logback.classic.Level.*
+import static ch.qos.logback.classic.Level.ALL
+import static ch.qos.logback.classic.Level.INFO
 
 appender("CONSOLE", ConsoleAppender) {
     encoder(PatternLayoutEncoder) {

@@ -5,8 +5,8 @@ import com.fasterxml.jackson.jaxrs.cfg.Annotations;
 import com.fasterxml.jackson.jaxrs.xml.JacksonJaxbXMLProvider;
 
 /**
-* @author icode
-*/
+ * @author icode
+ */
 public class JacksonXMLProvider extends JacksonJaxbXMLProvider {
 
     protected static XmlMapper createDefaultMapper() {
