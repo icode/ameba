@@ -71,12 +71,13 @@ public abstract class Finder<ID, T> {
      */
     public abstract Filter<T> filter();
 
+    public abstract Query<T> query();
     /**
      * Creates a query.
      */
-    public abstract Query<T> query();
+    public abstract Query<T> createQuery();
 
-    public abstract SqlQuery sqlQuery(String sql);
+    public abstract SqlQuery createSqlQuery(String sql);
 
     /**
      * Returns the next identity value.

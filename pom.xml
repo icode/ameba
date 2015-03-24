@@ -290,10 +290,23 @@
             <version>${httl.version}</version>
         </dependency>
 
+        <!--<dependency>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>${rxjava.version}</version>
+        </dependency>-->
+
         <dependency>
             <groupId>org.amebastack</groupId>
             <artifactId>ameba-utils</artifactId>
             <version>${ameba.utils.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <version>${osgi.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -357,6 +370,7 @@
 
     <properties>
         <ameba.utils.version>0.1.6e</ameba.utils.version>
+        <osgi.version>4.2.0</osgi.version>
         <json-patch.version>1.7</json-patch.version>
         <jersey.version>[2.12,3.0)</jersey.version>
         <slf4j.version>[1.7.7,2.0.0)</slf4j.version>
@@ -365,6 +379,7 @@
         <druid.version>[1.0.9,2.0.0)</druid.version>
         <groovy.version>[2.3.4,3.0.0)</groovy.version>
         <httl.version>[1.0.11,2.0.0)</httl.version>
+        <rxjava.version>[1.0.7,2.0.0)</rxjava.version>
         <javax.websocket.version>[1.0.11,2.0.0)</javax.websocket.version>
         <jackson.core.version>[2.4.2,3.0.0)</jackson.core.version>
         <jackson.provider.version>${jackson.core.version}</jackson.provider.version>

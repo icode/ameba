@@ -1,8 +1,8 @@
 package ameba.db.ebean;
 
-import ameba.core.Application;
 import ameba.db.DataSource;
 import ameba.db.TransactionFeature;
+import ameba.db.ebean.internal.EbeanModelWriter;
 import ameba.db.ebean.transaction.EbeanTransactional;
 import ameba.db.model.ModelManager;
 import ameba.message.internal.JacksonUtils;
@@ -29,12 +29,18 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * @author 张立鑫 IntelligentCode
+ * @author icode
  * @since 2013-08-07
  */
 public class EbeanFeature extends TransactionFeature {
 
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
+
+    public static final String SELECTABLE_PARAM_NAME = "model.query.selectable";
+    public static final String ORDER_BY_PARAM_NAME = "model.query.orderBy";
+    public static final String MAX_ROWS_PARAM_NAME = "model.query.maxRows";
+    public static final String FIRST_ROW_PARAM_NAME = "model.query.firstRow";
+    public static final String WHERE_PARAM_NAME = "model.query.where";
 
     static {
         setFinderClass(EbeanFinder.class);
@@ -79,6 +85,7 @@ public class EbeanFeature extends TransactionFeature {
     @Override
     public boolean configure(final FeatureContext context) {
         context.register(EbeanTransactional.class);
+        context.register(EbeanModelWriter.class);
         final Configuration appConfig = context.getConfiguration();
 
         final Properties eBeanConfig = new Properties();

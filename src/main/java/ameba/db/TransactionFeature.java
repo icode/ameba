@@ -1,6 +1,5 @@
 package ameba.db;
 
-import ameba.core.AddOn;
 import ameba.db.model.Finder;
 import ameba.db.model.Model;
 import ameba.db.model.Persister;
@@ -22,7 +21,7 @@ public abstract class TransactionFeature implements Feature {
     private static Constructor<? extends Persister> persisterConstructor = null;
     private static Constructor<? extends Updater> updaterConstructor = null;
 
-    public static synchronized void setFinderClass(Class<? extends Finder> finderClass) {
+    public static synchronized void setFinderClass(Class finderClass) {
         if (TransactionFeature.finderClass != null) return;
         if (finderClass == null || Modifier.isAbstract(finderClass.getModifiers())) {
             throw new IllegalArgumentException("finder must instance of ameba.db.model.Finder");
@@ -30,7 +29,7 @@ public abstract class TransactionFeature implements Feature {
         TransactionFeature.finderClass = finderClass;
     }
 
-    public static synchronized void setPersisterClass(Class<? extends Persister> persisterClass) {
+    public static synchronized void setPersisterClass(Class persisterClass) {
         if (TransactionFeature.persisterClass != null) return;
         if (persisterClass == null || Modifier.isAbstract(persisterClass.getModifiers())) {
             throw new IllegalArgumentException("persister must instance of ameba.db.model.Persister");
@@ -38,7 +37,7 @@ public abstract class TransactionFeature implements Feature {
         TransactionFeature.persisterClass = persisterClass;
     }
 
-    public static synchronized void setUpdaterClass(Class<? extends Updater> updaterClass) {
+    public static synchronized void setUpdaterClass(Class updaterClass) {
         if (TransactionFeature.updaterClass != null) return;
         if (updaterClass == null || Modifier.isAbstract(updaterClass.getModifiers())) {
             throw new IllegalArgumentException("updater must instance of ameba.db.model.Updater");

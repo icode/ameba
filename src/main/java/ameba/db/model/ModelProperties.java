@@ -1,10 +1,13 @@
 package ameba.db.model;
 
+import org.glassfish.jersey.internal.util.PropertiesClass;
+
 /**
  * properties for classes byte code enhance
  *
  * @author icode
  */
+@PropertiesClass
 public class ModelProperties {
     public static final String GET_FINDER_M_NAME = "withFinder";
     public static final String GET_UPDATE_M_NAME = "withUpdater";
