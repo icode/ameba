@@ -143,7 +143,7 @@ public abstract class AbstractModelResource<T extends Model> {
      * query.
      * </p>
      */
-    protected void configDefaultFindAllQuery(final Query<T> query) {
+    protected void configDefaultFindQuery(final Query<T> query) {
 
     }
 
@@ -160,7 +160,7 @@ public abstract class AbstractModelResource<T extends Model> {
 
         Query<T> query = server.find(modelType);
 
-        configDefaultFindAllQuery(query);
+        configDefaultFindQuery(query);
 
         if (StringUtils.isNotBlank(defaultFindAllOrderBy)) {
             // see if we should use the default orderBy clause
