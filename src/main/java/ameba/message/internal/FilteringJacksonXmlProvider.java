@@ -1,9 +1,9 @@
 package ameba.message.internal;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import com.fasterxml.jackson.jaxrs.json.JsonEndpointConfig;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.jaxrs.xml.JacksonJaxbXMLProvider;
+import com.fasterxml.jackson.jaxrs.xml.XMLEndpointConfig;
 import org.glassfish.jersey.message.filtering.spi.ObjectProvider;
 
 import javax.inject.Inject;
@@ -19,17 +19,17 @@ import java.lang.reflect.Type;
  * @author icode
  */
 @Singleton
-public class FilteringJacksonXmlProvider extends JacksonJaxbJsonProvider {
+public class FilteringJacksonXMLProvider extends JacksonJaxbXMLProvider {
 
     @Inject
     private Provider<ObjectProvider<FilterProvider>> provider;
 
     @Override
-    protected JsonEndpointConfig _configForWriting(final ObjectMapper mapper, final Annotation[] annotations,
-                                                   final Class<?> defaultView) {
+    protected XMLEndpointConfig _configForWriting(final XmlMapper mapper, final Annotation[] annotations,
+                                                  final Class<?> defaultView) {
 
         return super._configForWriting(
-                JacksonEntityFilter.configFilterIntrospector(mapper)
+                (XmlMapper) JacksonUtils.configFilterIntrospector(mapper)
                 , annotations, defaultView);
     }
 
@@ -42,7 +42,7 @@ public class FilteringJacksonXmlProvider extends JacksonJaxbJsonProvider {
                         final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException {
 
-        JacksonEntityFilter.setObjectWriterInjector(provider, genericType, annotations);
+        JacksonUtils.setObjectWriterInjector(provider, genericType, annotations);
         super.writeTo(value, type, genericType, annotations, mediaType, httpHeaders, entityStream);
     }
 
