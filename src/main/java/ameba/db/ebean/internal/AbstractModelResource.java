@@ -1,10 +1,12 @@
 package ameba.db.ebean.internal;
 
+import ameba.core.ws.rs.PATCH;
 import ameba.db.model.Model;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.google.common.collect.Sets;
@@ -75,14 +77,27 @@ public abstract class AbstractModelResource<T extends Model> {
     @Path("{id}")
     public void update(@PathParam("id") String id, @NotNull @Valid final T model) {
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
-        Object idProp = descriptor.getId((EntityBean) model);
-        if (idProp instanceof CharSequence) {
-            if (StringUtils.isBlank((CharSequence) idProp)) {
-                descriptor.convertSetId(id, (EntityBean) model);
-            }
-        } else if (idProp == null) {
-            descriptor.convertSetId(id, (EntityBean) model);
+        descriptor.convertSetId(id, (EntityBean) model);
+        EntityBeanIntercept intercept = ((EntityBean) model)._ebean_getIntercept();
+        for (int i = 0; i < intercept.getPropertyLength(); i++) {
+            intercept.markPropertyAsChanged(i);
         }
+
+        server.update(model);
+    }
+
+    /**
+     * Update a model items.
+     *
+     * @param id    the unique id of the model
+     * @param model the model to update
+     */
+    @PATCH
+    @Path("{id}")
+    public void patch(@PathParam("id") String id, @NotNull final T model) {
+        BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
+        descriptor.convertSetId(id, (EntityBean) model);
+
         server.update(model);
     }
 

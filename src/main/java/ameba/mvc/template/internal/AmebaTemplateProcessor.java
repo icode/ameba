@@ -25,7 +25,6 @@ import org.glassfish.jersey.server.mvc.spi.TemplateProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.ServletContext;
@@ -80,7 +79,6 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         }
 
         Collection<String> basePaths = Collections2.transform(Lists.newArrayList(basePath.split(",")), new Function<String, String>() {
-            @Nullable
             @Override
             public String apply(String s) {
                 return s.startsWith("/") ? s.substring(1) : s;

@@ -12,9 +12,10 @@ public class RsAddOnFeature implements Feature {
 
         if (!context.getConfiguration().isRegistered(OptionsAcceptPatchHeaderFilter.class)) {
             context.register(OptionsAcceptPatchHeaderFilter.class);
-            context.register(PatchingInterceptor.class);
         }
-
+        if (!context.getConfiguration().isRegistered(DefaultContentTypeFilter.class)) {
+            context.register(DefaultContentTypeFilter.class);
+        }
         return false;
     }
 }
