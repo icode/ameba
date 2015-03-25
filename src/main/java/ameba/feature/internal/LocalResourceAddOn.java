@@ -48,6 +48,7 @@ public class LocalResourceAddOn extends AddOn {
                 for (Application.ClassFoundEvent.ClassInfo classInfo : classInfoSet) {
                     ServiceLocatorUtilities.addClasses(locator, classInfo.toClass());
                 }
+                classInfoSet.clear();
                 return true;
             }
         });

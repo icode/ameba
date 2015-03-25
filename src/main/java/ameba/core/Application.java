@@ -527,7 +527,7 @@ public class Application {
         logger.info("设置资源扫描包:{}", StringUtils.join(packages, ","));
         packages(packages);
 
-        final List<ClassFoundEvent.ClassInfo> resources = Lists.newArrayList();
+        final Set<ClassFoundEvent.ClassInfo> resources = Sets.newHashSet();
 
         SystemEventBus.subscribe(ClassFoundEvent.class, new Listener<ClassFoundEvent>() {
             @Override
@@ -535,11 +535,9 @@ public class Application {
                 event.accept(new ClassFoundEvent.ClassAccept() {
                     @Override
                     public boolean accept(ClassFoundEvent.ClassInfo info) {
-                        if (info.isPublic()) {
-                            if (info.containsAnnotations(Path.class, Provider.class)) {
-                                resources.add(info);
-                                return true;
-                            }
+                        if (info.isPublic() && info.containsAnnotations(Path.class, Provider.class)) {
+                            resources.add(info);
+                            return true;
                         }
                         return false;
                     }
@@ -553,6 +551,7 @@ public class Application {
                 for (ClassFoundEvent.ClassInfo info : resources) {
                     register(info.toClass());
                 }
+                resources.clear();
             }
         });
     }
