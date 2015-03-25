@@ -59,12 +59,6 @@ public class ModelManager extends AddOn {
                 application.packages(startsPackages);
 
                 final Set<Class> classes = Sets.newHashSet();
-                subscribeSystemEvent(Container.ReloadEvent.class, new Listener<Container.ReloadEvent>() {
-                    @Override
-                    public void onReceive(Container.ReloadEvent event) {
-                        classes.clear();
-                    }
-                });
 
                 subscribeSystemEvent(Application.ClassFoundEvent.class, new Listener<Application.ClassFoundEvent>() {
                     @Override
