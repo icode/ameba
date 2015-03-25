@@ -44,10 +44,8 @@ public class JacksonFeature implements Feature {
             if (EntityFilteringFeature.enabled(config)) {
                 context.register(JacksonFilteringFeature.class);
                 context.register(FilteringJacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
-                context.register(FilteringJacksonXMLProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
             } else {
                 context.register(JacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
-                context.register(JacksonXMLProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
             }
         }
         return true;

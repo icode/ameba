@@ -8,7 +8,9 @@ import org.glassfish.jersey.message.filtering.spi.ObjectProvider;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
@@ -18,6 +20,8 @@ import java.lang.reflect.Type;
  * @author icode
  */
 @Singleton
+@Consumes({MediaType.TEXT_PLAIN, MediaType.WILDCARD})
+@Produces({MediaType.TEXT_PLAIN, MediaType.WILDCARD})
 public class FilteringJacksonJsonProvider extends JacksonJsonProvider {
 
     @Inject

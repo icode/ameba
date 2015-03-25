@@ -3,11 +3,13 @@ package ameba.mvc;
 import ameba.mvc.template.internal.Viewables;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.message.internal.MessageBodyProviderNotFoundException;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
@@ -33,6 +35,8 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
     public static final String DEFAULT_403_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "403.httl";
     public static final String DEFAULT_400_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400.httl";
     public static final String DEFAULT_405_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "405.httl";
+    public static final String DEFAULT_406_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "406.httl";
+    public static final String DEFAULT_415_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "415.httl";
     private static final Logger logger = LoggerFactory.getLogger(ErrorPageGenerator.class);
     private static String defaultErrorTemplate;
 
@@ -59,13 +63,28 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         defaultErrorTemplate = template;
     }
 
+    protected int getStatus(Throwable exception) {
+        int status = 500;
+        if (exception instanceof InternalServerErrorException) {
+            if (exception.getCause() instanceof MessageBodyProviderNotFoundException) {
+                MessageBodyProviderNotFoundException e = (MessageBodyProviderNotFoundException) exception.getCause();
+                if (e.getMessage().startsWith("MessageBodyReader")) {
+                    status = 415;
+                } else if (e.getMessage().startsWith("MessageBodyWriter")) {
+                    status = 406;
+                }
+            }
+        } else if (exception instanceof WebApplicationException) {
+            status = ((WebApplicationException) exception).getResponse().getStatus();
+        }
+        return status;
+    }
+
     @Override
     public Response toResponse(Throwable exception) {
         ContainerRequestContext request = requestProvider.get();
-        int status = 500;
-        if (exception instanceof WebApplicationException) {
-            status = ((WebApplicationException) exception).getResponse().getStatus();
-        }
+        int status = getStatus(exception);
+
         String tplName = errorTemplateMap.get(status);
         if (StringUtils.isBlank(tplName)) {
             if (StringUtils.isBlank(defaultErrorTemplate)) {
@@ -80,6 +99,12 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
                             break;
                         case 405:
                             tplName = DEFAULT_405_ERROR_PAGE;
+                            break;
+                        case 406:
+                            tplName = DEFAULT_406_ERROR_PAGE;
+                            break;
+                        case 415:
+                            tplName = DEFAULT_415_ERROR_PAGE;
                             break;
                         default:
                             tplName = DEFAULT_400_ERROR_PAGE;
