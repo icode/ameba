@@ -58,7 +58,8 @@ public abstract class AbstractModelResource<T extends Model> {
         }
 
         preInsertModel(model);
-        server.save(model);
+        insertModel(model);
+        postInsertModel(model);
         Object id = server.getBeanId(model);
 
         UriBuilder ub = uriInfo.getAbsolutePathBuilder();
@@ -68,6 +69,14 @@ public abstract class AbstractModelResource<T extends Model> {
     }
 
     protected void preInsertModel(final T model) {
+
+    }
+
+    protected void insertModel(final T model) {
+        server.save(model);
+    }
+
+    protected void postInsertModel(final T model) {
 
     }
 
@@ -88,10 +97,19 @@ public abstract class AbstractModelResource<T extends Model> {
             intercept.markPropertyAsChanged(i);
         }
         preUpdateModel(model);
-        server.update(model);
+        updateModel(model);
+        postUpdateModel(model);
     }
 
     protected void preUpdateModel(final T model) {
+
+    }
+
+    protected void updateModel(final T model) {
+        server.update(model);
+    }
+
+    protected void postUpdateModel(final T model) {
 
     }
 
@@ -107,10 +125,19 @@ public abstract class AbstractModelResource<T extends Model> {
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         descriptor.convertSetId(id, (EntityBean) model);
         prePatchModel(model);
-        server.update(model);
+        patchModel(model);
+        postPatchModel(model);
     }
 
     protected void prePatchModel(final T model) {
+
+    }
+
+    protected void patchModel(final T model) {
+        server.update(model);
+    }
+
+    protected void postPatchModel(final T model) {
 
     }
 
@@ -128,32 +155,37 @@ public abstract class AbstractModelResource<T extends Model> {
             Set<String> idCollection = Sets.newLinkedHashSet();
             idCollection.add(firstId);
             idCollection.addAll(idSet);
-            preDeleteMultiple(idCollection);
-            server.delete(modelType, idCollection);
+            preDeleteMultipleModel(idCollection);
+            deleteMultipleModel(idCollection);
+            postDeleteMultipleModel(idCollection);
         } else {
-            preDelete(firstId);
-            server.delete(modelType, firstId);
+            preDeleteModel(firstId);
+            deleteModel(firstId);
+            postDeleteModel(firstId);
         }
     }
 
-    protected void preDeleteMultiple(Set<String> idCollection) {
+    protected void preDeleteMultipleModel(Set<String> idCollection) {
 
     }
 
-    protected void preDelete(String id) {
+    protected void deleteMultipleModel(Set<String> idCollection) {
+        server.delete(modelType, idCollection);
+    }
+
+    protected void postDeleteMultipleModel(Set<String> idCollection) {
 
     }
 
-    /**
-     * Configure the "Find By Id" query.
-     * <p>
-     * This is only used when no PathProperties where set via UriOptions.
-     * </p>
-     * <p>
-     * This effectively controls the "default" query used to render this model.
-     * </p>
-     */
-    protected void configDefaultFindByIdQuery(final Query<T> query) {
+    protected void preDeleteModel(String id) {
+
+    }
+
+    protected void deleteModel(String id) {
+        server.delete(modelType, id);
+    }
+
+    protected void postDeleteModel(String id) {
 
     }
 
@@ -166,25 +198,28 @@ public abstract class AbstractModelResource<T extends Model> {
     @Path("{id}")
     public T find(@NotNull @PathParam("id") final String id) {
         Query<T> query = server.find(modelType);
-        configDefaultFindByIdQuery(query);
         applyUriQuery(query);
-        return query.setId(id).findUnique();
+        configFindByIdQuery(query);
+        T m = query.setId(id).findUnique();
+        return processFoundModel(m);
     }
 
     /**
-     * Configure the "Find" query.
+     * Configure the "Find By Id" query.
      * <p>
      * This is only used when no PathProperties where set via UriOptions.
      * </p>
      * <p>
-     * This effectively controls the "default" query used with the find all
-     * query.
+     * This effectively controls the "default" query used to render this model.
      * </p>
      */
-    protected void configDefaultFindQuery(final Query<T> query) {
+    protected void configFindByIdQuery(final Query<T> query) {
 
     }
 
+    protected T processFoundModel(final T model) {
+        return model;
+    }
 
     /**
      * Find the beans for this beanType.
@@ -198,8 +233,6 @@ public abstract class AbstractModelResource<T extends Model> {
 
         Query<T> query = server.find(modelType);
 
-        configDefaultFindQuery(query);
-
         if (StringUtils.isNotBlank(defaultFindOrderBy)) {
             // see if we should use the default orderBy clause
             OrderBy<T> orderBy = query.orderBy();
@@ -210,11 +243,34 @@ public abstract class AbstractModelResource<T extends Model> {
 
         applyUriQuery(query);
 
-        return query.findList();
+        configFindQuery(query);
+
+        List<T> list = query.findList();
+
+        return processFoundModelList(list);
+    }
+
+
+    /**
+     * Configure the "Find" query.
+     * <p>
+     * This is only used when no PathProperties where set via UriOptions.
+     * </p>
+     * <p>
+     * This effectively controls the "default" query used with the find all
+     * query.
+     * </p>
+     */
+    protected void configFindQuery(final Query<T> query) {
+
+    }
+
+    protected List<T> processFoundModelList(final List<T> list) {
+        return list;
     }
 
     protected void applyUriQuery(final Query<T> query) {
-        EbeanModelWriter.applyUriQuery(uriInfo.getQueryParameters(), query);
+        EbeanModelProcessor.applyUriQuery(uriInfo.getQueryParameters(), query);
     }
 
 }

@@ -2,7 +2,7 @@ package ameba.db.ebean;
 
 import ameba.db.DataSource;
 import ameba.db.TransactionFeature;
-import ameba.db.ebean.internal.EbeanModelWriter;
+import ameba.db.ebean.internal.EbeanModelProcessor;
 import ameba.db.ebean.transaction.EbeanTransactional;
 import ameba.db.model.ModelManager;
 import ameba.exception.ConfigErrorException;
@@ -106,7 +106,7 @@ public class EbeanFeature extends TransactionFeature {
     @Override
     public boolean configure(final FeatureContext context) {
         context.register(EbeanTransactional.class);
-        context.register(EbeanModelWriter.class);
+        context.register(EbeanModelProcessor.class);
         final Configuration appConfig = context.getConfiguration();
 
         final Properties eBeanConfig = new Properties();

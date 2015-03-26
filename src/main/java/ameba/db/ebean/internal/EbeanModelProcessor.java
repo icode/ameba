@@ -5,7 +5,6 @@ import ameba.db.model.Finder;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.FutureList;
 import com.avaje.ebean.Query;
-import com.avaje.ebean.common.BeanList;
 import com.avaje.ebean.text.PathProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.message.MessageBodyWorkers;
@@ -29,7 +28,7 @@ import java.util.List;
  * @author icode
  */
 @Priority(Priorities.ENTITY_CODER)
-public class EbeanModelWriter implements WriterInterceptor {
+public class EbeanModelProcessor implements WriterInterceptor {
 
     static String SELECTABLE_PARAM_NAME = "select";
     static String ORDER_BY_PARAM_NAME = "sort";
@@ -128,7 +127,7 @@ public class EbeanModelWriter implements WriterInterceptor {
     }
 
     protected static void applyOrderBy(MultivaluedMap<String, String> queryParams, Query query) {
-        String orderByClause = getSingleParam(queryParams.get(EbeanModelWriter.ORDER_BY_PARAM_NAME));
+        String orderByClause = getSingleParam(queryParams.get(EbeanModelProcessor.ORDER_BY_PARAM_NAME));
         if (StringUtils.isNotBlank(orderByClause)) {
             query.order(orderByClause);
         }
@@ -136,7 +135,7 @@ public class EbeanModelWriter implements WriterInterceptor {
 
     protected static void applyPageList(MultivaluedMap<String, String> queryParams, Query query) {
 
-        Integer maxRows = getSingleIntegerParam(queryParams.get(EbeanModelWriter.MAX_ROWS_PARAM_NAME));
+        Integer maxRows = getSingleIntegerParam(queryParams.get(EbeanModelProcessor.MAX_ROWS_PARAM_NAME));
 
         if (maxRows == null && DEFAULT_MAX_ROWS != null && DEFAULT_MAX_ROWS > 0) {
             maxRows = DEFAULT_MAX_ROWS;
@@ -146,14 +145,14 @@ public class EbeanModelWriter implements WriterInterceptor {
             query.setMaxRows(maxRows);
         }
 
-        Integer firstRow = getSingleIntegerParam(queryParams.get(EbeanModelWriter.FIRST_ROW_PARAM_NAME));
+        Integer firstRow = getSingleIntegerParam(queryParams.get(EbeanModelProcessor.FIRST_ROW_PARAM_NAME));
         if (firstRow != null) {
             query.setFirstRow(firstRow);
         }
     }
 
     protected static void applyWhere(MultivaluedMap<String, String> queryParams, Query query) {
-        List<String> wheres = queryParams.get(EbeanModelWriter.WHERE_PARAM_NAME);
+        List<String> wheres = queryParams.get(EbeanModelProcessor.WHERE_PARAM_NAME);
         if (wheres != null)
             for (String w : wheres) {
                 query.where(w);
