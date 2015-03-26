@@ -57,7 +57,7 @@ public abstract class AbstractModelResource<T extends Model> {
             descriptor.getIdProperty().setValue((EntityBean) model, null);
         }
 
-        postInsertModel(model);
+        preInsertModel(model);
         server.save(model);
         Object id = server.getBeanId(model);
 
@@ -67,7 +67,7 @@ public abstract class AbstractModelResource<T extends Model> {
         return Response.created(createdUri).build();
     }
 
-    protected void postInsertModel(final T model) {
+    protected void preInsertModel(final T model) {
 
     }
 
@@ -87,11 +87,11 @@ public abstract class AbstractModelResource<T extends Model> {
         for (int i = 0; i < intercept.getPropertyLength(); i++) {
             intercept.markPropertyAsChanged(i);
         }
-        postUpdateModel(model);
+        preUpdateModel(model);
         server.update(model);
     }
 
-    protected void postUpdateModel(final T model) {
+    protected void preUpdateModel(final T model) {
 
     }
 
@@ -106,11 +106,11 @@ public abstract class AbstractModelResource<T extends Model> {
     public void patch(@PathParam("id") String id, @NotNull final T model) {
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         descriptor.convertSetId(id, (EntityBean) model);
-        postPatchModel(model);
+        prePatchModel(model);
         server.update(model);
     }
 
-    protected void postPatchModel(final T model) {
+    protected void prePatchModel(final T model) {
 
     }
 
@@ -128,19 +128,19 @@ public abstract class AbstractModelResource<T extends Model> {
             Set<String> idCollection = Sets.newLinkedHashSet();
             idCollection.add(firstId);
             idCollection.addAll(idSet);
-            postDeleteMultiple(idCollection);
+            preDeleteMultiple(idCollection);
             server.delete(modelType, idCollection);
         } else {
-            postDelete(firstId);
+            preDelete(firstId);
             server.delete(modelType, firstId);
         }
     }
 
-    protected void postDeleteMultiple(Set<String> idCollection) {
+    protected void preDeleteMultiple(Set<String> idCollection) {
 
     }
 
-    protected void postDelete(String id) {
+    protected void preDelete(String id) {
 
     }
 
