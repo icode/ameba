@@ -27,7 +27,7 @@ public abstract class AbstractModelResource<T extends Model> {
 
     protected Class<T> modelType;
     protected final SpiEbeanServer server;
-    protected String defaultFindAllOrderBy;
+    protected String defaultFindOrderBy;
     @Context
     protected UriInfo uriInfo;
 
@@ -57,6 +57,7 @@ public abstract class AbstractModelResource<T extends Model> {
             descriptor.getIdProperty().setValue((EntityBean) model, null);
         }
 
+        postInsertModel(model);
         server.save(model);
         Object id = server.getBeanId(model);
 
@@ -64,6 +65,10 @@ public abstract class AbstractModelResource<T extends Model> {
         URI createdUri = ub.path("" + id).build();
 
         return Response.created(createdUri).build();
+    }
+
+    protected void postInsertModel(final T model) {
+
     }
 
 
@@ -82,8 +87,12 @@ public abstract class AbstractModelResource<T extends Model> {
         for (int i = 0; i < intercept.getPropertyLength(); i++) {
             intercept.markPropertyAsChanged(i);
         }
-
+        postUpdateModel(model);
         server.update(model);
+    }
+
+    protected void postUpdateModel(final T model) {
+
     }
 
     /**
@@ -97,8 +106,12 @@ public abstract class AbstractModelResource<T extends Model> {
     public void patch(@PathParam("id") String id, @NotNull final T model) {
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         descriptor.convertSetId(id, (EntityBean) model);
-
+        postPatchModel(model);
         server.update(model);
+    }
+
+    protected void postPatchModel(final T model) {
+
     }
 
     /**
@@ -115,10 +128,20 @@ public abstract class AbstractModelResource<T extends Model> {
             Set<String> idCollection = Sets.newLinkedHashSet();
             idCollection.add(firstId);
             idCollection.addAll(idSet);
+            postDeleteMultiple(idCollection);
             server.delete(modelType, idCollection);
         } else {
+            postDelete(firstId);
             server.delete(modelType, firstId);
         }
+    }
+
+    protected void postDeleteMultiple(Set<String> idCollection) {
+
+    }
+
+    protected void postDelete(String id) {
+
     }
 
     /**
@@ -177,11 +200,11 @@ public abstract class AbstractModelResource<T extends Model> {
 
         configDefaultFindQuery(query);
 
-        if (StringUtils.isNotBlank(defaultFindAllOrderBy)) {
+        if (StringUtils.isNotBlank(defaultFindOrderBy)) {
             // see if we should use the default orderBy clause
             OrderBy<T> orderBy = query.orderBy();
             if (orderBy.isEmpty()) {
-                query.orderBy(defaultFindAllOrderBy);
+                query.orderBy(defaultFindOrderBy);
             }
         }
 
