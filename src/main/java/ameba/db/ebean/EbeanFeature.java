@@ -11,13 +11,12 @@ import ameba.util.IOUtils;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
-import com.avaje.ebean.config.ContainerConfig;
-import com.avaje.ebean.config.PropertiesWrapper;
-import com.avaje.ebean.config.ServerConfig;
+import com.avaje.ebean.config.*;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
 import com.fasterxml.jackson.core.JsonFactory;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.avaje.ebeanorm.jackson.JacksonEbeanModule;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.slf4j.Logger;
@@ -131,10 +130,34 @@ public class EbeanFeature extends TransactionFeature {
         for (final String name : DataSource.getDataSourceNames()) {
             final ServerConfig config = new ServerConfig() {
                 @Override
-                public void loadFromProperties() {
-                    loadSettings(new PropertiesWrapper("db", name, eBeanConfig));
+                public void loadFromProperties(Properties properties) {
+                    loadSettings(new PropertiesWrapper("db", name, properties));
                 }
             };
+            config.setNamingConvention(new UnderscoreNamingConvention() {
+
+                String tableNamePrefix = null;
+
+                @Override
+                public void loadFromProperties(PropertiesWrapper properties) {
+                    super.loadFromProperties(properties);
+                    tableNamePrefix = properties.get("namingConvention.table.name.prefix", tableNamePrefix);
+                }
+
+                public TableName getTableNameByConvention(Class<?> beanClass) {
+
+                    String tableName = beanClass.getSimpleName();
+
+                    if (StringUtils.isNotBlank(tableNamePrefix)) {
+                        tableName = tableNamePrefix + tableName;
+                    }
+
+                    return new TableName(
+                            getCatalog(),
+                            getSchema(),
+                            toUnderscoreFromCamel(tableName));
+                }
+            });
             config.setPackages(null);
             config.setJars(null);
             config.setRegisterJmxMBeans(Boolean.parseBoolean((String) appConfig.getProperty("app.jmx.enabled")));
