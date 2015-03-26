@@ -5,26 +5,31 @@ import ameba.db.model.Finder;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.FutureList;
 import com.avaje.ebean.Query;
+import com.avaje.ebean.common.BeanList;
 import com.avaje.ebean.text.PathProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.message.MessageBodyWorkers;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.*;
-import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.ext.WriterInterceptor;
+import javax.ws.rs.ext.WriterInterceptorContext;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 import java.util.List;
 
 /**
  * @author icode
  */
-public class EbeanModelWriter implements MessageBodyWriter<Object> {
+@Priority(Priorities.ENTITY_CODER)
+public class EbeanModelWriter implements WriterInterceptor {
 
     static String SELECTABLE_PARAM_NAME = "select";
     static String ORDER_BY_PARAM_NAME = "sort";
@@ -70,17 +75,11 @@ public class EbeanModelWriter implements MessageBodyWriter<Object> {
     @Context
     private UriInfo uriInfo;
 
-    @Override
-    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+    public boolean isWriteable(Class<?> type) {
         return Finder.class.isAssignableFrom(type)
                 || Query.class.isAssignableFrom(type)
                 || ExpressionList.class.isAssignableFrom(type)
                 || FutureList.class.isAssignableFrom(type);
-    }
-
-    @Override
-    public long getSize(Object o, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return -1;
     }
 
     /**
@@ -169,36 +168,34 @@ public class EbeanModelWriter implements MessageBodyWriter<Object> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void writeTo(Object o, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
-        MessageBodyWriter writer = workers.get().getMessageBodyWriter(type, genericType, annotations, mediaType);
-        if (o == null) {
-            writer.writeTo(null, type, genericType, annotations, mediaType, httpHeaders, entityStream);
-            return;
+    public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
+        Object o = context.getEntity();
+        if (o != null && isWriteable(o.getClass())) {
+
+            MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
+            Query query = null;
+            if (o instanceof Finder) {
+                query = ((Finder) o).query();
+            } else if (o instanceof Query) {
+                query = (Query) o;
+            } else if (o instanceof ExpressionList) {
+                query = ((ExpressionList) o).query();
+            } else if (o instanceof FutureList) {
+                query = ((FutureList) o).getQuery();
+            }
+            applyUriQuery(queryParams, query);
+
+            List list = query.findList();
+
+            context.setEntity(list);
+
+            Class clazz = list.getClass();
+
+            context.setType(clazz);
+
+            context.setGenericType(clazz);
         }
 
-        MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
-        Query query = null;
-        if (o instanceof Finder) {
-            query = ((Finder) o).query();
-        } else if (o instanceof Query) {
-            query = (Query) o;
-        } else if (o instanceof ExpressionList) {
-            query = ((ExpressionList) o).query();
-        } else if (o instanceof FutureList) {
-            query = ((FutureList) o).getQuery();
-        }
-        applyUriQuery(queryParams, query);
-
-        List list = query.findList();
-
-        Class modelType = list.getClass();
-
-        genericType = Object.class;
-        if (!list.isEmpty()) {
-            genericType = list.get(0).getClass();
-        }
-
-        writer.writeTo(list, modelType, genericType, annotations, mediaType, httpHeaders, entityStream);
+        context.proceed();
     }
 }
