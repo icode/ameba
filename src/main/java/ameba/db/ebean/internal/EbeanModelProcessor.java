@@ -30,7 +30,7 @@ import java.util.List;
 @Priority(Priorities.ENTITY_CODER)
 public class EbeanModelProcessor implements WriterInterceptor {
 
-    static String SELECTABLE_PARAM_NAME = "select";
+    static String FIELDS_PARAM_NAME = "fields";
     static String ORDER_BY_PARAM_NAME = "sort";
     static String MAX_ROWS_PARAM_NAME = "maxrows";
     static String FIRST_ROW_PARAM_NAME = "firstrow";
@@ -40,13 +40,10 @@ public class EbeanModelProcessor implements WriterInterceptor {
     @Context
     private Configuration configuration;
 
-    @Inject
-    private Provider<MessageBodyWorkers> workers;
-
     @PostConstruct
     private void init() {
-        final String selectableParamName = (String) configuration.getProperty(EbeanFeature.SELECTABLE_PARAM_NAME);
-        SELECTABLE_PARAM_NAME = StringUtils.isNotBlank(selectableParamName) ? selectableParamName : SELECTABLE_PARAM_NAME;
+        final String selectableParamName = (String) configuration.getProperty(EbeanFeature.FIELDS_PARAM_NAME);
+        FIELDS_PARAM_NAME = StringUtils.isNotBlank(selectableParamName) ? selectableParamName : FIELDS_PARAM_NAME;
 
         final String orderByParamName = (String) configuration.getProperty(EbeanFeature.ORDER_BY_PARAM_NAME);
         ORDER_BY_PARAM_NAME = StringUtils.isNotBlank(orderByParamName) ? orderByParamName : ORDER_BY_PARAM_NAME;
@@ -93,7 +90,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
      * @param query query
      */
     protected static void applyPathProperties(MultivaluedMap<String, String> queryParams, Query query) {
-        List<String> selectables = queryParams.get(SELECTABLE_PARAM_NAME);
+        List<String> selectables = queryParams.get(FIELDS_PARAM_NAME);
         if (selectables != null)
             for (String s : selectables) {
                 PathProperties pathProperties = PathProperties.parse(s);

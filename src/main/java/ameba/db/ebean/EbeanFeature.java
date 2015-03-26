@@ -37,7 +37,7 @@ public class EbeanFeature extends TransactionFeature {
 
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
 
-    public static final String SELECTABLE_PARAM_NAME = "model.query.selectable";
+    public static final String FIELDS_PARAM_NAME = "model.query.selectable";
     public static final String ORDER_BY_PARAM_NAME = "model.query.orderBy";
     public static final String MAX_ROWS_PARAM_NAME = "model.query.maxRows";
     public static final String FIRST_ROW_PARAM_NAME = "model.query.firstRow";
