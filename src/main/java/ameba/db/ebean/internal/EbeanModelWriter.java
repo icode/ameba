@@ -31,6 +31,7 @@ public class EbeanModelWriter implements MessageBodyWriter<Object> {
     static String MAX_ROWS_PARAM_NAME = "maxrows";
     static String FIRST_ROW_PARAM_NAME = "firstrow";
     static String WHERE_PARAM_NAME = "where";
+    static Integer DEFAULT_MAX_ROWS = 20;
 
     @Context
     private Configuration configuration;
@@ -55,6 +56,14 @@ public class EbeanModelWriter implements MessageBodyWriter<Object> {
         final String whereParamName = (String) configuration.getProperty(EbeanFeature.WHERE_PARAM_NAME);
         WHERE_PARAM_NAME = StringUtils.isNotBlank(whereParamName) ? whereParamName : WHERE_PARAM_NAME;
 
+        final String defaultMaxRows = (String) configuration.getProperty(EbeanFeature.DEFAULT_MAX_ROWS_PARAM_NAME);
+        if (StringUtils.isNotBlank(defaultMaxRows)) {
+            try {
+                DEFAULT_MAX_ROWS = Integer.parseInt(defaultMaxRows);
+            } catch (Exception e) {
+                DEFAULT_MAX_ROWS = null;
+            }
+        }
     }
 
 
@@ -129,6 +138,11 @@ public class EbeanModelWriter implements MessageBodyWriter<Object> {
     protected static void applyPageList(MultivaluedMap<String, String> queryParams, Query query) {
 
         Integer maxRows = getSingleIntegerParam(queryParams.get(EbeanModelWriter.MAX_ROWS_PARAM_NAME));
+
+        if (maxRows == null && DEFAULT_MAX_ROWS != null && DEFAULT_MAX_ROWS > 0) {
+            maxRows = DEFAULT_MAX_ROWS;
+        }
+
         if (maxRows != null) {
             query.setMaxRows(maxRows);
         }

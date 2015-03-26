@@ -42,6 +42,7 @@ public class EbeanFeature extends TransactionFeature {
     public static final String ORDER_BY_PARAM_NAME = "model.query.orderBy";
     public static final String MAX_ROWS_PARAM_NAME = "model.query.maxRows";
     public static final String FIRST_ROW_PARAM_NAME = "model.query.firstRow";
+    public static final String DEFAULT_MAX_ROWS_PARAM_NAME = "model.query.maxRows.default";
     public static final String WHERE_PARAM_NAME = "model.query.where";
 
     static {
