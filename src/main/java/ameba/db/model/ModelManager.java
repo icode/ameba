@@ -1,6 +1,5 @@
 package ameba.db.model;
 
-import ameba.container.Container;
 import ameba.core.AddOn;
 import ameba.core.Application;
 import ameba.db.DataSource;

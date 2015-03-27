@@ -1,6 +1,8 @@
 package ameba.message;
 
-import ameba.message.internal.*;
+import ameba.message.internal.FilteringJacksonJsonProvider;
+import ameba.message.internal.JacksonFilteringFeature;
+import ameba.message.internal.JacksonJsonProvider;
 import com.fasterxml.jackson.jaxrs.base.JsonMappingExceptionMapper;
 import com.fasterxml.jackson.jaxrs.base.JsonParseExceptionMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;

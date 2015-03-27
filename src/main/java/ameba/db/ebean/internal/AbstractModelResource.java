@@ -12,7 +12,6 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.server.ContainerResponse;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
