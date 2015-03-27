@@ -3,6 +3,7 @@ package ameba.db.ebean.internal;
 import ameba.core.ws.rs.PATCH;
 import ameba.db.model.Model;
 import com.avaje.ebean.Ebean;
+import com.avaje.ebean.FutureRowCount;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.bean.EntityBean;
@@ -11,6 +12,7 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.server.ContainerResponse;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -196,12 +198,17 @@ public abstract class AbstractModelResource<T extends Model> {
      */
     @GET
     @Path("{id}")
-    public T find(@NotNull @PathParam("id") final String id) {
+    public Response find(@NotNull @PathParam("id") final String id) {
         Query<T> query = server.find(modelType);
-        applyUriQuery(query);
+        FutureRowCount rowCount = applyUriQuery(query);
         configFindByIdQuery(query);
         T m = query.setId(id).findUnique();
-        return processFoundModel(m);
+
+        Response.ResponseBuilder builder = Response.ok();
+        Response response = builder.entity(processFoundModel(m)).build();
+        applyRowCountHeader(response.getHeaders(), query, rowCount);
+
+        return response;
     }
 
     /**
@@ -229,7 +236,7 @@ public abstract class AbstractModelResource<T extends Model> {
      * </p>
      */
     @GET
-    public List<T> find() {
+    public Response find() {
 
         Query<T> query = server.find(modelType);
 
@@ -241,13 +248,19 @@ public abstract class AbstractModelResource<T extends Model> {
             }
         }
 
-        applyUriQuery(query);
+        FutureRowCount rowCount = applyUriQuery(query);
 
         configFindQuery(query);
 
+        Response.ResponseBuilder builder = Response.ok();
+
         List<T> list = query.findList();
 
-        return processFoundModelList(list);
+        Response response = builder.entity(processFoundModelList(list)).build();
+
+        applyRowCountHeader(response.getHeaders(), query, rowCount);
+
+        return response;
     }
 
 
@@ -269,8 +282,12 @@ public abstract class AbstractModelResource<T extends Model> {
         return list;
     }
 
-    protected void applyUriQuery(final Query<T> query) {
-        EbeanModelProcessor.applyUriQuery(uriInfo.getQueryParameters(), query);
+    protected FutureRowCount applyUriQuery(final Query<T> query) {
+        return EbeanModelProcessor.applyUriQuery(uriInfo.getQueryParameters(), query);
+    }
+
+    public static void applyRowCountHeader(MultivaluedMap<String, Object> headerParams, Query query, FutureRowCount rowCount) {
+        EbeanModelProcessor.applyRowCountHeader(headerParams, query, rowCount);
     }
 
 }

@@ -37,11 +37,13 @@ public class EbeanFeature extends TransactionFeature {
 
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
 
-    public static final String FIELDS_PARAM_NAME = "model.query.selectable";
-    public static final String ORDER_BY_PARAM_NAME = "model.query.orderBy";
-    public static final String MAX_ROWS_PARAM_NAME = "model.query.maxRows";
-    public static final String FIRST_ROW_PARAM_NAME = "model.query.firstRow";
-    public static final String DEFAULT_MAX_ROWS_PARAM_NAME = "model.query.maxRows.default";
+    public static final String FIELDS_PARAM_NAME = "model.query.fields";
+    public static final String SORT_PARAM_NAME = "model.query.sort";
+    public static final String PAGE_PARAM_NAME = "model.query.page";
+    public static final String PER_PAGE_PARAM_NAME = "model.query.prePage";
+    public static final String REQ_TOTAL_COUNT_PARAM_NAME = "model.query.requireTotalCount";
+    public static final String REQ_TOTAL_COUNT_HEADER_NAME = "model.query.requireTotalCount.header";
+    public static final String DEFAULT_PER_PAGE_PARAM_NAME = "model.query.perPage.default";
     public static final String WHERE_PARAM_NAME = "model.query.where";
 
     static {

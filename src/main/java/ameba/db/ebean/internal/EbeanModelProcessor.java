@@ -4,15 +4,13 @@ import ameba.db.ebean.EbeanFeature;
 import ameba.db.model.Finder;
 import com.avaje.ebean.ExpressionList;
 import com.avaje.ebean.FutureList;
+import com.avaje.ebean.FutureRowCount;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.text.PathProperties;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.message.MessageBodyWorkers;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Priority;
-import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Configuration;
@@ -23,6 +21,7 @@ import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author icode
@@ -31,38 +30,46 @@ import java.util.List;
 public class EbeanModelProcessor implements WriterInterceptor {
 
     static String FIELDS_PARAM_NAME = "fields";
-    static String ORDER_BY_PARAM_NAME = "sort";
-    static String MAX_ROWS_PARAM_NAME = "maxrows";
-    static String FIRST_ROW_PARAM_NAME = "firstrow";
+    static String SORT_PARAM_NAME = "sort";
+    static String PAGE_PARAM_NAME = "page";
+    static String PER_PAGE_PARAM_NAME = "per_page";
+    static String REQ_TOTAL_COUNT_PARAM_NAME = "req_count";
+    static String REQ_TOTAL_COUNT_HEADER_NAME = "X-Total-Count";
     static String WHERE_PARAM_NAME = "where";
-    static Integer DEFAULT_MAX_ROWS = 20;
+    static Integer DEFAULT_PER_PAGE = 20;
 
     @Context
     private Configuration configuration;
 
     @PostConstruct
     private void init() {
-        final String selectableParamName = (String) configuration.getProperty(EbeanFeature.FIELDS_PARAM_NAME);
-        FIELDS_PARAM_NAME = StringUtils.isNotBlank(selectableParamName) ? selectableParamName : FIELDS_PARAM_NAME;
+        final String fieldsParamName = (String) configuration.getProperty(EbeanFeature.FIELDS_PARAM_NAME);
+        FIELDS_PARAM_NAME = StringUtils.isNotBlank(fieldsParamName) ? fieldsParamName : FIELDS_PARAM_NAME;
 
-        final String orderByParamName = (String) configuration.getProperty(EbeanFeature.ORDER_BY_PARAM_NAME);
-        ORDER_BY_PARAM_NAME = StringUtils.isNotBlank(orderByParamName) ? orderByParamName : ORDER_BY_PARAM_NAME;
+        final String sortParamName = (String) configuration.getProperty(EbeanFeature.SORT_PARAM_NAME);
+        SORT_PARAM_NAME = StringUtils.isNotBlank(sortParamName) ? sortParamName : SORT_PARAM_NAME;
 
-        final String maxRowsParamName = (String) configuration.getProperty(EbeanFeature.MAX_ROWS_PARAM_NAME);
-        MAX_ROWS_PARAM_NAME = StringUtils.isNotBlank(maxRowsParamName) ? maxRowsParamName : MAX_ROWS_PARAM_NAME;
+        final String pageParamName = (String) configuration.getProperty(EbeanFeature.PAGE_PARAM_NAME);
+        PAGE_PARAM_NAME = StringUtils.isNotBlank(pageParamName) ? pageParamName : PAGE_PARAM_NAME;
 
-        final String firstRowParamName = (String) configuration.getProperty(EbeanFeature.FIRST_ROW_PARAM_NAME);
-        FIRST_ROW_PARAM_NAME = StringUtils.isNotBlank(firstRowParamName) ? firstRowParamName : FIRST_ROW_PARAM_NAME;
+        final String perPageParamName = (String) configuration.getProperty(EbeanFeature.PER_PAGE_PARAM_NAME);
+        PER_PAGE_PARAM_NAME = StringUtils.isNotBlank(perPageParamName) ? perPageParamName : PER_PAGE_PARAM_NAME;
+
+        final String reqTotalCountParamName = (String) configuration.getProperty(EbeanFeature.REQ_TOTAL_COUNT_PARAM_NAME);
+        REQ_TOTAL_COUNT_PARAM_NAME = StringUtils.isNotBlank(reqTotalCountParamName) ? perPageParamName : REQ_TOTAL_COUNT_PARAM_NAME;
+
+        final String reqTotalCountHeaderName = (String) configuration.getProperty(EbeanFeature.REQ_TOTAL_COUNT_HEADER_NAME);
+        REQ_TOTAL_COUNT_HEADER_NAME = StringUtils.isNotBlank(reqTotalCountHeaderName) ? perPageParamName : REQ_TOTAL_COUNT_HEADER_NAME;
 
         final String whereParamName = (String) configuration.getProperty(EbeanFeature.WHERE_PARAM_NAME);
         WHERE_PARAM_NAME = StringUtils.isNotBlank(whereParamName) ? whereParamName : WHERE_PARAM_NAME;
 
-        final String defaultMaxRows = (String) configuration.getProperty(EbeanFeature.DEFAULT_MAX_ROWS_PARAM_NAME);
-        if (StringUtils.isNotBlank(defaultMaxRows)) {
+        final String defaultPerPage = (String) configuration.getProperty(EbeanFeature.DEFAULT_PER_PAGE_PARAM_NAME);
+        if (StringUtils.isNotBlank(defaultPerPage)) {
             try {
-                DEFAULT_MAX_ROWS = Integer.parseInt(defaultMaxRows);
+                DEFAULT_PER_PAGE = Integer.parseInt(defaultPerPage);
             } catch (Exception e) {
-                DEFAULT_MAX_ROWS = null;
+                DEFAULT_PER_PAGE = null;
             }
         }
     }
@@ -76,26 +83,6 @@ public class EbeanModelProcessor implements WriterInterceptor {
                 || Query.class.isAssignableFrom(type)
                 || ExpressionList.class.isAssignableFrom(type)
                 || FutureList.class.isAssignableFrom(type);
-    }
-
-    /**
-     * parse uri
-     * <p/>
-     * e.g.
-     * <p/>
-     * ?select=id,name,props(p1,p2,p3)
-     * <p/>
-     * ?select=(id,name,props(p1,p2,p3))
-     *
-     * @param query query
-     */
-    protected static void applyPathProperties(MultivaluedMap<String, String> queryParams, Query query) {
-        List<String> selectables = queryParams.get(FIELDS_PARAM_NAME);
-        if (selectables != null)
-            for (String s : selectables) {
-                PathProperties pathProperties = PathProperties.parse(s);
-                pathProperties.apply(query);
-            }
     }
 
     /**
@@ -123,32 +110,66 @@ public class EbeanModelProcessor implements WriterInterceptor {
         return null;
     }
 
-    protected static void applyOrderBy(MultivaluedMap<String, String> queryParams, Query query) {
-        String orderByClause = getSingleParam(queryParams.get(EbeanModelProcessor.ORDER_BY_PARAM_NAME));
+    /**
+     * parse uri
+     * <p/>
+     * e.g.
+     * <p/>
+     * ?select=id,name,props(p1,p2,p3)
+     * <p/>
+     * ?select=(id,name,props(p1,p2,p3))
+     *
+     * @param query query
+     */
+    public static void applyPathProperties(MultivaluedMap<String, String> queryParams, Query query) {
+        List<String> selectables = queryParams.get(FIELDS_PARAM_NAME);
+        if (selectables != null)
+            for (String s : selectables) {
+                PathProperties pathProperties = PathProperties.parse(s);
+                pathProperties.apply(query);
+            }
+    }
+
+    public static void applyOrderBy(MultivaluedMap<String, String> queryParams, Query query) {
+        String orderByClause = getSingleParam(queryParams.get(EbeanModelProcessor.SORT_PARAM_NAME));
         if (StringUtils.isNotBlank(orderByClause)) {
             query.order(orderByClause);
         }
     }
 
-    protected static void applyPageList(MultivaluedMap<String, String> queryParams, Query query) {
+    public static FutureRowCount applyPageList(MultivaluedMap<String, String> queryParams, Query query) {
 
-        Integer maxRows = getSingleIntegerParam(queryParams.get(EbeanModelProcessor.MAX_ROWS_PARAM_NAME));
+        Integer maxRows = getSingleIntegerParam(queryParams.get(EbeanModelProcessor.PER_PAGE_PARAM_NAME));
 
-        if (maxRows == null && DEFAULT_MAX_ROWS != null && DEFAULT_MAX_ROWS > 0) {
-            maxRows = DEFAULT_MAX_ROWS;
+        if (maxRows == null && DEFAULT_PER_PAGE != null && DEFAULT_PER_PAGE > 0) {
+            maxRows = DEFAULT_PER_PAGE;
         }
 
         if (maxRows != null) {
+            if (maxRows <= 0) {
+                maxRows = 20;
+            }
             query.setMaxRows(maxRows);
         }
 
-        Integer firstRow = getSingleIntegerParam(queryParams.get(EbeanModelProcessor.FIRST_ROW_PARAM_NAME));
+        Integer firstRow = getSingleIntegerParam(queryParams.get(EbeanModelProcessor.PAGE_PARAM_NAME));
         if (firstRow != null) {
+            if (firstRow < 1) {
+                firstRow = 1;
+            }
+            firstRow--;
             query.setFirstRow(firstRow);
         }
+
+        Integer reqTotalCount = getSingleIntegerParam(queryParams.get(EbeanModelProcessor.PAGE_PARAM_NAME));
+        if (reqTotalCount != null && 1 == reqTotalCount) {
+            return query.findFutureRowCount();
+        }
+
+        return null;
     }
 
-    protected static void applyWhere(MultivaluedMap<String, String> queryParams, Query query) {
+    public static void applyWhere(MultivaluedMap<String, String> queryParams, Query query) {
         List<String> wheres = queryParams.get(EbeanModelProcessor.WHERE_PARAM_NAME);
         if (wheres != null)
             for (String w : wheres) {
@@ -156,12 +177,25 @@ public class EbeanModelProcessor implements WriterInterceptor {
             }
     }
 
-    protected static void applyUriQuery(MultivaluedMap<String, String> queryParams, Query query) {
+    public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams, Query query) {
         applyPathProperties(queryParams, query);
-        applyOrderBy(queryParams, query);
-        applyPageList(queryParams, query);
         applyWhere(queryParams, query);
+        applyOrderBy(queryParams, query);
+        return applyPageList(queryParams, query);
     }
+
+    public static void applyRowCountHeader(MultivaluedMap<String, Object> headerParams, Query query, FutureRowCount rowCount) {
+        if (rowCount != null) {
+            try {
+                headerParams.putSingle(REQ_TOTAL_COUNT_HEADER_NAME, rowCount.get());
+            } catch (InterruptedException e) {
+                headerParams.putSingle(REQ_TOTAL_COUNT_HEADER_NAME, query.findRowCount());
+            } catch (ExecutionException e) {
+                headerParams.putSingle(REQ_TOTAL_COUNT_HEADER_NAME, query.findRowCount());
+            }
+        }
+    }
+
 
     @Override
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
@@ -179,9 +213,15 @@ public class EbeanModelProcessor implements WriterInterceptor {
             } else if (o instanceof FutureList) {
                 query = ((FutureList) o).getQuery();
             }
-            applyUriQuery(queryParams, query);
+            FutureRowCount rowCount = applyUriQuery(queryParams, query);
+            List list;
+            if (o instanceof FutureList) {
+                list = query.findFutureList().getUnchecked();
+            } else {
+                list = query.findList();
+            }
 
-            List list = query.findList();
+            applyRowCountHeader(context.getHeaders(), query, rowCount);
 
             context.setEntity(list);
 
