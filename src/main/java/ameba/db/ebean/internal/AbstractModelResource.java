@@ -223,7 +223,7 @@ public abstract class AbstractModelResource<T extends Model> {
 
     }
 
-    protected T processFoundModel(final T model) {
+    protected Object processFoundModel(final T model) {
         return model;
     }
 
@@ -277,7 +277,7 @@ public abstract class AbstractModelResource<T extends Model> {
 
     }
 
-    protected List<T> processFoundModelList(final List<T> list) {
+    protected Object processFoundModelList(final List<T> list) {
         return list;
     }
 
@@ -285,7 +285,7 @@ public abstract class AbstractModelResource<T extends Model> {
         return EbeanModelProcessor.applyUriQuery(uriInfo.getQueryParameters(), query);
     }
 
-    public static void applyRowCountHeader(MultivaluedMap<String, Object> headerParams, Query query, FutureRowCount rowCount) {
+    protected void applyRowCountHeader(MultivaluedMap<String, Object> headerParams, Query query, FutureRowCount rowCount) {
         EbeanModelProcessor.applyRowCountHeader(headerParams, query, rowCount);
     }
 
