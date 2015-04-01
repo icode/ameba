@@ -192,6 +192,7 @@ public class EbeanFeature extends TransactionFeature {
 
             final boolean isProd = "product".equals(appConfig.getProperty("app.mode"));
 
+            logger.info("连接数据源 {} ...", name);
             EbeanServer server = EbeanServerFactory.create(config);
 
             JacksonUtils.addDefaultModule(new JacksonEbeanModule(server.json()) {
