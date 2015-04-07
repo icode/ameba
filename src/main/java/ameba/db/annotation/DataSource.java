@@ -1,7 +1,16 @@
 package ameba.db.annotation;
 
+import javax.validation.constraints.NotNull;
+import java.lang.annotation.*;
+
 /**
- * Created by sulijuan on 15/4/7.
+ * change default data source name
+ *
+ * @author icode
  */
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+@Inherited
 public @interface DataSource {
+    @NotNull String value();
 }
