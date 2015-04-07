@@ -1,8 +1,6 @@
 package ameba.message;
 
-import ameba.message.internal.FilteringJacksonJsonProvider;
-import ameba.message.internal.JacksonFilteringFeature;
-import ameba.message.internal.JacksonJsonProvider;
+import ameba.message.internal.*;
 import com.fasterxml.jackson.jaxrs.base.JsonMappingExceptionMapper;
 import com.fasterxml.jackson.jaxrs.base.JsonParseExceptionMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
@@ -37,7 +35,8 @@ public class JacksonFeature implements Feature {
         }
 
         // Disable other JSON providers.
-        context.property(PropertiesHelper.getPropertyNameForRuntime(InternalProperties.JSON_FEATURE, config.getRuntimeType()),
+        context.property(
+                PropertiesHelper.getPropertyNameForRuntime(InternalProperties.JSON_FEATURE, config.getRuntimeType()),
                 JSON_FEATURE);
 
         if (!config.isRegistered(JacksonJaxbJsonProvider.class)) {
@@ -46,8 +45,10 @@ public class JacksonFeature implements Feature {
             if (EntityFilteringFeature.enabled(config)) {
                 context.register(JacksonFilteringFeature.class);
                 context.register(FilteringJacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
+                context.register(FilteringJacksonXMLProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
             } else {
                 context.register(JacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
+                context.register(JacksonXMLProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
             }
         }
         return true;
