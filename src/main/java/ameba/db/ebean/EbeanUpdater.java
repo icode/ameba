@@ -22,14 +22,14 @@ public class EbeanUpdater<M extends Model> extends Updater<M> {
 
     protected Update<M> getUpdate() {
         if (update == null)
-            update = server.createUpdate(getModelType(), getSql());
+            update = server.createUpdate(getModelType(), getSqlOrName());
         return update;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <E extends M> Updater<E> on(String server) {
-        return new EbeanUpdater<E>(server, (Class<E>) getModelType(), getSql());
+        return new EbeanUpdater(server, getModelType(), getSqlOrName());
     }
 
     @Override
@@ -39,7 +39,17 @@ public class EbeanUpdater<M extends Model> extends Updater<M> {
 
     @Override
     public SqlUpdate sqlUpdate() {
-        return server.createSqlUpdate(getSql());
+        return server.createSqlUpdate(getSqlOrName());
+    }
+
+    @Override
+    public Update namedUpdate() {
+        return server.createNamedUpdate(getModelType(), getSqlOrName());
+    }
+
+    @Override
+    public SqlUpdate namedSqlUpdate() {
+        return server.createNamedSqlUpdate(getSqlOrName());
     }
 
     @Override

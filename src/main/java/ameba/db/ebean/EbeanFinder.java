@@ -32,7 +32,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     @Override
     @SuppressWarnings("unchecked")
     public <M extends T> Finder<ID, M> on(String server) {
-        return new EbeanFinder<ID, M>(server, getIdType(), (Class<M>) getModelType());
+        return new EbeanFinder(server, getIdType(), (Class<M>) getModelType());
     }
 
     private EbeanServer server() {
@@ -67,6 +67,16 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     public Query<T> createQuery() {
         return server().createQuery(getModelType());
+    }
+
+    @Override
+    public Query<T> createNamedQuery(String name) {
+        return server().createNamedQuery(getModelType(), name);
+    }
+
+    @Override
+    public SqlQuery createNamedSqlQuery(String name) {
+        return server().createNamedSqlQuery(name);
     }
 
     public SqlQuery createSqlQuery(String sql) {

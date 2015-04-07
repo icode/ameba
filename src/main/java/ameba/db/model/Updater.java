@@ -11,16 +11,16 @@ public abstract class Updater<M extends Model> {
 
     private final Class<M> modelType;
     private String serverName;
-    private String sql;
+    private String sqlOrName;
 
-    public Updater(String serverName, Class<M> modelType, String sql) {
+    public Updater(String serverName, Class<M> modelType, String sqlOrName) {
         if (StringUtils.isBlank(serverName)) {
             throw new IllegalArgumentException("server name is blank");
         }
 
         this.modelType = modelType;
         this.serverName = serverName;
-        this.sql = sql;
+        this.sqlOrName = sqlOrName;
     }
 
     public Class<M> getModelType() {
@@ -31,8 +31,8 @@ public abstract class Updater<M extends Model> {
         return serverName;
     }
 
-    public String getSql() {
-        return sql;
+    public String getSqlOrName() {
+        return sqlOrName;
     }
 
     /**
@@ -46,6 +46,10 @@ public abstract class Updater<M extends Model> {
     public abstract String getName();
 
     public abstract SqlUpdate sqlUpdate();
+
+    public abstract Update namedUpdate();
+
+    public abstract SqlUpdate namedSqlUpdate();
 
     /**
      * Set this to false if you do not want the cache to invalidate related

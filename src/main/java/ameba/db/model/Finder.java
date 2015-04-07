@@ -88,6 +88,10 @@ public abstract class Finder<ID, T> {
      */
     public abstract Query<T> createQuery();
 
+    public abstract Query<T> createNamedQuery(String name);
+
+    public abstract SqlQuery createNamedSqlQuery(String name);
+
     public abstract SqlQuery createSqlQuery(String sql);
 
     /**
