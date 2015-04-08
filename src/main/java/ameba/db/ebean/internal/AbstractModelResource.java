@@ -2,10 +2,7 @@ package ameba.db.ebean.internal;
 
 import ameba.core.ws.rs.PATCH;
 import ameba.db.model.Model;
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.FutureRowCount;
-import com.avaje.ebean.OrderBy;
-import com.avaje.ebean.Query;
+import com.avaje.ebean.*;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
@@ -58,9 +55,14 @@ public abstract class AbstractModelResource<T extends Model> {
             descriptor.getIdProperty().setValue((EntityBean) model, null);
         }
 
-        preInsertModel(model);
-        insertModel(model);
-        postInsertModel(model);
+        server.execute(new TxRunnable() {
+            @Override
+            public void run() {
+                preInsertModel(model);
+                insertModel(model);
+                postInsertModel(model);
+            }
+        });
         Object id = server.getBeanId(model);
 
         UriBuilder ub = uriInfo.getAbsolutePathBuilder();
@@ -91,15 +93,21 @@ public abstract class AbstractModelResource<T extends Model> {
     @PUT
     @Path("{id}")
     public void update(@PathParam("id") String id, @NotNull @Valid final T model) {
+
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         descriptor.convertSetId(id, (EntityBean) model);
         EntityBeanIntercept intercept = ((EntityBean) model)._ebean_getIntercept();
         for (int i = 0; i < intercept.getPropertyLength(); i++) {
             intercept.markPropertyAsChanged(i);
         }
-        preUpdateModel(model);
-        updateModel(model);
-        postUpdateModel(model);
+        server.execute(new TxRunnable() {
+            @Override
+            public void run() {
+                preUpdateModel(model);
+                updateModel(model);
+                postUpdateModel(model);
+            }
+        });
     }
 
     protected void preUpdateModel(final T model) {
@@ -125,9 +133,14 @@ public abstract class AbstractModelResource<T extends Model> {
     public void patch(@PathParam("id") String id, @NotNull final T model) {
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         descriptor.convertSetId(id, (EntityBean) model);
-        prePatchModel(model);
-        patchModel(model);
-        postPatchModel(model);
+        server.execute(new TxRunnable() {
+            @Override
+            public void run() {
+                prePatchModel(model);
+                patchModel(model);
+                postPatchModel(model);
+            }
+        });
     }
 
     protected void prePatchModel(final T model) {
@@ -150,19 +163,29 @@ public abstract class AbstractModelResource<T extends Model> {
     @DELETE
     @Path("{ids}")
     public void deleteMultiple(@NotNull @PathParam("ids") final PathSegment ids) {
-        String firstId = ids.getPath();
+        final String firstId = ids.getPath();
         Set<String> idSet = ids.getMatrixParameters().keySet();
         if (!idSet.isEmpty()) {
-            Set<String> idCollection = Sets.newLinkedHashSet();
+            final Set<String> idCollection = Sets.newLinkedHashSet();
             idCollection.add(firstId);
             idCollection.addAll(idSet);
-            preDeleteMultipleModel(idCollection);
-            deleteMultipleModel(idCollection);
-            postDeleteMultipleModel(idCollection);
+            server.execute(new TxRunnable() {
+                @Override
+                public void run() {
+                    preDeleteMultipleModel(idCollection);
+                    deleteMultipleModel(idCollection);
+                    postDeleteMultipleModel(idCollection);
+                }
+            });
         } else {
-            preDeleteModel(firstId);
-            deleteModel(firstId);
-            postDeleteModel(firstId);
+            server.execute(new TxRunnable() {
+                @Override
+                public void run() {
+                    preDeleteModel(firstId);
+                    deleteModel(firstId);
+                    postDeleteModel(firstId);
+                }
+            });
         }
     }
 
