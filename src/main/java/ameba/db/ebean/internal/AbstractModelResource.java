@@ -221,16 +221,19 @@ public abstract class AbstractModelResource<T extends Model> {
     @GET
     @Path("{id}")
     public Response find(@NotNull @PathParam("id") final String id) {
-        Query<T> query = server.find(modelType);
-        FutureRowCount rowCount = applyUriQuery(query);
-        configFindByIdQuery(query);
-        T m = query.setId(id).findUnique();
-
+        final Query<T> query = server.find(modelType);
+        applyUriQuery(query, false);
         Response.ResponseBuilder builder = Response.ok();
-        Response response = builder.entity(processFoundModel(m)).build();
-        applyRowCountHeader(response.getHeaders(), query, rowCount);
 
-        return response;
+        return builder.entity(server.execute(new TxCallable<Object>() {
+            @Override
+            public Object call() {
+                configFindByIdQuery(query);
+                T m = query.setId(id).findUnique();
+
+                return processFoundModel(m);
+            }
+        })).build();
     }
 
     /**
@@ -260,7 +263,7 @@ public abstract class AbstractModelResource<T extends Model> {
     @GET
     public Response find() {
 
-        Query<T> query = server.find(modelType);
+        final Query<T> query = server.find(modelType);
 
         if (StringUtils.isNotBlank(defaultFindOrderBy)) {
             // see if we should use the default orderBy clause
@@ -270,15 +273,17 @@ public abstract class AbstractModelResource<T extends Model> {
             }
         }
 
-        FutureRowCount rowCount = applyUriQuery(query);
-
-        configFindQuery(query);
-
+        final FutureRowCount rowCount = applyUriQuery(query);
         Response.ResponseBuilder builder = Response.ok();
-
-        List<T> list = query.findList();
-
-        Response response = builder.entity(processFoundModelList(list)).build();
+        Response response = builder.entity(server.execute(new TxCallable<Object>() {
+                    @Override
+                    public Object call() {
+                        configFindQuery(query);
+                        List<T> list = query.findList();
+                        return processFoundModelList(list);
+                    }
+                })
+        ).build();
 
         applyRowCountHeader(response.getHeaders(), query, rowCount);
 
@@ -304,8 +309,12 @@ public abstract class AbstractModelResource<T extends Model> {
         return list;
     }
 
+    protected FutureRowCount applyUriQuery(final Query<T> query, boolean needPageList) {
+        return EbeanModelProcessor.applyUriQuery(uriInfo.getQueryParameters(), query, needPageList);
+    }
+
     protected FutureRowCount applyUriQuery(final Query<T> query) {
-        return EbeanModelProcessor.applyUriQuery(uriInfo.getQueryParameters(), query);
+        return applyUriQuery(query, true);
     }
 
     protected void applyRowCountHeader(MultivaluedMap<String, Object> headerParams, Query query, FutureRowCount rowCount) {

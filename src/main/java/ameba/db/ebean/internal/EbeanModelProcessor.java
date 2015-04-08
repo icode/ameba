@@ -177,20 +177,25 @@ public class EbeanModelProcessor implements WriterInterceptor {
             }
     }
 
-    public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams, Query query) {
+    public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams,
+                                               Query query, boolean needPageList) {
         applyPathProperties(queryParams, query);
         applyWhere(queryParams, query);
         applyOrderBy(queryParams, query);
-        return applyPageList(queryParams, query);
+        if (needPageList)
+            return applyPageList(queryParams, query);
+        return null;
+    }
+
+    public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams, Query query) {
+        return applyUriQuery(queryParams, query, true);
     }
 
     public static void applyRowCountHeader(MultivaluedMap<String, Object> headerParams, Query query, FutureRowCount rowCount) {
         if (rowCount != null) {
             try {
                 headerParams.putSingle(REQ_TOTAL_COUNT_HEADER_NAME, rowCount.get());
-            } catch (InterruptedException e) {
-                headerParams.putSingle(REQ_TOTAL_COUNT_HEADER_NAME, query.findRowCount());
-            } catch (ExecutionException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 headerParams.putSingle(REQ_TOTAL_COUNT_HEADER_NAME, query.findRowCount());
             }
         }
