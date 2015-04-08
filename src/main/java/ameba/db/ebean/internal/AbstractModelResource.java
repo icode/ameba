@@ -2,6 +2,7 @@ package ameba.db.ebean.internal;
 
 import ameba.core.ws.rs.PATCH;
 import ameba.db.model.Model;
+import ameba.lib.LoggerOwner;
 import com.avaje.ebean.*;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
@@ -22,7 +23,7 @@ import java.util.Set;
 /**
  * @author icode
  */
-public abstract class AbstractModelResource<T extends Model> {
+public abstract class AbstractModelResource<T extends Model> extends LoggerOwner {
 
     protected Class<T> modelType;
     protected final SpiEbeanServer server;
@@ -101,8 +102,13 @@ public abstract class AbstractModelResource<T extends Model> {
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         descriptor.convertSetId(id, (EntityBean) model);
         EntityBeanIntercept intercept = ((EntityBean) model)._ebean_getIntercept();
+        intercept.setLoaded();
+        int idIndex = descriptor.getIdProperty().getPropertyIndex();
         for (int i = 0; i < intercept.getPropertyLength(); i++) {
-            intercept.markPropertyAsChanged(i);
+            if (i != idIndex) {
+                intercept.markPropertyAsChanged(i);
+                intercept.setLoadedProperty(i);
+            }
         }
         final Response.ResponseBuilder builder = Response.noContent();
         server.execute(new TxRunnable() {
@@ -117,6 +123,7 @@ public abstract class AbstractModelResource<T extends Model> {
                 }, new Runnable() {
                     @Override
                     public void run() {
+                        logger().debug("not found model record, insert a model record.");
                         preInsertModel(model);
                         insertModel(model);
                         postInsertModel(model);
