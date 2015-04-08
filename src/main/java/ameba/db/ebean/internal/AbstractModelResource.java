@@ -44,7 +44,7 @@ public abstract class AbstractModelResource<T extends Model> {
      * @param model the model to insert
      */
     @POST
-    public Response insert(@NotNull @Valid final T model) {
+    public final Response insert(@NotNull @Valid final T model) {
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         Object idProp = descriptor.getId((EntityBean) model);
         if (idProp instanceof CharSequence) {
@@ -92,7 +92,7 @@ public abstract class AbstractModelResource<T extends Model> {
      */
     @PUT
     @Path("{id}")
-    public void update(@PathParam("id") String id, @NotNull @Valid final T model) {
+    public final void update(@PathParam("id") String id, @NotNull @Valid final T model) {
 
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         descriptor.convertSetId(id, (EntityBean) model);
@@ -130,7 +130,7 @@ public abstract class AbstractModelResource<T extends Model> {
      */
     @PATCH
     @Path("{id}")
-    public void patch(@PathParam("id") String id, @NotNull final T model) {
+    public final void patch(@PathParam("id") String id, @NotNull final T model) {
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         descriptor.convertSetId(id, (EntityBean) model);
         server.execute(new TxRunnable() {
@@ -162,7 +162,7 @@ public abstract class AbstractModelResource<T extends Model> {
      */
     @DELETE
     @Path("{ids}")
-    public void deleteMultiple(@NotNull @PathParam("ids") final PathSegment ids) {
+    public final void deleteMultiple(@NotNull @PathParam("ids") final PathSegment ids) {
         final String firstId = ids.getPath();
         Set<String> idSet = ids.getMatrixParameters().keySet();
         if (!idSet.isEmpty()) {
@@ -220,7 +220,7 @@ public abstract class AbstractModelResource<T extends Model> {
      */
     @GET
     @Path("{id}")
-    public Response find(@NotNull @PathParam("id") final String id) {
+    public final Response find(@NotNull @PathParam("id") final String id) {
         final Query<T> query = server.find(modelType);
         applyUriQuery(query, false);
         Response.ResponseBuilder builder = Response.ok();
@@ -261,7 +261,7 @@ public abstract class AbstractModelResource<T extends Model> {
      * </p>
      */
     @GET
-    public Response find() {
+    public final Response find() {
 
         final Query<T> query = server.find(modelType);
 
