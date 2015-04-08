@@ -5,6 +5,11 @@ import javax.ws.rs.NameBinding;
 import java.lang.annotation.*;
 
 /**
+ * HTTP PATCH Method
+ *
+ * must be have @GET resource/{id} method and none arguments
+ *
+ *
  * @author icode
  */
 @Target({ElementType.METHOD, ElementType.TYPE})

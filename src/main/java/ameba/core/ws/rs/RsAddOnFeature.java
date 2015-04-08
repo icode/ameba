@@ -13,6 +13,9 @@ public class RsAddOnFeature implements Feature {
         if (!context.getConfiguration().isRegistered(OptionsAcceptPatchHeaderFilter.class)) {
             context.register(OptionsAcceptPatchHeaderFilter.class);
         }
+        if (!context.getConfiguration().isRegistered(PatchingInterceptor.class)) {
+            context.register(PatchingInterceptor.class);
+        }
         if (!context.getConfiguration().isRegistered(DefaultContentTypeFilter.class)) {
             context.register(DefaultContentTypeFilter.class);
         }

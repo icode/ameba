@@ -10,6 +10,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.persistence.OptimisticLockException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
@@ -40,6 +41,8 @@ public abstract class AbstractModelResource<T extends Model> {
 
     /**
      * Insert a model.
+     * <p/>
+     * success status 201
      *
      * @param model the model to insert
      */
@@ -65,10 +68,7 @@ public abstract class AbstractModelResource<T extends Model> {
         });
         Object id = server.getBeanId(model);
 
-        UriBuilder ub = uriInfo.getAbsolutePathBuilder();
-        URI createdUri = ub.path("" + id).build();
-
-        return Response.created(createdUri).build();
+        return Response.created(buildLocationUri(id.toString())).build();
     }
 
     protected void preInsertModel(final T model) {
@@ -85,14 +85,18 @@ public abstract class AbstractModelResource<T extends Model> {
 
 
     /**
-     * Update a model.
+     * replace or insert a model.
+     * <p/>
+     * success replace status 204
+     * <br/>
+     * fail replace but inserted status 201
      *
      * @param id    the unique id of the model
      * @param model the model to update
      */
     @PUT
     @Path("{id}")
-    public final void update(@PathParam("id") String id, @NotNull @Valid final T model) {
+    public final Response replace(@PathParam("id") final String id, @NotNull @Valid final T model) {
 
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         descriptor.convertSetId(id, (EntityBean) model);
@@ -100,45 +104,78 @@ public abstract class AbstractModelResource<T extends Model> {
         for (int i = 0; i < intercept.getPropertyLength(); i++) {
             intercept.markPropertyAsChanged(i);
         }
+        final Response.ResponseBuilder builder = Response.noContent();
         server.execute(new TxRunnable() {
             @Override
             public void run() {
-                preUpdateModel(model);
-                updateModel(model);
-                postUpdateModel(model);
+                preReplaceModel(model);
+                processCheckRowCountError(new Runnable() {
+                    @Override
+                    public void run() {
+                        replaceModel(model);
+                    }
+                }, new Runnable() {
+                    @Override
+                    public void run() {
+                        preInsertModel(model);
+                        insertModel(model);
+                        postInsertModel(model);
+                        builder.status(Response.Status.CREATED).location(buildLocationUri(id));
+                    }
+                });
+                postReplaceModel(model);
             }
         });
+        return builder.build();
     }
 
-    protected void preUpdateModel(final T model) {
+    protected void preReplaceModel(final T model) {
 
     }
 
-    protected void updateModel(final T model) {
+    protected void replaceModel(final T model) {
         server.update(model);
     }
 
-    protected void postUpdateModel(final T model) {
+    protected void postReplaceModel(final T model) {
 
     }
 
     /**
      * Update a model items.
+     * <p/>
+     * success status 204
+     * <br/>
+     * fail status 422
      *
      * @param id    the unique id of the model
      * @param model the model to update
      */
     @PATCH
     @Path("{id}")
-    public final void patch(@PathParam("id") String id, @NotNull final T model) {
+    public final Response patch(@PathParam("id") final String id, @NotNull final T model) {
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         descriptor.convertSetId(id, (EntityBean) model);
-        server.execute(new TxRunnable() {
+        return server.execute(new TxCallable<Response>() {
             @Override
-            public void run() {
+            public Response call() {
                 prePatchModel(model);
-                patchModel(model);
+                final Response.ResponseBuilder builder = Response.noContent()
+                        .contentLocation(buildLocationUri(id));
+                processCheckRowCountError(new Runnable() {
+                    @Override
+                    public void run() {
+                        patchModel(model);
+                    }
+                }, new Runnable() {
+                    @Override
+                    public void run() {
+                        // id 无法对应数据。实体对象和补丁都正确，但无法处理请求，所以返回422
+                        builder.status(422);
+                    }
+                });
                 postPatchModel(model);
+                return builder.build();
             }
         });
     }
@@ -157,14 +194,27 @@ public abstract class AbstractModelResource<T extends Model> {
 
     /**
      * Delete multiple model using Id's from the Matrix.
+     * <p/>
+     * success status 200
+     * <br/>
+     * fail status 404
+     * <br/>
+     * logical delete status 202
      *
      * @param ids The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
      */
     @DELETE
     @Path("{ids}")
-    public final void deleteMultiple(@NotNull @PathParam("ids") final PathSegment ids) {
+    public final Response deleteMultiple(@NotNull @PathParam("ids") final PathSegment ids) {
         final String firstId = ids.getPath();
         Set<String> idSet = ids.getMatrixParameters().keySet();
+        final Response.ResponseBuilder builder = Response.noContent();
+        final Runnable failProcess = new Runnable() {
+            @Override
+            public void run() {
+                builder.status(Response.Status.NOT_FOUND);
+            }
+        };
         if (!idSet.isEmpty()) {
             final Set<String> idCollection = Sets.newLinkedHashSet();
             idCollection.add(firstId);
@@ -173,7 +223,14 @@ public abstract class AbstractModelResource<T extends Model> {
                 @Override
                 public void run() {
                     preDeleteMultipleModel(idCollection);
-                    deleteMultipleModel(idCollection);
+                    processCheckRowCountError(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!deleteMultipleModel(idCollection)) {
+                                builder.status(Response.Status.ACCEPTED);
+                            }
+                        }
+                    }, failProcess);
                     postDeleteMultipleModel(idCollection);
                 }
             });
@@ -182,19 +239,34 @@ public abstract class AbstractModelResource<T extends Model> {
                 @Override
                 public void run() {
                     preDeleteModel(firstId);
-                    deleteModel(firstId);
+                    processCheckRowCountError(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!deleteModel(firstId)) {
+                                builder.status(Response.Status.ACCEPTED);
+                            }
+                        }
+                    }, failProcess);
                     postDeleteModel(firstId);
                 }
             });
         }
+        return builder.build();
     }
 
     protected void preDeleteMultipleModel(Set<String> idCollection) {
 
     }
 
-    protected void deleteMultipleModel(Set<String> idCollection) {
+    /**
+     * delete multiple Model
+     *
+     * @param idCollection model id collection
+     * @return delete from physical device, if logical delete return false, response status 202
+     */
+    protected boolean deleteMultipleModel(Set<String> idCollection) {
         server.delete(modelType, idCollection);
+        return true;
     }
 
     protected void postDeleteMultipleModel(Set<String> idCollection) {
@@ -205,8 +277,15 @@ public abstract class AbstractModelResource<T extends Model> {
 
     }
 
-    protected void deleteModel(String id) {
+    /**
+     * delete a model
+     *
+     * @param id model id
+     * @return delete from physical device, if logical delete return false, response status 202
+     */
+    protected boolean deleteModel(String id) {
         server.delete(modelType, id);
+        return true;
     }
 
     protected void postDeleteModel(String id) {
@@ -321,4 +400,23 @@ public abstract class AbstractModelResource<T extends Model> {
         EbeanModelProcessor.applyRowCountHeader(headerParams, query, rowCount);
     }
 
+    protected void processCheckRowCountError(Runnable runnable, Runnable process) {
+        try {
+            runnable.run();
+        } catch (OptimisticLockException e) {
+            if ("checkRowCount".equals(e.getStackTrace()[0].getMethodName())) {
+                if (process != null)
+                    process.run();
+            }
+        }
+    }
+
+    protected void processCheckRowCountError(Runnable runnable) {
+        processCheckRowCountError(runnable, null);
+    }
+
+    protected URI buildLocationUri(String id) {
+        UriBuilder ub = uriInfo.getAbsolutePathBuilder();
+        return ub.path(id).build();
+    }
 }
