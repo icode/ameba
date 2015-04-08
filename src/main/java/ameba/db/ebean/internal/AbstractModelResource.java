@@ -74,7 +74,7 @@ public abstract class AbstractModelResource<T extends Model> {
     }
 
     protected void insertModel(final T model) {
-        server.save(model);
+        server.insert(model);
     }
 
     protected void postInsertModel(final T model) {
