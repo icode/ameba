@@ -1,5 +1,6 @@
 package ameba.message;
 
+import ameba.core.ws.rs.PATCH;
 import ameba.message.internal.*;
 import com.fasterxml.jackson.jaxrs.base.JsonMappingExceptionMapper;
 import com.fasterxml.jackson.jaxrs.base.JsonParseExceptionMapper;
@@ -14,6 +15,9 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
+import java.util.Collections;
+
+import static javax.ws.rs.core.MediaType.*;
 
 /**
  * @author ICode
@@ -50,6 +54,10 @@ public class JacksonFeature implements Feature {
                 context.register(JacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
                 context.register(JacksonXMLProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
             }
+            Collections.addAll(PATCH.SUPPORT_PATCH_MEDIA_TYPES,
+                            APPLICATION_JSON,
+                            APPLICATION_XML,
+                            TEXT_XML);
         }
         return true;
     }

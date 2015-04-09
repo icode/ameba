@@ -8,7 +8,6 @@ import java.lang.annotation.*;
 import java.util.List;
 
 import static ameba.message.internal.MediaType.APPLICATION_JSON_PATCH;
-import static javax.ws.rs.core.MediaType.*;
 
 /**
  * HTTP PATCH Method
@@ -27,9 +26,6 @@ public @interface PATCH {
     String ACCEPT_PATCH_HEADER = "Accept-Patch";
     List<String> SUPPORT_PATCH_MEDIA_TYPES =
             Lists.newArrayList(
-                    APPLICATION_JSON_PATCH,
-                    APPLICATION_JSON,
-                    APPLICATION_XML,
-                    TEXT_XML
+                    APPLICATION_JSON_PATCH
             );
 }
