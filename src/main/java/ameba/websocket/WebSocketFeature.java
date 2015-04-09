@@ -1,6 +1,7 @@
 package ameba.websocket;
 
 import ameba.websocket.internal.WebSocketBinder;
+import ameba.websocket.internal.WebSocketModelProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,10 +33,14 @@ public class WebSocketFeature implements Feature {
 
         enabled = !"false".equals(config.getProperty(WEB_SOCKET_ENABLED_CONF));
 
-        context.register(new WebSocketBinder());
-
-        if (!enabled)
+        if (!enabled) {
             logger.debug("WebSocket 未启用");
-        return false;
+            return false;
+        }
+
+        context.register(new WebSocketBinder());
+        context.register(WebSocketModelProcessor.class);
+
+        return true;
     }
 }
