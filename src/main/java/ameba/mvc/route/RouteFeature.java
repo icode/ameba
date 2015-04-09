@@ -13,7 +13,7 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
 /**
- * @author 张立鑫 IntelligentCode
+ * @author icode
  * @since 2013-08-07
  */
 @Singleton
@@ -22,26 +22,26 @@ public class RouteFeature implements Feature {
 
     @Override
     public boolean configure(final FeatureContext context) {
-        context.register(new ModelProcessor() {
-            @Override
-            public ResourceModel processResourceModel(ResourceModel resourceModel, Configuration configuration) {
-                ResourceModel.Builder resourceModelBuilder = new ResourceModel.Builder(resourceModel, false);
-                String routePath = (String) configuration.getProperty("resource.helper.route.path");
-                Resource.Builder resourceBuilder = Resource.builder(RouteHelper.class);
-                if (StringUtils.isNotBlank(routePath)) {
-                    resourceBuilder.path(routePath);
+
+        final String routePath = (String) context.getConfiguration().getProperty("resource.helper.route.path");
+        if (StringUtils.isNotBlank(routePath)) {
+            context.register(new ModelProcessor() {
+                @Override
+                public ResourceModel processResourceModel(ResourceModel resourceModel, Configuration configuration) {
+                    ResourceModel.Builder resourceModelBuilder = new ResourceModel.Builder(resourceModel, false);
+                    Resource resource = Resource.builder(RouteHelper.class).path(routePath).build();
+                    resourceModelBuilder.addResource(resource);
+                    return resourceModelBuilder.build();
                 }
-                Resource resource = resourceBuilder.build();
-                resourceModelBuilder.addResource(resource);
-                return resourceModelBuilder.build();
-            }
 
-            @Override
-            public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
-                return subResourceModel;
-            }
-        });
+                @Override
+                public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
+                    return subResourceModel;
+                }
+            });
+            return true;
+        }
 
-        return true;
+        return false;
     }
 }

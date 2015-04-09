@@ -1,6 +1,7 @@
 package ameba.core;
 
 import ameba.container.server.Request;
+import ameba.exception.AmebaException;
 import org.glassfish.jersey.internal.PropertiesDelegate;
 import org.glassfish.jersey.message.MessageBodyWorkers;
 import org.glassfish.jersey.message.internal.*;
@@ -30,7 +31,11 @@ public class Requests {
     }
 
     private static Request getRequest() {
-        return (Request) requestProvider.get();
+        Request request = (Request) requestProvider.get();
+        if (request == null) {
+            throw new AmebaException("Can not found current request, please check in request scope.");
+        }
+        return request;
     }
 
     public static String getRealAddress(String realIpHeader) {
