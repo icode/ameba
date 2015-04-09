@@ -306,7 +306,7 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
      */
     @GET
     @Path("{id}")
-    public final Response find(@NotNull @PathParam("id") final String id) {
+    public final Response findById(@NotNull @PathParam("id") final String id) {
         final Query<T> query = server.find(modelType);
         applyUriQuery(query, false);
         Response.ResponseBuilder builder = Response.ok();
@@ -314,6 +314,7 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
         return builder.entity(server.execute(new TxCallable<Object>() {
             @Override
             public Object call() {
+                configDefaultQuery(query);
                 configFindByIdQuery(query);
                 T m = query.setId(id).findUnique();
 
@@ -364,6 +365,7 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
         Response response = builder.entity(server.execute(new TxCallable<Object>() {
                     @Override
                     public Object call() {
+                        configDefaultQuery(query);
                         configFindQuery(query);
                         List<T> list = query.findList();
                         return processFoundModelList(list);
@@ -374,6 +376,11 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
         applyRowCountHeader(response.getHeaders(), query, rowCount);
 
         return response;
+    }
+
+
+    protected void configDefaultQuery(final Query<T> query) {
+
     }
 
 
