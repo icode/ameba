@@ -60,9 +60,9 @@ public class OptionsMethodProcessor implements ModelProcessor {
 
     public static String getSupportPatchMediaTypes() {
         if (SUPPORT_PATCH_MEDIA_TYPES == null) {
-            synchronized (PATCH.SUPPORT_PATCH_MEDIA_TYPES) {
+            synchronized (HttpPatchProperties.SUPPORT_PATCH_MEDIA_TYPES) {
                 if (SUPPORT_PATCH_MEDIA_TYPES == null) {
-                    SUPPORT_PATCH_MEDIA_TYPES = StringUtils.join(PATCH.SUPPORT_PATCH_MEDIA_TYPES, ",");
+                    SUPPORT_PATCH_MEDIA_TYPES = StringUtils.join(HttpPatchProperties.SUPPORT_PATCH_MEDIA_TYPES, ",");
                 }
             }
         }
@@ -94,8 +94,8 @@ public class OptionsMethodProcessor implements ModelProcessor {
                 (extendedUriInfo.getMatchedRuntimeResources().get(0)));
 
         Response.ResponseBuilder builder = Response.ok().allow(allowedMethods);
-        if (allowedMethods.contains(PATCH.NAME)) {
-            builder.header(PATCH.ACCEPT_PATCH_HEADER, getSupportPatchMediaTypes());
+        if (allowedMethods.contains(HttpPatchProperties.METHOD_NAME)) {
+            builder.header(HttpPatchProperties.ACCEPT_PATCH_HEADER, getSupportPatchMediaTypes());
         }
         if (mediaType != null) {
             builder.type(mediaType);
