@@ -31,9 +31,9 @@ import java.util.List;
  */
 public class ParameterInjectionBinder extends AbstractBinder {
 
+    public static final String CLASS_ANALYZER_NAME = "AmebaWebSocketClassAnalyzer";
     private static final String PATH_PARAM_ERR_MSG = "@PathParam parameter class must be String.";
     private static final String QUERY_PARAM_ERR_MSG = "@QueryParam parameter class must be String, String[] or List<String>";
-    public static final String CLASS_ANALYZER_NAME = "AmebaWebSocketClassAnalyzer";
 
     @Override
     protected void configure() {

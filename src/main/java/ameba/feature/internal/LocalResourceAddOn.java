@@ -1,9 +1,9 @@
 package ameba.feature.internal;
 
+import ameba.container.Container;
 import ameba.core.AddOn;
 import ameba.core.Application;
 import ameba.event.Listener;
-import ameba.event.SystemEventBus;
 import com.google.common.collect.Sets;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
@@ -19,15 +19,16 @@ import java.util.Set;
  */
 public class LocalResourceAddOn extends AddOn {
     @Override
-    public void setup(Application application) {
+    public void setup(final Application application) {
 
         final Set<Application.ClassFoundEvent.ClassInfo> classInfoSet = Sets.newLinkedHashSet();
-        SystemEventBus.subscribe(Application.ClassFoundEvent.class, new Listener<Application.ClassFoundEvent>() {
+        subscribeSystemEvent(Application.ClassFoundEvent.class, new Listener<Application.ClassFoundEvent>() {
             @Override
             public void onReceive(Application.ClassFoundEvent event) {
                 event.accept(new Application.ClassFoundEvent.ClassAccept() {
                     @Override
-                    public boolean accept(Application.ClassFoundEvent.ClassInfo info) {
+                    @SuppressWarnings("unchecked")
+                    public final boolean accept(Application.ClassFoundEvent.ClassInfo info) {
                         if (info.containsAnnotations(Service.class)) {
                             classInfoSet.add(info);
                             return true;
@@ -38,7 +39,7 @@ public class LocalResourceAddOn extends AddOn {
             }
         });
 
-        application.register(new Feature() {
+        final Feature localResource = new Feature() {
 
             @Inject
             private ServiceLocator locator;
@@ -51,6 +52,16 @@ public class LocalResourceAddOn extends AddOn {
                 classInfoSet.clear();
                 return true;
             }
+        };
+
+        subscribeSystemEvent(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
+            @Override
+            public void onReceive(Container.BeginReloadEvent event) {
+                event.getNewConfig().register(localResource);
+            }
         });
+
+        application.register(localResource);
     }
+
 }

@@ -19,33 +19,6 @@ import java.util.List;
  */
 public abstract class TransactionInterceptor implements MethodInterceptor {
 
-    static class TransactionBinder extends AbstractBinder {
-        @Override
-        protected void configure() {
-//            bind(MyInterceptionService.class)
-//                    .to(org.glassfish.hk2.api.InterceptionService.class)
-//                    .in(Singleton.class);
-        }
-    }
-
-    static class c implements InterceptionService {
-
-        @Override
-        public Filter getDescriptorFilter() {
-            return null;
-        }
-
-        @Override
-        public List<MethodInterceptor> getMethodInterceptors(Method method) {
-            return null;
-        }
-
-        @Override
-        public List<ConstructorInterceptor> getConstructorInterceptors(Constructor<?> constructor) {
-            return null;
-        }
-    }
-
     @Override
     public Object invoke(final MethodInvocation methodInvocation) throws Throwable {
         begin();
@@ -75,5 +48,32 @@ public abstract class TransactionInterceptor implements MethodInterceptor {
     protected abstract void rollback();
 
     protected abstract void end();
+
+    static class TransactionBinder extends AbstractBinder {
+        @Override
+        protected void configure() {
+//            bind(MyInterceptionService.class)
+//                    .to(org.glassfish.hk2.api.InterceptionService.class)
+//                    .in(Singleton.class);
+        }
+    }
+
+    static class c implements InterceptionService {
+
+        @Override
+        public Filter getDescriptorFilter() {
+            return null;
+        }
+
+        @Override
+        public List<MethodInterceptor> getMethodInterceptors(Method method) {
+            return null;
+        }
+
+        @Override
+        public List<ConstructorInterceptor> getConstructorInterceptors(Constructor<?> constructor) {
+            return null;
+        }
+    }
 
 }

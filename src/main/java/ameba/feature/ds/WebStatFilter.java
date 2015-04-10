@@ -36,23 +36,19 @@ import java.util.Set;
 @Singleton
 class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(WebStatFilter.class);
-
     public final static String PARAM_NAME_PORFILE_ENABLE = "ds.profileEnable";
     public final static String PARAM_NAME_SESSION_STAT_MAX_COUNT = "ds.sessionStatMaxCount";
     public static final String PARAM_NAME_EXCLUSIONS = "ds.exclusions";
     public static final String PARAM_NAME_PRINCIPAL_COOKIE_NAME = "ds.principalCookieName";
     public static final String PARAM_NAME_REAL_IP_HEADER = "ds.realIpHeader";
-
     public final static int DEFAULT_MAX_STAT_SESSION_COUNT = 1000 * 100;
-
-    private static WebAppStat webAppStat = null;
-    private static WebStatFilterContextListener statFilterContextListener = new WebStatFilterContextListener();
+    private static final Logger logger = LoggerFactory.getLogger(WebStatFilter.class);
     /**
      * PatternMatcher used in determining which paths to react to for a given request.
      */
     protected static PatternMatcher pathMatcher = new ServletPathMatcher();
-
+    private static WebAppStat webAppStat = null;
+    private static WebStatFilterContextListener statFilterContextListener = new WebStatFilterContextListener();
     private static Set<String> excludesPattern;
 
     private static int sessionStatMaxCount = DEFAULT_MAX_STAT_SESSION_COUNT;
@@ -62,92 +58,6 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     private static String principalCookieName;
     private static String realIpHeader;
-
-    static class WebStatFilterContextListener extends StatFilterContextListenerAdapter {
-
-        @Override
-        public void addUpdateCount(int updateCount) {
-            WebRequestStat reqStat = WebRequestStat.current();
-            if (reqStat != null) {
-                reqStat.addJdbcUpdateCount(updateCount);
-            }
-        }
-
-        @Override
-        public void addFetchRowCount(int fetchRowCount) {
-            WebRequestStat reqStat = WebRequestStat.current();
-            if (reqStat != null) {
-                reqStat.addJdbcFetchRowCount(fetchRowCount);
-            }
-        }
-
-        @Override
-        public void executeBefore(String sql, boolean inTransaction) {
-            WebRequestStat reqStat = WebRequestStat.current();
-            if (reqStat != null) {
-                reqStat.incrementJdbcExecuteCount();
-            }
-        }
-
-        @Override
-        public void executeAfter(String sql, long nanos, Throwable error) {
-            WebRequestStat reqStat = WebRequestStat.current();
-            if (reqStat != null) {
-                reqStat.addJdbcExecuteTimeNano(nanos);
-                if (error != null) {
-                    reqStat.incrementJdbcExecuteErrorCount();
-                }
-            }
-        }
-
-        @Override
-        public void commit() {
-            WebRequestStat reqStat = WebRequestStat.current();
-            if (reqStat != null) {
-                reqStat.incrementJdbcCommitCount();
-            }
-        }
-
-        @Override
-        public void rollback() {
-            WebRequestStat reqStat = WebRequestStat.current();
-            if (reqStat != null) {
-                reqStat.incrementJdbcRollbackCount();
-            }
-        }
-
-        @Override
-        public void pool_connect() {
-            WebRequestStat reqStat = WebRequestStat.current();
-            if (reqStat != null) {
-                reqStat.incrementJdbcPoolConnectCount();
-            }
-        }
-
-        @Override
-        public void pool_close(long nanos) {
-            WebRequestStat reqStat = WebRequestStat.current();
-            if (reqStat != null) {
-                reqStat.incrementJdbcPoolCloseCount();
-            }
-        }
-
-        @Override
-        public void resultSet_open() {
-            WebRequestStat reqStat = WebRequestStat.current();
-            if (reqStat != null) {
-                reqStat.incrementJdbcResultSetOpenCount();
-            }
-        }
-
-        @Override
-        public void resultSet_close(long nanos) {
-            WebRequestStat reqStat = WebRequestStat.current();
-            if (reqStat != null) {
-                reqStat.incrementJdbcResultSetCloseCount();
-            }
-        }
-    }
 
     @Inject
     public WebStatFilter(Configuration configuration) {
@@ -216,7 +126,6 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
         }
         WebAppStatManager.getInstance().addWebAppStatSet(webAppStat);
     }
-
 
     private WebURIStat getUriStat(String requestURI) {
         WebURIStat uriStat = webAppStat.getURIStat(requestURI, false);
@@ -317,15 +226,6 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
         }
     }
 
-    //    public void destroy() {
-//        StatFilterContext.getInstance().removeContextListener(statFilterContextListener);
-//
-//        if (webAppStat != null) {
-//            WebAppStatManager.getInstance().remove(webAppStat);
-//        }
-//    }
-
-
     protected String getRemoteAddress(ContainerRequestContext request) {
         String ip = null;
         if (realIpHeader != null && realIpHeader.length() != 0) {
@@ -345,6 +245,14 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
         }
         return ip;
     }
+
+    //    public void destroy() {
+//        StatFilterContext.getInstance().removeContextListener(statFilterContextListener);
+//
+//        if (webAppStat != null) {
+//            WebAppStatManager.getInstance().remove(webAppStat);
+//        }
+//    }
 
     public String getPrincipal(ContainerRequestContext httpRequest) {
         if (principalCookieName != null && httpRequest.getCookies().size() > 0) {
@@ -396,12 +304,12 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
         WebStatFilter.profileEnable = profileEnable;
     }
 
-    public void setWebAppStat(WebAppStat webAppStat) {
-        WebStatFilter.webAppStat = webAppStat;
-    }
-
     public WebAppStat getWebAppStat() {
         return webAppStat;
+    }
+
+    public void setWebAppStat(WebAppStat webAppStat) {
+        WebStatFilter.webAppStat = webAppStat;
     }
 
     public String getContextPath() {
@@ -414,5 +322,91 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     public WebStatFilterContextListener getStatFilterContextListener() {
         return statFilterContextListener;
+    }
+
+    static class WebStatFilterContextListener extends StatFilterContextListenerAdapter {
+
+        @Override
+        public void addUpdateCount(int updateCount) {
+            WebRequestStat reqStat = WebRequestStat.current();
+            if (reqStat != null) {
+                reqStat.addJdbcUpdateCount(updateCount);
+            }
+        }
+
+        @Override
+        public void addFetchRowCount(int fetchRowCount) {
+            WebRequestStat reqStat = WebRequestStat.current();
+            if (reqStat != null) {
+                reqStat.addJdbcFetchRowCount(fetchRowCount);
+            }
+        }
+
+        @Override
+        public void executeBefore(String sql, boolean inTransaction) {
+            WebRequestStat reqStat = WebRequestStat.current();
+            if (reqStat != null) {
+                reqStat.incrementJdbcExecuteCount();
+            }
+        }
+
+        @Override
+        public void executeAfter(String sql, long nanos, Throwable error) {
+            WebRequestStat reqStat = WebRequestStat.current();
+            if (reqStat != null) {
+                reqStat.addJdbcExecuteTimeNano(nanos);
+                if (error != null) {
+                    reqStat.incrementJdbcExecuteErrorCount();
+                }
+            }
+        }
+
+        @Override
+        public void commit() {
+            WebRequestStat reqStat = WebRequestStat.current();
+            if (reqStat != null) {
+                reqStat.incrementJdbcCommitCount();
+            }
+        }
+
+        @Override
+        public void rollback() {
+            WebRequestStat reqStat = WebRequestStat.current();
+            if (reqStat != null) {
+                reqStat.incrementJdbcRollbackCount();
+            }
+        }
+
+        @Override
+        public void pool_connect() {
+            WebRequestStat reqStat = WebRequestStat.current();
+            if (reqStat != null) {
+                reqStat.incrementJdbcPoolConnectCount();
+            }
+        }
+
+        @Override
+        public void pool_close(long nanos) {
+            WebRequestStat reqStat = WebRequestStat.current();
+            if (reqStat != null) {
+                reqStat.incrementJdbcPoolCloseCount();
+            }
+        }
+
+        @Override
+        public void resultSet_open() {
+            WebRequestStat reqStat = WebRequestStat.current();
+            if (reqStat != null) {
+                reqStat.incrementJdbcResultSetOpenCount();
+            }
+        }
+
+        @Override
+        public void resultSet_close(long nanos) {
+            WebRequestStat reqStat = WebRequestStat.current();
+            if (reqStat != null) {
+                reqStat.incrementJdbcResultSetCloseCount();
+            }
+        }
     }
 }

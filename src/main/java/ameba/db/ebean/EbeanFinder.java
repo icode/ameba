@@ -492,10 +492,4 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     public Query<T> setForUpdate(boolean forUpdate) {
         return query().setForUpdate(forUpdate);
     }
-
-    @Override
-    public void deleteById(ID id) {
-        server().delete(id);
-    }
-
 }

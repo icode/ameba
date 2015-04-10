@@ -1,5 +1,6 @@
 package ameba.db.model;
 
+import ameba.container.Container;
 import ameba.core.AddOn;
 import ameba.core.Application;
 import ameba.db.DataSource;
@@ -10,6 +11,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.Embeddable;
+import javax.persistence.Entity;
 import javax.ws.rs.core.Configuration;
 import java.util.Collections;
 import java.util.Map;
@@ -64,15 +67,27 @@ public class ModelManager extends AddOn {
                     public void onReceive(Application.ClassFoundEvent event) {
                         event.accept(new Application.ClassFoundEvent.ClassAccept() {
                             @Override
+                            @SuppressWarnings("unchecked")
                             public boolean accept(Application.ClassFoundEvent.ClassInfo info) {
                                 if (info.startsWithPackage(startsPackages)) {
                                     logger.trace("load class : {}", info.getClassName());
-                                    classes.add(info.toClass());
+                                    Class clazz = info.toClass();
+                                    if (info.containsAnnotations(Entity.class, Embeddable.class)
+                                            || Model.class.isAssignableFrom(clazz)) {
+                                        classes.add(clazz);
+                                    }
                                     return true;
                                 }
                                 return false;
                             }
                         });
+                    }
+                });
+
+                subscribeSystemEvent(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
+                    @Override
+                    public void onReceive(Container.BeginReloadEvent event) {
+                        classes.clear();
                     }
                 });
                 modelMap.put(name, classes);

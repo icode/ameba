@@ -26,7 +26,6 @@ import java.util.HashMap;
 @Provider
 @Singleton
 public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
-    protected static final HashMap<Integer, String> errorTemplateMap = Maps.newHashMap();
     // 模板引擎会去掉第一个斜线
     public static final String DEFAULT_ERROR_PAGE_DIR = "/error/";
     public static final String DEFAULT_404_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "404.httl";
@@ -37,6 +36,7 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
     public static final String DEFAULT_405_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "405.httl";
     public static final String DEFAULT_406_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "406.httl";
     public static final String DEFAULT_415_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "415.httl";
+    protected static final HashMap<Integer, String> errorTemplateMap = Maps.newHashMap();
     private static final Logger logger = LoggerFactory.getLogger(ErrorPageGenerator.class);
     private static String defaultErrorTemplate;
 

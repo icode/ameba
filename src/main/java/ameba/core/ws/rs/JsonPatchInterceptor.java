@@ -26,7 +26,7 @@ import java.lang.reflect.Method;
  * @author icode
  */
 @PATCH
-public class PatchingInterceptor implements ReaderInterceptor {
+public class JsonPatchInterceptor implements ReaderInterceptor {
 
     private final UriInfo uriInfo;
     private final MessageBodyWorkers workers;
@@ -37,7 +37,7 @@ public class PatchingInterceptor implements ReaderInterceptor {
      * @param uriInfo {@code javax.ws.rs.core.UriInfo} proxy instance.
      * @param workers {@link org.glassfish.jersey.message.MessageBodyWorkers} message body workers.
      */
-    public PatchingInterceptor(@Context UriInfo uriInfo, @Context MessageBodyWorkers workers) {
+    public JsonPatchInterceptor(@Context UriInfo uriInfo, @Context MessageBodyWorkers workers) {
         this.uriInfo = uriInfo;
         this.workers = workers;
     }

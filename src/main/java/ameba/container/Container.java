@@ -39,19 +39,13 @@ public abstract class Container {
     public static Container create(Application application) throws IllegalAccessException, InstantiationException {
 
         String provider = (String) application.getProperty("app.container.provider");
-
+        logger.debug("HTTP容器实现 {}", provider);
         try {
             Class<Container> ContainerClass = (Class<Container>) ClassUtils.getClass(provider);
             Constructor<Container> constructor = ContainerClass.<Container>getDeclaredConstructor(Application.class);
             return constructor.newInstance(application);
-        } catch (InvocationTargetException e) {
+        } catch (InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
             throw new ContainerException(e);
-        } catch (NoSuchMethodException e) {
-            throw new ContainerException(e);
-        } catch (ClassNotFoundException e) {
-            throw new ContainerException(e);
-        } finally {
-            logger.debug("HTTP容器为 {}", provider);
         }
     }
 
@@ -82,7 +76,7 @@ public abstract class Container {
 
             @Override
             public void onReload(org.glassfish.jersey.server.spi.Container container) {
-                SystemEventBus.publish(new ReloadEvent(Container.this, application));
+                SystemEventBus.publish(new ReloadedEvent(Container.this, application));
                 logger.trace("应用容器已重新加载");
             }
 
@@ -171,8 +165,8 @@ public abstract class Container {
         }
     }
 
-    public static class ReloadEvent extends ContainerEvent {
-        public ReloadEvent(Container container, Application app) {
+    public static class ReloadedEvent extends ContainerEvent {
+        public ReloadedEvent(Container container, Application app) {
             super(container, app);
         }
     }

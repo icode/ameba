@@ -12,13 +12,13 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
 
     private EbeanServer server;
 
-    private EbeanServer server() {
-        return server;
-    }
-
     public EbeanPersister(String serverName, M model) {
         super(serverName, model);
         server = Ebean.getServer(getServerName());
+    }
+
+    private EbeanServer server() {
+        return server;
     }
 
     @Override

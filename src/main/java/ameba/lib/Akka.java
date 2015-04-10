@@ -8,10 +8,14 @@ import org.apache.commons.lang3.StringUtils;
  * @author icode
  */
 public class Akka {
+    private static ActorSystem system;
+
     private Akka() {
     }
 
-    private static ActorSystem system;
+    public static ActorSystem system() {
+        return system;
+    }
 
     public static class AddOn extends ameba.core.AddOn {
         @Override
@@ -19,9 +23,5 @@ public class Akka {
             String name = StringUtils.defaultString(application.getApplicationName(), "ameba");
             system = ActorSystem.create(name);
         }
-    }
-
-    public static ActorSystem system() {
-        return system;
     }
 }

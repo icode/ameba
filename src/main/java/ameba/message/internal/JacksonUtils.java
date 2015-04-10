@@ -21,10 +21,10 @@ import java.util.Set;
  */
 public class JacksonUtils {
 
+    private static Set<Module> defaultModules = Sets.newLinkedHashSet();
+
     private JacksonUtils() {
     }
-
-    private static Set<Module> defaultModules = Sets.newLinkedHashSet();
 
     public static void addDefaultModule(Module module) {
         defaultModules.add(module);

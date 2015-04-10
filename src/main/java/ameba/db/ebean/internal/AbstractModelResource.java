@@ -6,10 +6,13 @@ import ameba.lib.LoggerOwner;
 import com.avaje.ebean.*;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
+import com.avaje.ebeaninternal.api.ScopeTrans;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.internal.util.collection.Ref;
+import org.glassfish.jersey.internal.util.collection.Refs;
 
 import javax.persistence.OptimisticLockException;
 import javax.validation.Valid;
@@ -25,8 +28,8 @@ import java.util.Set;
  */
 public abstract class AbstractModelResource<T extends Model> extends LoggerOwner {
 
-    protected Class<T> modelType;
     protected final SpiEbeanServer server;
+    protected Class<T> modelType;
     protected String defaultFindOrderBy;
     @Context
     protected UriInfo uriInfo;
@@ -48,7 +51,7 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
      * @param model the model to insert
      */
     @POST
-    public final Response insert(@NotNull @Valid final T model) {
+    public final Response insert(@NotNull @Valid final T model) throws Exception {
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         Object idProp = descriptor.getId((EntityBean) model);
         if (idProp instanceof CharSequence) {
@@ -59,9 +62,9 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
             descriptor.getIdProperty().setValue((EntityBean) model, null);
         }
 
-        server.execute(new TxRunnable() {
+        executeTx(new TxRunnable() {
             @Override
-            public void run() {
+            public void run() throws Exception {
                 preInsertModel(model);
                 insertModel(model);
                 postInsertModel(model);
@@ -69,18 +72,18 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
         });
         Object id = server.getBeanId(model);
 
-        return Response.created(buildLocationUri(id.toString())).build();
+        return Response.created(buildLocationUri(id != null ? id.toString() : "")).build();
     }
 
-    protected void preInsertModel(final T model) {
+    protected void preInsertModel(final T model) throws Exception {
 
     }
 
-    protected void insertModel(final T model) {
+    protected void insertModel(final T model) throws Exception {
         server.insert(model);
     }
 
-    protected void postInsertModel(final T model) {
+    protected void postInsertModel(final T model) throws Exception {
 
     }
 
@@ -97,7 +100,7 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
      */
     @PUT
     @Path("{id}")
-    public final Response replace(@PathParam("id") final String id, @NotNull @Valid final T model) {
+    public final Response replace(@PathParam("id") final String id, @NotNull @Valid final T model) throws Exception {
 
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         descriptor.convertSetId(id, (EntityBean) model);
@@ -111,18 +114,18 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
             }
         }
         final Response.ResponseBuilder builder = Response.noContent();
-        server.execute(new TxRunnable() {
+        executeTx(new TxRunnable() {
             @Override
-            public void run() {
+            public void run() throws Exception {
                 preReplaceModel(model);
-                processCheckRowCountError(new Runnable() {
+                processCheckRowCountError(new TxRunnable() {
                     @Override
-                    public void run() {
+                    public void run() throws Exception {
                         replaceModel(model);
                     }
-                }, new Runnable() {
+                }, new TxRunnable() {
                     @Override
-                    public void run() {
+                    public void run() throws Exception {
                         logger().debug("not found model record, insert a model record.");
                         preInsertModel(model);
                         insertModel(model);
@@ -136,15 +139,15 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
         return builder.build();
     }
 
-    protected void preReplaceModel(final T model) {
+    protected void preReplaceModel(final T model) throws Exception {
 
     }
 
-    protected void replaceModel(final T model) {
+    protected void replaceModel(final T model) throws Exception {
         server.update(model);
     }
 
-    protected void postReplaceModel(final T model) {
+    protected void postReplaceModel(final T model) throws Exception {
 
     }
 
@@ -160,21 +163,21 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
      */
     @PATCH
     @Path("{id}")
-    public final Response patch(@PathParam("id") final String id, @NotNull final T model) {
+    public final Response patch(@PathParam("id") final String id, @NotNull final T model) throws Exception {
         BeanDescriptor descriptor = server.getBeanDescriptor(model.getClass());
         descriptor.convertSetId(id, (EntityBean) model);
-        return server.execute(new TxCallable<Response>() {
+        return executeTx(new TxCallable<Response>() {
             @Override
-            public Response call() {
+            public Response call() throws Exception {
                 prePatchModel(model);
                 final Response.ResponseBuilder builder = Response.noContent()
                         .contentLocation(buildLocationUri(id));
-                processCheckRowCountError(new Runnable() {
+                processCheckRowCountError(new TxRunnable() {
                     @Override
-                    public void run() {
+                    public void run() throws Exception {
                         patchModel(model);
                     }
-                }, new Runnable() {
+                }, new TxRunnable() {
                     @Override
                     public void run() {
                         // id 无法对应数据。实体对象和补丁都正确，但无法处理请求，所以返回422
@@ -187,15 +190,15 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
         });
     }
 
-    protected void prePatchModel(final T model) {
+    protected void prePatchModel(final T model) throws Exception {
 
     }
 
-    protected void patchModel(final T model) {
+    protected void patchModel(final T model) throws Exception {
         server.update(model);
     }
 
-    protected void postPatchModel(final T model) {
+    protected void postPatchModel(final T model) throws Exception {
 
     }
 
@@ -212,11 +215,11 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
      */
     @DELETE
     @Path("{ids}")
-    public final Response deleteMultiple(@NotNull @PathParam("ids") final PathSegment ids) {
+    public final Response deleteMultiple(@NotNull @PathParam("ids") final PathSegment ids) throws Exception {
         final String firstId = ids.getPath();
         Set<String> idSet = ids.getMatrixParameters().keySet();
         final Response.ResponseBuilder builder = Response.noContent();
-        final Runnable failProcess = new Runnable() {
+        final TxRunnable failProcess = new TxRunnable() {
             @Override
             public void run() {
                 builder.status(Response.Status.NOT_FOUND);
@@ -226,13 +229,13 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
             final Set<String> idCollection = Sets.newLinkedHashSet();
             idCollection.add(firstId);
             idCollection.addAll(idSet);
-            server.execute(new TxRunnable() {
+            executeTx(new TxRunnable() {
                 @Override
-                public void run() {
+                public void run() throws Exception {
                     preDeleteMultipleModel(idCollection);
-                    processCheckRowCountError(new Runnable() {
+                    processCheckRowCountError(new TxRunnable() {
                         @Override
-                        public void run() {
+                        public void run() throws Exception {
                             if (!deleteMultipleModel(idCollection)) {
                                 builder.status(Response.Status.ACCEPTED);
                             }
@@ -242,13 +245,13 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
                 }
             });
         } else {
-            server.execute(new TxRunnable() {
+            executeTx(new TxRunnable() {
                 @Override
-                public void run() {
+                public void run() throws Exception {
                     preDeleteModel(firstId);
-                    processCheckRowCountError(new Runnable() {
+                    processCheckRowCountError(new TxRunnable() {
                         @Override
-                        public void run() {
+                        public void run() throws Exception {
                             if (!deleteModel(firstId)) {
                                 builder.status(Response.Status.ACCEPTED);
                             }
@@ -261,7 +264,7 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
         return builder.build();
     }
 
-    protected void preDeleteMultipleModel(Set<String> idCollection) {
+    protected void preDeleteMultipleModel(Set<String> idCollection) throws Exception {
 
     }
 
@@ -271,16 +274,16 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
      * @param idCollection model id collection
      * @return delete from physical device, if logical delete return false, response status 202
      */
-    protected boolean deleteMultipleModel(Set<String> idCollection) {
+    protected boolean deleteMultipleModel(Set<String> idCollection) throws Exception {
         server.delete(modelType, idCollection);
         return true;
     }
 
-    protected void postDeleteMultipleModel(Set<String> idCollection) {
+    protected void postDeleteMultipleModel(Set<String> idCollection) throws Exception {
 
     }
 
-    protected void preDeleteModel(String id) {
+    protected void preDeleteModel(String id) throws Exception {
 
     }
 
@@ -290,12 +293,12 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
      * @param id model id
      * @return delete from physical device, if logical delete return false, response status 202
      */
-    protected boolean deleteModel(String id) {
+    protected boolean deleteModel(String id) throws Exception {
         server.delete(modelType, id);
         return true;
     }
 
-    protected void postDeleteModel(String id) {
+    protected void postDeleteModel(String id) throws Exception {
 
     }
 
@@ -306,16 +309,16 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
      */
     @GET
     @Path("{id}")
-    public final Response findById(@NotNull @PathParam("id") final String id) {
+    public final Response findById(@NotNull @PathParam("id") final String id) throws Exception {
         final Query<T> query = server.find(modelType);
-        applyUriQuery(query, false);
         Response.ResponseBuilder builder = Response.ok();
 
-        return builder.entity(server.execute(new TxCallable<Object>() {
+        return builder.entity(executeTx(new TxCallable<Object>() {
             @Override
-            public Object call() {
+            public Object call() throws Exception {
                 configDefaultQuery(query);
                 configFindByIdQuery(query);
+                applyUriQuery(query, false);
                 T m = query.setId(id).findUnique();
 
                 return processFoundModel(m);
@@ -332,11 +335,11 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
      * This effectively controls the "default" query used to render this model.
      * </p>
      */
-    protected void configFindByIdQuery(final Query<T> query) {
+    protected void configFindByIdQuery(final Query<T> query) throws Exception {
 
     }
 
-    protected Object processFoundModel(final T model) {
+    protected Object processFoundModel(final T model) throws Exception {
         return model;
     }
 
@@ -348,7 +351,7 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
      * </p>
      */
     @GET
-    public final Response find() {
+    public final Response find() throws Exception {
 
         final Query<T> query = server.find(modelType);
 
@@ -360,27 +363,24 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
             }
         }
 
-        final FutureRowCount rowCount = applyUriQuery(query);
+        final Ref<FutureRowCount> rowCount = Refs.emptyRef();
+
         Response.ResponseBuilder builder = Response.ok();
-        Response response = builder.entity(server.execute(new TxCallable<Object>() {
+        Response response = builder.entity(executeTx(new TxCallable<Object>() {
                     @Override
-                    public Object call() {
+                    public Object call() throws Exception {
                         configDefaultQuery(query);
                         configFindQuery(query);
+                        rowCount.set(applyUriQuery(query));
                         List<T> list = query.findList();
                         return processFoundModelList(list);
                     }
                 })
         ).build();
 
-        applyRowCountHeader(response.getHeaders(), query, rowCount);
+        applyRowCountHeader(response.getHeaders(), query, rowCount.get());
 
         return response;
-    }
-
-
-    protected void configDefaultQuery(final Query<T> query) {
-
     }
 
 
@@ -394,14 +394,43 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
      * query.
      * </p>
      */
-    protected void configFindQuery(final Query<T> query) {
+    protected void configFindQuery(final Query<T> query) throws Exception {
 
     }
 
-    protected Object processFoundModelList(final List<T> list) {
+    protected Object processFoundModelList(final List<T> list) throws Exception {
         return list;
     }
 
+
+    /**
+     * all query config default query
+     *
+     * @param query query
+     * @throws Exception
+     */
+    protected void configDefaultQuery(final Query<T> query) throws Exception {
+
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////                                   ///////////////////////////////////
+    ///////////////////////////////////        useful method block        ///////////////////////////////////
+    ///////////////////////////////////                                   ///////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    /**
+     * apply uri query parameter on query
+     *
+     * @param query        Query
+     * @param needPageList need page list
+     * @return page list count or null
+     * @see {@link EbeanModelProcessor#applyUriQuery(MultivaluedMap, Query, boolean)}
+     */
     protected FutureRowCount applyUriQuery(final Query<T> query, boolean needPageList) {
         return EbeanModelProcessor.applyUriQuery(uriInfo.getQueryParameters(), query, needPageList);
     }
@@ -414,7 +443,7 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
         EbeanModelProcessor.applyRowCountHeader(headerParams, query, rowCount);
     }
 
-    protected void processCheckRowCountError(Runnable runnable, Runnable process) {
+    protected void processCheckRowCountError(TxRunnable runnable, TxRunnable process) throws Exception {
         try {
             runnable.run();
         } catch (OptimisticLockException e) {
@@ -425,12 +454,54 @@ public abstract class AbstractModelResource<T extends Model> extends LoggerOwner
         }
     }
 
-    protected void processCheckRowCountError(Runnable runnable) {
+    protected void executeTx(TxScope scope, TxRunnable r) throws Exception {
+        ScopeTrans scopeTrans = server.createScopeTrans(scope);
+        try {
+            r.run();
+        } catch (Error e) {
+            throw scopeTrans.caughtError(e);
+        } catch (Exception e) {
+            throw scopeTrans.caughtThrowable(e);
+        } finally {
+            scopeTrans.onFinally();
+        }
+    }
+
+    protected void executeTx(TxRunnable r) throws Exception {
+        executeTx(null, r);
+    }
+
+    protected <O> O executeTx(TxCallable<O> c) throws Exception {
+        return executeTx(null, c);
+    }
+
+    protected <O> O executeTx(TxScope scope, TxCallable<O> c) throws Exception {
+        ScopeTrans scopeTrans = server.createScopeTrans(scope);
+        try {
+            return c.call();
+        } catch (Error e) {
+            throw scopeTrans.caughtError(e);
+        } catch (Exception e) {
+            throw scopeTrans.caughtThrowable(e);
+        } finally {
+            scopeTrans.onFinally();
+        }
+    }
+
+    protected void processCheckRowCountError(TxRunnable runnable) throws Exception {
         processCheckRowCountError(runnable, null);
     }
 
     protected URI buildLocationUri(String id) {
         UriBuilder ub = uriInfo.getAbsolutePathBuilder();
         return ub.path(id).build();
+    }
+
+    protected interface TxRunnable {
+        void run() throws Exception;
+    }
+
+    protected interface TxCallable<O> {
+        O call() throws Exception;
     }
 }

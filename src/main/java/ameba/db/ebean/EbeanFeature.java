@@ -1,12 +1,12 @@
 package ameba.db.ebean;
 
+import ameba.core.Application;
 import ameba.db.DataSource;
 import ameba.db.TransactionFeature;
 import ameba.db.ebean.internal.EbeanModelProcessor;
 import ameba.db.ebean.transaction.EbeanTransactional;
 import ameba.db.model.ModelManager;
 import ameba.exception.ConfigErrorException;
-import ameba.message.internal.JacksonUtils;
 import ameba.util.IOUtils;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
@@ -15,17 +15,19 @@ import com.avaje.ebean.config.*;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
 import com.fasterxml.jackson.core.JsonFactory;
+import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.avaje.ebeanorm.jackson.JacksonEbeanModule;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.FeatureContext;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -35,8 +37,6 @@ import java.util.Set;
  */
 public class EbeanFeature extends TransactionFeature {
 
-    private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
-
     public static final String FIELDS_PARAM_NAME = "model.query.fields";
     public static final String SORT_PARAM_NAME = "model.query.sort";
     public static final String PAGE_PARAM_NAME = "model.query.page";
@@ -45,12 +45,17 @@ public class EbeanFeature extends TransactionFeature {
     public static final String REQ_TOTAL_COUNT_HEADER_NAME = "model.query.requireTotalCount.header";
     public static final String DEFAULT_PER_PAGE_PARAM_NAME = "model.query.perPage.default";
     public static final String WHERE_PARAM_NAME = "model.query.where";
+    private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
+    private static final List<EbeanServer> SERVERS = Lists.newArrayList();
 
     static {
         setFinderClass(EbeanFinder.class);
         setPersisterClass(EbeanPersister.class);
         setUpdaterClass(EbeanUpdater.class);
     }
+
+    @Inject
+    private Application application;
 
     /**
      * Helper method that generates the required evolution to properly run Ebean.
@@ -104,11 +109,18 @@ public class EbeanFeature extends TransactionFeature {
         return generateEvolutionScript(Ebean.getServer(serverName), config);
     }
 
-
     @Override
     public boolean configure(final FeatureContext context) {
         context.register(EbeanTransactional.class);
         context.register(EbeanModelProcessor.class);
+        for (EbeanServer server : SERVERS) {
+            try {
+                server.shutdown(false, false);
+            } catch (Exception e) {
+                logger.warn("shut old ebean server has a error", e);
+            }
+        }
+
         final Configuration appConfig = context.getConfiguration();
 
         final Properties eBeanConfig = new Properties();
@@ -136,6 +148,7 @@ public class EbeanFeature extends TransactionFeature {
                     loadSettings(new PropertiesWrapper("db", name, properties));
                 }
             };
+            config.setPersistBatch(PersistBatch.ALL);
             config.setNamingConvention(new UnderscoreNamingConvention() {
 
                 String tableNamePrefix = null;
@@ -160,11 +173,12 @@ public class EbeanFeature extends TransactionFeature {
                             toUnderscoreFromCamel(tableName));
                 }
             });
+            config.loadFromProperties(eBeanConfig);
             config.setPackages(null);
             config.setJars(null);
             config.setRegisterJmxMBeans(Boolean.parseBoolean((String) appConfig.getProperty("app.jmx.enabled")));
             config.setName(name);
-            config.loadFromProperties(eBeanConfig);
+            config.setDataSourceJndiName(null);
             config.setDataSource(DataSource.getDataSource(name));//设置为druid数据源
             config.setDdlGenerate(false);
             config.setDdlRun(false);
@@ -190,20 +204,20 @@ public class EbeanFeature extends TransactionFeature {
             final boolean runDdl = PropertiesHelper.getValue(appConfig.getProperties(),
                     "db." + name + ".ddl.run", false, Boolean.class, null);
 
-            final boolean isProd = "product".equals(appConfig.getProperty("app.mode"));
-
             logger.info("连接数据源 {} ...", name);
-            EbeanServer server = EbeanServerFactory.create(config);
 
-            JacksonUtils.addDefaultModule(new JacksonEbeanModule(server.json()) {
-                @Override
-                public String getModuleName() {
-                    return super.getModuleName() + "-" + name + "-server";
-                }
-            });
+            EbeanServer server = EbeanServerFactory.create(config);
+            SERVERS.add(server);
+
+//            JacksonUtils.addDefaultModule(new JacksonEbeanModule(server.json()) {
+//                @Override
+//                public String getModuleName() {
+//                    return super.getModuleName() + "-" + name + "-server";
+//                }
+//            });
 
             // DDL
-            if (!isProd) {
+            if (application.getMode().isDev()) {
                 if (genDdl) {
                     final String basePath = IOUtils.getResource("").getPath() + "conf/evolutions/" + server.getName() + "/";
                     DdlGenerator ddl = new DdlGenerator() {
@@ -259,7 +273,6 @@ public class EbeanFeature extends TransactionFeature {
                 }
             }
         }
-
         return true;
     }
 }

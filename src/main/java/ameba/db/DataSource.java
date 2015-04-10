@@ -83,9 +83,9 @@ public class DataSource extends AddOn {
                 if (StringUtils.isBlank(value)) {
                     conf.put("init", "true");
                 }
-                javax.sql.DataSource ds = DruidDataSourceFactory.createDataSource(conf);
-                if (DruidDataSource.class.isInstance(ds))
-                    ((DruidDataSource) ds).setName(name);
+                DruidDataSource ds = (DruidDataSource) DruidDataSourceFactory.createDataSource(conf);
+                ds.setName(name);
+                ds.setDefaultAutoCommit(false);
                 dataSourceMap.put(name, ds);
             } catch (Exception e) {
                 logger.error("配置数据源出错", e);

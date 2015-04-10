@@ -10,6 +10,7 @@ import ameba.event.SystemEventBus;
  */
 public abstract class AddOn {
     private static EventBus EVENT_BUS = EventBus.createMix();
+    protected String version = "1.0.0";
 
     protected static <E extends Event> void subscribeEvent(Class<E> eventClass, final Listener<E> listener) {
         EVENT_BUS.subscribe(eventClass, listener);
@@ -37,6 +38,10 @@ public abstract class AddOn {
 
     public static void publishEvent(Event event) {
         EVENT_BUS.publish(event);
+    }
+
+    public String getVersion() {
+        return version;
     }
 
     public void setup(Application application) {

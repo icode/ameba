@@ -51,9 +51,20 @@ public class Ameba {
         logger.info(LOGO, getVersion());
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
 
-        bootstrap();
+        try {
+            bootstrap();
+        } catch (Throwable e) {
+            logger.error("发生错误,10s后退出", e);
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e1) {
+                //no op
+            }
+            shutdown();
+            System.exit(500);
+        }
 
         // register shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -63,7 +74,11 @@ public class Ameba {
             }
         }, "shutdownHook"));
 
-        Thread.currentThread().join();
+        try {
+            Thread.currentThread().join();
+        } catch (InterruptedException e) {
+            //no op
+        }
     }
 
     public static void bootstrap() throws Exception {
@@ -85,11 +100,12 @@ public class Ameba {
 
     public static synchronized void shutdown() {
         logger.info("关闭服务器...");
-        try {
-            container.shutdown();
-        } catch (Exception e) {
-            logger.error("服务器关闭出错", e);
-        }
+        if (container != null)
+            try {
+                container.shutdown();
+            } catch (Exception e) {
+                logger.error("服务器关闭出错", e);
+            }
         logger.info("服务器已关闭");
     }
 }

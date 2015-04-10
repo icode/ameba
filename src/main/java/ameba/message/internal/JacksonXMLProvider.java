@@ -9,10 +9,6 @@ import com.fasterxml.jackson.jaxrs.xml.JacksonJaxbXMLProvider;
  */
 public class JacksonXMLProvider extends JacksonJaxbXMLProvider {
 
-    protected static XmlMapper createDefaultMapper() {
-        return new XmlMapper();
-    }
-
     public JacksonXMLProvider() {
         this(createDefaultMapper(), DEFAULT_ANNOTATIONS);
     }
@@ -21,5 +17,9 @@ public class JacksonXMLProvider extends JacksonJaxbXMLProvider {
         super(mapper, annotationsToUse);
         setAnnotationsToUse(annotationsToUse);
         JacksonUtils.configureMapper(mapper);
+    }
+
+    protected static XmlMapper createDefaultMapper() {
+        return new XmlMapper();
     }
 }

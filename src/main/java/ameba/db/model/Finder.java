@@ -216,6 +216,4 @@ public abstract class Finder<ID, T> {
 
     public abstract Query<T> setForUpdate(boolean forUpdate);
 
-    public abstract void deleteById(ID id);
-
 }

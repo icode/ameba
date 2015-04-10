@@ -67,6 +67,8 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
     private ServiceLocator serviceLocator;
     private MessageBodyWriter<Viewable> viewableMessageBodyWriter;
     private ErrorPageGenerator errorPageGenerator;
+    @Inject
+    private javax.inject.Provider<ContainerRequest> request;
 
     public AmebaTemplateProcessor(Configuration config, ServletContext servletContext, String propertySuffix, String... supportedExtensions) {
         this.config = config;
@@ -133,7 +135,6 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
             }
         return errorPageGenerator;
     }
-
 
     private Collection<String> getTemplatePaths(String name) {
 
@@ -276,7 +277,6 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         }
     }
 
-
     @Override
     public T resolve(String name, MediaType mediaType) {
         if (this.cache != null) {
@@ -289,9 +289,6 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
             return this.resolve(name);
         }
     }
-
-    @Inject
-    private javax.inject.Provider<ContainerRequest> request;
 
     protected abstract TemplateException createException(Exception e, T template);
 

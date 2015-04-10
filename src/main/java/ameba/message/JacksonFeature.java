@@ -55,9 +55,9 @@ public class JacksonFeature implements Feature {
                 context.register(JacksonXMLProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
             }
             Collections.addAll(PATCH.SUPPORT_PATCH_MEDIA_TYPES,
-                            APPLICATION_JSON,
-                            APPLICATION_XML,
-                            TEXT_XML);
+                    APPLICATION_JSON,
+                    APPLICATION_XML,
+                    TEXT_XML);
         }
         return true;
     }

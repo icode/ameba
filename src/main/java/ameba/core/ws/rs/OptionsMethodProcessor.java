@@ -1,7 +1,11 @@
 package ameba.core.ws.rs;
 
+import ameba.core.Frameworks;
 import jersey.repackaged.com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.model.internal.RankedComparator;
+import org.glassfish.jersey.model.internal.RankedProvider;
 import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.glassfish.jersey.server.model.ModelProcessor;
@@ -10,7 +14,9 @@ import org.glassfish.jersey.server.model.internal.ModelProcessorUtil;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.HttpHeaders;
@@ -28,11 +34,29 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
  * @author icode
  */
 @Priority(Integer.MAX_VALUE)
+@Singleton
 public class OptionsMethodProcessor implements ModelProcessor {
 
+    private static String SUPPORT_PATCH_MEDIA_TYPES = null;
+    private static Iterable<OptionsResponseGenerator> generators;
     private final List<ModelProcessorUtil.Method> methodList;
 
-    private static String SUPPORT_PATCH_MEDIA_TYPES = null;
+    /**
+     * Creates new instance.
+     */
+    @Inject
+    public OptionsMethodProcessor(ServiceLocator locator) {
+        methodList = Lists.newArrayList();
+
+        methodList.add(new ModelProcessorUtil.Method(HttpMethod.OPTIONS, WILDCARD_TYPE, WILDCARD_TYPE,
+                GenericOptionsInflector.class));
+
+        final Iterable<RankedProvider<OptionsResponseGenerator>> rankedProviders =
+                Frameworks.getRankedProviders(locator, OptionsResponseGenerator.class);
+
+        generators = Frameworks
+                .sortRankedProviders(new RankedComparator<OptionsResponseGenerator>(), rankedProviders);
+    }
 
     public static String getSupportPatchMediaTypes() {
         if (SUPPORT_PATCH_MEDIA_TYPES == null) {
@@ -45,33 +69,11 @@ public class OptionsMethodProcessor implements ModelProcessor {
         return SUPPORT_PATCH_MEDIA_TYPES;
     }
 
-    /**
-     * Creates new instance.
-     */
-    public OptionsMethodProcessor() {
-        methodList = Lists.newArrayList();
-
-        methodList.add(new ModelProcessorUtil.Method(HttpMethod.OPTIONS, WILDCARD_TYPE, WILDCARD_TYPE,
-                GenericOptionsInflector.class));
-    }
-
-    @XmlRootElement
-    protected static class AllowedMethods implements Serializable {
-        protected Set<String> allow;
-
-        public AllowedMethods(Set<String> allow) {
-            this.allow = allow;
-        }
-
-        public Set<String> getAllow() {
-            return allow;
-        }
-    }
-
     protected static MediaType getSupportProduceMediaType(ContainerRequestContext containerRequestContext) {
         for (MediaType mediaType : containerRequestContext.getAcceptableMediaTypes()) {
-            if (((mediaType.getType().equalsIgnoreCase("application") || mediaType.getType().equalsIgnoreCase("text"))
-                    && !mediaType.getSubtype().toLowerCase().contains("html"))
+            if (mediaType.isCompatible(TEXT_PLAIN_TYPE) ||
+                    (mediaType.getType().equalsIgnoreCase("application")
+                            && !mediaType.getSubtype().toLowerCase().contains("html"))
                     || mediaType.getSubtype().equalsIgnoreCase("json")
                     || mediaType.getSubtype().equalsIgnoreCase("xml")
                     || mediaType.getSubtype().toLowerCase().endsWith("+json")
@@ -80,6 +82,77 @@ public class OptionsMethodProcessor implements ModelProcessor {
             }
         }
         return null;
+    }
+
+    protected static Response.ResponseBuilder generateRespBuilder(
+            ContainerRequestContext containerRequestContext,
+            ExtendedUriInfo extendedUriInfo,
+            MediaType mediaType,
+            Iterable<OptionsResponseGenerator> respEntityGenerators) {
+
+        final Set<String> allowedMethods = ModelProcessorUtil.getAllowedMethods(
+                (extendedUriInfo.getMatchedRuntimeResources().get(0)));
+
+        Response.ResponseBuilder builder = Response.ok().allow(allowedMethods);
+        if (allowedMethods.contains(PATCH.NAME)) {
+            builder.header(PATCH.ACCEPT_PATCH_HEADER, getSupportPatchMediaTypes());
+        }
+        if (mediaType != null) {
+            builder.type(mediaType);
+        }
+        if (respEntityGenerators != null) {
+            Response response = builder.build();
+            for (OptionsResponseGenerator generator : respEntityGenerators) {
+                response = generator.generate(allowedMethods, mediaType, extendedUriInfo,
+                        containerRequestContext, response);
+            }
+            builder = Response.fromResponse(response);
+        }
+        return builder;
+    }
+
+    protected static Response.ResponseBuilder generateRespBuilder(ExtendedUriInfo extendedUriInfo, MediaType mediaType) {
+        return generateRespBuilder(null, extendedUriInfo, mediaType, null);
+    }
+
+    @Override
+    public ResourceModel processResourceModel(ResourceModel resourceModel, Configuration configuration) {
+        return ModelProcessorUtil.enhanceResourceModel(resourceModel, false, methodList, true).build();
+    }
+
+    @Override
+    public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
+        return ModelProcessorUtil.enhanceResourceModel(subResourceModel, true, methodList, true).build();
+    }
+
+    @XmlRootElement
+    protected static class AllowedMethods implements Serializable {
+        protected Set<String> allow;
+        protected Set<AllowedMethods> children;
+        protected String uri;
+
+        public AllowedMethods(String uri, Set<String> allow) {
+            this.allow = allow;
+            this.uri = uri;
+        }
+
+        public AllowedMethods(String uri, Set<String> allow, Set<AllowedMethods> children) {
+            this.allow = allow;
+            this.children = children;
+            this.uri = uri;
+        }
+
+        public Set<AllowedMethods> getChildren() {
+            return children;
+        }
+
+        public String getUri() {
+            return uri;
+        }
+
+        public Set<String> getAllow() {
+            return allow;
+        }
     }
 
     protected static class GenericOptionsInflector implements Inflector<ContainerRequestContext, Response> {
@@ -92,55 +165,26 @@ public class OptionsMethodProcessor implements ModelProcessor {
             final MediaType foundMediaType = getSupportProduceMediaType(containerRequestContext);
 
             if (foundMediaType != null) {
-                return generateRespBuilder(extendedUriInfo, new RespEntityGenerator() {
-                    @Override
-                    public Object generate(Set<String> allowedMethods, ExtendedUriInfo extendedUriInfo) {
-                        if (foundMediaType.equals(TEXT_PLAIN_TYPE)) {
-                            final String allowedList = allowedMethods.toString();
-                            return allowedList.substring(1, allowedList.length() - 1);
-                        }
-                        return new AllowedMethods(allowedMethods);
-                    }
-                }).type(foundMediaType).build();
+                return generateRespBuilder(containerRequestContext, extendedUriInfo, foundMediaType, generators).build();
             }
 
-            return generateRespBuilder(extendedUriInfo)
+            return generateRespBuilder(extendedUriInfo, containerRequestContext.getAcceptableMediaTypes().get(0))
                     .header(HttpHeaders.CONTENT_LENGTH, 0)
-                    .type(containerRequestContext.getAcceptableMediaTypes().get(0))
                     .build();
         }
     }
 
-    protected static Response.ResponseBuilder generateRespBuilder(ExtendedUriInfo extendedUriInfo, RespEntityGenerator respEntityGenerator) {
-
-        final Set<String> allowedMethods = ModelProcessorUtil.getAllowedMethods(
-                (extendedUriInfo.getMatchedRuntimeResources().get(0)));
-
-        Response.ResponseBuilder builder = Response.ok().allow(allowedMethods);
-        if (allowedMethods.contains(PATCH.NAME)) {
-            builder.header(PATCH.ACCEPT_PATCH_HEADER, getSupportPatchMediaTypes());
+    @Priority(Priorities.HEADER_DECORATOR)
+    static class DefaultOptionsResponseGenerator implements OptionsResponseGenerator {
+        @Override
+        public Response generate(Set<String> allowedMethods, MediaType mediaType, ExtendedUriInfo extendedUriInfo,
+                                 ContainerRequestContext containerRequestContext, Response response) {
+            Response.ResponseBuilder builder = Response.fromResponse(response);
+            if (mediaType.isCompatible(TEXT_PLAIN_TYPE)) {
+                return builder.entity(StringUtils.join(allowedMethods, ",")).build();
+            }
+            String uri = extendedUriInfo.getMatchedModelResource().getPathPattern().getTemplate().getTemplate();
+            return builder.entity(new AllowedMethods(uri, allowedMethods)).build();
         }
-        if (respEntityGenerator != null) {
-            builder.entity(respEntityGenerator.generate(allowedMethods, extendedUriInfo));
-        }
-        return builder;
-    }
-
-    protected static abstract class RespEntityGenerator {
-        public abstract Object generate(Set<String> allowedMethods, ExtendedUriInfo extendedUriInfo);
-    }
-
-    protected static Response.ResponseBuilder generateRespBuilder(ExtendedUriInfo extendedUriInfo) {
-        return generateRespBuilder(extendedUriInfo, null);
-    }
-
-    @Override
-    public ResourceModel processResourceModel(ResourceModel resourceModel, Configuration configuration) {
-        return ModelProcessorUtil.enhanceResourceModel(resourceModel, false, methodList, true).build();
-    }
-
-    @Override
-    public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
-        return ModelProcessorUtil.enhanceResourceModel(subResourceModel, true, methodList, true).build();
     }
 }

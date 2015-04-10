@@ -2,11 +2,11 @@ package ameba.db.ebean.internal;
 
 import ameba.db.ebean.EbeanFeature;
 import ameba.db.model.Finder;
-import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.FutureList;
-import com.avaje.ebean.FutureRowCount;
-import com.avaje.ebean.Query;
+import com.avaje.ebean.*;
 import com.avaje.ebean.text.PathProperties;
+import com.avaje.ebeaninternal.api.SpiQuery;
+import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
+import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.PostConstruct;
@@ -37,52 +37,41 @@ public class EbeanModelProcessor implements WriterInterceptor {
     static String REQ_TOTAL_COUNT_HEADER_NAME = "X-Total-Count";
     static String WHERE_PARAM_NAME = "where";
     static Integer DEFAULT_PER_PAGE = 20;
-
     @Context
     private Configuration configuration;
-
-    @PostConstruct
-    private void init() {
-        final String fieldsParamName = (String) configuration.getProperty(EbeanFeature.FIELDS_PARAM_NAME);
-        FIELDS_PARAM_NAME = StringUtils.isNotBlank(fieldsParamName) ? fieldsParamName : FIELDS_PARAM_NAME;
-
-        final String sortParamName = (String) configuration.getProperty(EbeanFeature.SORT_PARAM_NAME);
-        SORT_PARAM_NAME = StringUtils.isNotBlank(sortParamName) ? sortParamName : SORT_PARAM_NAME;
-
-        final String pageParamName = (String) configuration.getProperty(EbeanFeature.PAGE_PARAM_NAME);
-        PAGE_PARAM_NAME = StringUtils.isNotBlank(pageParamName) ? pageParamName : PAGE_PARAM_NAME;
-
-        final String perPageParamName = (String) configuration.getProperty(EbeanFeature.PER_PAGE_PARAM_NAME);
-        PER_PAGE_PARAM_NAME = StringUtils.isNotBlank(perPageParamName) ? perPageParamName : PER_PAGE_PARAM_NAME;
-
-        final String reqTotalCountParamName = (String) configuration.getProperty(EbeanFeature.REQ_TOTAL_COUNT_PARAM_NAME);
-        REQ_TOTAL_COUNT_PARAM_NAME = StringUtils.isNotBlank(reqTotalCountParamName) ? perPageParamName : REQ_TOTAL_COUNT_PARAM_NAME;
-
-        final String reqTotalCountHeaderName = (String) configuration.getProperty(EbeanFeature.REQ_TOTAL_COUNT_HEADER_NAME);
-        REQ_TOTAL_COUNT_HEADER_NAME = StringUtils.isNotBlank(reqTotalCountHeaderName) ? perPageParamName : REQ_TOTAL_COUNT_HEADER_NAME;
-
-        final String whereParamName = (String) configuration.getProperty(EbeanFeature.WHERE_PARAM_NAME);
-        WHERE_PARAM_NAME = StringUtils.isNotBlank(whereParamName) ? whereParamName : WHERE_PARAM_NAME;
-
-        final String defaultPerPage = (String) configuration.getProperty(EbeanFeature.DEFAULT_PER_PAGE_PARAM_NAME);
-        if (StringUtils.isNotBlank(defaultPerPage)) {
-            try {
-                DEFAULT_PER_PAGE = Integer.parseInt(defaultPerPage);
-            } catch (Exception e) {
-                DEFAULT_PER_PAGE = null;
-            }
-        }
-    }
-
-
     @Context
     private UriInfo uriInfo;
 
-    public boolean isWriteable(Class<?> type) {
-        return Finder.class.isAssignableFrom(type)
-                || Query.class.isAssignableFrom(type)
-                || ExpressionList.class.isAssignableFrom(type)
-                || FutureList.class.isAssignableFrom(type);
+    public static String getFieldsParamName() {
+        return FIELDS_PARAM_NAME;
+    }
+
+    public static String getSortParamName() {
+        return SORT_PARAM_NAME;
+    }
+
+    public static String getPageParamName() {
+        return PAGE_PARAM_NAME;
+    }
+
+    public static String getPerPageParamName() {
+        return PER_PAGE_PARAM_NAME;
+    }
+
+    public static String getReqTotalCountParamName() {
+        return REQ_TOTAL_COUNT_PARAM_NAME;
+    }
+
+    public static String getReqTotalCountHeaderName() {
+        return REQ_TOTAL_COUNT_HEADER_NAME;
+    }
+
+    public static String getWhereParamName() {
+        return WHERE_PARAM_NAME;
+    }
+
+    public static Integer getDefaultPerPage() {
+        return DEFAULT_PER_PAGE;
     }
 
     /**
@@ -111,29 +100,70 @@ public class EbeanModelProcessor implements WriterInterceptor {
     }
 
     /**
-     * parse uri
+     * apply query parameters to select/fetch
      * <p/>
-     * e.g.
+     * ?fields=id,name,filed1(p1,p2,p3)
      * <p/>
-     * ?select=id,name,props(p1,p2,p3)
-     * <p/>
-     * ?select=(id,name,props(p1,p2,p3))
+     * ?fields=(id,name,filed1(p1,p2,p3))
      *
      * @param query query
      */
-    public static void applyPathProperties(MultivaluedMap<String, String> queryParams, Query query) {
+    public static void applyFetchProperties(MultivaluedMap<String, String> queryParams, Query query) {
         List<String> selectables = queryParams.get(FIELDS_PARAM_NAME);
-        if (selectables != null)
+        if (selectables != null) {
+            StringBuilder selectBuilder = new StringBuilder();
+
+            OrmQueryDetail detail = null;
+
+            if (query instanceof SpiQuery) {
+                detail = ((SpiQuery) query).getDetail();
+
+                OrmQueryProperties base = detail.getChunk(null, false);
+                if (base != null && StringUtils.isNotBlank(base.getProperties())) {
+                    // 获取已经设置的select
+                    selectBuilder.append(base.getProperties());
+                }
+            }
             for (String s : selectables) {
                 PathProperties pathProperties = PathProperties.parse(s);
-                pathProperties.apply(query);
+                for (PathProperties.Props props : pathProperties.getPathProps()) {
+                    String path = props.getPath();
+                    String propsStr = props.getPropertiesAsString();
+
+                    if (StringUtils.isEmpty(path)) {
+                        if (selectBuilder.length() > 0) {
+                            selectBuilder.append(",");
+                        }
+                        if (propsStr.length() > 0)
+                            selectBuilder.append(propsStr);
+                    } else if (StringUtils.isNotBlank(path)) {
+                        FetchConfig config = null;
+                        if (detail != null) {
+                            // 获取已经存在的fetch
+                            OrmQueryProperties fetch = detail.getChunk(path, false);
+                            if (fetch != null && StringUtils.isNotBlank(fetch.getProperties())) {
+                                // 增加客户端传入值
+                                propsStr = fetch.getProperties() + "," + propsStr;
+                                config = fetch.getFetchConfig();
+                            }
+                        }
+                        query.fetch(path, propsStr, config);
+                    }
+                }
             }
+            if (selectBuilder.length() > 0) {
+                query.select(selectBuilder.toString());
+            }
+        }
     }
 
     public static void applyOrderBy(MultivaluedMap<String, String> queryParams, Query query) {
-        String orderByClause = getSingleParam(queryParams.get(EbeanModelProcessor.SORT_PARAM_NAME));
-        if (StringUtils.isNotBlank(orderByClause)) {
-            query.order(orderByClause);
+        List<String> orders = queryParams.get(EbeanModelProcessor.SORT_PARAM_NAME);
+        if (orders != null && orders.size() > 0) {
+            OrderBy orderBy = query.orderBy();
+            for (String order : orders) {
+
+            }
         }
     }
 
@@ -169,6 +199,16 @@ public class EbeanModelProcessor implements WriterInterceptor {
         return null;
     }
 
+    /**
+     * /path?where=p1.eq(2)id.in(1,2,3)or(p2.eq(2),p2.start_with(3),..)
+     * <p/>
+     * /path?p1.eq(2)&id.in(1,2,3)&amp;or(p2.eq(2),p2.start_with(3),..)
+     * <p/>
+     * /path;p1.eq:2;id.in:1,2,3;or:p2.eq:2,p2.start_with:3,..;
+     *
+     * @param queryParams uri query params
+     * @param query       query
+     */
     public static void applyWhere(MultivaluedMap<String, String> queryParams, Query query) {
         List<String> wheres = queryParams.get(EbeanModelProcessor.WHERE_PARAM_NAME);
         if (wheres != null)
@@ -177,9 +217,21 @@ public class EbeanModelProcessor implements WriterInterceptor {
             }
     }
 
+    /**
+     * apply uri query parameter on query
+     *
+     * @param queryParams  uri query params
+     * @param query        Query
+     * @param needPageList need page list
+     * @return page list count or null
+     * @see #applyFetchProperties
+     * @see #applyWhere
+     * @see #applyOrderBy
+     * @see #applyPageList
+     */
     public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams,
                                                Query query, boolean needPageList) {
-        applyPathProperties(queryParams, query);
+        applyFetchProperties(queryParams, query);
         applyWhere(queryParams, query);
         applyOrderBy(queryParams, query);
         if (needPageList)
@@ -201,6 +253,45 @@ public class EbeanModelProcessor implements WriterInterceptor {
         }
     }
 
+    @PostConstruct
+    private void init() {
+        final String fieldsParamName = (String) configuration.getProperty(EbeanFeature.FIELDS_PARAM_NAME);
+        FIELDS_PARAM_NAME = StringUtils.isNotBlank(fieldsParamName) ? fieldsParamName : FIELDS_PARAM_NAME;
+
+        final String sortParamName = (String) configuration.getProperty(EbeanFeature.SORT_PARAM_NAME);
+        SORT_PARAM_NAME = StringUtils.isNotBlank(sortParamName) ? sortParamName : SORT_PARAM_NAME;
+
+        final String pageParamName = (String) configuration.getProperty(EbeanFeature.PAGE_PARAM_NAME);
+        PAGE_PARAM_NAME = StringUtils.isNotBlank(pageParamName) ? pageParamName : PAGE_PARAM_NAME;
+
+        final String perPageParamName = (String) configuration.getProperty(EbeanFeature.PER_PAGE_PARAM_NAME);
+        PER_PAGE_PARAM_NAME = StringUtils.isNotBlank(perPageParamName) ? perPageParamName : PER_PAGE_PARAM_NAME;
+
+        final String reqTotalCountParamName = (String) configuration.getProperty(EbeanFeature.REQ_TOTAL_COUNT_PARAM_NAME);
+        REQ_TOTAL_COUNT_PARAM_NAME = StringUtils.isNotBlank(reqTotalCountParamName) ? perPageParamName : REQ_TOTAL_COUNT_PARAM_NAME;
+
+        final String reqTotalCountHeaderName = (String) configuration.getProperty(EbeanFeature.REQ_TOTAL_COUNT_HEADER_NAME);
+        REQ_TOTAL_COUNT_HEADER_NAME = StringUtils.isNotBlank(reqTotalCountHeaderName) ? perPageParamName : REQ_TOTAL_COUNT_HEADER_NAME;
+
+        final String whereParamName = (String) configuration.getProperty(EbeanFeature.WHERE_PARAM_NAME);
+        WHERE_PARAM_NAME = StringUtils.isNotBlank(whereParamName) ? whereParamName : WHERE_PARAM_NAME;
+
+        final String defaultPerPage = (String) configuration.getProperty(EbeanFeature.DEFAULT_PER_PAGE_PARAM_NAME);
+        if (StringUtils.isNotBlank(defaultPerPage)) {
+            try {
+                DEFAULT_PER_PAGE = Integer.parseInt(defaultPerPage);
+            } catch (Exception e) {
+                DEFAULT_PER_PAGE = null;
+            }
+        }
+    }
+
+    public boolean isWriteable(Class<?> type) {
+        return Finder.class.isAssignableFrom(type)
+                || Query.class.isAssignableFrom(type)
+                || ExpressionList.class.isAssignableFrom(type)
+                || FutureList.class.isAssignableFrom(type);
+    }
 
     @Override
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {

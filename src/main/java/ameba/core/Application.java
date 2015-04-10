@@ -191,9 +191,9 @@ public class Application {
         scanClasses();
 
         if (getMode().isDev())
-            SystemEventBus.subscribe(Container.ReloadEvent.class, new Listener<Container.ReloadEvent>() {
+            SystemEventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
                 @Override
-                public void onReceive(Container.ReloadEvent event) {
+                public void onReceive(Container.BeginReloadEvent event) {
                     scanClasses();
                 }
             });
@@ -241,6 +241,9 @@ public class Application {
                 foundClasses.add(className);
             }
             foundClasses.clear();
+
+            if (getMode().isDev()) return;
+
             OutputStream out = null;
             try {
                 File cacheFile = new File(SCAN_CLASSES_CACHE_FILE);
@@ -257,6 +260,7 @@ public class Application {
             } catch (IOException e) {
                 logger.error("write class cache file error", e);
             } finally {
+                acceptClasses.clear();
                 closeQuietly(out);
             }
         } else {
@@ -324,6 +328,11 @@ public class Application {
 
     public String getApplicationName() {
         return config.getApplicationName();
+    }
+
+    public Application setApplicationName(String applicationName) {
+        config.setApplicationName(applicationName);
+        return this;
     }
 
     public ResourceConfig getConfig() {
@@ -805,11 +814,6 @@ public class Application {
         return this;
     }
 
-    public Application setProperties(Map<String, ?> properties) {
-        config.setProperties(properties);
-        return this;
-    }
-
     public Application registerClasses(Class<?>... classes) {
         config.registerClasses(classes);
         return this;
@@ -824,18 +828,13 @@ public class Application {
         return config.getConfiguration();
     }
 
+    public ClassLoader getClassLoader() {
+        return config.getClassLoader();
+    }
+
     public Application setClassLoader(ClassLoader classLoader) {
         config.setClassLoader(classLoader);
         return this;
-    }
-
-    public Application setApplicationName(String applicationName) {
-        config.setApplicationName(applicationName);
-        return this;
-    }
-
-    public ClassLoader getClassLoader() {
-        return config.getClassLoader();
     }
 
     public Application registerInstances(Object... instances) {
@@ -937,6 +936,11 @@ public class Application {
 
     public Map<String, Object> getProperties() {
         return config.getProperties();
+    }
+
+    public Application setProperties(Map<String, ?> properties) {
+        config.setProperties(properties);
+        return this;
     }
 
     public Application property(String name, Object value) {
@@ -1164,37 +1168,6 @@ public class Application {
         }
     }
 
-    private class SortEntry implements Comparable<SortEntry> {
-        Integer sortPriority;
-        String className;
-        String name;
-        String key;
-
-        private SortEntry(Integer sortPriority, String className, String name) {
-            this.sortPriority = sortPriority;
-            this.className = className;
-            this.name = name;
-        }
-
-        private SortEntry(Integer sortPriority, String className, String name, String key) {
-            this.sortPriority = sortPriority;
-            this.className = className;
-            this.name = name;
-            this.key = key;
-        }
-
-        @Override
-        public int compareTo(SortEntry entry) {
-            if (this.className.equals(entry.className)) {
-                return 0;
-            }
-            int index = Integer.compare(this.sortPriority, entry.sortPriority);
-            if (index == 0)
-                return 1;
-            return index;
-        }
-    }
-
     public static class ClassFoundEvent implements ameba.event.Event {
         private boolean accept;
         private boolean cacheMode = false;
@@ -1207,6 +1180,24 @@ public class Application {
 
         private ClassFoundEvent(ClassInfo classInfo) {
             this.classInfo = classInfo;
+        }
+
+        public InputStream getFileStream() {
+            return classInfo.getFileStream();
+        }
+
+        public void accept(ClassAccept accept) {
+            try {
+                boolean re = accept.accept(classInfo);
+                if (!this.accept && re)
+                    this.accept = true;
+            } catch (Exception e) {
+                logger.error("class accept error", e);
+            }
+        }
+
+        public boolean isCacheMode() {
+            return cacheMode;
         }
 
         public interface ClassAccept {
@@ -1250,7 +1241,6 @@ public class Application {
                 return annotations;
             }
 
-            @SuppressWarnings("unchecked")
             public boolean containsAnnotations(Class<? extends Annotation>... annotationClass) {
                 if (ArrayUtils.isEmpty(annotationClass)) {
                     return false;
@@ -1312,24 +1302,36 @@ public class Application {
 
             abstract void closeFileStream();
         }
+    }
 
+    private class SortEntry implements Comparable<SortEntry> {
+        Integer sortPriority;
+        String className;
+        String name;
+        String key;
 
-        public InputStream getFileStream() {
-            return classInfo.getFileStream();
+        private SortEntry(Integer sortPriority, String className, String name) {
+            this.sortPriority = sortPriority;
+            this.className = className;
+            this.name = name;
         }
 
-        public void accept(ClassAccept accept) {
-            try {
-                boolean re = accept.accept(classInfo);
-                if (!this.accept && re)
-                    this.accept = true;
-            } catch (Exception e) {
-                logger.error("class accept error", e);
+        private SortEntry(Integer sortPriority, String className, String name, String key) {
+            this.sortPriority = sortPriority;
+            this.className = className;
+            this.name = name;
+            this.key = key;
+        }
+
+        @Override
+        public int compareTo(SortEntry entry) {
+            if (this.className.equals(entry.className)) {
+                return 0;
             }
-        }
-
-        public boolean isCacheMode() {
-            return cacheMode;
+            int index = Integer.compare(this.sortPriority, entry.sortPriority);
+            if (index == 0)
+                return 1;
+            return index;
         }
     }
 
