@@ -32,7 +32,7 @@ logger("com.avaje.ebeaninternal.server.cluster", DEBUG)
 logger("com.avaje.ebeaninternal.server.lib", DEBUG)
 logger("com.avaje.ebeaninternal.server.deploy.BeanDescriptor", isTrace ? TRACE : DEBUG)
 
-logger("httl", isTrace ? DEBUG : WARN)
+logger("httl", WARN)
 logger("ameba", isTrace ? TRACE : DEBUG)
 if (appPackage != null)
     logger(appPackage, TRACE)
