@@ -54,9 +54,28 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         return descriptor;
     }
 
+    /**
+     * convert string to id for delete deleteMultiple
+     *
+     * @param id id string
+     * @return ID object
+     * @see #deleteMultiple(PathSegment)
+     */
     @SuppressWarnings("unchecked")
-    protected ID convertId(String id) {
+    protected ID stringToId(String id) {
         return (ID) getModelBeanDescriptor().convertId(id);
+    }
+
+    /**
+     * convert id to string for insert
+     *
+     * @param id id object
+     * @return id string
+     * @see #insert(Model)
+     * @see #patch(Object, Model)
+     */
+    protected String idToString(@NotNull ID id) {
+        return id.toString();
     }
 
     protected void seForInsertId(final M model) {
@@ -70,7 +89,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * success status 201
      *
      * @param model the model to insert
-     * @see {@link POST,AbstractModelResource#insert(Model)}
+     * @see {@link POST}
+     * @see {@link AbstractModelResource#insert(Model)}
      */
     @SuppressWarnings("unchecked")
     public Response insert(@NotNull @Valid final M model) throws Exception {
@@ -111,7 +131,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      *
      * @param id    the unique id of the model
      * @param model the model to update
-     * @see {@link PUT,AbstractModelResource#replace(Object, Model)}
+     * @see {@link PUT}
+     * @see {@link AbstractModelResource#replace(Object, Model)}
      */
     public Response replace(@PathParam("id") final ID id, @NotNull @Valid final M model) throws Exception {
 
@@ -166,7 +187,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      *
      * @param id    the unique id of the model
      * @param model the model to update
-     * @see {@link PATCH,AbstractModelResource#patch(Object, Model)}
+     * @see {@link PATCH}
+     * @see {@link AbstractModelResource#patch(Object, Model)}
      */
     public Response patch(@PathParam("id") final ID id, @NotNull final M model) throws Exception {
         BeanDescriptor descriptor = getModelBeanDescriptor();
@@ -217,10 +239,11 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * logical delete status 202
      *
      * @param ids The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
-     * @see {@link DELETE,AbstractModelResource#deleteMultiple(PathSegment)}
+     * @see {@link DELETE}
+     * @see {@link AbstractModelResource#deleteMultiple(PathSegment)}
      */
     public Response deleteMultiple(@NotNull @PathParam("ids") final PathSegment ids) throws Exception {
-        final ID firstId = convertId(ids.getPath());
+        final ID firstId = stringToId(ids.getPath());
         Set<String> idSet = ids.getMatrixParameters().keySet();
         final Response.ResponseBuilder builder = Response.noContent();
         final TxRunnable failProcess = new TxRunnable() {
@@ -236,7 +259,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 @Nullable
                 @Override
                 public ID apply(String input) {
-                    return convertId(input);
+                    return stringToId(input);
                 }
             }));
             executeTx(new TxRunnable() {
@@ -316,13 +339,13 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * Find a model given its Id.
      *
      * @param id the id of the model.
-     * @see {@link GET,Path,AbstractModelResource#findById}
+     * @see {@link GET}
+     * @see {@link AbstractModelResource#findById}
      */
     public Response findById(@NotNull @PathParam("id") final ID id) throws Exception {
         final Query<M> query = server.find(modelType);
-        Response.ResponseBuilder builder = Response.ok();
 
-        return builder.entity(executeTx(new TxCallable<Object>() {
+        Object model = executeTx(new TxCallable<Object>() {
             @Override
             public Object call() throws Exception {
                 configDefaultQuery(query);
@@ -332,7 +355,12 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
 
                 return processFoundModel(m);
             }
-        })).build();
+        });
+
+        if (model != null)
+            return Response.ok(model).build();
+        else
+            throw new NotFoundException();
     }
 
     /**
@@ -359,7 +387,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * the query.
      * </p>
      *
-     * @see {@link GET,AbstractModelResource#find()}
+     * @see {@link GET}
+     * @see {@link AbstractModelResource#find()}
      */
     public Response find() throws Exception {
 
@@ -507,7 +536,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
             throw new NotFoundException();
         }
         UriBuilder ub = uriInfo.getAbsolutePathBuilder();
-        return ub.path(id.toString()).build();
+        return ub.path(idToString(id)).build();
     }
 
     protected interface TxRunnable {
