@@ -31,7 +31,6 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
      * @param model the model to insert
      */
     @POST
-    @SuppressWarnings("unchecked")
     public final Response insert(@NotNull @Valid final M model) throws Exception {
         return super.insert(model);
     }
