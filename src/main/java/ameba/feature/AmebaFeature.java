@@ -6,6 +6,7 @@ import ameba.event.Event;
 import ameba.event.EventBus;
 import ameba.event.Listener;
 import ameba.event.SystemEventBus;
+import ameba.lib.LoggerOwner;
 import com.google.common.collect.Lists;
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -16,7 +17,7 @@ import java.util.List;
 /**
  * @author icode
  */
-public abstract class AmebaFeature implements Feature {
+public abstract class AmebaFeature extends LoggerOwner implements Feature {
 
     private static EventBus EVENT_BUS = EventBus.createMix();
     private static List<Class<? extends Event>> listeners;
