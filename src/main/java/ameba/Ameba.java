@@ -4,9 +4,13 @@ import ameba.container.Container;
 import ameba.core.Application;
 import ameba.exception.AmebaException;
 import ameba.util.IOUtils;
+import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * @author icode
@@ -53,8 +57,29 @@ public class Ameba {
 
     public static void main(String[] args) {
 
+        List<String> list = Lists.newArrayList();
+
+        list.add(Application.DEFAULT_APP_CONF);
+
+        String idCommand = "--#";
+        String[] conf = Application.DEFAULT_APP_CONF.split("\\.");
+        String idPrefix = conf[0];
+        String idSuffix = "." + conf[1];
+
+
+        int idArgLen = idCommand.length();
+
+        for (String arg : args) {
+            if (arg.startsWith(idCommand)) {
+                String idConf = arg.substring(idArgLen);
+                if (StringUtils.isNotBlank(idConf)) {
+                    list.add(idPrefix + "_" + idConf + idSuffix);
+                }
+            }
+        }
+
         try {
-            bootstrap();
+            bootstrap(list.toArray(new String[list.size()]));
         } catch (Throwable e) {
             logger.error("发生错误,10s后退出", e);
             try {
@@ -81,8 +106,8 @@ public class Ameba {
         }
     }
 
-    public static void bootstrap() throws Exception {
-        bootstrap(new Application());
+    public static void bootstrap(String... conf) throws Exception {
+        bootstrap(new Application(conf));
     }
 
     public static synchronized void bootstrap(Application application) throws Exception {

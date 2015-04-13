@@ -9,7 +9,7 @@ import java.util.List;
 public abstract class AmebaExceptionWithJavaSource extends AmebaException implements SourceAttachment {
 
     protected Integer line;
-    protected File sourceFile;
+    protected File[] sourceFile;
     protected List<String> source;
     protected Integer lineIndex;
 
@@ -22,7 +22,7 @@ public abstract class AmebaExceptionWithJavaSource extends AmebaException implem
         this.line = line;
     }
 
-    protected AmebaExceptionWithJavaSource(String message, Throwable cause, Integer line, File sourceFile, List<String> source, Integer lineIndex) {
+    protected AmebaExceptionWithJavaSource(String message, Throwable cause, Integer line, File[] sourceFile, List<String> source, Integer lineIndex) {
         super(message, cause);
         this.line = line;
         this.sourceFile = sourceFile;
@@ -30,8 +30,17 @@ public abstract class AmebaExceptionWithJavaSource extends AmebaException implem
         this.lineIndex = lineIndex;
     }
 
+    protected AmebaExceptionWithJavaSource(String message, Throwable cause, Integer line, File sourceFile, List<String> source, Integer lineIndex) {
+        this(message, cause, line, new File[]{sourceFile}, source, lineIndex);
+    }
+
     @Override
     public File getSourceFile() {
+        return sourceFile[0];
+    }
+
+    @Override
+    public File[] getSourceFiles() {
         return sourceFile;
     }
 

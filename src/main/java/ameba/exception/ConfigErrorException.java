@@ -35,7 +35,19 @@ public class ConfigErrorException extends AmebaExceptionWithJavaSource {
 
     @Override
     public File getSourceFile() {
-        return new File(Ameba.getApp().getConfigFile());
+        return new File(Ameba.getApp().getConfigFiles()[0]);
+    }
+
+    @Override
+    public File[] getSourceFiles() {
+
+        List<File> files = Lists.newArrayListWithExpectedSize(Ameba.getApp().getConfigFiles().length);
+
+        for (String conf : Ameba.getApp().getConfigFiles()) {
+            files.add(new File(conf));
+        }
+
+        return files.toArray(new File[files.size()]);
     }
 
     String getConfig() {

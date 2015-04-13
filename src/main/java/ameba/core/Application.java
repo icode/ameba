@@ -72,6 +72,7 @@ import static ameba.util.IOUtils.*;
 @Singleton
 public class Application {
     public static final String DEFAULT_APP_NAME = "Ameba";
+    public static final String DEFAULT_APP_CONF = "conf/application.conf";
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static final String REGISTER_CONF_PREFIX = "app.register.";
     private static final String ADDON_CONF_PREFIX = "app.addon.";
@@ -79,7 +80,7 @@ public class Application {
     private static final String SCAN_CLASSES_CACHE_FILE = IOUtils.getResource("/").getPath() + "conf/classes.list";
     private static String INFO_SPLITOR = "---------------------------------------------------";
     protected boolean jmxEnabled;
-    private String configFile;
+    private String[] configFiles;
     private Mode mode;
     private CharSequence applicationVersion;
     private File sourceRoot;
@@ -91,17 +92,17 @@ public class Application {
     private Set<String> scanPkgs;
 
     public Application() {
-        this("conf/application.conf");
+        this(DEFAULT_APP_CONF);
     }
 
     @SuppressWarnings("unchecked")
-    public Application(String confFile) {
+    public Application(String... confFile) {
 
         if (Ameba.getApp() != null) {
             throw new AmebaException("已经存在一个应用实例");
         }
         config = new ResourceConfig();
-        configFile = confFile;
+        configFiles = confFile;
         logger.trace("初始化...");
         Map<String, Object> configMap = Maps.newLinkedHashMap();
 
@@ -117,9 +118,12 @@ public class Application {
             logger.warn("读取[conf/default.conf]出错", e);
         }
         logger.trace("读取应用自定义配置...");
-        //读取应用程序配置
-        URL appCfgUrl = readAppConfig(properties, confFile);
-
+        List<String> appConf = Lists.newArrayListWithExpectedSize(confFile.length);
+        for (String conf : confFile) {
+            //读取应用程序配置
+            URL appCfgUrl = readAppConfig(properties, conf);
+            appConf.add(toExternalForm(appCfgUrl));
+        }
         //获取应用程序模式
         try {
             mode = Mode.valueOf(properties.getProperty("app.mode").toUpperCase());
@@ -140,7 +144,7 @@ public class Application {
         Ameba.printInfo();
 
         logger.info("初始化...");
-        logger.info("应用配置文件 {}", toExternalForm(appCfgUrl));
+        logger.info("应用配置文件 {}", appConf);
 
         //读取模式配置
         readModeConfig(configMap);
@@ -983,8 +987,8 @@ public class Application {
         this.packageRoot = packageRoot;
     }
 
-    public String getConfigFile() {
-        return configFile;
+    public String[] getConfigFiles() {
+        return configFiles;
     }
 
     public File getSourceRoot() {
