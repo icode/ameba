@@ -194,13 +194,12 @@ public class Application {
 
         scanClasses();
 
-        if (getMode().isDev())
-            SystemEventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
-                @Override
-                public void onReceive(Container.BeginReloadEvent event) {
-                    scanClasses();
-                }
-            });
+        SystemEventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
+            @Override
+            public void onReceive(Container.BeginReloadEvent event) {
+                scanClasses();
+            }
+        });
 
         addOnDone();
         logger.info("装载特性...");
@@ -227,7 +226,7 @@ public class Application {
                     }
 
                     @Override
-                    void closeFileStream() {
+                    public void closeFileStream() {
                         closeQuietly(in);
                     }
                 };
@@ -285,7 +284,7 @@ public class Application {
                             }
 
                             @Override
-                            void closeFileStream() {
+                            public void closeFileStream() {
                                 closeQuietly(fin);
                             }
                         };
@@ -1177,12 +1176,12 @@ public class Application {
         private boolean cacheMode = false;
         private ClassInfo classInfo;
 
-        private ClassFoundEvent(ClassInfo classInfo, boolean cacheMode) {
+        public ClassFoundEvent(ClassInfo classInfo, boolean cacheMode) {
             this.cacheMode = cacheMode;
             this.classInfo = classInfo;
         }
 
-        private ClassFoundEvent(ClassInfo classInfo) {
+        public ClassFoundEvent(ClassInfo classInfo) {
             this.classInfo = classInfo;
         }
 
@@ -1304,7 +1303,7 @@ public class Application {
 
             public abstract InputStream getFileStream();
 
-            abstract void closeFileStream();
+            public abstract void closeFileStream();
         }
     }
 
