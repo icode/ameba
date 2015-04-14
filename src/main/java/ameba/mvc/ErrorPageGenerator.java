@@ -27,15 +27,27 @@ import java.util.HashMap;
 @Singleton
 public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
     // 模板引擎会去掉第一个斜线
+    /**
+     * Constant <code>DEFAULT_ERROR_PAGE_DIR="/error/"</code>
+     */
     public static final String DEFAULT_ERROR_PAGE_DIR = "/error/";
+    /** Constant <code>DEFAULT_404_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 404.httl"</code> */
     public static final String DEFAULT_404_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "404.httl";
+    /** Constant <code>DEFAULT_5XX_PRODUCT_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 500.httl"</code> */
     public static final String DEFAULT_5XX_PRODUCT_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "500.httl";
+    /** Constant <code>DEFAULT_501_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 501.httl"</code> */
     public static final String DEFAULT_501_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "501.httl";
+    /** Constant <code>DEFAULT_403_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 403.httl"</code> */
     public static final String DEFAULT_403_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "403.httl";
+    /** Constant <code>DEFAULT_400_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 400.httl"</code> */
     public static final String DEFAULT_400_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400.httl";
+    /** Constant <code>DEFAULT_405_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 405.httl"</code> */
     public static final String DEFAULT_405_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "405.httl";
+    /** Constant <code>DEFAULT_406_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 406.httl"</code> */
     public static final String DEFAULT_406_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "406.httl";
+    /** Constant <code>DEFAULT_415_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 415.httl"</code> */
     public static final String DEFAULT_415_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "415.httl";
+    /** Constant <code>errorTemplateMap</code> */
     protected static final HashMap<Integer, String> errorTemplateMap = Maps.newHashMap();
     private static final Logger logger = LoggerFactory.getLogger(ErrorPageGenerator.class);
     private static String defaultErrorTemplate;
@@ -51,10 +63,20 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         errorTemplateMap.putAll(map);
     }
 
+    /**
+     * <p>Getter for the field <code>errorTemplateMap</code>.</p>
+     *
+     * @return a {@link java.util.HashMap} object.
+     */
     public static HashMap<Integer, String> getErrorTemplateMap() {
         return errorTemplateMap;
     }
 
+    /**
+     * <p>Getter for the field <code>defaultErrorTemplate</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getDefaultErrorTemplate() {
         return defaultErrorTemplate;
     }
@@ -63,6 +85,13 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         defaultErrorTemplate = template;
     }
 
+    /**
+     * <p>getStatus.</p>
+     *
+     * @param exception a {@link java.lang.Throwable} object.
+     * @return a int.
+     * @since 0.1.6e
+     */
     protected int getStatus(Throwable exception) {
         int status = 500;
         if (exception instanceof InternalServerErrorException) {
@@ -80,6 +109,7 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         return status;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Response toResponse(Throwable exception) {
         ContainerRequestContext request = requestProvider.get();

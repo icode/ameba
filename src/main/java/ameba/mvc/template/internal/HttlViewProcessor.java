@@ -39,6 +39,9 @@ import java.util.Properties;
 @Singleton
 public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
 
+    /**
+     * Constant <code>CONFIG_SUFFIX="httl"</code>
+     */
     public static final String CONFIG_SUFFIX = "httl";
     private static final String TEMPLATE_CONF_PREFIX = "template.";
     private static Engine engine;
@@ -47,6 +50,12 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
     @Inject
     private javax.inject.Provider<ContainerRequest> request;
 
+    /**
+     * <p>Constructor for HttlViewProcessor.</p>
+     *
+     * @param config a {@link javax.ws.rs.core.Configuration} object.
+     * @param servletContext a {@link javax.servlet.ServletContext} object.
+     */
     @Inject
     public HttlViewProcessor(Configuration config, @Optional ServletContext servletContext) {
         super(config, servletContext, CONFIG_SUFFIX, getExtends(config));
@@ -69,6 +78,7 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
         return extensions;
     }
 
+    /** {@inheritDoc} */
     @Override
     protected TemplateException createException(Exception e, Template template) {
         TemplateException ecx;
@@ -111,6 +121,7 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
         return ecx;
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Template resolve(String templatePath, Reader reader) throws Exception {
         Template template = null;
@@ -161,6 +172,7 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
         return engine.parseTemplate(content);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void writeTemplate(Template template, final Viewable viewable, MediaType mediaType,
                               MultivaluedMap<String, Object> httpHeaders, OutputStream outputStream) throws Exception {

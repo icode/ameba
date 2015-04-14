@@ -29,16 +29,27 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
+ * <p>StatViewFeature class.</p>
+ *
  * @author ICode
  * @since 13-8-14 下午7:49
  */
 public class StatViewFeature implements Feature {
+    /**
+     * Constant <code>PARAM_NAME_RESET_ENABLE="ds.resetEnable"</code>
+     */
     public static final String PARAM_NAME_RESET_ENABLE = "ds.resetEnable";
+    /** Constant <code>PARAM_NAME_USERNAME="ds.loginUsername"</code> */
     public static final String PARAM_NAME_USERNAME = "ds.loginUsername";
+    /** Constant <code>PARAM_NAME_PASSWORD="ds.loginPassword"</code> */
     public static final String PARAM_NAME_PASSWORD = "ds.loginPassword";
+    /** Constant <code>SESSION_USER_KEY="SVST"</code> */
     public static final String SESSION_USER_KEY = "SVST";//stat view session token
+    /** Constant <code>PARAM_NAME_JMX_URL="ds.jmxUrl"</code> */
     public static final String PARAM_NAME_JMX_URL = "ds.jmxUrl";
+    /** Constant <code>PARAM_NAME_JMX_USERNAME="ds.jmxUsername"</code> */
     public static final String PARAM_NAME_JMX_USERNAME = "ds.jmxUsername";
+    /** Constant <code>PARAM_NAME_JMX_PASSWORD="ds.jmxPassword"</code> */
     public static final String PARAM_NAME_JMX_PASSWORD = "ds.jmxPassword";
     private static final Logger logger = LoggerFactory.getLogger(StatViewFeature.class);
     private final static String RESOURCE_PATH = "support/http/resources";
@@ -201,6 +212,7 @@ public class StatViewFeature implements Feature {
         return resp;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean configure(final FeatureContext context) {
         Configuration configuration = context.getConfiguration();

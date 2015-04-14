@@ -24,7 +24,10 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
+ * <p>EbeanModelProcessor class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 @Priority(Priorities.ENTITY_CODER)
 public class EbeanModelProcessor implements WriterInterceptor {
@@ -42,40 +45,83 @@ public class EbeanModelProcessor implements WriterInterceptor {
     @Context
     private UriInfo uriInfo;
 
+    /**
+     * <p>getFieldsParamName.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getFieldsParamName() {
         return FIELDS_PARAM_NAME;
     }
 
+    /**
+     * <p>getSortParamName.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getSortParamName() {
         return SORT_PARAM_NAME;
     }
 
+    /**
+     * <p>getPageParamName.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getPageParamName() {
         return PAGE_PARAM_NAME;
     }
 
+    /**
+     * <p>getPerPageParamName.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getPerPageParamName() {
         return PER_PAGE_PARAM_NAME;
     }
 
+    /**
+     * <p>getReqTotalCountParamName.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getReqTotalCountParamName() {
         return REQ_TOTAL_COUNT_PARAM_NAME;
     }
 
+    /**
+     * <p>getReqTotalCountHeaderName.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getReqTotalCountHeaderName() {
         return REQ_TOTAL_COUNT_HEADER_NAME;
     }
 
+    /**
+     * <p>getWhereParamName.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getWhereParamName() {
         return WHERE_PARAM_NAME;
     }
 
+    /**
+     * <p>getDefaultPerPage.</p>
+     *
+     * @return a {@link java.lang.Integer} object.
+     */
     public static Integer getDefaultPerPage() {
         return DEFAULT_PER_PAGE;
     }
 
     /**
      * Return a single Integer parameter.
+     *
+     * @param list a {@link java.util.List} object.
+     * @return a {@link java.lang.Integer} object.
      */
     protected static Integer getSingleIntegerParam(List<String> list) {
         String s = getSingleParam(list);
@@ -91,6 +137,9 @@ public class EbeanModelProcessor implements WriterInterceptor {
 
     /**
      * Return a single parameter value.
+     *
+     * @param list a {@link java.util.List} object.
+     * @return a {@link java.lang.String} object.
      */
     protected static String getSingleParam(List<String> list) {
         if (list != null && list.size() == 1) {
@@ -107,6 +156,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
      * ?fields=(id,name,filed1(p1,p2,p3))
      *
      * @param query query
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
      */
     public static void applyFetchProperties(MultivaluedMap<String, String> queryParams, Query query) {
         List<String> selectables = queryParams.get(FIELDS_PARAM_NAME);
@@ -157,6 +207,12 @@ public class EbeanModelProcessor implements WriterInterceptor {
         }
     }
 
+    /**
+     * <p>applyOrderBy.</p>
+     *
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param query       a {@link com.avaje.ebean.Query} object.
+     */
     public static void applyOrderBy(MultivaluedMap<String, String> queryParams, Query query) {
         List<String> orders = queryParams.get(EbeanModelProcessor.SORT_PARAM_NAME);
         if (orders != null && orders.size() > 0) {
@@ -167,6 +223,13 @@ public class EbeanModelProcessor implements WriterInterceptor {
         }
     }
 
+    /**
+     * <p>applyPageList.</p>
+     *
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param query a {@link com.avaje.ebean.Query} object.
+     * @return a {@link com.avaje.ebean.FutureRowCount} object.
+     */
     public static FutureRowCount applyPageList(MultivaluedMap<String, String> queryParams, Query query) {
 
         Integer maxRows = getSingleIntegerParam(queryParams.get(EbeanModelProcessor.PER_PAGE_PARAM_NAME));
@@ -207,6 +270,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
      * /path;p1.eq:2;id.in:1,2,3;or:p2.eq:2,p2.start_with:3,..;
      *
      * @param queryParams uri query params
+     * @param queryParams uri query params
      * @param query       query
      */
     public static void applyWhere(MultivaluedMap<String, String> queryParams, Query query) {
@@ -221,9 +285,22 @@ public class EbeanModelProcessor implements WriterInterceptor {
      * apply uri query parameter on query
      *
      * @param queryParams  uri query params
+     * @param queryParams  uri query params
      * @param query        Query
      * @param needPageList need page list
      * @return page list count or null
+     * @see #applyFetchProperties
+     * @see #applyWhere
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyWhere
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyWhere
+     * @see #applyOrderBy
+     * @see #applyPageList
      * @see #applyFetchProperties
      * @see #applyWhere
      * @see #applyOrderBy
@@ -239,10 +316,24 @@ public class EbeanModelProcessor implements WriterInterceptor {
         return null;
     }
 
+    /**
+     * <p>applyUriQuery.</p>
+     *
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param query a {@link com.avaje.ebean.Query} object.
+     * @return a {@link com.avaje.ebean.FutureRowCount} object.
+     */
     public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams, Query query) {
         return applyUriQuery(queryParams, query, true);
     }
 
+    /**
+     * <p>applyRowCountHeader.</p>
+     *
+     * @param headerParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param rowCount a {@link com.avaje.ebean.FutureRowCount} object.
+     */
     public static void applyRowCountHeader(MultivaluedMap<String, Object> headerParams, Query query, FutureRowCount rowCount) {
         if (rowCount != null) {
             try {
@@ -286,6 +377,12 @@ public class EbeanModelProcessor implements WriterInterceptor {
         }
     }
 
+    /**
+     * <p>isWriteable.</p>
+     *
+     * @param type a {@link java.lang.Class} object.
+     * @return a boolean.
+     */
     public boolean isWriteable(Class<?> type) {
         return Finder.class.isAssignableFrom(type)
                 || Query.class.isAssignableFrom(type)
@@ -293,6 +390,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
                 || FutureList.class.isAssignableFrom(type);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
         Object o = context.getEntity();

@@ -17,7 +17,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * <p>DefaultServerEndpointConfig class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class DefaultServerEndpointConfig implements ServerEndpointConfig {
 
@@ -30,6 +33,15 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
     private Map<String, Object> userProperties = Maps.newConcurrentMap();
     private ServerEndpointConfig.Configurator serverEndpointConfigurator;
 
+    /**
+     * <p>Constructor for DefaultServerEndpointConfig.</p>
+     *
+     * @param serviceLocator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param resourceMethod a {@link org.glassfish.jersey.server.model.ResourceMethod} object.
+     * @param endpointClass  a {@link java.lang.Class} object.
+     * @param path           a {@link java.lang.String} object.
+     * @param webSocketConf  a {@link ameba.websocket.WebSocket} object.
+     */
     public DefaultServerEndpointConfig(final ServiceLocator serviceLocator,
                                        final ResourceMethod resourceMethod,
                                        Class<?> endpointClass, String path,
@@ -78,50 +90,74 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
         };
     }
 
+    /**
+     * <p>Constructor for DefaultServerEndpointConfig.</p>
+     *
+     * @param serviceLocator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param endpointClass a {@link java.lang.Class} object.
+     * @param path a {@link java.lang.String} object.
+     * @param webSocketConf a {@link ameba.websocket.WebSocket} object.
+     */
     public DefaultServerEndpointConfig(ServiceLocator serviceLocator, Class<?> endpointClass, String path, WebSocket webSocketConf) {
         this(serviceLocator, null, endpointClass, path, webSocketConf);
     }
 
+    /**
+     * <p>Constructor for DefaultServerEndpointConfig.</p>
+     *
+     * @param serviceLocator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param resourceMethod a {@link org.glassfish.jersey.server.model.ResourceMethod} object.
+     * @param path a {@link java.lang.String} object.
+     * @param webSocketConf a {@link ameba.websocket.WebSocket} object.
+     */
     public DefaultServerEndpointConfig(ServiceLocator serviceLocator, ResourceMethod resourceMethod, String path, WebSocket webSocketConf) {
         this(serviceLocator, resourceMethod, ResourceMethodEndpointDelegate.class, path, webSocketConf);
     }
 
 
+    /** {@inheritDoc} */
     @Override
     public Class<?> getEndpointClass() {
         return endpointClass;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getPath() {
         return path;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getSubprotocols() {
         return subprotocols;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Extension> getExtensions() {
         return extensions;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Configurator getConfigurator() {
         return serverEndpointConfigurator;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Class<? extends Encoder>> getEncoders() {
         return encoders;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Class<? extends Decoder>> getDecoders() {
         return decoders;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, Object> getUserProperties() {
         return userProperties;

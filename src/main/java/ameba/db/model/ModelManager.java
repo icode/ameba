@@ -3,7 +3,7 @@ package ameba.db.model;
 import ameba.container.Container;
 import ameba.core.AddOn;
 import ameba.core.Application;
-import ameba.db.DataSource;
+import ameba.db.DataSourceManager;
 import ameba.event.Listener;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -19,18 +19,31 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * <p>ModelManager class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class ModelManager extends AddOn {
 
+    /**
+     * Constant <code>MODULE_MODELS_KEY_PREFIX="db.default.models."</code>
+     */
     public static final String MODULE_MODELS_KEY_PREFIX = "db.default.models.";
     private static Logger logger = LoggerFactory.getLogger(ModelManager.class);
     private static Map<String, Set<Class>> modelMap = Maps.newLinkedHashMap();
 
+    /**
+     * <p>getModels.</p>
+     *
+     * @param name a {@link java.lang.String} object.
+     * @return a {@link java.util.Set} object.
+     */
     public static Set<Class> getModels(String name) {
         return modelMap.get(name);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setup(final Application application) {
         Configuration config = application.getConfiguration();
@@ -46,14 +59,14 @@ public class ModelManager extends AddOn {
             }
         }
 
-        for (String name : DataSource.getDataSourceNames()) {
+        for (String name : DataSourceManager.getDataSourceNames()) {
             String modelPackages = (String) config.getProperty("db." + name + ".models");
             if (StringUtils.isNotBlank(modelPackages)) {
                 final Set<String> pkgs = Sets.newHashSet(StringUtils.deleteWhitespace(modelPackages).split(","));
 
                 //db.default.models.pkg=
                 //db.default.models+=
-                if (DataSource.getDefaultDataSourceName().equalsIgnoreCase(name)) {
+                if (DataSourceManager.getDefaultDataSourceName().equalsIgnoreCase(name)) {
                     pkgs.addAll(defaultModelsPkg);
                 }
 

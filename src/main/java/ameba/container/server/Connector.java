@@ -16,9 +16,15 @@ import java.util.Map;
 import static ameba.util.IOUtils.readByteArrayFromResource;
 
 /**
+ * <p>Connector class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class Connector {
+    /**
+     * Constant <code>CONNECTOR_CONF_PREFIX="connector."</code>
+     */
     public static final String CONNECTOR_CONF_PREFIX = "connector.";
     private static final Logger logger = LoggerFactory.getLogger(Connector.class);
     protected URI httpServerBaseUri;
@@ -46,9 +52,18 @@ public class Connector {
     protected boolean sslConfigReady;
     protected Map<String, String> rawProperties;
 
+    /**
+     * <p>Constructor for Connector.</p>
+     */
     protected Connector() {
     }
 
+    /**
+     * <p>createDefault.</p>
+     *
+     * @param properties a {@link java.util.Map} object.
+     * @return a {@link ameba.container.server.Connector} object.
+     */
     public static Connector createDefault(Map<String, String> properties) {
         Connector.Builder builder = Connector.Builder.create()
                 .rawProperties(properties)
@@ -91,6 +106,12 @@ public class Connector {
         return builder.build();
     }
 
+    /**
+     * <p>createDefaultConnectors.</p>
+     *
+     * @param properties a {@link java.util.Map} object.
+     * @return a {@link java.util.List} object.
+     */
     public static List<Connector> createDefaultConnectors(Map<String, Object> properties) {
         List<Connector> connectors = Lists.newArrayList();
         Map<String, Map<String, String>> propertiesMap = Maps.newLinkedHashMap();
@@ -119,98 +140,218 @@ public class Connector {
         return connectors;
     }
 
+    /**
+     * <p>Getter for the field <code>host</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getHost() {
         return host;
     }
 
+    /**
+     * <p>Getter for the field <code>port</code>.</p>
+     *
+     * @return a {@link java.lang.Integer} object.
+     */
     public Integer getPort() {
         return port;
     }
 
+    /**
+     * <p>Getter for the field <code>httpServerBaseUri</code>.</p>
+     *
+     * @return a {@link java.net.URI} object.
+     */
     public URI getHttpServerBaseUri() {
         return httpServerBaseUri;
     }
 
+    /**
+     * <p>isSecureEnabled.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isSecureEnabled() {
         return secureEnabled;
     }
 
+    /**
+     * <p>isSslClientMode.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isSslClientMode() {
         return sslClientMode;
     }
 
+    /**
+     * <p>isSslNeedClientAuth.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isSslNeedClientAuth() {
         return sslNeedClientAuth;
     }
 
+    /**
+     * <p>isSslWantClientAuth.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isSslWantClientAuth() {
         return sslWantClientAuth;
     }
 
+    /**
+     * <p>Getter for the field <code>sslKeyPassword</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getSslKeyPassword() {
         return sslKeyPassword;
     }
 
+    /**
+     * <p>Getter for the field <code>sslKeyStoreFile</code>.</p>
+     *
+     * @return an array of byte.
+     */
     public byte[] getSslKeyStoreFile() {
         return sslKeyStoreFile;
     }
 
+    /**
+     * <p>Getter for the field <code>sslKeyStoreType</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getSslKeyStoreType() {
         return sslKeyStoreType;
     }
 
+    /**
+     * <p>Getter for the field <code>sslKeyStorePassword</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getSslKeyStorePassword() {
         return sslKeyStorePassword;
     }
 
+    /**
+     * <p>Getter for the field <code>sslTrustPassword</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getSslTrustPassword() {
         return sslTrustPassword;
     }
 
+    /**
+     * <p>Getter for the field <code>sslTrustStoreFile</code>.</p>
+     *
+     * @return an array of byte.
+     */
     public byte[] getSslTrustStoreFile() {
         return sslTrustStoreFile;
     }
 
+    /**
+     * <p>Getter for the field <code>sslTrustStorePassword</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getSslTrustStorePassword() {
         return sslTrustStorePassword;
     }
 
+    /**
+     * <p>Getter for the field <code>sslTrustStoreType</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getSslTrustStoreType() {
         return sslTrustStoreType;
     }
 
+    /**
+     * <p>isSslConfigReady.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isSslConfigReady() {
         return sslConfigReady;
     }
 
+    /**
+     * <p>Getter for the field <code>sslProtocol</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getSslProtocol() {
         return sslProtocol;
     }
 
+    /**
+     * <p>Getter for the field <code>sslKeyStoreProvider</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getSslKeyStoreProvider() {
         return sslKeyStoreProvider;
     }
 
+    /**
+     * <p>Getter for the field <code>sslTrustStoreProvider</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getSslTrustStoreProvider() {
         return sslTrustStoreProvider;
     }
 
+    /**
+     * <p>Getter for the field <code>sslKeyManagerFactoryAlgorithm</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getSslKeyManagerFactoryAlgorithm() {
         return sslKeyManagerFactoryAlgorithm;
     }
 
+    /**
+     * <p>Getter for the field <code>sslTrustManagerFactoryAlgorithm</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getSslTrustManagerFactoryAlgorithm() {
         return sslTrustManagerFactoryAlgorithm;
     }
 
+    /**
+     * <p>isAjpEnabled.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isAjpEnabled() {
         return ajpEnabled;
     }
 
+    /**
+     * <p>Getter for the field <code>name</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * <p>Getter for the field <code>rawProperties</code>.</p>
+     *
+     * @return a {@link java.util.Map} object.
+     */
     public Map<String, String> getRawProperties() {
         return rawProperties;
     }

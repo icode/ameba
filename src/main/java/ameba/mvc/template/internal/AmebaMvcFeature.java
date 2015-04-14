@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
+ * <p>AmebaMvcFeature class.</p>
+ *
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-07
  */
@@ -21,6 +23,9 @@ public class AmebaMvcFeature implements Feature {
     private static final String TPL_MODULE_DIR_PR = "template.directory.module.";
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean configure(final FeatureContext context) {
         if (!context.getConfiguration().isRegistered(MvcFeature.class)) {

@@ -13,6 +13,8 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
 /**
+ * <p>RouteFeature class.</p>
+ *
  * @author icode
  * @since 2013-08-07
  */
@@ -20,6 +22,9 @@ import javax.ws.rs.core.FeatureContext;
 @ConstrainedTo(RuntimeType.SERVER)
 public class RouteFeature implements Feature {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean configure(final FeatureContext context) {
 

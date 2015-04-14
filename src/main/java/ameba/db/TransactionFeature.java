@@ -10,6 +10,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 
 /**
+ * <p>Abstract TransactionFeature class.</p>
+ *
  * @author ICode
  */
 public abstract class TransactionFeature implements Feature {
@@ -21,10 +23,21 @@ public abstract class TransactionFeature implements Feature {
     private static Constructor<? extends Persister> persisterConstructor = null;
     private static Constructor<? extends Updater> updaterConstructor = null;
 
+    /**
+     * <p>Getter for the field <code>finderClass</code>.</p>
+     *
+     * @return a {@link java.lang.Class} object.
+     */
     public static Class<? extends Finder> getFinderClass() {
         return finderClass;
     }
 
+    /**
+     * <p>Setter for the field <code>finderClass</code>.</p>
+     *
+     * @param finderClass a {@link java.lang.Class} object.
+     * @since 0.1.6e
+     */
     public static synchronized void setFinderClass(Class finderClass) {
         if (TransactionFeature.finderClass != null) return;
         if (finderClass == null || Modifier.isAbstract(finderClass.getModifiers())) {
@@ -33,10 +46,21 @@ public abstract class TransactionFeature implements Feature {
         TransactionFeature.finderClass = finderClass;
     }
 
+    /**
+     * <p>Getter for the field <code>persisterClass</code>.</p>
+     *
+     * @return a {@link java.lang.Class} object.
+     */
     public static Class<? extends Persister> getPersisterClass() {
         return persisterClass;
     }
 
+    /**
+     * <p>Setter for the field <code>persisterClass</code>.</p>
+     *
+     * @param persisterClass a {@link java.lang.Class} object.
+     * @since 0.1.6e
+     */
     public static synchronized void setPersisterClass(Class persisterClass) {
         if (TransactionFeature.persisterClass != null) return;
         if (persisterClass == null || Modifier.isAbstract(persisterClass.getModifiers())) {
@@ -45,10 +69,22 @@ public abstract class TransactionFeature implements Feature {
         TransactionFeature.persisterClass = persisterClass;
     }
 
+    /**
+     * <p>Getter for the field <code>updaterClass</code>.</p>
+     *
+     * @return a {@link java.lang.Class} object.
+     * @since 0.1.6e
+     */
     public static Class<? extends Updater> getUpdaterClass() {
         return updaterClass;
     }
 
+    /**
+     * <p>Setter for the field <code>updaterClass</code>.</p>
+     *
+     * @param updaterClass a {@link java.lang.Class} object.
+     * @since 0.1.6e
+     */
     public static synchronized void setUpdaterClass(Class updaterClass) {
         if (TransactionFeature.updaterClass != null) return;
         if (updaterClass == null || Modifier.isAbstract(updaterClass.getModifiers())) {
@@ -57,6 +93,12 @@ public abstract class TransactionFeature implements Feature {
         TransactionFeature.updaterClass = updaterClass;
     }
 
+    /**
+     * <p>Getter for the field <code>finderConstructor</code>.</p>
+     *
+     * @return a {@link java.lang.reflect.Constructor} object.
+     * @since 0.1.6e
+     */
     public static Constructor<? extends Finder> getFinderConstructor() {
         if (finderConstructor == null) {
             try {
@@ -68,6 +110,12 @@ public abstract class TransactionFeature implements Feature {
         return finderConstructor;
     }
 
+    /**
+     * <p>Getter for the field <code>persisterConstructor</code>.</p>
+     *
+     * @return a {@link java.lang.reflect.Constructor} object.
+     * @since 0.1.6e
+     */
     public static Constructor<? extends Persister> getPersisterConstructor() {
         if (persisterConstructor == null) {
             try {
@@ -79,6 +127,12 @@ public abstract class TransactionFeature implements Feature {
         return persisterConstructor;
     }
 
+    /**
+     * <p>Getter for the field <code>updaterConstructor</code>.</p>
+     *
+     * @return a {@link java.lang.reflect.Constructor} object.
+     * @since 0.1.6e
+     */
     public static Constructor<? extends Updater> getUpdaterConstructor() {
         if (updaterConstructor == null) {
             try {

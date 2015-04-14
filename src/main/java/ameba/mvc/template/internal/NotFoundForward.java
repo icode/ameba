@@ -38,6 +38,9 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
         return templateProcessors;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Response toResponse(NotFoundException exception) {
         return Response.ok(Viewables.newDefaultViewable(templatePath.get())).build();
@@ -47,6 +50,7 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
         return "/" + uriInfo.get().getPath();
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isMappable(NotFoundException exception) {
         String path = getCurrentPath();

@@ -22,6 +22,11 @@ public class RouteHelper {
     @Context
     private ExtendedResourceContext resourceContext;
 
+    /**
+     * <p>getRoutes.</p>
+     *
+     * @return a {@link java.util.List} object.
+     */
     @GET
     public List<String> getRoutes() {
         List<Resource> resourceList = resourceContext.getResourceModel().getResources();

@@ -1,6 +1,6 @@
 package ameba.db.ebean.transaction;
 
-import ameba.db.DataSource;
+import ameba.db.DataSourceManager;
 import ameba.db.TransactionInterceptor;
 import ameba.db.annotation.Transactional;
 import com.avaje.ebean.Ebean;
@@ -24,6 +24,9 @@ public class EbeanTransactional extends TransactionInterceptor {
 
     private Transaction[] transactions;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void begin() {
         Transactional transactional = resourceInfo.getResourceMethod().getAnnotation(Transactional.class);
@@ -36,22 +39,25 @@ public class EbeanTransactional extends TransactionInterceptor {
                 transactions[i] = Ebean.getServer(serverNames[i]).beginTransaction(txIsolation);
             }
         } else {
-            transactions = new Transaction[]{Ebean.getServer(DataSource.getDefaultDataSourceName()).beginTransaction()};
+            transactions = new Transaction[]{Ebean.getServer(DataSourceManager.getDefaultDataSourceName()).beginTransaction()};
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void commit() {
         for (Transaction transaction : transactions)
             transaction.commit();
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void rollback() {
         for (Transaction transaction : transactions)
             transaction.rollback();
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void end() {
         for (Transaction transaction : transactions)

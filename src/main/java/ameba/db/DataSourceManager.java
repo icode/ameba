@@ -10,20 +10,28 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import javax.ws.rs.core.Configuration;
 import java.util.Map;
 import java.util.Set;
 
 /**
+ * <p>DataSourceManager class.</p>
+ *
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-07
  */
-public class DataSource extends AddOn {
+public class DataSourceManager extends AddOn {
 
     private static final Map<String, javax.sql.DataSource> dataSourceMap = Maps.newHashMap();
-    private static final Logger logger = LoggerFactory.getLogger(DataSource.class);
+    private static final Logger logger = LoggerFactory.getLogger(DataSourceManager.class);
     private static String DEFAULT_DS_NAME = "default";
 
+    /**
+     * <p>getDefaultDataSourceName.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getDefaultDataSourceName() {
         return DEFAULT_DS_NAME;
     }
@@ -34,7 +42,7 @@ public class DataSource extends AddOn {
      * @param name data source name
      * @return DataSource
      */
-    public static javax.sql.DataSource getDataSource(String name) {
+    public static DataSource getDataSource(String name) {
         return dataSourceMap.get(name);
     }
 
@@ -47,6 +55,9 @@ public class DataSource extends AddOn {
         return dataSourceMap.keySet();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setup(final Application app) {
         Configuration config = app.getConfiguration();

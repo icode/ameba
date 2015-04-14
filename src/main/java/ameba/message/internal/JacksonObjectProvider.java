@@ -26,6 +26,9 @@ import java.util.Stack;
  */
 final class JacksonObjectProvider extends AbstractObjectProvider<FilterProvider> {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public FilterProvider transform(final ObjectGraph graph) {
         // Root entity.

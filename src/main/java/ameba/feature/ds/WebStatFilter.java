@@ -34,13 +34,23 @@ import java.util.Set;
  */
 @PreMatching
 @Singleton
+@PreMatching
+@Singleton
 class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
+    /**
+     * Constant <code>PARAM_NAME_PORFILE_ENABLE="ds.profileEnable"</code>
+     */
     public final static String PARAM_NAME_PORFILE_ENABLE = "ds.profileEnable";
+    /** Constant <code>PARAM_NAME_SESSION_STAT_MAX_COUNT="ds.sessionStatMaxCount"</code> */
     public final static String PARAM_NAME_SESSION_STAT_MAX_COUNT = "ds.sessionStatMaxCount";
+    /** Constant <code>PARAM_NAME_EXCLUSIONS="ds.exclusions"</code> */
     public static final String PARAM_NAME_EXCLUSIONS = "ds.exclusions";
+    /** Constant <code>PARAM_NAME_PRINCIPAL_COOKIE_NAME="ds.principalCookieName"</code> */
     public static final String PARAM_NAME_PRINCIPAL_COOKIE_NAME = "ds.principalCookieName";
+    /** Constant <code>PARAM_NAME_REAL_IP_HEADER="ds.realIpHeader"</code> */
     public static final String PARAM_NAME_REAL_IP_HEADER = "ds.realIpHeader";
+    /** Constant <code>DEFAULT_MAX_STAT_SESSION_COUNT=1000 * 100</code> */
     public final static int DEFAULT_MAX_STAT_SESSION_COUNT = 1000 * 100;
     private static final Logger logger = LoggerFactory.getLogger(WebStatFilter.class);
     /**
@@ -59,6 +69,11 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
     private static String principalCookieName;
     private static String realIpHeader;
 
+    /**
+     * <p>Constructor for WebStatFilter.</p>
+     *
+     * @param configuration a {@link javax.ws.rs.core.Configuration} object.
+     */
     @Inject
     public WebStatFilter(Configuration configuration) {
         if (webAppStat != null) {
@@ -141,6 +156,7 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
         return uriStat;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String requestURI = getRequestURI(requestContext);
@@ -174,6 +190,7 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
 //        }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         String requestURI = getRequestURI(requestContext);
@@ -226,6 +243,12 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
         }
     }
 
+    /**
+     * <p>getRemoteAddress.</p>
+     *
+     * @param request a {@link javax.ws.rs.container.ContainerRequestContext} object.
+     * @return a {@link java.lang.String} object.
+     */
     protected String getRemoteAddress(ContainerRequestContext request) {
         String ip = null;
         if (realIpHeader != null && realIpHeader.length() != 0) {
@@ -254,6 +277,12 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
 //        }
 //    }
 
+    /**
+     * <p>getPrincipal.</p>
+     *
+     * @param httpRequest a {@link javax.ws.rs.container.ContainerRequestContext} object.
+     * @return a {@link java.lang.String} object.
+     */
     public String getPrincipal(ContainerRequestContext httpRequest) {
         if (principalCookieName != null && httpRequest.getCookies().size() > 0) {
             Map<String, Cookie> cookies = httpRequest.getCookies();
@@ -267,6 +296,12 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
         return null;
     }
 
+    /**
+     * <p>isExclusion.</p>
+     *
+     * @param requestURI a {@link java.lang.String} object.
+     * @return a boolean.
+     */
     public boolean isExclusion(String requestURI) {
         if (excludesPattern == null) {
             return false;
@@ -288,38 +323,84 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
         return false;
     }
 
+    /**
+     * <p>getRequestURI.</p>
+     *
+     * @param request a {@link javax.ws.rs.container.ContainerRequestContext} object.
+     * @return a {@link java.lang.String} object.
+     */
     public String getRequestURI(ContainerRequestContext request) {
         return ((ContainerRequest) request).getPath(true);
     }
 
+    /**
+     * <p>Getter for the field <code>principalCookieName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getPrincipalCookieName() {
         return principalCookieName;
     }
 
+    /**
+     * <p>isProfileEnable.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isProfileEnable() {
         return profileEnable;
     }
 
+    /**
+     * <p>Setter for the field <code>profileEnable</code>.</p>
+     *
+     * @param profileEnable a boolean.
+     */
     public void setProfileEnable(boolean profileEnable) {
         WebStatFilter.profileEnable = profileEnable;
     }
 
+    /**
+     * <p>Getter for the field <code>webAppStat</code>.</p>
+     *
+     * @return a {@link com.alibaba.druid.support.http.stat.WebAppStat} object.
+     */
     public WebAppStat getWebAppStat() {
         return webAppStat;
     }
 
+    /**
+     * <p>Setter for the field <code>webAppStat</code>.</p>
+     *
+     * @param webAppStat a {@link com.alibaba.druid.support.http.stat.WebAppStat} object.
+     */
     public void setWebAppStat(WebAppStat webAppStat) {
         WebStatFilter.webAppStat = webAppStat;
     }
 
+    /**
+     * <p>Getter for the field <code>contextPath</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getContextPath() {
         return contextPath;
     }
 
+    /**
+     * <p>Getter for the field <code>sessionStatMaxCount</code>.</p>
+     *
+     * @return a int.
+     */
     public int getSessionStatMaxCount() {
         return sessionStatMaxCount;
     }
 
+    /**
+     * <p>Getter for the field <code>statFilterContextListener</code>.</p>
+     *
+     * @return a {@link ameba.feature.ds.WebStatFilter.WebStatFilterContextListener} object.
+     */
     public WebStatFilterContextListener getStatFilterContextListener() {
         return statFilterContextListener;
     }

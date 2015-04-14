@@ -8,7 +8,10 @@ import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 
 /**
+ * <p>Abstract Request class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public abstract class Request extends ContainerRequest {
     /**
@@ -27,9 +30,20 @@ public abstract class Request extends ContainerRequest {
         super(baseUri, requestUri, httpMethod, securityContext, propertiesDelegate);
     }
 
+    /**
+     * <p>getRemoteAddr.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public abstract String getRemoteAddr();
 
 
+    /**
+     * <p>getRemoteRealAddr.</p>
+     *
+     * @param realIpHeader a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
+     */
     public String getRemoteRealAddr(String realIpHeader) {
         String ip = null;
         if (realIpHeader != null && realIpHeader.length() != 0) {
@@ -50,6 +64,11 @@ public abstract class Request extends ContainerRequest {
         return ip;
     }
 
+    /**
+     * <p>getRemoteRealAddr.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getRemoteRealAddr() {
         return getRemoteRealAddr(null);
     }

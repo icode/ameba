@@ -25,6 +25,9 @@ public class ErrorPageFeature implements Feature {
 
     private static final String GEN_CONF_KEY = "http.error.page.generator";
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final boolean configure(FeatureContext featureContext) {
         HashMap<Integer, String> errorMap = Maps.newHashMap();

@@ -8,9 +8,15 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
 /**
+ * <p>RsAddOnFeature class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class RsAddOnFeature implements Feature {
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean configure(FeatureContext context) {
 

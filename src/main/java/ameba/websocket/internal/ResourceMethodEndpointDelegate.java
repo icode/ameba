@@ -22,7 +22,10 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * <p>ResourceMethodEndpointDelegate class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class ResourceMethodEndpointDelegate extends EndpointDelegate {
     @Inject
@@ -33,10 +36,18 @@ public class ResourceMethodEndpointDelegate extends EndpointDelegate {
     private Object resourceInstance;
     private Method method;
 
+    /**
+     * <p>Setter for the field <code>resourceMethod</code>.</p>
+     *
+     * @param resourceMethod a {@link org.glassfish.jersey.server.model.ResourceMethod} object.
+     */
     protected void setResourceMethod(ResourceMethod resourceMethod) {
         this.resourceMethod = resourceMethod;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void onOpen() {
         try {

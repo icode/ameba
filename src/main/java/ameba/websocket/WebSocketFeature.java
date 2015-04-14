@@ -10,19 +10,31 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
 /**
+ * <p>WebSocketFeature class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class WebSocketFeature implements Feature {
 
+    /**
+     * Constant <code>WEB_SOCKET_ENABLED_CONF="websocket.enabled"</code>
+     */
     public static final String WEB_SOCKET_ENABLED_CONF = "websocket.enabled";
     private static final Logger logger = LoggerFactory.getLogger(WebSocketFeature.class);
 
     private static boolean enabled;
 
+    /**
+     * <p>isEnabled.</p>
+     *
+     * @return a boolean.
+     */
     public static boolean isEnabled() {
         return enabled;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean configure(FeatureContext context) {
         final Configuration config = context.getConfiguration();

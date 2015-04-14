@@ -23,7 +23,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 /**
+ * <p>JsonPatchInterceptor class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 @PATCH
 public class JsonPatchInterceptor implements ReaderInterceptor {
@@ -42,6 +45,9 @@ public class JsonPatchInterceptor implements ReaderInterceptor {
         this.workers = workers;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings("unchecked")
     @Override
     public Object aroundReadFrom(ReaderInterceptorContext readerInterceptorContext) throws IOException, WebApplicationException {

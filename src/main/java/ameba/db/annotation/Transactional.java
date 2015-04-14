@@ -6,6 +6,8 @@ import java.sql.Connection;
 
 /**
  * Wraps the annotated action in an Ebean transaction.
+ *
+ * @author sulijuan
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})

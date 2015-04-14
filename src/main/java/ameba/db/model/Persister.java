@@ -3,6 +3,8 @@ package ameba.db.model;
 import org.apache.commons.lang3.StringUtils;
 
 /**
+ * <p>Abstract Persister class.</p>
+ *
  * @author icode
  */
 public abstract class Persister<M extends Model> {
@@ -10,6 +12,12 @@ public abstract class Persister<M extends Model> {
     private M model;
     private String serverName;
 
+    /**
+     * <p>Constructor for Persister.</p>
+     *
+     * @param serverName a {@link java.lang.String} object.
+     * @param model      a M object.
+     */
     public Persister(String serverName, M model) {
         if (StringUtils.isBlank(serverName)) {
             throw new IllegalArgumentException("server name is blank");
@@ -21,10 +29,20 @@ public abstract class Persister<M extends Model> {
         this.serverName = serverName;
     }
 
+    /**
+     * <p>Getter for the field <code>model</code>.</p>
+     *
+     * @return a M object.
+     */
     public M getModel() {
         return model;
     }
 
+    /**
+     * <p>Getter for the field <code>serverName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getServerName() {
         return serverName;
     }
@@ -33,7 +51,7 @@ public abstract class Persister<M extends Model> {
      * Changes the model server.
      *
      * @param server server name
-     * @param <E>    model
+     * @return a {@link ameba.db.model.Persister} object.
      */
     public abstract <E extends M> Persister<E> on(String server);
 
@@ -61,14 +79,30 @@ public abstract class Persister<M extends Model> {
      */
     public abstract void update();
 
+    /**
+     * <p>update.</p>
+     *
+     * @param server a {@link java.lang.String} object.
+     */
     public void update(String server) {
         on(server).update();
     }
 
+    /**
+     * <p>insert.</p>
+     *
+     * @param server a {@link java.lang.String} object.
+     * @since 0.1.6e
+     */
     public void insert(String server) {
         on(server).insert();
     }
 
+    /**
+     * <p>delete.</p>
+     *
+     * @param server a {@link java.lang.String} object.
+     */
     public void delete(String server) {
         on(server).delete();
     }

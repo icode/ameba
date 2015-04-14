@@ -15,9 +15,15 @@ import javax.ws.rs.core.FeatureContext;
 import java.util.Set;
 
 /**
+ * <p>LocalResourceAddOn class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class LocalResourceAddOn extends AddOn {
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setup(final Application application) {
 

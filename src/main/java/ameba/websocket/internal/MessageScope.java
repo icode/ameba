@@ -22,7 +22,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
+ * <p>MessageScope class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 @Singleton
 public class MessageScope implements Context<MessageScoped> {
@@ -31,15 +34,29 @@ public class MessageScope implements Context<MessageScoped> {
 
     private ThreadLocal<Instance> currentScopeInstance = new ThreadLocal<Instance>();
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Class<? extends Annotation> getScope() {
         return MessageScoped.class;
     }
 
+    /**
+     * <p>referenceCurrent.</p>
+     *
+     * @return a {@link ameba.websocket.internal.MessageScope.Instance} object.
+     * @throws java.lang.IllegalStateException if any.
+     */
     public Instance referenceCurrent() throws IllegalStateException {
         return current().getReference();
     }
 
+    /**
+     * <p>suspendCurrent.</p>
+     *
+     * @return a {@link ameba.websocket.internal.MessageScope.Instance} object.
+     */
     public Instance suspendCurrent() {
         final Instance scopeInstance = currentScopeInstance.get();
         if (scopeInstance == null) {
@@ -58,6 +75,7 @@ public class MessageScope implements Context<MessageScoped> {
         return scopeInstance;
     }
 
+    /** {@inheritDoc} */
     @Override
     public <U> U findOrCreate(ActiveDescriptor<U> activeDescriptor, ServiceHandle<?> root) {
         final Instance instance = current();
@@ -70,33 +88,43 @@ public class MessageScope implements Context<MessageScoped> {
         return retVal;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean containsKey(ActiveDescriptor<?> descriptor) {
         Instance instance = current();
         return instance.contains(descriptor);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void destroyOne(ActiveDescriptor<?> descriptor) {
         final Instance instance = current();
         instance.remove(descriptor);
     }
 
+    /**
+     * <p>createInstance.</p>
+     *
+     * @return a {@link ameba.websocket.internal.MessageScope.Instance} object.
+     */
     public Instance createInstance() {
         return new Instance();
     }
 
 
+    /** {@inheritDoc} */
     @Override
     public boolean supportsNullCreation() {
         return true;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isActive() {
         return true;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void shutdown() {
         currentScopeInstance = null;
@@ -134,7 +162,7 @@ public class MessageScope implements Context<MessageScoped> {
      * the method the request scope is returned to its original state. The newly created
      * {@link MessageScope.Instance scope instance} will be implicitly released at the end
      * of the method call except the task will call
-     * {@link MessageScope#suspendCurrent}.
+     * {@link ameba.websocket.internal.MessageScope#suspendCurrent}.
      *
      * @param task Task to be executed.
      */
@@ -164,7 +192,7 @@ public class MessageScope implements Context<MessageScoped> {
      * @param task          Task to be executed.
      * @param <T>           {@code task} result type.
      * @return result returned by the {@code task}.
-     * @throws Exception Exception thrown by the {@code task}.
+     * @throws java.lang.Exception java.lang.Exception thrown by the {@code task}.
      */
     public <T> T runInScope(Instance scopeInstance, Callable<T> task) throws Exception {
         Instance oldInstance = currentScopeInstance.get();
@@ -184,12 +212,12 @@ public class MessageScope implements Context<MessageScoped> {
      * the method the request scope is returned to its original state. The newly created
      * {@link MessageScope.Instance scope instance} will be implicitly released at the end
      * of the method call except the task will call
-     * {@link MessageScope#suspendCurrent}.
+     * {@link ameba.websocket.internal.MessageScope#suspendCurrent}.
      *
      * @param task Task to be executed.
      * @param <T>  {@code task} result type.
      * @return result returned by the {@code task}.
-     * @throws Exception Exception thrown by the {@code task}.
+     * @throws java.lang.Exception java.lang.Exception thrown by the {@code task}.
      */
     public <T> T runInScope(Callable<T> task) throws Exception {
         Instance oldInstance = currentScopeInstance.get();
@@ -236,7 +264,7 @@ public class MessageScope implements Context<MessageScoped> {
      * instance}. At the end of the method the request scope is returned to its original
      * state. The newly created {@link MessageScope.Instance scope instance} will be
      * implicitly released at the end of the method call except the task will call
-     * {@link MessageScope#suspendCurrent}.
+     * {@link ameba.websocket.internal.MessageScope#suspendCurrent}.
      *
      * @param task Task to be executed.
      * @param <T>  {@code task} result type.

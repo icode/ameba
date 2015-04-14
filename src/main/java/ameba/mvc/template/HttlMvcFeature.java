@@ -11,12 +11,17 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
 /**
+ * <p>HttlMvcFeature class.</p>
+ *
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-07
  */
 @ConstrainedTo(RuntimeType.SERVER)
 public class HttlMvcFeature implements Feature {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean configure(final FeatureContext context) {
         if (!context.getConfiguration().isRegistered(MvcFeature.class)) {

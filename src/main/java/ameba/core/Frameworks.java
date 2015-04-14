@@ -22,12 +22,21 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
+ * <p>Frameworks class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class Frameworks {
     private Frameworks() {
     }
 
+    /**
+     * <p>getErrorPageGenerator.</p>
+     *
+     * @param serviceLocator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @return a {@link ameba.mvc.ErrorPageGenerator} object.
+     */
     public static ErrorPageGenerator getErrorPageGenerator(ServiceLocator serviceLocator) {
         final Set<ExceptionMapper> exceptionMappers = Sets.newLinkedHashSet();
         exceptionMappers.addAll(Providers.getCustomProviders(serviceLocator, ExceptionMapper.class));
@@ -40,11 +49,26 @@ public class Frameworks {
         return null;
     }
 
+    /**
+     * <p>getViewableMessageBodyWriter.</p>
+     *
+     * @param workers a {@link org.glassfish.jersey.message.MessageBodyWorkers} object.
+     * @return a {@link javax.ws.rs.ext.MessageBodyWriter} object.
+     */
     public static MessageBodyWriter<Viewable> getViewableMessageBodyWriter(MessageBodyWorkers workers) {
         return workers.getMessageBodyWriter(Viewable.class, Viewable.class,
                 new Annotation[]{}, null);
     }
 
+    /**
+     * <p>getServiceHandles.</p>
+     *
+     * @param locator    a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param contract   a {@link java.lang.Class} object.
+     * @param qualifiers a {@link java.lang.annotation.Annotation} object.
+     * @param <T>        a T object.
+     * @return a {@link java.util.List} object.
+     */
     public static <T> List<ServiceHandle<T>> getServiceHandles(final ServiceLocator locator, final Class<T> contract,
                                                                final Annotation... qualifiers) {
 

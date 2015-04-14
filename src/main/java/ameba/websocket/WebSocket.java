@@ -11,7 +11,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>WebSocket class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
@@ -64,6 +67,11 @@ public @interface WebSocket {
      */
     public Class<? extends DefaultServerEndpointConfig.Configurator> configurator() default DefaultServerEndpointConfig.Configurator.class;
 
+    /**
+     * <p>extensions.</p>
+     *
+     * @return an array of {@link java.lang.Class} objects.
+     */
     public Class<? extends Extension>[] extensions() default {};
 
     @Retention(RetentionPolicy.RUNTIME)

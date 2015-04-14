@@ -19,6 +19,9 @@ import java.util.List;
  */
 public abstract class TransactionInterceptor implements MethodInterceptor {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object invoke(final MethodInvocation methodInvocation) throws Throwable {
         begin();
@@ -41,12 +44,24 @@ public abstract class TransactionInterceptor implements MethodInterceptor {
         }
     }
 
+    /**
+     * <p>begin.</p>
+     */
     protected abstract void begin();
 
+    /**
+     * <p>commit.</p>
+     */
     protected abstract void commit();
 
+    /**
+     * <p>rollback.</p>
+     */
     protected abstract void rollback();
 
+    /**
+     * <p>end.</p>
+     */
     protected abstract void end();
 
     static class TransactionBinder extends AbstractBinder {

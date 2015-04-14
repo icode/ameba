@@ -10,6 +10,7 @@ import java.lang.annotation.*;
  * jsonPatch must be have @GET resource/{id} method and none arguments
  *
  * @author icode
+ * @since 0.1.6e
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

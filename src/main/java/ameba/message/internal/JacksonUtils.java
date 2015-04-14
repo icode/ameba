@@ -1,11 +1,13 @@
 package ameba.message.internal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
-import com.google.common.collect.Sets;
 import org.glassfish.jersey.internal.util.ReflectionHelper;
 import org.glassfish.jersey.message.filtering.spi.ObjectProvider;
 
@@ -14,22 +16,25 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Set;
 
 /**
+ * <p>JacksonUtils class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class JacksonUtils {
 
-    private static Set<Module> defaultModules = Sets.newLinkedHashSet();
 
     private JacksonUtils() {
     }
 
-    public static void addDefaultModule(Module module) {
-        defaultModules.add(module);
-    }
-
+    /**
+     * <p>configFilterIntrospector.</p>
+     *
+     * @param mapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
+     * @return a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
+     */
     public static ObjectMapper configFilterIntrospector(final ObjectMapper mapper) {
         final AnnotationIntrospector customIntrospector = mapper.getSerializationConfig().getAnnotationIntrospector();
         // Set the custom (user) introspector to be the primary one.
@@ -61,6 +66,14 @@ public class JacksonUtils {
 
     }
 
+    /**
+     * <p>setObjectWriterInjector.</p>
+     *
+     * @param provider    a {@link javax.inject.Provider} object.
+     * @param genericType a {@link java.lang.reflect.Type} object.
+     * @param annotations an array of {@link java.lang.annotation.Annotation} objects.
+     * @throws java.io.IOException if any.
+     */
     public static void setObjectWriterInjector(Provider<ObjectProvider<FilterProvider>> provider,
                                                final Type genericType,
                                                final Annotation[] annotations) throws IOException {
@@ -70,12 +83,19 @@ public class JacksonUtils {
         }
     }
 
-    public static void configureMapper(ObjectMapper mapper) {
-        mapper.registerModules(defaultModules);
+    /**
+     * <p>configureMapper.</p>
+     *
+     * @param isDev  a boolean.
+     * @param mapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
+     */
+    public static void configureMapper(boolean isDev, ObjectMapper mapper) {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(SerializationFeature.FAIL_ON_SELF_REFERENCES, false);
+        if (isDev)
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
 }

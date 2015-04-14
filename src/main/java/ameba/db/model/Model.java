@@ -1,1 +1,150 @@
-package ameba.db.model;import ameba.db.DataSource;import org.apache.commons.lang3.NotImplementedException;import javax.persistence.MappedSuperclass;import java.io.Serializable;/** * @author icode */@MappedSuperclasspublic abstract class Model implements Serializable {    protected static <ID, T extends Model> Finder<ID, T> _getFinder(String server) {        throw new NotImplementedException("Model not enhanced!");    }    public static <ID, T extends Model> Finder<ID, T> withFinder(String server) {        Finder<ID, T> finder = _getFinder(server);        if (finder == null) {            throw new NotFinderFindException();        }        return finder;    }    public static <ID, T extends Model> Finder<ID, T> withFinder() {        return withFinder(DataSource.getDefaultDataSourceName());    }    protected static <M extends Model> Updater<M> _getUpdater(String server, String sql) {        throw new NotImplementedException("Model not enhanced!");    }    public static <M extends Model> Updater<M> withUpdater(String server, String sql) {        Updater<M> updater = _getUpdater(server, sql);        if (updater == null) {            throw new NotUpdaterFindException();        }        return updater;    }    public static <M extends Model> Updater<M> withUpdater(String sql) {        return withUpdater(DataSource.getDefaultDataSourceName(), sql);    }    protected <M extends Model> Persister<M> _getPersister(String server) {        throw new NotImplementedException("Model not enhanced!");    }    public <M extends Model> Persister<M> withPersister(String server) {        Persister<M> persister = _getPersister(server);        if (persister == null) {            throw new NotPersisterFindException();        }        return persister;    }    public <M extends Model> Persister<M> withPersister() {        return withPersister(DataSource.getDefaultDataSourceName());    }    public static class NotPersisterFindException extends RuntimeException {        public NotPersisterFindException() {            super("_getPersister method not return Persister instance");        }    }    public static class NotFinderFindException extends RuntimeException {        public NotFinderFindException() {            super("_getFinder method not return Persister instance");        }    }    public static class NotUpdaterFindException extends RuntimeException {        public NotUpdaterFindException() {            super("_getUpdater method not return Updater instance");        }    }}
+package ameba.db.model;
+
+import ameba.db.DataSourceManager;
+import org.apache.commons.lang3.NotImplementedException;
+
+import javax.persistence.MappedSuperclass;
+import java.io.Serializable;
+
+/**
+ *
+ * @author sulijuan
+ */
+@MappedSuperclass
+public abstract class Model implements Serializable {
+
+    /**
+     * <p>_getFinder.</p>
+     *
+     * @param server a {@link java.lang.String} object.
+     * @param <ID>   a ID object.
+     * @param <T>    a T object.
+     * @return a {@link ameba.db.model.Finder} object.
+     */
+    protected static <ID, T extends Model> Finder<ID, T> _getFinder(String server) {
+        throw new NotImplementedException("Model not enhanced!");
+    }
+
+    /**
+     * <p>withFinder.</p>
+     *
+     * @param server a {@link java.lang.String} object.
+     * @param <ID> a ID object.
+     * @param <T> a T object.
+     * @return a {@link ameba.db.model.Finder} object.
+     */
+    public static <ID, T extends Model> Finder<ID, T> withFinder(String server) {
+        Finder<ID, T> finder = _getFinder(server);
+        if (finder == null) {
+            throw new NotFinderFindException();
+        }
+        return finder;
+    }
+
+    /**
+     * <p>withFinder.</p>
+     *
+     * @param <ID> a ID object.
+     * @param <T> a T object.
+     * @return a {@link ameba.db.model.Finder} object.
+     */
+    public static <ID, T extends Model> Finder<ID, T> withFinder() {
+        return withFinder(DataSourceManager.getDefaultDataSourceName());
+    }
+
+    /**
+     * <p>_getUpdater.</p>
+     *
+     * @param server a {@link java.lang.String} object.
+     * @param sql a {@link java.lang.String} object.
+     * @param <M> a M object.
+     * @return a {@link ameba.db.model.Updater} object.
+     * @since 0.1.6e
+     */
+    protected static <M extends Model> Updater<M> _getUpdater(String server, String sql) {
+        throw new NotImplementedException("Model not enhanced!");
+    }
+
+    /**
+     * <p>withUpdater.</p>
+     *
+     * @param server a {@link java.lang.String} object.
+     * @param sql a {@link java.lang.String} object.
+     * @param <M> a M object.
+     * @return a {@link ameba.db.model.Updater} object.
+     * @since 0.1.6e
+     */
+    public static <M extends Model> Updater<M> withUpdater(String server, String sql) {
+        Updater<M> updater = _getUpdater(server, sql);
+        if (updater == null) {
+            throw new NotUpdaterFindException();
+        }
+        return updater;
+    }
+
+    /**
+     * <p>withUpdater.</p>
+     *
+     * @param sql a {@link java.lang.String} object.
+     * @param <M> a M object.
+     * @return a {@link ameba.db.model.Updater} object.
+     * @since 0.1.6e
+     */
+    public static <M extends Model> Updater<M> withUpdater(String sql) {
+        return withUpdater(DataSourceManager.getDefaultDataSourceName(), sql);
+    }
+
+    /**
+     * <p>_getPersister.</p>
+     *
+     * @param server a {@link java.lang.String} object.
+     * @param <M> a M object.
+     * @return a {@link ameba.db.model.Persister} object.
+     */
+    protected <M extends Model> Persister<M> _getPersister(String server) {
+        throw new NotImplementedException("Model not enhanced!");
+    }
+
+    /**
+     * <p>withPersister.</p>
+     *
+     * @param server a {@link java.lang.String} object.
+     * @param <M> a M object.
+     * @return a {@link ameba.db.model.Persister} object.
+     */
+    public <M extends Model> Persister<M> withPersister(String server) {
+        Persister<M> persister = _getPersister(server);
+        if (persister == null) {
+            throw new NotPersisterFindException();
+        }
+        return persister;
+    }
+
+    /**
+     * <p>withPersister.</p>
+     *
+     * @param <M> a M object.
+     * @return a {@link ameba.db.model.Persister} object.
+     */
+    public <M extends Model> Persister<M> withPersister() {
+        return withPersister(DataSourceManager.getDefaultDataSourceName());
+    }
+
+    public static class NotPersisterFindException extends RuntimeException {
+        public NotPersisterFindException() {
+            super("_getPersister method not return Persister instance");
+        }
+    }
+
+    public static class NotFinderFindException extends RuntimeException {
+        public NotFinderFindException() {
+            super("_getFinder method not return Persister instance");
+        }
+    }
+
+    public static class NotUpdaterFindException extends RuntimeException {
+        public NotUpdaterFindException() {
+            super("_getUpdater method not return Updater instance");
+        }
+    }
+}

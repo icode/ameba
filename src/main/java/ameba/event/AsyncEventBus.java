@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * <p>Abstract AsyncEventBus class.</p>
+ *
  * @author icode
  */
 public abstract class AsyncEventBus<E extends Event, S extends ActorRef> extends LookupEventBus<E, S, Class<? extends E>> {
@@ -18,35 +20,65 @@ public abstract class AsyncEventBus<E extends Event, S extends ActorRef> extends
     private AsyncEventBus() {
     }
 
+    /**
+     * <p>create.</p>
+     *
+     * @return a {@link ameba.event.AsyncEventBus} object.
+     */
     public static AsyncEventBus<Event, ActorRef> create() {
         return new Sub();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int compareSubscribers(S a, S b) {
         return a.compareTo(b);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int mapSize() {
         return 128;
     }
 
+    /** {@inheritDoc} */
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends E> classify(E event) {
         return (Class<? extends E>) event.getClass();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void publish(E event, S subscriber) {
         subscriber.tell(event, ActorRef.noSender());
     }
 
+    /**
+     * <p>subscribe.</p>
+     *
+     * @param eventClass a {@link java.lang.Class} object.
+     * @param listener a {@link ameba.event.AsyncListener} object.
+     * @return a boolean.
+     */
     public abstract boolean subscribe(Class<? extends E> eventClass, final AsyncListener listener);
 
+    /**
+     * <p>unsubscribe.</p>
+     *
+     * @param eventClass a {@link java.lang.Class} object.
+     * @param listener a {@link ameba.event.AsyncListener} object.
+     * @return a boolean.
+     */
     public abstract boolean unsubscribe(Class<? extends E> eventClass, final AsyncListener listener);
 
+    /**
+     * <p>unsubscribe.</p>
+     *
+     * @param eventClass a {@link java.lang.Class} object.
+     */
     public abstract void unsubscribe(Class<? extends E> eventClass);
 
     private static class Sub extends AsyncEventBus<Event, ActorRef> {

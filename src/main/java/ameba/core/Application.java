@@ -71,7 +71,11 @@ import static ameba.util.IOUtils.*;
  */
 @Singleton
 public class Application {
+    /**
+     * Constant <code>DEFAULT_APP_NAME="Ameba"</code>
+     */
     public static final String DEFAULT_APP_NAME = "Ameba";
+    /** Constant <code>DEFAULT_APP_CONF="conf/application.conf"</code> */
     public static final String DEFAULT_APP_CONF = "conf/application.conf";
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static final String REGISTER_CONF_PREFIX = "app.register.";
@@ -91,10 +95,18 @@ public class Application {
     private ResourceConfig config;
     private Set<String> scanPkgs;
 
+    /**
+     * <p>Constructor for Application.</p>
+     */
     public Application() {
         this(DEFAULT_APP_CONF);
     }
 
+    /**
+     * <p>Constructor for Application.</p>
+     *
+     * @param confFile a {@link java.lang.String} object.
+     */
     @SuppressWarnings("unchecked")
     public Application(String... confFile) {
 
@@ -329,15 +341,31 @@ public class Application {
         });
     }
 
+    /**
+     * <p>getApplicationName.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getApplicationName() {
         return config.getApplicationName();
     }
 
+    /**
+     * <p>setApplicationName.</p>
+     *
+     * @param applicationName a {@link java.lang.String} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application setApplicationName(String applicationName) {
         config.setApplicationName(applicationName);
         return this;
     }
 
+    /**
+     * <p>Getter for the field <code>config</code>.</p>
+     *
+     * @return a {@link org.glassfish.jersey.server.ResourceConfig} object.
+     */
     public ResourceConfig getConfig() {
         return config;
     }
@@ -407,6 +435,11 @@ public class Application {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>timestamp</code>.</p>
+     *
+     * @return a long.
+     */
     public long getTimestamp() {
         return timestamp;
     }
@@ -807,44 +840,97 @@ public class Application {
         return url;
     }
 
+    /**
+     * <p>register.</p>
+     *
+     * @param componentClass a {@link java.lang.Class} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application register(Class<?> componentClass) {
         config.register(componentClass);
         return this;
     }
 
+    /**
+     * <p>register.</p>
+     *
+     * @param component a {@link java.lang.Object} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application register(Object component) {
         config.register(component);
         return this;
     }
 
+    /**
+     * <p>registerClasses.</p>
+     *
+     * @param classes a {@link java.lang.Class} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application registerClasses(Class<?>... classes) {
         config.registerClasses(classes);
         return this;
     }
 
+    /**
+     * <p>register.</p>
+     *
+     * @param component a {@link java.lang.Object} object.
+     * @param bindingPriority a int.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application register(Object component, int bindingPriority) {
         config.register(component, bindingPriority);
         return this;
     }
 
+    /**
+     * <p>getConfiguration.</p>
+     *
+     * @return a {@link org.glassfish.jersey.server.ServerConfig} object.
+     */
     public ServerConfig getConfiguration() {
         return config.getConfiguration();
     }
 
+    /**
+     * <p>getClassLoader.</p>
+     *
+     * @return a {@link java.lang.ClassLoader} object.
+     */
     public ClassLoader getClassLoader() {
         return config.getClassLoader();
     }
 
+    /**
+     * <p>setClassLoader.</p>
+     *
+     * @param classLoader a {@link java.lang.ClassLoader} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application setClassLoader(ClassLoader classLoader) {
         config.setClassLoader(classLoader);
         return this;
     }
 
+    /**
+     * <p>registerInstances.</p>
+     *
+     * @param instances a {@link java.lang.Object} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application registerInstances(Object... instances) {
         config.registerInstances(instances);
         return this;
     }
 
+    /**
+     * <p>packages.</p>
+     *
+     * @param packages a {@link java.lang.String} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application packages(String... packages) {
         if (scanPkgs == null) {
             scanPkgs = Sets.newHashSet();
@@ -853,167 +939,383 @@ public class Application {
         return this;
     }
 
+    /**
+     * <p>getPackages.</p>
+     *
+     * @return a {@link java.util.Set} object.
+     */
     public Set<String> getPackages() {
         return scanPkgs;
     }
 
+    /**
+     * <p>register.</p>
+     *
+     * @param component a {@link java.lang.Object} object.
+     * @param contracts a {@link java.util.Map} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application register(Object component, Map<Class<?>, Integer> contracts) {
         config.register(component, contracts);
         return this;
     }
 
+    /**
+     * <p>getResources.</p>
+     *
+     * @return a {@link java.util.Set} object.
+     */
     public Set<Resource> getResources() {
         return config.getResources();
     }
 
+    /**
+     * <p>getSingletons.</p>
+     *
+     * @return a {@link java.util.Set} object.
+     */
     public Set<Object> getSingletons() {
         return config.getSingletons();
     }
 
+    /**
+     * <p>getPropertyNames.</p>
+     *
+     * @return a {@link java.util.Collection} object.
+     */
     public Collection<String> getPropertyNames() {
         return config.getPropertyNames();
     }
 
+    /**
+     * <p>register.</p>
+     *
+     * @param componentClass a {@link java.lang.Class} object.
+     * @param contracts a {@link java.lang.Class} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application register(Class<?> componentClass, Class<?>... contracts) {
         config.register(componentClass, contracts);
         return this;
     }
 
+    /**
+     * <p>getClasses.</p>
+     *
+     * @return a {@link java.util.Set} object.
+     */
     public Set<Class<?>> getClasses() {
         return config.getClasses();
     }
 
+    /**
+     * <p>register.</p>
+     *
+     * @param component a {@link java.lang.Object} object.
+     * @param contracts a {@link java.lang.Class} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application register(Object component, Class<?>... contracts) {
         config.register(component, contracts);
         return this;
     }
 
+    /**
+     * <p>isRegistered.</p>
+     *
+     * @param componentClass a {@link java.lang.Class} object.
+     * @return a boolean.
+     */
     public boolean isRegistered(Class<?> componentClass) {
         return config.isRegistered(componentClass);
     }
 
+    /**
+     * <p>registerResources.</p>
+     *
+     * @param resources a {@link java.util.Set} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application registerResources(Set<Resource> resources) {
         config.registerResources(resources);
         return this;
     }
 
+    /**
+     * <p>isEnabled.</p>
+     *
+     * @param feature a {@link javax.ws.rs.core.Feature} object.
+     * @return a boolean.
+     */
     public boolean isEnabled(Feature feature) {
         return config.isEnabled(feature);
     }
 
+    /**
+     * <p>getContracts.</p>
+     *
+     * @param componentClass a {@link java.lang.Class} object.
+     * @return a {@link java.util.Map} object.
+     */
     public Map<Class<?>, Integer> getContracts(Class<?> componentClass) {
         return config.getContracts(componentClass);
     }
 
+    /**
+     * <p>getProperty.</p>
+     *
+     * @param name a {@link java.lang.String} object.
+     * @return a {@link java.lang.Object} object.
+     */
     public Object getProperty(String name) {
         return config.getProperty(name);
     }
 
+    /**
+     * <p>addProperties.</p>
+     *
+     * @param properties a {@link java.util.Map} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application addProperties(Map<String, Object> properties) {
         config.addProperties(properties);
         return this;
     }
 
+    /**
+     * <p>registerFinder.</p>
+     *
+     * @param resourceFinder a {@link org.glassfish.jersey.server.ResourceFinder} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application registerFinder(ResourceFinder resourceFinder) {
         config.registerFinder(resourceFinder);
         return this;
     }
 
+    /**
+     * <p>register.</p>
+     *
+     * @param componentClass a {@link java.lang.Class} object.
+     * @param bindingPriority a int.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application register(Class<?> componentClass, int bindingPriority) {
         config.register(componentClass, bindingPriority);
         return this;
     }
 
+    /**
+     * <p>registerResources.</p>
+     *
+     * @param resources a {@link org.glassfish.jersey.server.model.Resource} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application registerResources(Resource... resources) {
         config.registerResources(resources);
         return this;
     }
 
+    /**
+     * <p>getRuntimeType.</p>
+     *
+     * @return a {@link javax.ws.rs.RuntimeType} object.
+     */
     public RuntimeType getRuntimeType() {
         return config.getRuntimeType();
     }
 
+    /**
+     * <p>isRegistered.</p>
+     *
+     * @param component a {@link java.lang.Object} object.
+     * @return a boolean.
+     */
     public boolean isRegistered(Object component) {
         return config.isRegistered(component);
     }
 
+    /**
+     * <p>getProperties.</p>
+     *
+     * @return a {@link java.util.Map} object.
+     */
     public Map<String, Object> getProperties() {
         return config.getProperties();
     }
 
+    /**
+     * <p>setProperties.</p>
+     *
+     * @param properties a {@link java.util.Map} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application setProperties(Map<String, ?> properties) {
         config.setProperties(properties);
         return this;
     }
 
+    /**
+     * <p>property.</p>
+     *
+     * @param name a {@link java.lang.String} object.
+     * @param value a {@link java.lang.Object} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application property(String name, Object value) {
         config.property(name, value);
         return this;
     }
 
+    /**
+     * <p>registerInstances.</p>
+     *
+     * @param instances a {@link java.util.Set} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application registerInstances(Set<Object> instances) {
         config.registerInstances(instances);
         return this;
     }
 
+    /**
+     * <p>getInstances.</p>
+     *
+     * @return a {@link java.util.Set} object.
+     */
     public Set<Object> getInstances() {
         return config.getInstances();
     }
 
+    /**
+     * <p>register.</p>
+     *
+     * @param componentClass a {@link java.lang.Class} object.
+     * @param contracts a {@link java.util.Map} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application register(Class<?> componentClass, Map<Class<?>, Integer> contracts) {
         config.register(componentClass, contracts);
         return this;
     }
 
+    /**
+     * <p>registerClasses.</p>
+     *
+     * @param classes a {@link java.util.Set} object.
+     * @return a {@link ameba.core.Application} object.
+     */
     public Application registerClasses(Set<Class<?>> classes) {
         config.registerClasses(classes);
         return this;
     }
 
+    /**
+     * <p>isEnabled.</p>
+     *
+     * @param featureClass a {@link java.lang.Class} object.
+     * @return a boolean.
+     */
     public boolean isEnabled(Class<? extends Feature> featureClass) {
         return config.isEnabled(featureClass);
     }
 
+    /**
+     * <p>isProperty.</p>
+     *
+     * @param name a {@link java.lang.String} object.
+     * @return a boolean.
+     */
     public boolean isProperty(String name) {
         return config.isProperty(name);
     }
 
+    /**
+     * <p>Getter for the field <code>packageRoot</code>.</p>
+     *
+     * @return a {@link java.io.File} object.
+     */
     public File getPackageRoot() {
         return packageRoot;
     }
 
+    /**
+     * <p>Setter for the field <code>packageRoot</code>.</p>
+     *
+     * @param packageRoot a {@link java.io.File} object.
+     */
     public void setPackageRoot(File packageRoot) {
         this.packageRoot = packageRoot;
     }
 
+    /**
+     * <p>Getter for the field <code>configFiles</code>.</p>
+     *
+     * @return an array of {@link java.lang.String} objects.
+     */
     public String[] getConfigFiles() {
         return configFiles;
     }
 
+    /**
+     * <p>Getter for the field <code>sourceRoot</code>.</p>
+     *
+     * @return a {@link java.io.File} object.
+     */
     public File getSourceRoot() {
         return sourceRoot;
     }
 
+    /**
+     * <p>Setter for the field <code>sourceRoot</code>.</p>
+     *
+     * @param sourceRoot a {@link java.io.File} object.
+     */
     public void setSourceRoot(File sourceRoot) {
         this.sourceRoot = sourceRoot;
     }
 
+    /**
+     * <p>Getter for the field <code>mode</code>.</p>
+     *
+     * @return a {@link ameba.core.Application.Mode} object.
+     */
     public Mode getMode() {
         return mode;
     }
 
+    /**
+     * <p>Getter for the field <code>applicationVersion</code>.</p>
+     *
+     * @return a {@link java.lang.CharSequence} object.
+     */
     public CharSequence getApplicationVersion() {
         return applicationVersion;
     }
 
+    /**
+     * <p>getConnectors.</p>
+     *
+     * @return a {@link java.util.List} object.
+     */
     public List<Connector> getConnectors() {
         return container.getConnectors();
     }
 
+    /**
+     * <p>Getter for the field <code>container</code>.</p>
+     *
+     * @return a {@link ameba.container.Container} object.
+     */
     public Container getContainer() {
         return container;
     }
 
+    /**
+     * <p>isJmxEnabled.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isJmxEnabled() {
         return jmxEnabled;
     }
@@ -1050,6 +1352,11 @@ public class Application {
         rootLogger.setLevel(Level.ALL);
     }
 
+    /**
+     * <p>Getter for the field <code>addOns</code>.</p>
+     *
+     * @return a {@link java.util.Set} object.
+     */
     public Set<AddOn> getAddOns() {
         return addOns;
     }

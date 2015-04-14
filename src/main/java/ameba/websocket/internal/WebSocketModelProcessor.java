@@ -20,7 +20,10 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 /**
+ * <p>WebSocketModelProcessor class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 @Priority(10000)
 public class WebSocketModelProcessor implements ModelProcessor {
@@ -31,6 +34,11 @@ public class WebSocketModelProcessor implements ModelProcessor {
     @Inject
     private ServerContainer container;
 
+    /**
+     * <p>Constructor for WebSocketModelProcessor.</p>
+     *
+     * @param configuration a {@link javax.ws.rs.core.Configuration} object.
+     */
     @Inject
     public WebSocketModelProcessor(Configuration configuration) {
         for (Class clazz : configuration.getClasses()) {
@@ -50,12 +58,16 @@ public class WebSocketModelProcessor implements ModelProcessor {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ResourceModel processResourceModel(ResourceModel resourceModel, Configuration configuration) {
         ResourceModel result = processModel(resourceModel);
         return result != null ? result : resourceModel;
     }
 
+    /** {@inheritDoc} */
     @Override
     public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
         return subResourceModel;

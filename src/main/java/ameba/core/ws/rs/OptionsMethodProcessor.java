@@ -31,7 +31,10 @@ import static ameba.message.internal.MediaType.WILDCARD_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 
 /**
+ * <p>OptionsMethodProcessor class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 @Priority(Integer.MAX_VALUE)
 @Singleton
@@ -43,6 +46,8 @@ public class OptionsMethodProcessor implements ModelProcessor {
 
     /**
      * Creates new instance.
+     *
+     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
      */
     @Inject
     public OptionsMethodProcessor(ServiceLocator locator) {
@@ -58,6 +63,11 @@ public class OptionsMethodProcessor implements ModelProcessor {
                 .sortRankedProviders(new RankedComparator<OptionsResponseGenerator>(), rankedProviders);
     }
 
+    /**
+     * <p>getSupportPatchMediaTypes.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getSupportPatchMediaTypes() {
         if (SUPPORT_PATCH_MEDIA_TYPES == null) {
             synchronized (HttpPatchProperties.SUPPORT_PATCH_MEDIA_TYPES) {
@@ -69,6 +79,12 @@ public class OptionsMethodProcessor implements ModelProcessor {
         return SUPPORT_PATCH_MEDIA_TYPES;
     }
 
+    /**
+     * <p>getSupportProduceMediaType.</p>
+     *
+     * @param containerRequestContext a {@link javax.ws.rs.container.ContainerRequestContext} object.
+     * @return a {@link javax.ws.rs.core.MediaType} object.
+     */
     protected static MediaType getSupportProduceMediaType(ContainerRequestContext containerRequestContext) {
         for (MediaType mediaType : containerRequestContext.getAcceptableMediaTypes()) {
             if (mediaType.isCompatible(TEXT_PLAIN_TYPE) ||
@@ -84,6 +100,15 @@ public class OptionsMethodProcessor implements ModelProcessor {
         return null;
     }
 
+    /**
+     * <p>generateRespBuilder.</p>
+     *
+     * @param containerRequestContext a {@link javax.ws.rs.container.ContainerRequestContext} object.
+     * @param extendedUriInfo         a {@link org.glassfish.jersey.server.ExtendedUriInfo} object.
+     * @param mediaType               a {@link javax.ws.rs.core.MediaType} object.
+     * @param respEntityGenerators    a {@link java.lang.Iterable} object.
+     * @return a {@link javax.ws.rs.core.Response.ResponseBuilder} object.
+     */
     protected static Response.ResponseBuilder generateRespBuilder(
             ContainerRequestContext containerRequestContext,
             ExtendedUriInfo extendedUriInfo,
@@ -111,15 +136,24 @@ public class OptionsMethodProcessor implements ModelProcessor {
         return builder;
     }
 
+    /**
+     * <p>generateRespBuilder.</p>
+     *
+     * @param extendedUriInfo a {@link org.glassfish.jersey.server.ExtendedUriInfo} object.
+     * @param mediaType a {@link javax.ws.rs.core.MediaType} object.
+     * @return a {@link javax.ws.rs.core.Response.ResponseBuilder} object.
+     */
     protected static Response.ResponseBuilder generateRespBuilder(ExtendedUriInfo extendedUriInfo, MediaType mediaType) {
         return generateRespBuilder(null, extendedUriInfo, mediaType, null);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ResourceModel processResourceModel(ResourceModel resourceModel, Configuration configuration) {
         return ModelProcessorUtil.enhanceResourceModel(resourceModel, false, methodList, true).build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
         return ModelProcessorUtil.enhanceResourceModel(subResourceModel, true, methodList, true).build();

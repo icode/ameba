@@ -17,9 +17,13 @@ import javax.ws.rs.core.FeatureContext;
  *
  * @author Michal Gajdos (michal.gajdos at oracle.com)
  * @author icode
+ * @since 0.1.6e
  */
 public class JacksonFilteringFeature implements Feature {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean configure(final FeatureContext context) {
         final Configuration config = context.getConfiguration();

@@ -1,24 +1,42 @@
 package ameba.message.internal;
 
+import ameba.core.Application;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.cfg.Annotations;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
+ * <p>JacksonJsonProvider class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
-@Consumes({MediaType.TEXT_PLAIN, MediaType.WILDCARD})
-@Produces({MediaType.TEXT_PLAIN, MediaType.WILDCARD})
+@Singleton
 public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
-    public JacksonJsonProvider() {
-        this(new ObjectMapper(), DEFAULT_ANNOTATIONS);
+
+    /**
+     * <p>Constructor for JacksonJsonProvider.</p>
+     *
+     * @param app          a {@link ameba.core.Application} object.
+     * @param objectMapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
+     */
+    @Inject
+    public JacksonJsonProvider(Application app, ObjectMapper objectMapper) {
+        this(app, objectMapper, DEFAULT_ANNOTATIONS);
     }
 
-    public JacksonJsonProvider(ObjectMapper objectMapper, Annotations[] annotationses) {
+    /**
+     * <p>Constructor for JacksonJsonProvider.</p>
+     *
+     * @param app           a {@link ameba.core.Application} object.
+     * @param objectMapper  a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
+     * @param annotationses an array of {@link com.fasterxml.jackson.jaxrs.cfg.Annotations} objects.
+     */
+    public JacksonJsonProvider(Application app, ObjectMapper objectMapper, Annotations[] annotationses) {
         super(objectMapper, annotationses);
-        JacksonUtils.configureMapper(objectMapper);
+        JacksonUtils.configureMapper(app.getMode().isDev(), objectMapper);
     }
 }

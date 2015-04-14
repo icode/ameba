@@ -7,26 +7,54 @@ import java.io.File;
 import java.util.List;
 
 /**
+ * <p>AmebaException class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class AmebaException extends RuntimeException {
+    /**
+     * <p>Constructor for AmebaException.</p>
+     */
     public AmebaException() {
 
     }
 
 
+    /**
+     * <p>Constructor for AmebaException.</p>
+     *
+     * @param cause a {@link java.lang.Throwable} object.
+     */
     public AmebaException(Throwable cause) {
         super(cause);
     }
 
+    /**
+     * <p>Constructor for AmebaException.</p>
+     *
+     * @param message a {@link java.lang.String} object.
+     */
     public AmebaException(String message) {
         super(message);
     }
 
+    /**
+     * <p>Constructor for AmebaException.</p>
+     *
+     * @param message a {@link java.lang.String} object.
+     * @param cause   a {@link java.lang.Throwable} object.
+     */
     public AmebaException(String message, Throwable cause) {
         super(message, cause);
     }
 
+    /**
+     * <p>getInterestingSomething.</p>
+     *
+     * @param cause a {@link java.lang.Throwable} object.
+     * @return a {@link ameba.exception.AmebaException.InterestingSomething} object.
+     */
     public static InterestingSomething getInterestingSomething(Throwable cause) {
         InterestingSomething something = null;
         for (StackTraceElement stackTraceElement : cause.getStackTrace()) {
@@ -59,14 +87,29 @@ public class AmebaException extends RuntimeException {
         return something;
     }
 
+    /**
+     * <p>isSourceAvailable.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isSourceAvailable() {
         return this instanceof SourceAttachment;
     }
 
+    /**
+     * <p>getLineNumber.</p>
+     *
+     * @return a {@link java.lang.Integer} object.
+     */
     public Integer getLineNumber() {
         return -1;
     }
 
+    /**
+     * <p>getSourceFile.</p>
+     *
+     * @return a {@link java.io.File} object.
+     */
     public File getSourceFile() {
         return null;
     }

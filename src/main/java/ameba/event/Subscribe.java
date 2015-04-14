@@ -6,7 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>Subscribe class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

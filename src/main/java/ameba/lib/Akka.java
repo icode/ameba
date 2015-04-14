@@ -5,7 +5,10 @@ import ameba.core.Application;
 import org.apache.commons.lang3.StringUtils;
 
 /**
+ * <p>Akka class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class Akka {
     private static ActorSystem system;
@@ -13,6 +16,11 @@ public class Akka {
     private Akka() {
     }
 
+    /**
+     * <p>system.</p>
+     *
+     * @return a {@link akka.actor.ActorSystem} object.
+     */
     public static ActorSystem system() {
         return system;
     }

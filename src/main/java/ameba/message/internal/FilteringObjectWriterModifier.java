@@ -12,18 +12,28 @@ import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 
 /**
+ * <p>FilteringObjectWriterModifier class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class FilteringObjectWriterModifier extends ObjectWriterModifier {
 
     private final ObjectWriterModifier original;
     private final FilterProvider filterProvider;
 
+    /**
+     * <p>Constructor for FilteringObjectWriterModifier.</p>
+     *
+     * @param filterProvider a {@link com.fasterxml.jackson.databind.ser.FilterProvider} object.
+     * @param original       a {@link com.fasterxml.jackson.jaxrs.cfg.ObjectWriterModifier} object.
+     */
     public FilteringObjectWriterModifier(final FilterProvider filterProvider, final ObjectWriterModifier original) {
         this.original = original;
         this.filterProvider = filterProvider;
     }
 
+    /** {@inheritDoc} */
     @Override
     public ObjectWriter modify(final EndpointConfigBase<?> endpoint,
                                final MultivaluedMap<String, Object> responseHeaders,

@@ -28,13 +28,18 @@ import java.util.List;
  * 参数注入实现
  *
  * @author icode
+ * @since 0.1.6e
  */
 public class ParameterInjectionBinder extends AbstractBinder {
 
+    /**
+     * Constant <code>CLASS_ANALYZER_NAME="AmebaWebSocketClassAnalyzer"</code>
+     */
     public static final String CLASS_ANALYZER_NAME = "AmebaWebSocketClassAnalyzer";
     private static final String PATH_PARAM_ERR_MSG = "@PathParam parameter class must be String.";
     private static final String QUERY_PARAM_ERR_MSG = "@QueryParam parameter class must be String, String[] or List<String>";
 
+    /** {@inheritDoc} */
     @Override
     protected void configure() {
 

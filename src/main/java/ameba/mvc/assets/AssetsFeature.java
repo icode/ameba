@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * <p>AssetsFeature class.</p>
+ *
  * @author ICode
  * @since 13-8-17 下午2:55
  */
@@ -28,6 +30,12 @@ public class AssetsFeature implements Feature {
     private static final Map<String, String[]> assetsMap = Maps.newLinkedHashMap();
     private static final String ASSETS_CONF_PREFIX = "resource.assets.";
 
+    /**
+     * <p>getAssetMap.</p>
+     *
+     * @param configuration a {@link javax.ws.rs.core.Configuration} object.
+     * @return a {@link java.util.Map} object.
+     */
     public static Map<String, String[]> getAssetMap(Configuration configuration) {
         Map<String, String[]> assetsMap = Maps.newLinkedHashMap();
         for (String key : configuration.getPropertyNames()) {
@@ -63,10 +71,22 @@ public class AssetsFeature implements Feature {
         return assetsMap;
     }
 
+    /**
+     * <p>Getter for the field <code>assetsMap</code>.</p>
+     *
+     * @return a {@link java.util.Map} object.
+     */
     public static Map<String, String[]> getAssetsMap() {
         return Maps.newHashMap(assetsMap);
     }
 
+    /**
+     * <p>findAsset.</p>
+     *
+     * @param name a {@link java.lang.String} object.
+     * @param file a {@link java.lang.String} object.
+     * @return a {@link java.io.InputStream} object.
+     */
     public static InputStream findAsset(String name, String file) {
         InputStream in = null;
 
@@ -93,6 +113,9 @@ public class AssetsFeature implements Feature {
         return in;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean configure(FeatureContext context) {
 

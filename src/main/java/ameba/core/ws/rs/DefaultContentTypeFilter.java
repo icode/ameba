@@ -11,12 +11,18 @@ import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.HttpHeaders;
 
 /**
+ * <p>DefaultContentTypeFilter class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 @PreMatching
 @Priority(Priorities.HEADER_DECORATOR)
 public class DefaultContentTypeFilter implements ContainerRequestFilter {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void filter(ContainerRequestContext request) {
         if (request.getMethod().equalsIgnoreCase(HttpMethod.GET)) {

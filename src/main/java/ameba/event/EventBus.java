@@ -17,6 +17,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
+ * <p>Abstract EventBus class.</p>
+ *
  * @author icode
  */
 public abstract class EventBus {
@@ -28,15 +30,32 @@ public abstract class EventBus {
     private EventBus() {
     }
 
+    /**
+     * <p>createMix.</p>
+     *
+     * @return a {@link ameba.event.EventBus} object.
+     */
     public static EventBus createMix() {
         return new Mixed();
     }
 
+    /**
+     * <p>create.</p>
+     *
+     * @return a {@link ameba.event.EventBus} object.
+     */
     public static EventBus create() {
         return new EventBus() {
         };
     }
 
+    /**
+     * <p>subscribe.</p>
+     *
+     * @param event    a {@link java.lang.Class} object.
+     * @param listener a {@link ameba.event.Listener} object.
+     * @param <E>      a E object.
+     */
     public <E extends Event> void subscribe(Class<E> event, final Listener<E> listener) {
         subscribersByTypeLock.writeLock().lock();
         try {
@@ -61,7 +80,7 @@ public abstract class EventBus {
     }
 
     /**
-     * subscribe event by {@link Subscribe} annotation
+     * subscribe event by {@link ameba.event.Subscribe} annotation
      * <p/>
      * <pre>{@code
      * <p/>
@@ -69,6 +88,20 @@ public abstract class EventBus {
      * <p/>
      *     public SubEevent(){
      *         EventBus.subscribe(this);
+     *     }
+     * <p/>
+     *
+     *     @@Subscribe({ Container.ReloadEvent.class })
+     *     private void doSome(MyEvent e){
+     *         ....
+     *     }
+     * }
+     * <p/>
+     * class SubEevent2 {
+     * <p/>
+     *     @@Subscribe({ Container.ReloadEvent.class })
+     *     private void doSome(){
+     *         ....
      *     }
      * <p/>
      *     @@Subscribe({ Container.ReloadEvent.class })
@@ -84,23 +117,8 @@ public abstract class EventBus {
      *         ....
      *     }
      * <p/>
-     *     @@Subscribe
-     *     private void doSome(Container.ReloadEvent e){
-     *         ....
-     *     }
-     * <p/>
-     *     @@Subscribe(async=true)
-     *     private void doSome(Container.ReloadEvent e, Container.ReloadEvent1 e1){
-     *         // handle ReloadEvent and ReloadEvent1 event
-     *         ....
-     *     }
-     * }
-     * <p/>
-     * EventBus.subscribe(SubEevent2.class);
-     * <p/>
-     * }</pre>
-     *
      * @param obj class or instance
+     * @since 0.1.6e
      */
     @SuppressWarnings("unchecked")
     public void subscribe(Object obj) {
@@ -171,10 +189,26 @@ public abstract class EventBus {
         }
     }
 
+    /**
+     * <p>subscribe.</p>
+     *
+     * @param event a {@link java.lang.Class} object.
+     * @param listener a {@link ameba.event.Listener} object.
+     * @param subscribe a {@link ameba.event.Subscribe} object.
+     * @param <E> a E object.
+     * @since 0.1.6e
+     */
     protected <E extends Event> void subscribe(Class<E> event, final Listener<E> listener, Subscribe subscribe) {
         subscribe(event, listener);
     }
 
+    /**
+     * <p>unsubscribe.</p>
+     *
+     * @param event a {@link java.lang.Class} object.
+     * @param listener a {@link ameba.event.Listener} object.
+     * @param <E> a E object.
+     */
     public <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener) {
         subscribersByTypeLock.writeLock().lock();
         try {
@@ -184,6 +218,13 @@ public abstract class EventBus {
         }
     }
 
+    /**
+     * <p>unsubscribe.</p>
+     *
+     * @param event a {@link java.lang.Class} object.
+     * @param <E> a E object.
+     * @since 0.1.6e
+     */
     public <E extends Event> void unsubscribe(Class<E> event) {
         subscribersByTypeLock.writeLock().lock();
         try {
@@ -193,6 +234,11 @@ public abstract class EventBus {
         }
     }
 
+    /**
+     * <p>publish.</p>
+     *
+     * @param event a {@link ameba.event.Event} object.
+     */
     @SuppressWarnings("unchecked")
     public void publish(Event event) {
         Set<Listener> listenerSet = Sets.newCopyOnWriteArraySet(listeners.get(event.getClass()));

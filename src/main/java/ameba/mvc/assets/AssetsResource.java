@@ -13,6 +13,8 @@ import java.io.InputStream;
 import java.net.URI;
 
 /**
+ * <p>AssetsResource class.</p>
+ *
  * @author ICode
  * @since 13-8-17 下午2:55
  */
@@ -20,6 +22,13 @@ import java.net.URI;
 @Singleton
 public class AssetsResource {
 
+    /**
+     * <p>getResource.</p>
+     *
+     * @param file    a {@link java.lang.String} object.
+     * @param uriInfo a {@link javax.ws.rs.core.UriInfo} object.
+     * @return a {@link javax.ws.rs.core.Response} object.
+     */
     @GET
     @Path("{file:.*}")
     public Response getResource(@PathParam("file") String file, @Context UriInfo uriInfo) {

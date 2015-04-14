@@ -1,9 +1,13 @@
 package ameba.message;
 
+import ameba.core.ws.rs.HttpPatchProperties;
 import ameba.message.internal.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.jaxrs.base.JsonMappingExceptionMapper;
 import com.fasterxml.jackson.jaxrs.base.JsonParseExceptionMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.internal.InternalProperties;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
@@ -14,8 +18,11 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
+import java.util.Collections;
 
 /**
+ * <p>JacksonFeature class.</p>
+ *
  * @author ICode
  * @since 13-8-11 上午6:00
  */
@@ -23,6 +30,9 @@ public class JacksonFeature implements Feature {
 
     private final static String JSON_FEATURE = JacksonFeature.class.getSimpleName();
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean configure(final FeatureContext context) {
         final Configuration config = context.getConfiguration();
@@ -40,6 +50,15 @@ public class JacksonFeature implements Feature {
                 JSON_FEATURE);
 
         if (!config.isRegistered(JacksonJaxbJsonProvider.class)) {
+
+            context.register(new AbstractBinder() {
+                @Override
+                protected void configure() {
+                    bind(new XmlMapper()).to(XmlMapper.class);
+                    bind(new ObjectMapper()).to(ObjectMapper.class);
+                }
+            });
+
             context.register(JsonParseExceptionMapper.class);
             context.register(JsonMappingExceptionMapper.class);
             if (EntityFilteringFeature.enabled(config)) {
@@ -50,10 +69,10 @@ public class JacksonFeature implements Feature {
                 context.register(JacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
                 context.register(JacksonXMLProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
             }
-//            Collections.addAll(PATCH.SUPPORT_PATCH_MEDIA_TYPES,
-//                    APPLICATION_JSON,
-//                    APPLICATION_XML,
-//                    TEXT_XML);
+            Collections.addAll(HttpPatchProperties.SUPPORT_PATCH_MEDIA_TYPES,
+                    MediaType.APPLICATION_JSON,
+                    MediaType.APPLICATION_XML,
+                    MediaType.TEXT_XML);
         }
         return true;
     }

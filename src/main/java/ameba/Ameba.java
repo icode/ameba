@@ -13,10 +13,16 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
+ * <p>Ameba class.</p>
+ *
  * @author icode
  */
 public class Ameba {
+    /**
+     * Constant <code>logger</code>
+     */
     public static final Logger logger = LoggerFactory.getLogger(Ameba.class);
+    /** Constant <code>LOGO="\n\n    _                   _          "{trunked}</code> */
     public static final String LOGO = "\n\n" +
             "    _                   _           \n" +
             "   / \\   _ __ ___   ___| |__   __ _ \n" +
@@ -30,18 +36,40 @@ public class Ameba {
     private Ameba() {
     }
 
+    /**
+     * <p>getServiceLocator.</p>
+     *
+     * @return a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     */
     public static ServiceLocator getServiceLocator() {
         return container.getServiceLocator();
     }
 
+    /**
+     * <p>Getter for the field <code>container</code>.</p>
+     *
+     * @return a {@link ameba.container.Container} object.
+     * @since 0.1.6e
+     */
     public static Container getContainer() {
         return container;
     }
 
+    /**
+     * <p>Getter for the field <code>app</code>.</p>
+     *
+     * @return a {@link ameba.core.Application} object.
+     */
     public static Application getApp() {
         return app;
     }
 
+    /**
+     * <p>Getter for the field <code>version</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     * @since 0.1.6e
+     */
     public static String getVersion() {
 
         if (version == null) {
@@ -51,10 +79,20 @@ public class Ameba {
         return version;
     }
 
+    /**
+     * <p>printInfo.</p>
+     *
+     * @since 0.1.6e
+     */
     public static void printInfo() {
         logger.info(LOGO, getVersion());
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects.
+     */
     public static void main(String[] args) {
 
         List<String> list = Lists.newArrayList();
@@ -106,10 +144,22 @@ public class Ameba {
         }
     }
 
+    /**
+     * <p>bootstrap.</p>
+     *
+     * @param conf a {@link java.lang.String} object.
+     * @throws java.lang.Exception if any.
+     */
     public static void bootstrap(String... conf) throws Exception {
         bootstrap(new Application(conf));
     }
 
+    /**
+     * <p>bootstrap.</p>
+     *
+     * @param application a {@link ameba.core.Application} object.
+     * @throws java.lang.Exception if any.
+     */
     public static synchronized void bootstrap(Application application) throws Exception {
         if (Ameba.container != null) {
             throw new AmebaException("无法启动多个实例");
@@ -123,6 +173,9 @@ public class Ameba {
         container.start();
     }
 
+    /**
+     * <p>shutdown.</p>
+     */
     public static synchronized void shutdown() {
         logger.info("关闭服务器...");
         if (container != null)

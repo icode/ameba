@@ -38,6 +38,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * <p>Abstract AmebaTemplateProcessor class.</p>
+ *
  * @author icode
  */
 @Provider
@@ -70,6 +72,14 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
     @Inject
     private javax.inject.Provider<ContainerRequest> request;
 
+    /**
+     * <p>Constructor for AmebaTemplateProcessor.</p>
+     *
+     * @param config              a {@link javax.ws.rs.core.Configuration} object.
+     * @param servletContext      a {@link javax.servlet.ServletContext} object.
+     * @param propertySuffix      a {@link java.lang.String} object.
+     * @param supportedExtensions a {@link java.lang.String} object.
+     */
     public AmebaTemplateProcessor(Configuration config, ServletContext servletContext, String propertySuffix, String... supportedExtensions) {
         this.config = config;
         this.suffix = '.' + propertySuffix;
@@ -108,14 +118,30 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
 
     }
 
+    /**
+     * <p>Getter for the field <code>basePath</code>.</p>
+     *
+     * @return an array of {@link java.lang.String} objects.
+     */
     protected String[] getBasePath() {
         return this.basePath;
     }
 
+    /**
+     * <p>Getter for the field <code>servletContext</code>.</p>
+     *
+     * @return a {@link javax.servlet.ServletContext} object.
+     * @since 0.1.6e
+     */
     protected ServletContext getServletContext() {
         return this.servletContext;
     }
 
+    /**
+     * <p>Getter for the field <code>viewableMessageBodyWriter</code>.</p>
+     *
+     * @return a {@link javax.ws.rs.ext.MessageBodyWriter} object.
+     */
     public MessageBodyWriter<Viewable> getViewableMessageBodyWriter() {
         if (viewableMessageBodyWriter == null)
             synchronized (this) {
@@ -126,6 +152,11 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         return viewableMessageBodyWriter;
     }
 
+    /**
+     * <p>Getter for the field <code>errorPageGenerator</code>.</p>
+     *
+     * @return a {@link ameba.mvc.ErrorPageGenerator} object.
+     */
     protected ErrorPageGenerator getErrorPageGenerator() {
         if (errorPageGenerator == null)
             synchronized (this) {
@@ -169,6 +200,15 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         return Collections.singleton(templatePath);
     }
 
+    /**
+     * <p>getTemplateObjectFactory.</p>
+     *
+     * @param serviceLocator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param type a {@link java.lang.Class} object.
+     * @param defaultValue a {@link org.glassfish.jersey.internal.util.collection.Value} object.
+     * @param <F> a F object.
+     * @return a F object.
+     */
     protected <F> F getTemplateObjectFactory(ServiceLocator serviceLocator, Class<F> type, Value<F> defaultValue) {
         Object objectFactoryProperty = this.config.getProperty("jersey.config.server.mvc.factory" + this.suffix);
         if (objectFactoryProperty != null) {
@@ -195,6 +235,14 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         return defaultValue.get();
     }
 
+    /**
+     * <p>setContentType.</p>
+     *
+     * @param mediaType a {@link javax.ws.rs.core.MediaType} object.
+     * @param httpHeaders a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @return a {@link java.nio.charset.Charset} object.
+     * @since 0.1.6e
+     */
     protected Charset setContentType(MediaType mediaType, MultivaluedMap<String, Object> httpHeaders) {
         String charset = mediaType.getParameters().get("charset");
         Charset encoding;
@@ -215,6 +263,12 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         return encoding;
     }
 
+    /**
+     * <p>Getter for the field <code>encoding</code>.</p>
+     *
+     * @return a {@link java.nio.charset.Charset} object.
+     * @since 0.1.6e
+     */
     protected Charset getEncoding() {
         return this.encoding;
     }
@@ -277,6 +331,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public T resolve(String name, MediaType mediaType) {
         if (this.cache != null) {
@@ -290,10 +345,26 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         }
     }
 
+    /**
+     * <p>createException.</p>
+     *
+     * @param e a {@link java.lang.Exception} object.
+     * @param template a T object.
+     * @return a {@link ameba.mvc.template.TemplateException} object.
+     */
     protected abstract TemplateException createException(Exception e, T template);
 
+    /**
+     * <p>resolve.</p>
+     *
+     * @param templatePath a {@link java.lang.String} object.
+     * @param reader a {@link java.io.Reader} object.
+     * @return a T object.
+     * @throws java.lang.Exception if any.
+     */
     protected abstract T resolve(String templatePath, Reader reader) throws Exception;
 
+    /** {@inheritDoc} */
     @Override
     public void writeTo(T templateReference, Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException {
         try {
@@ -330,5 +401,15 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         }
     }
 
+    /**
+     * <p>writeTemplate.</p>
+     *
+     * @param templateReference a T object.
+     * @param viewable a {@link org.glassfish.jersey.server.mvc.Viewable} object.
+     * @param mediaType a {@link javax.ws.rs.core.MediaType} object.
+     * @param httpHeaders a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param out a {@link java.io.OutputStream} object.
+     * @throws java.lang.Exception if any.
+     */
     public abstract void writeTemplate(T templateReference, Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws Exception;
 }

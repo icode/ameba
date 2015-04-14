@@ -9,35 +9,65 @@ import java.io.IOException;
 import java.util.List;
 
 /**
+ * <p>ConfigErrorException class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class ConfigErrorException extends AmebaExceptionWithJavaSource {
     private String config;
     private String key;
 
+    /**
+     * <p>Constructor for ConfigErrorException.</p>
+     *
+     * @param message a {@link java.lang.String} object.
+     */
     public ConfigErrorException(String message) {
         super(message);
     }
 
+    /**
+     * <p>Constructor for ConfigErrorException.</p>
+     *
+     * @param message a {@link java.lang.String} object.
+     * @param key     a {@link java.lang.String} object.
+     */
     public ConfigErrorException(String message, String key) {
         super(message);
         this.key = key;
     }
 
+    /**
+     * <p>Constructor for ConfigErrorException.</p>
+     *
+     * @param message a {@link java.lang.String} object.
+     * @param cause a {@link java.lang.Throwable} object.
+     * @param line a {@link java.lang.Integer} object.
+     */
     public ConfigErrorException(String message, Throwable cause, Integer line) {
         super(message, cause, line);
     }
 
+    /**
+     * <p>Constructor for ConfigErrorException.</p>
+     *
+     * @param message a {@link java.lang.String} object.
+     * @param key a {@link java.lang.String} object.
+     * @param cause a {@link java.lang.Throwable} object.
+     */
     public ConfigErrorException(String message, String key, Throwable cause) {
         super(message, cause, -1);
         this.key = key;
     }
 
+    /** {@inheritDoc} */
     @Override
     public File getSourceFile() {
         return new File(Ameba.getApp().getConfigFiles()[0]);
     }
 
+    /** {@inheritDoc} */
     @Override
     public File[] getSourceFiles() {
 
@@ -61,11 +91,13 @@ public class ConfigErrorException extends AmebaExceptionWithJavaSource {
         return config;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getSource() {
         return getConfig() == null ? null : Lists.newArrayList(config.split("\\s"));
     }
 
+    /** {@inheritDoc} */
     @Override
     public Integer getLineNumber() {
         if (line == null || line == -1) {

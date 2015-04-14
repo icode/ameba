@@ -9,10 +9,16 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 /**
+ * <p>WebSocketBinder class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public class WebSocketBinder extends AbstractBinder {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void configure() {
         if (WebSocketFeature.isEnabled()) {

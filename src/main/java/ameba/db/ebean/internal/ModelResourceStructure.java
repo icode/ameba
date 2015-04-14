@@ -1,6 +1,5 @@
 package ameba.db.ebean.internal;
 
-import ameba.core.ws.rs.PATCH;
 import ameba.db.ebean.EbeanUtils;
 import ameba.db.model.Model;
 import ameba.lib.LoggerOwner;
@@ -20,14 +19,18 @@ import javax.annotation.Nullable;
 import javax.persistence.OptimisticLockException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.*;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
 /**
+ * <p>Abstract ModelResourceStructure class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public abstract class ModelResourceStructure<ID, M extends Model> extends LoggerOwner {
 
@@ -38,15 +41,31 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     protected UriInfo uriInfo;
     private BeanDescriptor descriptor;
 
+    /**
+     * <p>Constructor for ModelResourceStructure.</p>
+     *
+     * @param modelType a {@link java.lang.Class} object.
+     */
     public ModelResourceStructure(Class<M> modelType) {
         this(modelType, (SpiEbeanServer) Ebean.getServer(null));
     }
 
+    /**
+     * <p>Constructor for ModelResourceStructure.</p>
+     *
+     * @param modelType a {@link java.lang.Class} object.
+     * @param server    a {@link com.avaje.ebeaninternal.api.SpiEbeanServer} object.
+     */
     public ModelResourceStructure(Class<M> modelType, SpiEbeanServer server) {
         this.modelType = modelType;
         this.server = server;
     }
 
+    /**
+     * <p>getModelBeanDescriptor.</p>
+     *
+     * @return a {@link com.avaje.ebeaninternal.server.deploy.BeanDescriptor} object.
+     */
     protected BeanDescriptor getModelBeanDescriptor() {
         if (descriptor == null) {
             descriptor = server.getBeanDescriptor(modelType);
@@ -73,11 +92,18 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return id string
      * @see #insert(Model)
      * @see #patch(Object, Model)
+     * @see #insert(Model)
+     * @see #patch(Object, Model)
      */
     protected String idToString(@NotNull ID id) {
         return id.toString();
     }
 
+    /**
+     * <p>seForInsertId.</p>
+     *
+     * @param model a M object.
+     */
     protected void seForInsertId(final M model) {
         BeanDescriptor descriptor = getModelBeanDescriptor();
         descriptor.getIdProperty().setValue((EntityBean) model, null);
@@ -89,8 +115,12 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * success status 201
      *
      * @param model the model to insert
-     * @see {@link POST}
-     * @see {@link AbstractModelResource#insert(Model)}
+     * @see {@link javax.ws.rs.POST}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#insert(Model)}
+     * @see {@link javax.ws.rs.POST}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#insert(Model)}
+     * @return a {@link javax.ws.rs.core.Response} object.
+     * @throws java.lang.Exception if any.
      */
     @SuppressWarnings("unchecked")
     public Response insert(@NotNull @Valid final M model) throws Exception {
@@ -109,14 +139,32 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         return Response.created(buildLocationUri(id)).build();
     }
 
+    /**
+     * <p>preInsertModel.</p>
+     *
+     * @param model a M object.
+     * @throws java.lang.Exception if any.
+     */
     protected void preInsertModel(final M model) throws Exception {
 
     }
 
+    /**
+     * <p>insertModel.</p>
+     *
+     * @param model a M object.
+     * @throws java.lang.Exception if any.
+     */
     protected void insertModel(final M model) throws Exception {
         server.insert(model);
     }
 
+    /**
+     * <p>postInsertModel.</p>
+     *
+     * @param model a M object.
+     * @throws java.lang.Exception if any.
+     */
     protected void postInsertModel(final M model) throws Exception {
 
     }
@@ -131,8 +179,12 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      *
      * @param id    the unique id of the model
      * @param model the model to update
-     * @see {@link PUT}
-     * @see {@link AbstractModelResource#replace(Object, Model)}
+     * @see {@link javax.ws.rs.PUT}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#replace(Object, Model)}
+     * @see {@link javax.ws.rs.PUT}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#replace(Object, Model)}
+     * @return a {@link javax.ws.rs.core.Response} object.
+     * @throws java.lang.Exception if any.
      */
     public Response replace(@PathParam("id") final ID id, @NotNull @Valid final M model) throws Exception {
 
@@ -166,14 +218,32 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         return builder.build();
     }
 
+    /**
+     * <p>preReplaceModel.</p>
+     *
+     * @param model a M object.
+     * @throws java.lang.Exception if any.
+     */
     protected void preReplaceModel(final M model) throws Exception {
 
     }
 
+    /**
+     * <p>replaceModel.</p>
+     *
+     * @param model a M object.
+     * @throws java.lang.Exception if any.
+     */
     protected void replaceModel(final M model) throws Exception {
         server.update(model);
     }
 
+    /**
+     * <p>postReplaceModel.</p>
+     *
+     * @param model a M object.
+     * @throws java.lang.Exception if any.
+     */
     protected void postReplaceModel(final M model) throws Exception {
 
     }
@@ -187,8 +257,12 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      *
      * @param id    the unique id of the model
      * @param model the model to update
-     * @see {@link PATCH}
-     * @see {@link AbstractModelResource#patch(Object, Model)}
+     * @see {@link ameba.core.ws.rs.PATCH}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#patch(Object, Model)}
+     * @see {@link ameba.core.ws.rs.PATCH}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#patch(Object, Model)}
+     * @return a {@link javax.ws.rs.core.Response} object.
+     * @throws java.lang.Exception if any.
      */
     public Response patch(@PathParam("id") final ID id, @NotNull final M model) throws Exception {
         BeanDescriptor descriptor = getModelBeanDescriptor();
@@ -217,14 +291,32 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         });
     }
 
+    /**
+     * <p>prePatchModel.</p>
+     *
+     * @param model a M object.
+     * @throws java.lang.Exception if any.
+     */
     protected void prePatchModel(final M model) throws Exception {
 
     }
 
+    /**
+     * <p>patchModel.</p>
+     *
+     * @param model a M object.
+     * @throws java.lang.Exception if any.
+     */
     protected void patchModel(final M model) throws Exception {
         server.update(model);
     }
 
+    /**
+     * <p>postPatchModel.</p>
+     *
+     * @param model a M object.
+     * @throws java.lang.Exception if any.
+     */
     protected void postPatchModel(final M model) throws Exception {
 
     }
@@ -239,8 +331,12 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * logical delete status 202
      *
      * @param ids The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
-     * @see {@link DELETE}
-     * @see {@link AbstractModelResource#deleteMultiple(PathSegment)}
+     * @see {@link javax.ws.rs.DELETE}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#deleteMultiple(PathSegment)}
+     * @see {@link javax.ws.rs.DELETE}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#deleteMultiple(PathSegment)}
+     * @return a {@link javax.ws.rs.core.Response} object.
+     * @throws java.lang.Exception if any.
      */
     public Response deleteMultiple(@NotNull @PathParam("ids") final PathSegment ids) throws Exception {
         final ID firstId = stringToId(ids.getPath());
@@ -297,6 +393,12 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         return builder.build();
     }
 
+    /**
+     * <p>preDeleteMultipleModel.</p>
+     *
+     * @param idCollection a {@link java.util.Set} object.
+     * @throws java.lang.Exception if any.
+     */
     protected void preDeleteMultipleModel(Set<ID> idCollection) throws Exception {
 
     }
@@ -306,16 +408,29 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      *
      * @param idCollection model id collection
      * @return delete from physical device, if logical delete return false, response status 202
+     * @throws java.lang.Exception if any.
      */
     protected boolean deleteMultipleModel(Set<ID> idCollection) throws Exception {
         server.delete(modelType, idCollection);
         return true;
     }
 
+    /**
+     * <p>postDeleteMultipleModel.</p>
+     *
+     * @param idCollection a {@link java.util.Set} object.
+     * @throws java.lang.Exception if any.
+     */
     protected void postDeleteMultipleModel(Set<ID> idCollection) throws Exception {
 
     }
 
+    /**
+     * <p>preDeleteModel.</p>
+     *
+     * @param id a ID object.
+     * @throws java.lang.Exception if any.
+     */
     protected void preDeleteModel(ID id) throws Exception {
 
     }
@@ -325,12 +440,19 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      *
      * @param id model id
      * @return delete from physical device, if logical delete return false, response status 202
+     * @throws java.lang.Exception if any.
      */
     protected boolean deleteModel(ID id) throws Exception {
         server.delete(modelType, id);
         return true;
     }
 
+    /**
+     * <p>postDeleteModel.</p>
+     *
+     * @param id a ID object.
+     * @throws java.lang.Exception if any.
+     */
     protected void postDeleteModel(ID id) throws Exception {
 
     }
@@ -339,8 +461,12 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * Find a model given its Id.
      *
      * @param id the id of the model.
-     * @see {@link GET}
-     * @see {@link AbstractModelResource#findById}
+     * @see {@link javax.ws.rs.GET}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#findById}
+     * @see {@link javax.ws.rs.GET}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#findById}
+     * @return a {@link javax.ws.rs.core.Response} object.
+     * @throws java.lang.Exception if any.
      */
     public Response findById(@NotNull @PathParam("id") final ID id) throws Exception {
         final Query<M> query = server.find(modelType);
@@ -371,11 +497,21 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * <p>
      * This effectively controls the "default" query used to render this model.
      * </p>
+     *
+     * @param query a {@link com.avaje.ebean.Query} object.
+     * @throws java.lang.Exception if any.
      */
     protected void configFindByIdQuery(final Query<M> query) throws Exception {
 
     }
 
+    /**
+     * <p>processFoundModel.</p>
+     *
+     * @param model a M object.
+     * @return a {@link java.lang.Object} object.
+     * @throws java.lang.Exception if any.
+     */
     protected Object processFoundModel(final M model) throws Exception {
         return model;
     }
@@ -387,8 +523,12 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * the query.
      * </p>
      *
-     * @see {@link GET}
-     * @see {@link AbstractModelResource#find()}
+     * @see {@link javax.ws.rs.GET}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#find()}
+     * @see {@link javax.ws.rs.GET}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#find()}
+     * @return a {@link javax.ws.rs.core.Response} object.
+     * @throws java.lang.Exception if any.
      */
     public Response find() throws Exception {
 
@@ -432,11 +572,21 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * This effectively controls the "default" query used with the find all
      * query.
      * </p>
+     *
+     * @param query a {@link com.avaje.ebean.Query} object.
+     * @throws java.lang.Exception if any.
      */
     protected void configFindQuery(final Query<M> query) throws Exception {
 
     }
 
+    /**
+     * <p>processFoundModelList.</p>
+     *
+     * @param list a {@link java.util.List} object.
+     * @return a {@link java.lang.Object} object.
+     * @throws java.lang.Exception if any.
+     */
     protected Object processFoundModelList(final List<M> list) throws Exception {
         return list;
     }
@@ -446,7 +596,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * all query config default query
      *
      * @param query query
-     * @throws Exception
+     * @throws java.lang.Exception if any.
      */
     protected void configDefaultQuery(final Query<M> query) throws Exception {
 
@@ -468,20 +618,40 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param query        Query
      * @param needPageList need page list
      * @return page list count or null
-     * @see {@link EbeanModelProcessor#applyUriQuery(MultivaluedMap, Query, boolean)}
+     * @see {@link ameba.db.ebean.internal.EbeanModelProcessor#applyUriQuery(MultivaluedMap, Query, boolean)}
      */
     protected FutureRowCount applyUriQuery(final Query<M> query, boolean needPageList) {
         return EbeanModelProcessor.applyUriQuery(uriInfo.getQueryParameters(), query, needPageList);
     }
 
+    /**
+     * <p>applyUriQuery.</p>
+     *
+     * @param query a {@link com.avaje.ebean.Query} object.
+     * @return a {@link com.avaje.ebean.FutureRowCount} object.
+     */
     protected FutureRowCount applyUriQuery(final Query<M> query) {
         return applyUriQuery(query, true);
     }
 
+    /**
+     * <p>applyRowCountHeader.</p>
+     *
+     * @param headerParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param rowCount a {@link com.avaje.ebean.FutureRowCount} object.
+     */
     protected void applyRowCountHeader(MultivaluedMap<String, Object> headerParams, Query query, FutureRowCount rowCount) {
         EbeanModelProcessor.applyRowCountHeader(headerParams, query, rowCount);
     }
 
+    /**
+     * <p>processCheckRowCountError.</p>
+     *
+     * @param runnable a {@link ameba.db.ebean.internal.ModelResourceStructure.TxRunnable} object.
+     * @param process a {@link ameba.db.ebean.internal.ModelResourceStructure.TxRunnable} object.
+     * @throws java.lang.Exception if any.
+     */
     protected void processCheckRowCountError(TxRunnable runnable, TxRunnable process) throws Exception {
         try {
             runnable.run();
@@ -493,6 +663,13 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         }
     }
 
+    /**
+     * <p>executeTx.</p>
+     *
+     * @param scope a {@link com.avaje.ebean.TxScope} object.
+     * @param r a {@link ameba.db.ebean.internal.ModelResourceStructure.TxRunnable} object.
+     * @throws java.lang.Exception if any.
+     */
     protected void executeTx(TxScope scope, TxRunnable r) throws Exception {
         ScopeTrans scopeTrans = server.createScopeTrans(scope);
         try {
@@ -506,14 +683,37 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         }
     }
 
+    /**
+     * <p>executeTx.</p>
+     *
+     * @param r a {@link ameba.db.ebean.internal.ModelResourceStructure.TxRunnable} object.
+     * @throws java.lang.Exception if any.
+     */
     protected void executeTx(TxRunnable r) throws Exception {
         executeTx(null, r);
     }
 
+    /**
+     * <p>executeTx.</p>
+     *
+     * @param c a {@link ameba.db.ebean.internal.ModelResourceStructure.TxCallable} object.
+     * @param <O> a O object.
+     * @return a O object.
+     * @throws java.lang.Exception if any.
+     */
     protected <O> O executeTx(TxCallable<O> c) throws Exception {
         return executeTx(null, c);
     }
 
+    /**
+     * <p>executeTx.</p>
+     *
+     * @param scope a {@link com.avaje.ebean.TxScope} object.
+     * @param c a {@link ameba.db.ebean.internal.ModelResourceStructure.TxCallable} object.
+     * @param <O> a O object.
+     * @return a O object.
+     * @throws java.lang.Exception if any.
+     */
     protected <O> O executeTx(TxScope scope, TxCallable<O> c) throws Exception {
         ScopeTrans scopeTrans = server.createScopeTrans(scope);
         try {
@@ -527,10 +727,22 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         }
     }
 
+    /**
+     * <p>processCheckRowCountError.</p>
+     *
+     * @param runnable a {@link ameba.db.ebean.internal.ModelResourceStructure.TxRunnable} object.
+     * @throws java.lang.Exception if any.
+     */
     protected void processCheckRowCountError(TxRunnable runnable) throws Exception {
         processCheckRowCountError(runnable, null);
     }
 
+    /**
+     * <p>buildLocationUri.</p>
+     *
+     * @param id a ID object.
+     * @return a {@link java.net.URI} object.
+     */
     protected URI buildLocationUri(ID id) {
         if (id == null) {
             throw new NotFoundException();

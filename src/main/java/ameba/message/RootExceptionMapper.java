@@ -11,6 +11,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 /**
+ * <p>RootExceptionMapper class.</p>
+ *
  * @author ICode
  * @since 13-8-17 下午2:00
  */
@@ -20,12 +22,16 @@ public class RootExceptionMapper implements ExtendedExceptionMapper<Throwable> {
 
     private static final Logger logger = LoggerFactory.getLogger(RootExceptionMapper.class);
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Response toResponse(Throwable exception) {
         logger.error("发生错误", exception);
         return Response.serverError().entity(exception).build();
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isMappable(Throwable exception) {
         if (WebApplicationException.class.isInstance(exception)) {

@@ -23,11 +23,18 @@ import java.security.PrivilegedAction;
 import java.util.List;
 
 /**
+ * <p>Abstract EndpointDelegate class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public abstract class EndpointDelegate extends Endpoint {
 
+    /**
+     * Constant <code>MESSAGE_HANDLER_WHOLE_OR_PARTIAL="MessageHandler must implement MessageHa"{trunked}</code>
+     */
     public static final String MESSAGE_HANDLER_WHOLE_OR_PARTIAL = "MessageHandler must implement MessageHandler.Whole or MessageHandler.Partial.";
+    /** Constant <code>DEFAULT_HANDLER</code> */
     protected static final InvocationHandler DEFAULT_HANDLER = new InvocationHandler() {
         @Override
         public Object invoke(Object target, Method method, Object[] args)
@@ -59,18 +66,38 @@ public abstract class EndpointDelegate extends Endpoint {
     private RequestScope requestScope;
     private RequestScope.Instance reqInstance;
 
+    /**
+     * <p>Getter for the field <code>requestScope</code>.</p>
+     *
+     * @return a {@link org.glassfish.jersey.process.internal.RequestScope} object.
+     */
     public RequestScope getRequestScope() {
         return requestScope;
     }
 
+    /**
+     * <p>Getter for the field <code>serviceLocator</code>.</p>
+     *
+     * @return a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     */
     public ServiceLocator getServiceLocator() {
         return serviceLocator;
     }
 
+    /**
+     * <p>Getter for the field <code>messageScope</code>.</p>
+     *
+     * @return a {@link ameba.websocket.internal.MessageScope} object.
+     */
     public MessageScope getMessageScope() {
         return messageScope;
     }
 
+    /**
+     * <p>getMessageStateRef.</p>
+     *
+     * @return a {@link org.glassfish.jersey.internal.util.collection.Ref} object.
+     */
     protected Ref<MessageState> getMessageStateRef() {
         return serviceLocator.<Ref<MessageState>>getService(MESSAGE_STATE_TYPE);
     }
@@ -79,6 +106,7 @@ public abstract class EndpointDelegate extends Endpoint {
         getMessageStateRef().set(messageState);
     }
 
+    /** {@inheritDoc} */
     @Override
     public final void onOpen(final Session session, final EndpointConfig config) {
         this.session = session;
@@ -92,6 +120,11 @@ public abstract class EndpointDelegate extends Endpoint {
         });
     }
 
+    /**
+     * <p>runInScope.</p>
+     *
+     * @param task a {@link java.lang.Runnable} object.
+     */
     protected void runInScope(final Runnable task) {
         requestScope.runInScope(reqInstance, new Runnable() {
             @Override
@@ -107,8 +140,16 @@ public abstract class EndpointDelegate extends Endpoint {
         });
     }
 
+    /**
+     * <p>onOpen.</p>
+     */
     protected abstract void onOpen();
 
+    /**
+     * <p>getMessageState.</p>
+     *
+     * @return a {@link ameba.websocket.internal.MessageState} object.
+     */
     protected MessageState getMessageState() {
         return getMessageStateRef().get();
     }
@@ -129,11 +170,23 @@ public abstract class EndpointDelegate extends Endpoint {
     }
 
 
+    /**
+     * <p>addMessageHandler.</p>
+     *
+     * @param handler a {@link javax.websocket.MessageHandler} object.
+     */
     protected void addMessageHandler(MessageHandler handler) {
         final Class<?> handlerClass = ClassUtils.getGenericClass(handler.getClass());
         addMessageHandler(handlerClass, handler);
     }
 
+    /**
+     * <p>addMessageHandler.</p>
+     *
+     * @param messageClass a {@link java.lang.Class} object.
+     * @param handler a {@link javax.websocket.MessageHandler} object.
+     * @param <T> a T object.
+     */
     @SuppressWarnings("unchecked")
     protected <T> void addMessageHandler(Class<T> messageClass, final MessageHandler handler) {
         if (handler instanceof MessageHandler.Whole) { //WHOLE MESSAGE HANDLER
@@ -151,12 +204,23 @@ public abstract class EndpointDelegate extends Endpoint {
         }
     }
 
+    /**
+     * <p>initEventList.</p>
+     *
+     * @param instance a {@link java.lang.Object} object.
+     */
     protected void initEventList(Object... instance) {
         onOpenList = findEventInvocation(OnOpen.class, instance);
         onErrorList = findEventInvocation(OnError.class, instance);
         onCloseList = findEventInvocation(OnClose.class, instance);
     }
 
+    /**
+     * <p>emmit.</p>
+     *
+     * @param eventInvocations a {@link java.util.List} object.
+     * @param isException a boolean.
+     */
     protected void emmit(List<EventInvocation> eventInvocations, boolean isException) {
         try {
             if (eventInvocations != null)
@@ -184,6 +248,7 @@ public abstract class EndpointDelegate extends Endpoint {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public final void onClose(Session session, final CloseReason closeReason) {
         try {
@@ -204,10 +269,14 @@ public abstract class EndpointDelegate extends Endpoint {
         }
     }
 
+    /**
+     * <p>onClose.</p>
+     */
     protected void onClose() {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public final void onError(Session session, Throwable thr) {
         if (thr instanceof InvocationTargetException) {
@@ -228,6 +297,9 @@ public abstract class EndpointDelegate extends Endpoint {
         });
     }
 
+    /**
+     * <p>onError.</p>
+     */
     protected void onError() {
 
     }

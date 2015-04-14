@@ -12,13 +12,27 @@ import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 
 /**
+ * <p>Abstract AbstractModelResource class.</p>
+ *
  * @author icode
+ * @since 0.1.6e
  */
 public abstract class AbstractModelResource<ID, M extends Model> extends ModelResourceStructure<ID, M> {
+    /**
+     * <p>Constructor for AbstractModelResource.</p>
+     *
+     * @param modelType a {@link java.lang.Class} object.
+     */
     public AbstractModelResource(Class<M> modelType) {
         this(modelType, (SpiEbeanServer) Ebean.getServer(null));
     }
 
+    /**
+     * <p>Constructor for AbstractModelResource.</p>
+     *
+     * @param modelType a {@link java.lang.Class} object.
+     * @param server    a {@link com.avaje.ebeaninternal.api.SpiEbeanServer} object.
+     */
     public AbstractModelResource(Class<M> modelType, SpiEbeanServer server) {
         super(modelType, server);
     }
@@ -29,6 +43,8 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
      * success status 201
      *
      * @param model the model to insert
+     * @return a {@link javax.ws.rs.core.Response} object.
+     * @throws java.lang.Exception if any.
      */
     @POST
     public final Response insert(@NotNull @Valid final M model) throws Exception {
@@ -44,6 +60,8 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
      *
      * @param id    the unique id of the model
      * @param model the model to update
+     * @return a {@link javax.ws.rs.core.Response} object.
+     * @throws java.lang.Exception if any.
      */
     @PUT
     @Path("{id}")
@@ -60,6 +78,8 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
      *
      * @param id    the unique id of the model
      * @param model the model to update
+     * @return a {@link javax.ws.rs.core.Response} object.
+     * @throws java.lang.Exception if any.
      */
     @PATCH
     @Path("{id}")
@@ -68,6 +88,8 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Delete multiple model using Id's from the Matrix.
      * <p/>
      * success status 200
@@ -75,8 +97,6 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
      * fail status 404
      * <br/>
      * logical delete status 202
-     *
-     * @param ids The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
      */
     @DELETE
     @Path("{ids}")
@@ -88,6 +108,8 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
      * Find a model given its Id.
      *
      * @param id the id of the model.
+     * @return a {@link javax.ws.rs.core.Response} object.
+     * @throws java.lang.Exception if any.
      */
     @GET
     @Path("{id}")
@@ -101,6 +123,9 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
      * This can use URL query parameters such as order and maxrows to configure
      * the query.
      * </p>
+     *
+     * @return a {@link javax.ws.rs.core.Response} object.
+     * @throws java.lang.Exception if any.
      */
     @GET
     public final Response find() throws Exception {
