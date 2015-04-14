@@ -29,11 +29,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @author ICode
- * @since 13-8-17 上午11:10
+ * @author icode
+ * @since 1.6
  */
-@PreMatching
-@Singleton
 @PreMatching
 @Singleton
 class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
