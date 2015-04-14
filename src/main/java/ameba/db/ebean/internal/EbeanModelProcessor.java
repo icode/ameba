@@ -3,6 +3,7 @@ package ameba.db.ebean.internal;
 import ameba.db.ebean.EbeanFeature;
 import ameba.db.model.Finder;
 import com.avaje.ebean.*;
+import com.avaje.ebean.common.BeanList;
 import com.avaje.ebean.text.PathProperties;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
@@ -155,7 +156,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
      * <p/>
      * ?fields=(id,name,filed1(p1,p2,p3))
      *
-     * @param query query
+     * @param query       query
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
      */
     public static void applyFetchProperties(MultivaluedMap<String, String> queryParams, Query query) {
@@ -227,7 +228,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
      * <p>applyPageList.</p>
      *
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
-     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param query       a {@link com.avaje.ebean.Query} object.
      * @return a {@link com.avaje.ebean.FutureRowCount} object.
      */
     public static FutureRowCount applyPageList(MultivaluedMap<String, String> queryParams, Query query) {
@@ -320,7 +321,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
      * <p>applyUriQuery.</p>
      *
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
-     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param query       a {@link com.avaje.ebean.Query} object.
      * @return a {@link com.avaje.ebean.FutureRowCount} object.
      */
     public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams, Query query) {
@@ -331,8 +332,8 @@ public class EbeanModelProcessor implements WriterInterceptor {
      * <p>applyRowCountHeader.</p>
      *
      * @param headerParams a {@link javax.ws.rs.core.MultivaluedMap} object.
-     * @param query a {@link com.avaje.ebean.Query} object.
-     * @param rowCount a {@link com.avaje.ebean.FutureRowCount} object.
+     * @param query        a {@link com.avaje.ebean.Query} object.
+     * @param rowCount     a {@link com.avaje.ebean.FutureRowCount} object.
      */
     public static void applyRowCountHeader(MultivaluedMap<String, Object> headerParams, Query query, FutureRowCount rowCount) {
         if (rowCount != null) {
@@ -390,7 +391,9 @@ public class EbeanModelProcessor implements WriterInterceptor {
                 || FutureList.class.isAssignableFrom(type);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
         Object o = context.getEntity();
@@ -407,23 +410,27 @@ public class EbeanModelProcessor implements WriterInterceptor {
             } else if (o instanceof FutureList) {
                 query = ((FutureList) o).getQuery();
             }
-            FutureRowCount rowCount = applyUriQuery(queryParams, query);
-            List list;
-            if (o instanceof FutureList) {
-                list = query.findFutureList().getUnchecked();
-            } else {
-                list = query.findList();
+            if (query != null) {
+                FutureRowCount rowCount = applyUriQuery(queryParams, query);
+                BeanList list;
+                if (o instanceof FutureList) {
+                    list = (BeanList) query.findFutureList().getUnchecked();
+                } else {
+                    list = (BeanList) query.findList();
+                }
+
+                applyRowCountHeader(context.getHeaders(), query, rowCount);
+
+                List result = list.getActualList();
+
+                context.setEntity(result);
+
+                Class clazz = result.getClass();
+
+                context.setType(clazz);
+
+                context.setGenericType(((SpiQuery) query).getBeanType());
             }
-
-            applyRowCountHeader(context.getHeaders(), query, rowCount);
-
-            context.setEntity(list);
-
-            Class clazz = list.getClass();
-
-            context.setType(clazz);
-
-            context.setGenericType(clazz);
         }
 
         context.proceed();

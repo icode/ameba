@@ -156,11 +156,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.avaje.ebeanorm</groupId>
-            <artifactId>avaje-ebeanorm-jackson</artifactId>
-            <version>${ebean.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.mattbertolini</groupId>
             <artifactId>liquibase-slf4j</artifactId>
             <version>1.2.1</version>
@@ -313,7 +308,6 @@
             <artifactId>rxjava</artifactId>
             <version>${rxjava.version}</version>
         </dependency>-->
-
         <dependency>
             <groupId>com.github.fge</groupId>
             <artifactId>json-patch</artifactId>

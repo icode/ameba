@@ -51,8 +51,6 @@ final class JacksonObjectProvider extends AbstractObjectProvider<FilterProvider>
 
             final ObjectGraph graph = entry.getValue();
 
-            if (graph == null) continue;
-
             // Subgraph Fields.
             final Map<String, ObjectGraph> subgraphs = graph.getSubgraphs(fieldName);
 
@@ -84,8 +82,6 @@ final class JacksonObjectProvider extends AbstractObjectProvider<FilterProvider>
             if (fieldName.startsWith("_")) continue;
 
             final ObjectGraph graph = entry.getValue();
-
-            if (graph == null) continue;
 
             final String path = parent + "." + fieldName;
 
