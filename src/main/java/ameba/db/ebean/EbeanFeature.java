@@ -41,41 +41,37 @@ import java.util.Set;
 public class EbeanFeature extends TransactionFeature {
 
     /**
-     * Constant <code>FIELDS_PARAM_NAME="model.query.fields"</code>
+     * Constant <code>SORT_PARAM_NAME="model.query.param.sort"</code>
      */
-    public static final String FIELDS_PARAM_NAME = "model.query.fields";
+    public static final String SORT_PARAM_NAME = "model.query.param.sort";
     /**
-     * Constant <code>SORT_PARAM_NAME="model.query.sort"</code>
+     * Constant <code>PAGE_PARAM_NAME="model.query.param.page"</code>
      */
-    public static final String SORT_PARAM_NAME = "model.query.sort";
+    public static final String PAGE_PARAM_NAME = "model.query.param.page";
     /**
-     * Constant <code>PAGE_PARAM_NAME="model.query.page"</code>
+     * Constant <code>PER_PAGE_PARAM_NAME="model.query.param.prePage"</code>
      */
-    public static final String PAGE_PARAM_NAME = "model.query.page";
+    public static final String PER_PAGE_PARAM_NAME = "model.query.param.prePage";
     /**
-     * Constant <code>PER_PAGE_PARAM_NAME="model.query.prePage"</code>
+     * Constant <code>REQ_TOTAL_COUNT_PARAM_NAME="model.query.param.requireTotalCount"</code>
      */
-    public static final String PER_PAGE_PARAM_NAME = "model.query.prePage";
-    /**
-     * Constant <code>REQ_TOTAL_COUNT_PARAM_NAME="model.query.requireTotalCount"</code>
-     */
-    public static final String REQ_TOTAL_COUNT_PARAM_NAME = "model.query.requireTotalCount";
+    public static final String REQ_TOTAL_COUNT_PARAM_NAME = "model.query.param.requireTotalCount";
     /**
      * Constant <code>REQ_TOTAL_COUNT_HEADER_NAME="model.query.requireTotalCount.header"</code>
      */
-    public static final String REQ_TOTAL_COUNT_HEADER_NAME = "model.query.requireTotalCount.header";
+    public static final String REQ_TOTAL_COUNT_HEADER_NAME = "model.query.param.requireTotalCount.header";
     /**
-     * Constant <code>DEFAULT_PER_PAGE_PARAM_NAME="model.query.perPage.default"</code>
+     * Constant <code>DEFAULT_PER_PAGE_PARAM_NAME="model.query.param.perPage.default"</code>
      */
-    public static final String DEFAULT_PER_PAGE_PARAM_NAME = "model.query.perPage.default";
+    public static final String DEFAULT_PER_PAGE_PARAM_NAME = "model.query.param.perPage.default";
     /**
      * Constant <code>EXCLUDE_DDL_PKG_KEY_SUFFIX=".ddl.generate.excludes"</code>
      */
     public static final String EXCLUDE_DDL_PKG_KEY_SUFFIX = ".ddl.generate.excludes";
     /**
-     * Constant <code>WHERE_PARAM_NAME="model.query.where"</code>
+     * Constant <code>WHERE_PARAM_NAME="model.query.param.where"</code>
      */
-    public static final String WHERE_PARAM_NAME = "model.query.where";
+    public static final String WHERE_PARAM_NAME = "model.query.param.where";
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
     private static final List<EbeanServer> SERVERS = Lists.newArrayList();
 

@@ -2,6 +2,7 @@ package ameba.db.ebean.internal;
 
 import ameba.db.ebean.EbeanFeature;
 import ameba.db.model.Finder;
+import ameba.message.filtering.EntityFieldsFilteringFeature;
 import com.avaje.ebean.*;
 import com.avaje.ebean.common.BeanList;
 import com.avaje.ebean.text.PathProperties;
@@ -211,6 +212,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
     /**
      * <p>applyOrderBy.</p>
      *
+     * todo
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
      * @param query       a {@link com.avaje.ebean.Query} object.
      */
@@ -264,12 +266,9 @@ public class EbeanModelProcessor implements WriterInterceptor {
     }
 
     /**
-     * /path?where=p1.eq(2)id.in(1,2,3)or(p2.eq(2),p2.start_with(3),..)
-     * <p/>
-     * /path?p1.eq(2)&id.in(1,2,3)&amp;or(p2.eq(2),p2.start_with(3),..)
-     * <p/>
      * /path;p1.eq:2;id.in:1,2,3;or:p2.eq:2,p2.start_with:3,..;
      *
+     * todo
      * @param queryParams uri query params
      * @param queryParams uri query params
      * @param query       query
@@ -290,18 +289,6 @@ public class EbeanModelProcessor implements WriterInterceptor {
      * @param query        Query
      * @param needPageList need page list
      * @return page list count or null
-     * @see #applyFetchProperties
-     * @see #applyWhere
-     * @see #applyOrderBy
-     * @see #applyPageList
-     * @see #applyFetchProperties
-     * @see #applyWhere
-     * @see #applyOrderBy
-     * @see #applyPageList
-     * @see #applyFetchProperties
-     * @see #applyWhere
-     * @see #applyOrderBy
-     * @see #applyPageList
      * @see #applyFetchProperties
      * @see #applyWhere
      * @see #applyOrderBy
@@ -347,7 +334,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
 
     @PostConstruct
     private void init() {
-        final String fieldsParamName = (String) configuration.getProperty(EbeanFeature.FIELDS_PARAM_NAME);
+        final String fieldsParamName = (String) configuration.getProperty(EntityFieldsFilteringFeature.QUERY_FIELDS_PARAM_NAME);
         FIELDS_PARAM_NAME = StringUtils.isNotBlank(fieldsParamName) ? fieldsParamName : FIELDS_PARAM_NAME;
 
         final String sortParamName = (String) configuration.getProperty(EbeanFeature.SORT_PARAM_NAME);

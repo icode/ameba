@@ -38,6 +38,7 @@ public class EbeanResultBeanInterceptor implements WriterInterceptor {
         } else if (entity instanceof BeanMap) {
             setMapType(context, entity);
         }
+
         context.proceed();
     }
 
@@ -81,10 +82,10 @@ public class EbeanResultBeanInterceptor implements WriterInterceptor {
             if (o != null) {
                 type = o.getClass();
             } else {
-                type = Object.class;
+                type = EntityBean.class;
             }
         } else {
-            type = Object.class;
+            type = EntityBean.class;
         }
 
         context.setGenericType(type);

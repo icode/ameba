@@ -1,14 +1,18 @@
 package ameba.db.ebean;
 
+import ameba.util.ClassUtils;
+import com.avaje.ebean.SqlRow;
+import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.common.BeanMap;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Set;
 
@@ -38,8 +42,8 @@ public class EbeanUtils {
      * <p>forceUpdateAllProperties.</p>
      *
      * @param beanDescriptor a {@link com.avaje.ebeaninternal.server.deploy.BeanDescriptor} object.
-     * @param model a T object.
-     * @param <T> a T object.
+     * @param model          a T object.
+     * @param <T>            a T object.
      */
     public static <T> void forceUpdateAllProperties(BeanDescriptor<T> beanDescriptor, T model) {
         EntityBeanIntercept intercept = ((EntityBean) model)._ebean_getIntercept();
@@ -104,7 +108,7 @@ public class EbeanUtils {
             for (Object m : (Object[]) model) {
                 disableLazyLoad(m, processed);
             }
-        } else if (!model.getClass().isPrimitive()) {
+        } else if (isLazyLoadProcessType(model.getClass())) {
             if (model instanceof EntityBean) {
                 EntityBeanIntercept intercept = ((EntityBean) model)._ebean_getIntercept();
                 intercept.setDisableLazyLoad(true);
@@ -112,10 +116,12 @@ public class EbeanUtils {
             Class sClass = model.getClass();
             while (isLazyLoadProcessType(sClass)) {
                 for (Field f : sClass.getDeclaredFields()) {
-                    if (isLazyLoadProcessType(f.getType())
+                    Class fType = f.getType();
+                    if (isLazyLoadProcessType(fType)
                             && !f.getName().toLowerCase().startsWith("_")) {
                         try {
-                            disableLazyLoad(f.get(model), processed);
+                            Object val = f.get(model);
+                            disableLazyLoad(val, processed);
                         } catch (IllegalAccessException e) {
                             // no op
                         }
@@ -127,10 +133,57 @@ public class EbeanUtils {
     }
 
     private static boolean isLazyLoadProcessType(Class sClass) {
-        return !sClass.isPrimitive()
-                && Serializable.class.isAssignableFrom(sClass)
+        return sClass != null
+                && (!ClassUtils.isPrimitiveOrWrapper(sClass)
+                && !sClass.getName().startsWith("java.lang")
                 && !EntityBeanIntercept.class.isAssignableFrom(sClass)
-                && !sClass.getName().startsWith("java.")
-                && !sClass.getName().startsWith("javax.");
+                || sClass.isArray());
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T covertOriginalObject(Object model) throws IllegalAccessException {
+        if (model != null) {
+            Class sClass = model.getClass();
+            while (isLazyLoadProcessType(sClass)) {
+                for (Field f : sClass.getDeclaredFields()) {
+                    int ms = f.getModifiers();
+                    Class fType = f.getType();
+                    Object val = f.get(model);
+                    if (val != null && !Modifier.isFinal(ms)) {
+                        Boolean isAcc = null;
+                        if (!Modifier.isPublic(ms)) {
+                            isAcc = f.isAccessible();
+                            f.setAccessible(true);
+                        }
+                        Class valClass = val.getClass();
+                        if (BeanCollection.class.isAssignableFrom(valClass)) {
+                            Object valRef;
+                            if (BeanMap.class.isAssignableFrom(valClass)) {
+                                valRef = ((BeanMap) val).getActualMap();
+
+                            } else {
+                                valRef = ((BeanCollection) val).getActualDetails();
+                            }
+                            if (fType.isInstance(valRef)) {
+                                val = valRef;
+                                f.set(model, val);
+                            }
+                        }
+                        if (isAcc != null) {
+                            f.setAccessible(isAcc);
+                        }
+                    }
+                }
+                sClass = sClass.getSuperclass();
+            }
+            if (model instanceof BeanMap) {
+                return (T) ((BeanMap) model).getActualMap();
+            } else if (model instanceof SqlRow) {
+                return (T) Maps.newLinkedHashMap((SqlRow) model);
+            } else if (model instanceof BeanCollection) {
+                return (T) ((BeanCollection) model).getActualDetails();
+            }
+        }
+        return (T) model;
     }
 }
