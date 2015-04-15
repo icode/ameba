@@ -1,17 +1,19 @@
 package ameba.message.internal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.cfg.MapperConfigBase;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.internal.util.ReflectionHelper;
 import org.glassfish.jersey.message.filtering.spi.ObjectProvider;
 
 import javax.inject.Provider;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -90,12 +92,53 @@ public class JacksonUtils {
      * @param mapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
      */
     public static void configureMapper(boolean isDev, ObjectMapper mapper) {
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
-        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-        mapper.configure(SerializationFeature.FAIL_ON_SELF_REFERENCES, false);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+                .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+                .disable(SerializationFeature.FAIL_ON_SELF_REFERENCES)
+                .disable(SerializationFeature.WRITE_NULL_MAP_VALUES)
+                .disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
         if (isDev)
             mapper.enable(SerializationFeature.INDENT_OUTPUT);
+    }
+
+    public static void configureGenerator(UriInfo uriInfo, JsonGenerator generator) {
+        MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+        String pretty = params.getFirst("pretty");
+        if (pretty != null && !pretty.equalsIgnoreCase("false")) {
+            generator.useDefaultPrettyPrinter();
+        } else if ("false".equalsIgnoreCase(pretty)) {
+            generator.setPrettyPrinter(null);
+        }
+    }
+
+    /**
+     * get naming query param for PropertyNamingStrategy
+     * <p/>
+     * u : change set {@link PropertyNamingStrategy#CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES}
+     * <p/>
+     * l : change set {@link PropertyNamingStrategy#LOWER_CASE}
+     * <p/>
+     * p : change set {@link PropertyNamingStrategy#PASCAL_CASE_TO_CAMEL_CASE}
+     *
+     * @param uriInfo    UriInfo
+     * @param configBase MapperConfigBase
+     */
+    public static void configurePropertyNamingStrategy(UriInfo uriInfo, MapperConfigBase configBase) {
+        MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
+        String naming = params.getFirst("naming");
+        if (StringUtils.isNotBlank(naming)) {
+            switch (naming) {
+                case "u":
+                    configBase.with(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+                    break;
+                case "l":
+                    configBase.with(PropertyNamingStrategy.LOWER_CASE);
+                    break;
+                case "p":
+                    configBase.with(PropertyNamingStrategy.PASCAL_CASE_TO_CAMEL_CASE);
+            }
+        }
     }
 }

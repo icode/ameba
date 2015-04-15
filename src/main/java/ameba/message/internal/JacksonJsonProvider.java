@@ -1,12 +1,20 @@
 package ameba.message.internal;
 
 import ameba.core.Application;
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.jaxrs.cfg.Annotations;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import org.glassfish.jersey.server.ContainerRequest;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
+import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * <p>JacksonJsonProvider class.</p>
@@ -16,6 +24,11 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
+
+    @Inject
+    private Provider<UriInfo> uriInfoProvider;
+    @Inject
+    private Provider<ContainerRequest> requestProvider;
 
     /**
      * <p>Constructor for JacksonJsonProvider.</p>
@@ -38,5 +51,14 @@ public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
     public JacksonJsonProvider(Application app, ObjectMapper objectMapper, Annotations[] annotationses) {
         super(objectMapper, annotationses);
         JacksonUtils.configureMapper(app.getMode().isDev(), objectMapper);
+    }
+
+    @Override
+    protected JsonGenerator _createGenerator(ObjectWriter writer, OutputStream rawStream, JsonEncoding enc) throws IOException {
+        JsonGenerator generator = super._createGenerator(writer, rawStream, enc);
+        if (requestProvider.get().getMethod().equalsIgnoreCase("get")) {
+            JacksonUtils.configureGenerator(uriInfoProvider.get(), generator);
+        }
+        return generator;
     }
 }

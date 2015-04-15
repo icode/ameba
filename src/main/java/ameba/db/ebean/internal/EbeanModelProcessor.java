@@ -211,8 +211,9 @@ public class EbeanModelProcessor implements WriterInterceptor {
 
     /**
      * <p>applyOrderBy.</p>
-     *
+     * <p/>
      * todo
+     *
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
      * @param query       a {@link com.avaje.ebean.Query} object.
      */
@@ -235,7 +236,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
      */
     public static FutureRowCount applyPageList(MultivaluedMap<String, String> queryParams, Query query) {
 
-        Integer maxRows = getSingleIntegerParam(queryParams.get(EbeanModelProcessor.PER_PAGE_PARAM_NAME));
+        Integer maxRows = getSingleIntegerParam(queryParams.get(PER_PAGE_PARAM_NAME));
 
         if (maxRows == null && DEFAULT_PER_PAGE != null && DEFAULT_PER_PAGE > 0) {
             maxRows = DEFAULT_PER_PAGE;
@@ -248,17 +249,18 @@ public class EbeanModelProcessor implements WriterInterceptor {
             query.setMaxRows(maxRows);
         }
 
-        Integer firstRow = getSingleIntegerParam(queryParams.get(EbeanModelProcessor.PAGE_PARAM_NAME));
-        if (firstRow != null) {
+        Integer firstRow = getSingleIntegerParam(queryParams.get(PAGE_PARAM_NAME));
+        if (firstRow != null && maxRows != null) {
             if (firstRow < 1) {
                 firstRow = 1;
             }
             firstRow--;
+            firstRow = firstRow * maxRows;
             query.setFirstRow(firstRow);
         }
 
-        Integer reqTotalCount = getSingleIntegerParam(queryParams.get(EbeanModelProcessor.PAGE_PARAM_NAME));
-        if (reqTotalCount != null && 1 == reqTotalCount) {
+        String reqTotalCount = getSingleParam(queryParams.get(REQ_TOTAL_COUNT_PARAM_NAME));
+        if (reqTotalCount != null && !"false".equalsIgnoreCase(reqTotalCount)) {
             return query.findFutureRowCount();
         }
 
@@ -267,8 +269,9 @@ public class EbeanModelProcessor implements WriterInterceptor {
 
     /**
      * /path;p1.eq:2;id.in:1,2,3;or:p2.eq:2,p2.start_with:3,..;
-     *
+     * <p/>
      * todo
+     *
      * @param queryParams uri query params
      * @param queryParams uri query params
      * @param query       query
