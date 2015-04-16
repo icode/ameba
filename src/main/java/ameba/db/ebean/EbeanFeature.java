@@ -1,6 +1,5 @@
 package ameba.db.ebean;
 
-import ameba.core.Application;
 import ameba.db.DataSourceManager;
 import ameba.db.TransactionFeature;
 import ameba.db.ebean.internal.EbeanModelProcessor;
@@ -8,7 +7,6 @@ import ameba.db.ebean.jackson.JacksonEbeanModule;
 import ameba.db.migration.DatabaseMigrationFeature;
 import ameba.db.model.ModelManager;
 import ameba.exception.ConfigErrorException;
-import ameba.message.internal.JacksonUtils;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
@@ -17,6 +15,8 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.ddl.*;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -84,10 +84,11 @@ public class EbeanFeature extends TransactionFeature {
     }
 
     @Inject
-    private Application application;
-    @Inject
     private ServiceLocator locator;
-
+    @Inject
+    private ObjectMapper objectMapper;
+    @Inject
+    private XmlMapper xmlMapper;
 
     /**
      * Helper method that generates the required evolution to properly run Ebean.
@@ -152,7 +153,6 @@ public class EbeanFeature extends TransactionFeature {
         }
 
         context.register(EbeanModelProcessor.class);
-//        context.register(EbeanResultBeanInterceptor.class);
 
         for (EbeanServer server : SERVERS) {
             try {
@@ -166,7 +166,7 @@ public class EbeanFeature extends TransactionFeature {
 
         final Properties eBeanConfig = new Properties();
 
-        final JsonFactory jsonFactory = new JsonFactory();
+        final JsonFactory jsonFactory = objectMapper.getFactory();
 
         //读取过滤ebean配置
         for (String key : appConfig.getPropertyNames()) {
@@ -241,8 +241,8 @@ public class EbeanFeature extends TransactionFeature {
             final boolean genDdl = PropertiesHelper.getValue(appConfig.getProperties(),
                     "db." + name + ".ddl.generate", false, Boolean.class, null);
 
-            final boolean runDdl = PropertiesHelper.getValue(appConfig.getProperties(),
-                    "db." + name + ".ddl.run", false, Boolean.class, null);
+//            final boolean runDdl = PropertiesHelper.getValue(appConfig.getProperties(),
+//                    "db." + name + ".ddl.run", false, Boolean.class, null);
 
             String[] excludes = null;
 
@@ -256,7 +256,10 @@ public class EbeanFeature extends TransactionFeature {
 
             final EbeanServer server = EbeanServerFactory.create(config);
 
-            JacksonUtils.addDefaultModule(new JacksonEbeanModule(server, locator));
+            JacksonEbeanModule module = new JacksonEbeanModule(server, locator);
+
+            objectMapper.registerModules(module);
+            xmlMapper.registerModules(module);
 
             SERVERS.add(server);
 

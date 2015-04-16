@@ -1,6 +1,5 @@
 package ameba.message.internal;
 
-import ameba.core.Application;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.jaxrs.json.JsonEndpointConfig;
@@ -30,12 +29,11 @@ public class FilteringJacksonJsonProvider extends JacksonJsonProvider {
     /**
      * <p>Constructor for FilteringJacksonJsonProvider.</p>
      *
-     * @param app          a {@link ameba.core.Application} object.
      * @param objectMapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
      */
     @Inject
-    public FilteringJacksonJsonProvider(Application app, ObjectMapper objectMapper) {
-        super(app, objectMapper);
+    public FilteringJacksonJsonProvider(ObjectMapper objectMapper) {
+        super(objectMapper);
     }
 
     /**

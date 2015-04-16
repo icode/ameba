@@ -1,6 +1,5 @@
 package ameba.message.internal;
 
-import ameba.core.Application;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.jaxrs.xml.XMLEndpointConfig;
@@ -30,12 +29,11 @@ public class FilteringJacksonXMLProvider extends JacksonXMLProvider {
     /**
      * <p>Constructor for FilteringJacksonXMLProvider.</p>
      *
-     * @param app       a {@link ameba.core.Application} object.
      * @param xmlMapper a {@link com.fasterxml.jackson.dataformat.xml.XmlMapper} object.
      */
     @Inject
-    public FilteringJacksonXMLProvider(Application app, XmlMapper xmlMapper) {
-        super(app, xmlMapper);
+    public FilteringJacksonXMLProvider(XmlMapper xmlMapper) {
+        super(xmlMapper);
     }
 
     /**

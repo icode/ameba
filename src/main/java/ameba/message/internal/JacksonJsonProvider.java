@@ -1,11 +1,9 @@
 package ameba.message.internal;
 
-import ameba.core.Application;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.jaxrs.cfg.Annotations;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.jersey.server.ContainerRequest;
 
@@ -33,24 +31,11 @@ public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
     /**
      * <p>Constructor for JacksonJsonProvider.</p>
      *
-     * @param app          a {@link ameba.core.Application} object.
      * @param objectMapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
      */
     @Inject
-    public JacksonJsonProvider(Application app, ObjectMapper objectMapper) {
-        this(app, objectMapper, DEFAULT_ANNOTATIONS);
-    }
-
-    /**
-     * <p>Constructor for JacksonJsonProvider.</p>
-     *
-     * @param app           a {@link ameba.core.Application} object.
-     * @param objectMapper  a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
-     * @param annotationses an array of {@link com.fasterxml.jackson.jaxrs.cfg.Annotations} objects.
-     */
-    public JacksonJsonProvider(Application app, ObjectMapper objectMapper, Annotations[] annotationses) {
-        super(objectMapper, annotationses);
-        JacksonUtils.configureMapper(app.getMode().isDev(), objectMapper);
+    public JacksonJsonProvider(ObjectMapper objectMapper) {
+        super(objectMapper, DEFAULT_ANNOTATIONS);
     }
 
     @Override

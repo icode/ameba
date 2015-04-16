@@ -1,5 +1,6 @@
 package ameba.message;
 
+import ameba.core.Application;
 import ameba.core.ws.rs.HttpPatchProperties;
 import ameba.message.internal.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,12 +8,15 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.jaxrs.base.JsonMappingExceptionMapper;
 import com.fasterxml.jackson.jaxrs.base.JsonParseExceptionMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.internal.InternalProperties;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
 
+import javax.inject.Inject;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
@@ -29,6 +33,11 @@ import java.util.Collections;
 public class JacksonFeature implements Feature {
 
     private final static String JSON_FEATURE = JacksonFeature.class.getSimpleName();
+
+    @Inject
+    private ServiceLocator locator;
+    @Inject
+    private Application app;
 
     /**
      * {@inheritDoc}
@@ -51,11 +60,18 @@ public class JacksonFeature implements Feature {
 
         if (!config.isRegistered(JacksonJaxbJsonProvider.class)) {
 
-            context.register(new AbstractBinder() {
+            ServiceLocatorUtilities.bind(locator, new AbstractBinder() {
                 @Override
                 protected void configure() {
-                    bind(new XmlMapper()).to(XmlMapper.class);
-                    bind(new ObjectMapper()).to(ObjectMapper.class);
+
+                    XmlMapper xmlMapper = new XmlMapper();
+                    ObjectMapper objectMapper = new ObjectMapper();
+
+                    JacksonUtils.configureMapper(app.getMode().isDev(), xmlMapper);
+                    JacksonUtils.configureMapper(app.getMode().isDev(), objectMapper);
+
+                    bind(xmlMapper).to(XmlMapper.class);
+                    bind(objectMapper).to(ObjectMapper.class);
                 }
             });
 

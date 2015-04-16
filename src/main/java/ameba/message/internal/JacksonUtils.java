@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.cfg.MapperConfigBase;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
-import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.internal.util.ReflectionHelper;
 import org.glassfish.jersey.message.filtering.spi.ObjectProvider;
@@ -19,7 +18,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Set;
 
 /**
  * <p>JacksonUtils class.</p>
@@ -29,14 +27,7 @@ import java.util.Set;
  */
 public class JacksonUtils {
 
-
-    private static Set<Module> defaultModules = Sets.newLinkedHashSet();
-
     private JacksonUtils() {
-    }
-
-    public static void addDefaultModule(Module module) {
-        defaultModules.add(module);
     }
 
     /**
@@ -100,7 +91,6 @@ public class JacksonUtils {
      * @param mapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
      */
     public static void configureMapper(boolean isDev, ObjectMapper mapper) {
-        mapper.registerModules(defaultModules);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
