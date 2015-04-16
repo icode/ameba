@@ -177,6 +177,12 @@ public class EbeanModelProcessor implements WriterInterceptor {
                 }
             }
             for (String s : selectables) {
+                if (!s.startsWith("(")) {
+                    s = "(" + s;
+                }
+                if (!s.startsWith(")")) {
+                    s += ")";
+                }
                 PathProperties pathProperties = PathProperties.parse(s);
                 for (PathProperties.Props props : pathProperties.getPathProps()) {
                     String path = props.getPath();

@@ -4,10 +4,10 @@ import ameba.core.Application;
 import ameba.db.DataSourceManager;
 import ameba.db.TransactionFeature;
 import ameba.db.ebean.internal.EbeanModelProcessor;
-import ameba.db.ebean.internal.EbeanResultBeanInterceptor;
 import ameba.db.migration.DatabaseMigrationFeature;
 import ameba.db.model.ModelManager;
 import ameba.exception.ConfigErrorException;
+import ameba.message.internal.JacksonUtils;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.avaje.ebeanorm.jackson.JacksonEbeanModule;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,7 +149,7 @@ public class EbeanFeature extends TransactionFeature {
         }
 
         context.register(EbeanModelProcessor.class);
-        context.register(EbeanResultBeanInterceptor.class);
+//        context.register(EbeanResultBeanInterceptor.class);
 
         for (EbeanServer server : SERVERS) {
             try {
@@ -226,7 +227,6 @@ public class EbeanFeature extends TransactionFeature {
                 config.setDefaultServer(true);
             }
 
-
             Set<Class> classes = ModelManager.getModels(name);
             if (classes == null) {
                 throw new ConfigErrorException("please config db.{name}.models property");
@@ -252,6 +252,14 @@ public class EbeanFeature extends TransactionFeature {
             logger.info("连接数据源 {} ...", name);
 
             final EbeanServer server = EbeanServerFactory.create(config);
+
+            JacksonUtils.addDefaultModule(new JacksonEbeanModule(server.json()) {
+                @Override
+                public String getModuleName() {
+                    return super.getModuleName() + "-" + name + "-server";
+                }
+            });
+
             SERVERS.add(server);
 
             // DDL
