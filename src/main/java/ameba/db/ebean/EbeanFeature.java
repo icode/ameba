@@ -4,6 +4,7 @@ import ameba.core.Application;
 import ameba.db.DataSourceManager;
 import ameba.db.TransactionFeature;
 import ameba.db.ebean.internal.EbeanModelProcessor;
+import ameba.db.ebean.jackson.JacksonEbeanModule;
 import ameba.db.migration.DatabaseMigrationFeature;
 import ameba.db.model.ModelManager;
 import ameba.exception.ConfigErrorException;
@@ -19,7 +20,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.avaje.ebeanorm.jackson.JacksonEbeanModule;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +85,8 @@ public class EbeanFeature extends TransactionFeature {
 
     @Inject
     private Application application;
+    @Inject
+    private ServiceLocator locator;
 
 
     /**
@@ -253,12 +256,7 @@ public class EbeanFeature extends TransactionFeature {
 
             final EbeanServer server = EbeanServerFactory.create(config);
 
-            JacksonUtils.addDefaultModule(new JacksonEbeanModule(server.json()) {
-                @Override
-                public String getModuleName() {
-                    return super.getModuleName() + "-" + name + "-server";
-                }
-            });
+            JacksonUtils.addDefaultModule(new JacksonEbeanModule(server, locator));
 
             SERVERS.add(server);
 

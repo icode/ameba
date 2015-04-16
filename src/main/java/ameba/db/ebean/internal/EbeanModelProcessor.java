@@ -177,6 +177,9 @@ public class EbeanModelProcessor implements WriterInterceptor {
                 }
             }
             for (String s : selectables) {
+                if (StringUtils.isBlank(s)) {
+                    continue;
+                }
                 if (!s.startsWith("(")) {
                     s = "(" + s;
                 }

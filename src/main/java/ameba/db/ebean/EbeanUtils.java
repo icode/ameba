@@ -1,12 +1,22 @@
 package ameba.db.ebean;
 
+import ameba.core.Requests;
+import ameba.db.ebean.internal.EbeanModelProcessor;
+import ameba.db.ebean.jackson.BeanJsonSerializer;
+import ameba.db.ebean.jackson.CommonBeanSerializer;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.common.BeanMap;
+import com.avaje.ebean.text.PathProperties;
+import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * <p>EbeanUtils class.</p>
@@ -74,5 +84,35 @@ public class EbeanUtils {
                 forcePropertiesLoaded(m);
             }
         }
+    }
+
+    /**
+     * parse uri query param to PathProperties for Ebean.json().toJson()
+     *
+     * @return PathProperties
+     * @see {@link JsonContext#toJson(Object, JsonGenerator, PathProperties)}
+     * @see {@link BeanJsonSerializer#serialize(Object, JsonGenerator, SerializerProvider)}
+     * @see {@link CommonBeanSerializer#serialize(Object, JsonGenerator, SerializerProvider)}
+     */
+    public static PathProperties getCurrentRequestPathProperties() {
+        List<String> selectables = Requests.getUriInfo().getQueryParameters()
+                .get(EbeanModelProcessor.getFieldsParamName());
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < selectables.size(); i++) {
+            String s = selectables.get(i);
+            if (StringUtils.isNotBlank(s)) {
+                if (!s.startsWith("(")) {
+                    builder.append("(");
+                }
+                builder.append(s);
+                if (!s.startsWith(")")) {
+                    builder.append(")");
+                }
+                if (i < selectables.size() - 1) {
+                    builder.append(":");
+                }
+            }
+        }
+        return PathProperties.parse(builder.length() == 0 ? "(*)" : builder.toString());
     }
 }
