@@ -98,18 +98,20 @@ public class EbeanUtils {
         List<String> selectables = Requests.getUriInfo().getQueryParameters()
                 .get(EbeanModelProcessor.getFieldsParamName());
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < selectables.size(); i++) {
-            String s = selectables.get(i);
-            if (StringUtils.isNotBlank(s)) {
-                if (!s.startsWith("(")) {
-                    builder.append("(");
-                }
-                builder.append(s);
-                if (!s.startsWith(")")) {
-                    builder.append(")");
-                }
-                if (i < selectables.size() - 1) {
-                    builder.append(":");
+        if (selectables != null) {
+            for (int i = 0; i < selectables.size(); i++) {
+                String s = selectables.get(i);
+                if (StringUtils.isNotBlank(s)) {
+                    if (!s.startsWith("(")) {
+                        builder.append("(");
+                    }
+                    builder.append(s);
+                    if (!s.startsWith(")")) {
+                        builder.append(")");
+                    }
+                    if (i < selectables.size() - 1) {
+                        builder.append(":");
+                    }
                 }
             }
         }
