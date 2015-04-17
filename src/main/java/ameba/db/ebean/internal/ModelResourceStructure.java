@@ -230,7 +230,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @throws java.lang.Exception if any.
      */
     protected void replaceModel(final M model) throws Exception {
-        server.update(model);
+        server.update(model, null, true);
     }
 
     /**
@@ -298,7 +298,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @throws java.lang.Exception if any.
      */
     protected void patchModel(final M model) throws Exception {
-        server.update(model);
+        server.update(model, null, false);
     }
 
     /**
