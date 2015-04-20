@@ -12,9 +12,9 @@ import java.lang.reflect.Modifier;
 /**
  * <p>Abstract TransactionFeature class.</p>
  *
- * @author ICode
+ * @author icode
  */
-public abstract class TransactionFeature implements Feature {
+public abstract class ORMFeature implements Feature {
     private static Class<? extends Finder> finderClass = null;
     private static Class<? extends Persister> persisterClass = null;
     private static Class<? extends Updater> updaterClass = null;
@@ -39,11 +39,11 @@ public abstract class TransactionFeature implements Feature {
      * @since 0.1.6e
      */
     public static synchronized void setFinderClass(Class finderClass) {
-        if (TransactionFeature.finderClass != null) return;
+        if (ORMFeature.finderClass != null) return;
         if (finderClass == null || Modifier.isAbstract(finderClass.getModifiers())) {
             throw new IllegalArgumentException("finder must instance of ameba.db.model.Finder");
         }
-        TransactionFeature.finderClass = finderClass;
+        ORMFeature.finderClass = finderClass;
     }
 
     /**
@@ -62,11 +62,11 @@ public abstract class TransactionFeature implements Feature {
      * @since 0.1.6e
      */
     public static synchronized void setPersisterClass(Class persisterClass) {
-        if (TransactionFeature.persisterClass != null) return;
+        if (ORMFeature.persisterClass != null) return;
         if (persisterClass == null || Modifier.isAbstract(persisterClass.getModifiers())) {
             throw new IllegalArgumentException("persister must instance of ameba.db.model.Persister");
         }
-        TransactionFeature.persisterClass = persisterClass;
+        ORMFeature.persisterClass = persisterClass;
     }
 
     /**
@@ -86,11 +86,11 @@ public abstract class TransactionFeature implements Feature {
      * @since 0.1.6e
      */
     public static synchronized void setUpdaterClass(Class updaterClass) {
-        if (TransactionFeature.updaterClass != null) return;
+        if (ORMFeature.updaterClass != null) return;
         if (updaterClass == null || Modifier.isAbstract(updaterClass.getModifiers())) {
             throw new IllegalArgumentException("updater must instance of ameba.db.model.Updater");
         }
-        TransactionFeature.updaterClass = updaterClass;
+        ORMFeature.updaterClass = updaterClass;
     }
 
     /**

@@ -1,7 +1,7 @@
 package ameba.db.ebean;
 
 import ameba.db.DataSourceManager;
-import ameba.db.TransactionFeature;
+import ameba.db.ORMFeature;
 import ameba.db.ebean.internal.EbeanModelProcessor;
 import ameba.db.ebean.jackson.JacksonEbeanModule;
 import ameba.db.migration.DatabaseMigrationFeature;
@@ -40,7 +40,7 @@ import java.util.Set;
  * @author icode
  * @since 2013-08-07
  */
-public class EbeanFeature extends TransactionFeature {
+public class EbeanFeature extends ORMFeature {
 
     /**
      * Constant <code>SORT_PARAM_NAME="model.query.param.sort"</code>
@@ -147,7 +147,6 @@ public class EbeanFeature extends TransactionFeature {
      */
     @Override
     public boolean configure(final FeatureContext context) {
-//        context.register(EbeanTransactional.class);
         if (context.getConfiguration().isRegistered(EbeanModelProcessor.class)) {
             return false;
         }
