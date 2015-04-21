@@ -10,7 +10,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 
 /**
- * <p>Abstract ORMFeature class.</p>
+ * <p>Abstract OrmFeature class.</p>
  *
  * @author icode
  */
