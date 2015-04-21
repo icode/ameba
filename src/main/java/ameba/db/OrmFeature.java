@@ -14,7 +14,7 @@ import java.lang.reflect.Modifier;
  *
  * @author icode
  */
-public abstract class Orm1Feature implements Feature {
+public abstract class OrmFeature implements Feature {
     private static Class<? extends Finder> finderClass = null;
     private static Class<? extends Persister> persisterClass = null;
     private static Class<? extends Updater> updaterClass = null;
@@ -39,11 +39,11 @@ public abstract class Orm1Feature implements Feature {
      * @since 0.1.6e
      */
     public static synchronized void setFinderClass(Class finderClass) {
-        if (Orm1Feature.finderClass != null) return;
+        if (OrmFeature.finderClass != null) return;
         if (finderClass == null || Modifier.isAbstract(finderClass.getModifiers())) {
             throw new IllegalArgumentException("finder must instance of ameba.db.model.Finder");
         }
-        Orm1Feature.finderClass = finderClass;
+        OrmFeature.finderClass = finderClass;
     }
 
     /**
@@ -62,11 +62,11 @@ public abstract class Orm1Feature implements Feature {
      * @since 0.1.6e
      */
     public static synchronized void setPersisterClass(Class persisterClass) {
-        if (Orm1Feature.persisterClass != null) return;
+        if (OrmFeature.persisterClass != null) return;
         if (persisterClass == null || Modifier.isAbstract(persisterClass.getModifiers())) {
             throw new IllegalArgumentException("persister must instance of ameba.db.model.Persister");
         }
-        Orm1Feature.persisterClass = persisterClass;
+        OrmFeature.persisterClass = persisterClass;
     }
 
     /**
@@ -86,11 +86,11 @@ public abstract class Orm1Feature implements Feature {
      * @since 0.1.6e
      */
     public static synchronized void setUpdaterClass(Class updaterClass) {
-        if (Orm1Feature.updaterClass != null) return;
+        if (OrmFeature.updaterClass != null) return;
         if (updaterClass == null || Modifier.isAbstract(updaterClass.getModifiers())) {
             throw new IllegalArgumentException("updater must instance of ameba.db.model.Updater");
         }
-        Orm1Feature.updaterClass = updaterClass;
+        OrmFeature.updaterClass = updaterClass;
     }
 
     /**
