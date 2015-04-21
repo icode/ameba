@@ -1,7 +1,7 @@
 package ameba.db.ebean;
 
 import ameba.db.DataSourceManager;
-import ameba.db.ORMFeature;
+import ameba.db.Orm1Feature;
 import ameba.db.ebean.internal.EbeanModelProcessor;
 import ameba.db.ebean.jackson.JacksonEbeanModule;
 import ameba.db.migration.DatabaseMigrationFeature;
@@ -40,7 +40,7 @@ import java.util.Set;
  * @author icode
  * @since 2013-08-07
  */
-public class EbeanFeature extends ORMFeature {
+public class EbeanFeature extends Orm1Feature {
 
     /**
      * Constant <code>SORT_PARAM_NAME="model.query.param.sort"</code>
