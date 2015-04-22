@@ -97,8 +97,7 @@ public class JacksonUtils {
                 .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
                 .disable(SerializationFeature.FAIL_ON_SELF_REFERENCES)
                 .disable(SerializationFeature.WRITE_NULL_MAP_VALUES)
-                .disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS)
-                .disable(SerializationFeature.FLUSH_AFTER_WRITE_VALUE);
+                .disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
         if (isDev)
             mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
