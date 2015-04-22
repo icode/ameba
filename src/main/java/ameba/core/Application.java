@@ -121,8 +121,6 @@ public class Application {
         configFiles = confFile;
 
         configure();
-
-        initialized = true;
     }
 
     public void reconfigure() {
@@ -701,15 +699,9 @@ public class Application {
             @Override
             public void onReceive(Container.StartupEvent event) {
 
-                boolean printStartMsg = false;
-
-                if (Application.this.container == null) {
-                    printStartMsg = true;
-                }
-
                 Application.this.container = event.getContainer();
 
-                if (printStartMsg) {
+                if (!isInitialized()) {
                     Runtime r = Runtime.getRuntime();
                     r.gc();
 
@@ -761,6 +753,8 @@ public class Application {
                             builder,
                             INFO_SPLITOR);
                 }
+
+                initialized = true;
             }
         });
     }
