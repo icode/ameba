@@ -20,7 +20,7 @@ public class ContainerException extends AmebaException {
      *
      * @param cause a {@link java.lang.Throwable} object.
      */
-    protected ContainerException(Throwable cause) {
+    public ContainerException(Throwable cause) {
         super(cause);
     }
 

@@ -73,7 +73,7 @@ public abstract class Container {
      * @param configuration a {@link org.glassfish.jersey.server.ResourceConfig} object.
      * @since 0.1.6e
      */
-    public void registerBinder(ResourceConfig configuration) {
+    protected void registerBinder(ResourceConfig configuration) {
         configuration.register(new AbstractBinder() {
             @Override
             protected void configure() {
@@ -181,29 +181,18 @@ public abstract class Container {
      *
      * @since 0.1.6e
      */
-    public void reload() {
-        SystemEventBus.publish(new BeginReloadEvent(this, application, application.getConfig()));
-        doReload(application.getConfig());
-    }
-
-    /**
-     * <p>reload.</p>
-     *
-     * @param configuration a {@link org.glassfish.jersey.server.ResourceConfig} object.
-     * @since 0.1.6e
-     */
-    public void reload(ResourceConfig configuration) {
-        SystemEventBus.publish(new BeginReloadEvent(this, application, configuration));
-        registerBinder(configuration);
-        doReload(configuration);
+    public void reload() throws Exception {
+        SystemEventBus.publish(new BeginReloadEvent(this, application));
+        ResourceConfig config = application.getConfig();
+        application.reconfigure();
+        doReload(config);
     }
 
     /**
      * <p>doReload.</p>
      *
-     * @param configuration a {@link org.glassfish.jersey.server.ResourceConfig} object.
      */
-    protected abstract void doReload(ResourceConfig configuration);
+    protected abstract void doReload(ResourceConfig odlConfig) throws Exception;
 
     /**
      * <p>doStart.</p>
@@ -217,7 +206,12 @@ public abstract class Container {
      *
      * @throws java.lang.Exception if any.
      */
-    public abstract void shutdown() throws Exception;
+    public void shutdown() throws Exception {
+        SystemEventBus.publish(new BeginShutdownEvent(this, application));
+        doShutdown();
+    }
+
+    public abstract void doShutdown() throws Exception;
 
     /**
      * <p>getConnectors.</p>
@@ -271,20 +265,20 @@ public abstract class Container {
     }
 
     public static class BeginReloadEvent extends ContainerEvent {
-        ResourceConfig newConfig;
 
-        public BeginReloadEvent(Container container, Application app, ResourceConfig newConfig) {
+        public BeginReloadEvent(Container container, Application app) {
             super(container, app);
-            this.newConfig = newConfig;
-        }
-
-        public ResourceConfig getNewConfig() {
-            return newConfig;
         }
     }
 
     public static class ShutdownEvent extends ContainerEvent {
         public ShutdownEvent(Container container, Application app) {
+            super(container, app);
+        }
+    }
+
+    public static class BeginShutdownEvent extends ContainerEvent {
+        public BeginShutdownEvent(Container container, Application app) {
             super(container, app);
         }
     }

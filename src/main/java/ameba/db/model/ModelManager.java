@@ -1,6 +1,5 @@
 package ameba.db.model;
 
-import ameba.container.Container;
 import ameba.core.AddOn;
 import ameba.core.Application;
 import ameba.db.DataSourceManager;
@@ -31,7 +30,7 @@ public class ModelManager extends AddOn {
      */
     public static final String MODULE_MODELS_KEY_PREFIX = "db.default.models.";
     private static Logger logger = LoggerFactory.getLogger(ModelManager.class);
-    private static Map<String, Set<Class>> modelMap = Maps.newLinkedHashMap();
+    private static Map<String, Set<Class>> modelMap;
 
     /**
      * <p>getModels.</p>
@@ -47,6 +46,7 @@ public class ModelManager extends AddOn {
     @Override
     public void setup(final Application application) {
         Configuration config = application.getConfiguration();
+        modelMap = Maps.newLinkedHashMap();
 
         Set<String> defaultModelsPkg = Sets.newLinkedHashSet();
         //db.default.models.pkg=
@@ -97,12 +97,6 @@ public class ModelManager extends AddOn {
                     }
                 });
 
-                subscribeSystemEvent(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
-                    @Override
-                    public void onReceive(Container.BeginReloadEvent event) {
-                        classes.clear();
-                    }
-                });
                 modelMap.put(name, classes);
             }
         }

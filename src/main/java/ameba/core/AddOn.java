@@ -1,5 +1,6 @@
 package ameba.core;
 
+import ameba.container.Container;
 import ameba.event.Event;
 import ameba.event.EventBus;
 import ameba.event.Listener;
@@ -12,8 +13,19 @@ import ameba.event.SystemEventBus;
  * @since 0.1.6e
  */
 public abstract class AddOn {
-    private static EventBus EVENT_BUS = EventBus.createMix();
+    private static EventBus EVENT_BUS = init();
     protected String version = "1.0.0";
+
+    private static EventBus init() {
+        EventBus eventBus = EventBus.createMix();
+        SystemEventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
+            @Override
+            public void onReceive(Container.BeginReloadEvent event) {
+                EVENT_BUS = init();
+            }
+        });
+        return eventBus;
+    }
 
     /**
      * <p>subscribeEvent.</p>
@@ -30,8 +42,8 @@ public abstract class AddOn {
      * <p>unsubscribeEvent.</p>
      *
      * @param eventClass a {@link java.lang.Class} object.
-     * @param listener a {@link ameba.event.Listener} object.
-     * @param <E> a E object.
+     * @param listener   a {@link ameba.event.Listener} object.
+     * @param <E>        a E object.
      */
     protected static <E extends Event> void unsubscribeEvent(Class<E> eventClass, final Listener<E> listener) {
         EVENT_BUS.unsubscribe(eventClass, listener);
@@ -50,8 +62,8 @@ public abstract class AddOn {
      * <p>subscribeSystemEvent.</p>
      *
      * @param eventClass a {@link java.lang.Class} object.
-     * @param listener a {@link ameba.event.Listener} object.
-     * @param <E> a E object.
+     * @param listener   a {@link ameba.event.Listener} object.
+     * @param <E>        a E object.
      */
     protected static <E extends Event> void subscribeSystemEvent(Class<E> eventClass, final Listener<E> listener) {
         SystemEventBus.subscribe(eventClass, listener);
@@ -61,8 +73,8 @@ public abstract class AddOn {
      * <p>unsubscribeSystemEvent.</p>
      *
      * @param eventClass a {@link java.lang.Class} object.
-     * @param listener a {@link ameba.event.Listener} object.
-     * @param <E> a E object.
+     * @param listener   a {@link ameba.event.Listener} object.
+     * @param <E>        a E object.
      */
     protected static <E extends Event> void unsubscribeSystemEvent(Class<E> eventClass, final Listener<E> listener) {
         SystemEventBus.unsubscribe(eventClass, listener);

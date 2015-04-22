@@ -1,6 +1,5 @@
 package ameba.feature.internal;
 
-import ameba.container.Container;
 import ameba.core.AddOn;
 import ameba.core.Application;
 import ameba.event.Listener;
@@ -59,13 +58,6 @@ public class LocalResourceAddOn extends AddOn {
                 return true;
             }
         };
-
-        subscribeSystemEvent(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
-            @Override
-            public void onReceive(Container.BeginReloadEvent event) {
-                event.getNewConfig().register(localResource);
-            }
-        });
 
         application.register(localResource);
     }

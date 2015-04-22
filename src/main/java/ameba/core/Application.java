@@ -8,6 +8,7 @@ import ameba.event.SystemEventBus;
 import ameba.exception.AmebaException;
 import ameba.exception.ConfigErrorException;
 import ameba.feature.AmebaFeature;
+import ameba.lib.InitializationLogger;
 import ameba.util.ClassUtils;
 import ameba.util.IOUtils;
 import ameba.util.LinkedProperties;
@@ -35,7 +36,6 @@ import org.glassfish.jersey.server.model.ResourceModel;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.monitoring.RequestEventListener;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -75,23 +75,26 @@ public class Application {
      * Constant <code>DEFAULT_APP_NAME="Ameba"</code>
      */
     public static final String DEFAULT_APP_NAME = "Ameba";
-    /** Constant <code>DEFAULT_APP_CONF="conf/application.conf"</code> */
+    /**
+     * Constant <code>DEFAULT_APP_CONF="conf/application.conf"</code>
+     */
     public static final String DEFAULT_APP_CONF = "conf/application.conf";
-    private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static final String REGISTER_CONF_PREFIX = "app.register.";
     private static final String ADDON_CONF_PREFIX = "app.addon.";
     private static final String JERSEY_CONF_NAME_PREFIX = "app.sys.core.";
     private static final String SCAN_CLASSES_CACHE_FILE = IOUtils.getResource("/").getPath() + "conf/classes.list";
+    private static InitializationLogger logger;
     private static String INFO_SPLITOR = "---------------------------------------------------";
     protected boolean jmxEnabled;
     private String[] configFiles;
+    private long timestamp = System.currentTimeMillis();
+    private boolean initialized = false;
     private Mode mode;
     private CharSequence applicationVersion;
     private File sourceRoot;
     private File packageRoot;
     private Container container;
-    private long timestamp = System.currentTimeMillis();
-    private Set<AddOn> addOns = Sets.newHashSet();
+    private Set<AddOn> addOns;
     private ResourceConfig config;
     private Set<String> scanPkgs;
 
@@ -107,20 +110,32 @@ public class Application {
      *
      * @param confFile a {@link java.lang.String} object.
      */
-    @SuppressWarnings("unchecked")
     public Application(String... confFile) {
 
         if (Ameba.getApp() != null) {
             throw new AmebaException("已经存在一个应用实例");
         }
-        config = new ResourceConfig();
-        configFiles = confFile;
-        logger.trace("初始化...");
-        Map<String, Object> configMap = Maps.newLinkedHashMap();
 
+        logger = new InitializationLogger(Application.class, this);
+
+        configFiles = confFile;
+
+        configure();
+
+        initialized = true;
+    }
+
+    public void reconfigure() {
+        configure();
+    }
+
+    private void configure() {
+
+        config = new ResourceConfig();
+
+        Map<String, Object> configMap = Maps.newLinkedHashMap();
         Properties properties = new LinkedProperties();
 
-        logger.trace("读取系统默认配置...");
         //读取系统默认配置
         try {
             properties.load(getResourceAsStream("conf/default.conf"));
@@ -129,9 +144,9 @@ public class Application {
         } catch (Exception e) {
             logger.warn("读取[conf/default.conf]出错", e);
         }
-        logger.trace("读取应用自定义配置...");
-        List<String> appConf = Lists.newArrayListWithExpectedSize(confFile.length);
-        for (String conf : confFile) {
+
+        List<String> appConf = Lists.newArrayListWithExpectedSize(configFiles.length);
+        for (String conf : configFiles) {
             //读取应用程序配置
             URL appCfgUrl = readAppConfig(properties, conf);
             appConf.add(toExternalForm(appCfgUrl));
@@ -153,7 +168,8 @@ public class Application {
         //配置日志器
         configureLogger(properties);
 
-        Ameba.printInfo();
+        if (!isInitialized())
+            Ameba.printInfo();
 
         logger.info("初始化...");
         logger.info("应用配置文件 {}", appConf);
@@ -177,13 +193,6 @@ public class Application {
         registerInstance();
 
         register(Requests.BindRequest.class);
-        SystemEventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
-            @Override
-            public void onReceive(Container.BeginReloadEvent event) {
-                config = event.getNewConfig();
-                registerInstance();
-            }
-        });
 
         addOnSetup(configMap);
 
@@ -202,18 +211,10 @@ public class Application {
         //清空临时读取的配置
         properties.clear();
 
-        SystemEventBus.publish(new ConfiguredEvent(this));
-
         scanClasses();
 
-        SystemEventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
-            @Override
-            public void onReceive(Container.BeginReloadEvent event) {
-                scanClasses();
-            }
-        });
-
         addOnDone();
+
         logger.info("装载特性...");
     }
 
@@ -221,7 +222,8 @@ public class Application {
         URL cacheList = IOUtils.getResource(SCAN_CLASSES_CACHE_FILE);
         if (cacheList == null || getMode().isDev()) {
             logger.debug("scan files ...");
-            final PackageNamesScanner scanner = new PackageNamesScanner(scanPkgs.toArray(new String[scanPkgs.size()]), true);
+            final PackageNamesScanner scanner = new PackageNamesScanner(
+                    scanPkgs.toArray(new String[scanPkgs.size()]), true);
             Set<String> foundClasses = Sets.newHashSet();
             List<String> acceptClasses = Lists.newArrayList();
             while (scanner.hasNext()) {
@@ -285,10 +287,11 @@ public class Application {
                 in = cacheList.openStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(in));
                 if (reader.ready()) {
-                    String fileName = reader.readLine();
-                    while (fileName != null) {
-                        if (StringUtils.isBlank(fileName)) continue;
-                        final InputStream fin = IOUtils.getResourceAsStream(fileName.replace(".", "/").concat(".class"));
+                    String className = reader.readLine();
+                    while (className != null) {
+                        if (StringUtils.isBlank(className)) continue;
+                        String fileName = className.replace(".", "/").concat(".class");
+                        final InputStream fin = IOUtils.getResourceAsStream(fileName);
                         ClassFoundEvent.ClassInfo info = new ClassFoundEvent.ClassInfo() {
                             @Override
                             public InputStream getFileStream() {
@@ -300,10 +303,10 @@ public class Application {
                                 closeQuietly(fin);
                             }
                         };
-                        info.fileName = fileName.substring(fileName.lastIndexOf(".") + 1).concat(".class");
+                        info.fileName = className.substring(className.lastIndexOf(".") + 1).concat(".class");
                         SystemEventBus.publish(new ClassFoundEvent(info, true));
                         info.closeFileStream();
-                        fileName = reader.readLine();
+                        className = reader.readLine();
                     }
                 }
                 closeQuietly(reader);
@@ -371,6 +374,7 @@ public class Application {
     }
 
     private void addOnSetup(Map<String, Object> configMap) {
+        addOns = Sets.newHashSet();
         Set<SortEntry> addOnSorts = Sets.newTreeSet();
         for (String key : configMap.keySet()) {
             if (key.startsWith(ADDON_CONF_PREFIX)) {
@@ -387,7 +391,9 @@ public class Application {
                         } else {
                             sortPriority = Ints.tryParse(sortStr);
                             if (sortPriority == null || sortPriority < 0 || sortPriority > Integer.MAX_VALUE) {
-                                throw new ConfigErrorException("插件配置出错，执行优先级设置错误，必须为last或数字（且大于-1小于" + Integer.MAX_VALUE + "）。配置 " + key);
+                                throw new ConfigErrorException(
+                                        "插件配置出错，执行优先级设置错误，必须为last或数字（且大于-1小于"
+                                                + Integer.MAX_VALUE + "）。配置 " + key);
                             }
                         }
                     }
@@ -469,7 +475,9 @@ public class Application {
                         } else {
                             sortPriority = Ints.tryParse(sortStr);
                             if (sortPriority == null || sortPriority < 0 || sortPriority > Integer.MAX_VALUE) {
-                                throw new ConfigErrorException("特性配置出错，执行优先级设置错误，必须为last或数字（且大于-1小于" + Integer.MAX_VALUE + "）。配置 " + key);
+                                throw new ConfigErrorException(
+                                        "特性配置出错，执行优先级设置错误，必须为last或数字（且大于-1小于"
+                                                + Integer.MAX_VALUE + "）。配置 " + key);
                             }
                         }
                     }
@@ -479,7 +487,9 @@ public class Application {
                     if (prioritySp != -1) {
                         diPriority = Ints.tryParse(name.substring(prioritySp + 1));
                         if (diPriority == null || diPriority < 0 || diPriority > Integer.MAX_VALUE) {
-                            throw new ConfigErrorException("特性配置出错，DI优先级设置错误，必须为数字，且大于-1小于" + Integer.MAX_VALUE + "。配置 " + key);
+                            throw new ConfigErrorException(
+                                    "特性配置出错，DI优先级设置错误，必须为数字，且大于-1小于"
+                                            + Integer.MAX_VALUE + "。配置 " + key);
                         }
                     }
 
@@ -521,7 +531,8 @@ public class Application {
             }
         }
 
-        String registerStr = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("app.registers"), ""));
+        String registerStr = StringUtils.deleteWhitespace(
+                StringUtils.defaultIfBlank((String) getProperty("app.registers"), ""));
         String[] registers;
         if (StringUtils.isNotBlank(registerStr)) {
             registers = registerStr.split(",");
@@ -550,27 +561,7 @@ public class Application {
         logger.info("成功注册{}个特性，失败{}个，跳过{}个", suc, fail, beak);
     }
 
-    @SuppressWarnings("unchecked")
-    private void configureResource() {
-        String[] packages = StringUtils.deleteWhitespace(StringUtils.defaultIfBlank((String) getProperty("resource.packages"), "")).split(",");
-        for (String key : getPropertyNames()) {
-            if (key.startsWith("resource.packages.")) {
-                Object pkgObj = getProperty(key);
-                if (pkgObj instanceof String) {
-                    String pkgStr = (String) pkgObj;
-                    if (StringUtils.isNotBlank(pkgStr)) {
-                        String[] pkgs = StringUtils.deleteWhitespace(pkgStr).split(",");
-                        for (String pkg : pkgs) {
-                            if (!ArrayUtils.contains(packages, pkg))
-                                packages = ArrayUtils.add(packages, pkg);
-                        }
-                    }
-                }
-            }
-        }
-        packages = ArrayUtils.removeElement(packages, "");
-        logger.info("设置资源扫描包:{}", StringUtils.join(packages, ","));
-        packages(packages);
+    private void subscribeResourceEvent() {
 
         final Set<ClassFoundEvent.ClassInfo> resources = Sets.newHashSet();
 
@@ -594,11 +585,38 @@ public class Application {
             @Override
             public void done(Application application) {
                 for (ClassFoundEvent.ClassInfo info : resources) {
-                    register(info.toClass());
+                    Class clazz = info.toClass();
+                    if (!isRegistered(clazz))
+                        register(clazz);
                 }
                 resources.clear();
             }
         });
+    }
+
+    @SuppressWarnings("unchecked")
+    private void configureResource() {
+        String[] packages = StringUtils.deleteWhitespace(
+                StringUtils.defaultIfBlank((String) getProperty("resource.packages"), "")).split(",");
+        for (String key : getPropertyNames()) {
+            if (key.startsWith("resource.packages.")) {
+                Object pkgObj = getProperty(key);
+                if (pkgObj instanceof String) {
+                    String pkgStr = (String) pkgObj;
+                    if (StringUtils.isNotBlank(pkgStr)) {
+                        String[] pkgs = StringUtils.deleteWhitespace(pkgStr).split(",");
+                        for (String pkg : pkgs) {
+                            if (!ArrayUtils.contains(packages, pkg))
+                                packages = ArrayUtils.add(packages, pkg);
+                        }
+                    }
+                }
+            }
+        }
+        packages = ArrayUtils.removeElement(packages, "");
+        logger.info("设置资源扫描包:{}", StringUtils.join(packages, ","));
+        packages(packages);
+        subscribeResourceEvent();
     }
 
     private void convertJerseyConfig(Map<String, Object> configMap) {
@@ -674,6 +692,11 @@ public class Application {
         jmxEnabled = Boolean.parseBoolean((String) getProperty("app.jmx.enabled"));
         if (jmxEnabled && getProperty(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED) == null)
             property(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED, jmxEnabled);
+
+        subscribeServerEvent();
+    }
+
+    private void subscribeServerEvent() {
         SystemEventBus.subscribe(Container.StartupEvent.class, new Listener<Container.StartupEvent>() {
             @Override
             public void onReceive(Container.StartupEvent event) {
@@ -733,14 +756,13 @@ public class Application {
                         logger.warn("请通过connector.[Name].port配置监听端口");
                     }
 
-                    logger.info("应用已启动\n{}\n{}\n{}",
+                    logger.getSource().info("应用已启动\n{}\n{}\n{}",
                             INFO_SPLITOR,
                             builder,
                             INFO_SPLITOR);
                 }
             }
         });
-
     }
 
     private String toExternalForm(URL url) {
@@ -876,7 +898,7 @@ public class Application {
     /**
      * <p>register.</p>
      *
-     * @param component a {@link java.lang.Object} object.
+     * @param component       a {@link java.lang.Object} object.
      * @param bindingPriority a int.
      * @return a {@link ameba.core.Application} object.
      */
@@ -991,7 +1013,7 @@ public class Application {
      * <p>register.</p>
      *
      * @param componentClass a {@link java.lang.Class} object.
-     * @param contracts a {@link java.lang.Class} object.
+     * @param contracts      a {@link java.lang.Class} object.
      * @return a {@link ameba.core.Application} object.
      */
     public Application register(Class<?> componentClass, Class<?>... contracts) {
@@ -1093,10 +1115,14 @@ public class Application {
         return this;
     }
 
+    public boolean isInitialized() {
+        return initialized;
+    }
+
     /**
      * <p>register.</p>
      *
-     * @param componentClass a {@link java.lang.Class} object.
+     * @param componentClass  a {@link java.lang.Class} object.
      * @param bindingPriority a int.
      * @return a {@link ameba.core.Application} object.
      */
@@ -1158,7 +1184,7 @@ public class Application {
     /**
      * <p>property.</p>
      *
-     * @param name a {@link java.lang.String} object.
+     * @param name  a {@link java.lang.String} object.
      * @param value a {@link java.lang.Object} object.
      * @return a {@link ameba.core.Application} object.
      */
@@ -1191,7 +1217,7 @@ public class Application {
      * <p>register.</p>
      *
      * @param componentClass a {@link java.lang.Class} object.
-     * @param contracts a {@link java.util.Map} object.
+     * @param contracts      a {@link java.util.Map} object.
      * @return a {@link ameba.core.Application} object.
      */
     public Application register(Class<?> componentClass, Map<Class<?>, Integer> contracts) {
@@ -1377,6 +1403,18 @@ public class Application {
         }
     }
 
+    private static class State {
+        protected boolean jmxEnabled;
+        private Mode mode;
+        private CharSequence applicationVersion;
+        private File sourceRoot;
+        private File packageRoot;
+        private Container container;
+        private Set<AddOn> addOns;
+        private ResourceConfig config;
+        private Set<String> scanPkgs;
+    }
+
     public static class Event implements ameba.event.Event {
 
         ApplicationEvent event;
@@ -1463,18 +1501,6 @@ public class Application {
 
         public ContainerResponse getContainerResponse() {
             return event.getContainerResponse();
-        }
-    }
-
-    public static class ConfiguredEvent implements ameba.event.Event {
-        private Application app;
-
-        public ConfiguredEvent(Application app) {
-            this.app = app;
-        }
-
-        public Application getApp() {
-            return app;
         }
     }
 

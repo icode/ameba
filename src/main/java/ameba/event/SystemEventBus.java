@@ -1,5 +1,7 @@
 package ameba.event;
 
+import ameba.container.Container;
+
 /**
  * <p>SystemEventBus class.</p>
  *
@@ -7,9 +9,20 @@ package ameba.event;
  */
 public class SystemEventBus {
 
-    private static EventBus EVENT_BUS = EventBus.createMix();
+    private static EventBus EVENT_BUS = init();
 
     private SystemEventBus() {
+    }
+
+    private static EventBus init() {
+        EventBus eventBus = EventBus.createMix();
+        eventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
+            @Override
+            public void onReceive(Container.BeginReloadEvent event) {
+                EVENT_BUS = init();
+            }
+        });
+        return eventBus;
     }
 
     /**
@@ -36,9 +49,9 @@ public class SystemEventBus {
     /**
      * <p>unsubscribe.</p>
      *
-     * @param event a {@link java.lang.Class} object.
+     * @param event    a {@link java.lang.Class} object.
      * @param listener a {@link ameba.event.Listener} object.
-     * @param <E> a E object.
+     * @param <E>      a E object.
      */
     public static <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener) {
         EVENT_BUS.unsubscribe(event, listener);

@@ -89,8 +89,9 @@ public class JacksonFeature implements Feature {
                     MediaType.APPLICATION_JSON,
                     MediaType.APPLICATION_XML,
                     MediaType.TEXT_XML);
+            return true;
         }
-        return true;
+        return false;
     }
 
 }
