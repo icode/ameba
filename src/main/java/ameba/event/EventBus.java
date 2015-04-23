@@ -5,7 +5,6 @@ import ameba.exception.AmebaException;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -241,7 +240,7 @@ public abstract class EventBus {
      */
     @SuppressWarnings("unchecked")
     public void publish(Event event) {
-        Set<Listener> listenerSet = Sets.newCopyOnWriteArraySet(listeners.get(event.getClass()));
+        Set<Listener> listenerSet = listeners.get(event.getClass());
         for (Listener listener : listenerSet) {
             try {
                 listener.onReceive(event);
