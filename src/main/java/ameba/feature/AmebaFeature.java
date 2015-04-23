@@ -1,7 +1,6 @@
 package ameba.feature;
 
 import ameba.container.Container;
-import ameba.core.Application;
 import ameba.event.Event;
 import ameba.event.EventBus;
 import ameba.event.Listener;
@@ -23,8 +22,6 @@ public abstract class AmebaFeature extends LoggerOwner implements Feature {
 
     @Inject
     private ServiceLocator locator;
-    @Inject
-    private Application application;
 
     /**
      * <p>publishEvent.</p>

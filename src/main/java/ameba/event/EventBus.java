@@ -119,7 +119,7 @@ public abstract class EventBus {
      * @since 0.1.6e
      */
     @SuppressWarnings("unchecked")
-    public void subscribe(Object obj) throws IllegalAccessException {
+    public void subscribe(Object obj) {
         if (obj == null) {
             return;
         }
@@ -128,7 +128,7 @@ public abstract class EventBus {
             objClass = (Class) obj;
             try {
                 obj = objClass.newInstance();
-            } catch (InstantiationException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 throw new AmebaException("subscribe event error, "
                         + objClass.getName() + " must be have a public void arguments constructor", e);
             }
