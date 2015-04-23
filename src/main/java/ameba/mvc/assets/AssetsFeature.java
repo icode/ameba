@@ -27,6 +27,7 @@ import java.util.Map;
 @ConstrainedTo(RuntimeType.SERVER)
 public class AssetsFeature implements Feature {
 
+    public static final String ROOT_MAPPING_PATH = "/*";
     private static final Map<String, String[]> assetsMap = Maps.newLinkedHashMap();
     private static final String ASSETS_CONF_PREFIX = "resource.assets.";
 
@@ -98,6 +99,10 @@ public class AssetsFeature implements Feature {
             name = name.substring(0, name.lastIndexOf("/"));
         }
 
+        if (name.equals("")) {
+            name = ROOT_MAPPING_PATH;
+        }
+
         String[] dirs = assetsMap.get(name);
         if (dirs != null) {
             for (String dir : dirs) {
@@ -130,6 +135,9 @@ public class AssetsFeature implements Feature {
 
                 for (String routePath : assetsMap.keySet()) {
                     Resource.Builder resourceBuilder = Resource.builder(AssetsResource.class);
+                    if (routePath.equals(ROOT_MAPPING_PATH)) {
+                        routePath = "/";
+                    }
                     resourceBuilder.path(routePath);
                     Resource resource = resourceBuilder.build();
                     resourceModelBuilder.addResource(resource);

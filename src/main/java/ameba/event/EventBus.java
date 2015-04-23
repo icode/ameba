@@ -5,6 +5,7 @@ import ameba.exception.AmebaException;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,33 +89,34 @@ public abstract class EventBus {
      *         EventBus.subscribe(this);
      *     }
      * <p/>
+     * <p/>
+     *     @@Subscribe({ Container.ReloadEvent.class })
+     *     private void doSome(MyEvent e){
+     *         ....
+     *     }
+     * }
+     * <p/>
+     * class SubEevent2 {
+     * <p/>
+     *     @@Subscribe({ Container.ReloadEvent.class })
+     *     private void doSome(){
+     *         ....
+     *     }
+     * <p/>
+     *     @@Subscribe({ Container.ReloadEvent.class })
+     *     private void doSome(MyEvent e){
+     *         ....
+     *     }
+     * }
+     * <p/>
+     * class SubEevent2 {
+     * <p/>
+     *     @@Subscribe({ Container.ReloadEvent.class })
+     *     private void doSome(){
+     *         ....
+     *     }
+     * <p/>
      *
-     *     @@Subscribe({ Container.ReloadEvent.class })
-     *     private void doSome(MyEvent e){
-     *         ....
-     *     }
-     * }
-     * <p/>
-     * class SubEevent2 {
-     * <p/>
-     *     @@Subscribe({ Container.ReloadEvent.class })
-     *     private void doSome(){
-     *         ....
-     *     }
-     * <p/>
-     *     @@Subscribe({ Container.ReloadEvent.class })
-     *     private void doSome(MyEvent e){
-     *         ....
-     *     }
-     * }
-     * <p/>
-     * class SubEevent2 {
-     * <p/>
-     *     @@Subscribe({ Container.ReloadEvent.class })
-     *     private void doSome(){
-     *         ....
-     *     }
-     * <p/>
      * @param obj class or instance
      * @since 0.1.6e
      */
@@ -185,10 +187,10 @@ public abstract class EventBus {
     /**
      * <p>subscribe.</p>
      *
-     * @param event a {@link java.lang.Class} object.
-     * @param listener a {@link ameba.event.Listener} object.
+     * @param event     a {@link java.lang.Class} object.
+     * @param listener  a {@link ameba.event.Listener} object.
      * @param subscribe a {@link ameba.event.Subscribe} object.
-     * @param <E> a E object.
+     * @param <E>       a E object.
      * @since 0.1.6e
      */
     protected <E extends Event> void subscribe(Class<E> event, final Listener<E> listener, Subscribe subscribe) {
@@ -198,9 +200,9 @@ public abstract class EventBus {
     /**
      * <p>unsubscribe.</p>
      *
-     * @param event a {@link java.lang.Class} object.
+     * @param event    a {@link java.lang.Class} object.
      * @param listener a {@link ameba.event.Listener} object.
-     * @param <E> a E object.
+     * @param <E>      a E object.
      */
     public <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener) {
         subscribersByTypeLock.writeLock().lock();
@@ -215,7 +217,7 @@ public abstract class EventBus {
      * <p>unsubscribe.</p>
      *
      * @param event a {@link java.lang.Class} object.
-     * @param <E> a E object.
+     * @param <E>   a E object.
      * @since 0.1.6e
      */
     public <E extends Event> void unsubscribe(Class<E> event) {
@@ -234,7 +236,9 @@ public abstract class EventBus {
      */
     @SuppressWarnings("unchecked")
     public void publish(Event event) {
-        Set<Listener> listenerSet = listeners.get(event.getClass());
+        subscribersByTypeLock.readLock().lock();
+        Set<Listener> listenerSet = Sets.newCopyOnWriteArraySet(listeners.get(event.getClass()));
+        subscribersByTypeLock.readLock().unlock();
         for (Listener listener : listenerSet) {
             try {
                 listener.onReceive(event);

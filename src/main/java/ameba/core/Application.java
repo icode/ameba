@@ -325,10 +325,12 @@ public class Application {
 
             @Override
             public RequestEventListener onRequest(org.glassfish.jersey.server.monitoring.RequestEvent requestEvent) {
+                logger.getSource().trace("on request {}", requestEvent.getType().name());
                 AmebaFeature.publishEvent(new RequestEvent(requestEvent));
                 return new RequestEventListener() {
                     @Override
                     public void onEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
+                        logger.getSource().trace("on request {}", event.getType().name());
                         AmebaFeature.publishEvent(new RequestEvent(event));
                     }
                 };

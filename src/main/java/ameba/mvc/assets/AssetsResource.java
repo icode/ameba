@@ -1,9 +1,11 @@
 package ameba.mvc.assets;
 
+import ameba.message.internal.MediaType;
 import ameba.util.MimeType;
 
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
@@ -36,7 +38,7 @@ public class AssetsResource {
         InputStream in = AssetsFeature.findAsset(uriInfo.getPath().replace(file, ""), file);
 
         if (in == null)
-            return Response.status(404).build();
+            throw new NotFoundException();
 
         Response.ResponseBuilder builder = Response.ok(in);
 
@@ -46,7 +48,7 @@ public class AssetsResource {
 
         if (dot > 0) {
             String ext = path.substring(dot + 1);
-            String ct = MimeType.get(ext);
+            String ct = MimeType.get(ext, MediaType.APPLICATION_OCTET_STREAM);
             if (ct != null) {
                 builder.type(ct);
             }
