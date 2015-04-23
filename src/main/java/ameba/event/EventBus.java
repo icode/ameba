@@ -8,7 +8,6 @@ import com.google.common.collect.SetMultimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
@@ -120,7 +119,7 @@ public abstract class EventBus {
      * @since 0.1.6e
      */
     @SuppressWarnings("unchecked")
-    public void subscribe(Object obj) {
+    public void subscribe(Object obj) throws IllegalAccessException {
         if (obj == null) {
             return;
         }
@@ -130,9 +129,6 @@ public abstract class EventBus {
             try {
                 obj = objClass.newInstance();
             } catch (InstantiationException e) {
-                throw new AmebaException("subscribe event error, "
-                        + objClass.getName() + " must be have a public void arguments constructor", e);
-            } catch (IllegalAccessException e) {
                 throw new AmebaException("subscribe event error, "
                         + objClass.getName() + " must be have a public void arguments constructor", e);
             }
@@ -175,8 +171,6 @@ public abstract class EventBus {
                             } catch (IllegalAccessException e) {
                                 throw new AmebaException("handle event error, " + method.getName()
                                         + " method must be not have arguments or extends from Event argument", e);
-                            } catch (InvocationTargetException e) {
-                                throw new AmebaException("handle " + method.getName() + " event error. ", e);
                             } catch (Exception e) {
                                 throw new AmebaException("handle " + method.getName() + " event error. ", e);
                             }
