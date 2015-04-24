@@ -5,9 +5,11 @@ import ameba.db.model.Model;
 import ameba.lib.LoggerOwner;
 import com.avaje.ebean.*;
 import com.avaje.ebean.bean.EntityBean;
+import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebeaninternal.api.ScopeTrans;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
@@ -100,13 +102,24 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     }
 
     /**
-     * <p>seForInsertId.</p>
+     * <p>setForInsertId.</p>
      *
      * @param model a M object.
      */
-    protected void seForInsertId(final M model) {
+    protected void setForInsertId(final M model) {
         BeanDescriptor descriptor = getModelBeanDescriptor();
-        descriptor.getIdProperty().setValue((EntityBean) model, null);
+        EntityBeanIntercept intercept = ((EntityBean) model)._ebean_getIntercept();
+        if (descriptor.hasIdProperty(intercept)) {
+            BeanProperty idProp = descriptor.getIdProperty();
+            idProp.setValue((EntityBean) model, null);
+            intercept.setPropertyUnloaded(idProp.getPropertyIndex());
+        }
+    }
+
+    protected void flushBatch() {
+        Transaction t = server.currentTransaction();
+        if (t != null)
+            t.flushBatch();
     }
 
     /**
@@ -124,7 +137,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      */
     @SuppressWarnings("unchecked")
     public Response insert(@NotNull @Valid final M model) throws Exception {
-        seForInsertId(model);
+        setForInsertId(model);
 
         executeTx(new TxRunnable() {
             @Override
@@ -157,6 +170,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      */
     protected void insertModel(final M model) throws Exception {
         server.insert(model);
+        flushBatch();
     }
 
     /**
@@ -662,6 +676,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      */
     protected void executeTx(TxScope scope, final TxRunnable r, final TxRunnable errorHandler) throws Exception {
         final ScopeTrans scopeTrans = server.createScopeTrans(scope);
+        configureTransDefault();
         processCheckRowCountError(new TxCallable() {
             @Override
             public Object call() throws Exception {
@@ -728,6 +743,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      */
     protected <O> O executeTx(TxScope scope, final TxCallable<O> c, final TxCallable<O> errorHandler) throws Exception {
         final ScopeTrans scopeTrans = server.createScopeTrans(scope);
+        configureTransDefault();
         return processCheckRowCountError(new TxCallable<O>() {
             @Override
             public O call() throws Exception {
@@ -742,6 +758,10 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 }
             }
         }, errorHandler);
+    }
+
+    protected void configureTransDefault() {
+
     }
 
     /**
