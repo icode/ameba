@@ -1,18 +1,24 @@
 package ameba.mvc.assets;
 
+import ameba.core.Application;
 import ameba.message.internal.MediaType;
 import ameba.util.MimeType;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
+import java.net.*;
+import java.util.Date;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * <p>AssetsResource class.</p>
@@ -24,38 +30,214 @@ import java.net.URI;
 @Singleton
 public class AssetsResource {
 
+    @Inject
+    private Application application;
+
+    private static void closeJarFileIfNeeded(final JarURLConnection jarConnection,
+                                             final JarFile jarFile) throws IOException {
+        if (!jarConnection.getUseCaches()) {
+            jarFile.close();
+        }
+    }
+
+    private static EntityTag computeEntityTag(final File file) {
+
+        final StringBuilder sb = new StringBuilder();
+        final long fileLength = file.length();
+        final long lastModified = file.lastModified();
+        if ((fileLength >= 0) || (lastModified >= 0)) {
+            sb.append(fileLength).append('-').
+                    append(lastModified);
+            return new EntityTag(sb.toString());
+        }
+        return null;
+    }
+
     /**
      * <p>getResource.</p>
      *
-     * @param file    a {@link java.lang.String} object.
-     * @param uriInfo a {@link javax.ws.rs.core.UriInfo} object.
+     * @param fileName a {@link java.lang.String} object.
+     * @param uriInfo  a {@link javax.ws.rs.core.UriInfo} object.
      * @return a {@link javax.ws.rs.core.Response} object.
      */
     @GET
     @Path("{file:.*}")
-    public Response getResource(@PathParam("file") String file, @Context UriInfo uriInfo) {
+    public Response getResource(@PathParam("file") String fileName,
+                                @Context Request request,
+                                @Context UriInfo uriInfo) throws URISyntaxException, IOException {
 
-        InputStream in = AssetsFeature.findAsset(uriInfo.getPath().replace(file, ""), file);
+        String mapName = uriInfo.getPath().replace(fileName, "");
 
-        if (in == null)
-            throw new NotFoundException();
+        URL url = AssetsFeature.lookupAsset(mapName, fileName);
 
-        Response.ResponseBuilder builder = Response.ok(in);
+        URLConnection urlConnection = null;
+        File fileResource = null;
+        String filePath = null;
+        boolean found = false;
+        InputStream urlInputStream = null;
 
-        String path = URI.create(file).getPath();
+        if (url != null) {
+            // url may point to a folder or a file
+            if ("file".equals(url.getProtocol())) {
+                final File file = new File(url.toURI());
 
-        int dot = path.lastIndexOf('.');
+                if (file.exists()) {
+                    if (file.isDirectory()) {
+                        final File welcomeFile = new File(file, "/index.html");
+                        if (welcomeFile.exists() && welcomeFile.isFile()) {
+                            fileResource = welcomeFile;
+                            filePath = welcomeFile.getPath();
+                            found = true;
+                        }
+                    } else {
+                        fileResource = file;
+                        filePath = file.getPath();
+                        found = true;
+                    }
+                }
+            } else {
+                if ("jar".equals(url.getProtocol())) {
+                    urlConnection = url.openConnection();
+                    final JarURLConnection jarUrlConnection = (JarURLConnection) urlConnection;
+                    JarEntry jarEntry = jarUrlConnection.getJarEntry();
+                    final JarFile jarFile = jarUrlConnection.getJarFile();
+                    // check if this is not a folder
+                    // we can't rely on jarEntry.isDirectory() because of http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6233323
+                    InputStream is = null;
 
-        if (dot > 0) {
-            String ext = path.substring(dot + 1);
-            String ct = MimeType.get(ext, MediaType.APPLICATION_OCTET_STREAM);
-            if (ct != null) {
-                builder.type(ct);
+                    if (jarEntry.isDirectory() ||
+                            (is = jarFile.getInputStream(jarEntry)) == null) { // it's probably a folder
+                        final String welcomeResource =
+                                jarEntry.getName().endsWith("/") ?
+                                        jarEntry.getName() + "index.html" :
+                                        jarEntry.getName() + "/index.html";
+
+                        jarEntry = jarFile.getJarEntry(welcomeResource);
+                        if (jarEntry != null) {
+                            is = jarFile.getInputStream(jarEntry);
+                        }
+                    }
+
+                    if (is != null) {
+                        urlInputStream = new JarURLInputStream(jarUrlConnection,
+                                jarFile, is);
+
+                        filePath = jarEntry.getName();
+                        found = true;
+                    } else {
+                        closeJarFileIfNeeded(jarUrlConnection, jarFile);
+                    }
+                }
             }
-        } else {
-            builder.type(MimeType.get("html"));
+        }
+
+        if (!found) {
+            throw new NotFoundException();
+        }
+
+        File file = fileResource;
+
+        Response.ResponseBuilder builder = null;
+
+        if (file == null) {
+            // if it's not a jar file - we don't know what to do with that
+            // so not adding it to the file cache
+            if (isFileCacheEnabled() && "jar".equals(url.getProtocol())) {
+                file = getJarFile(
+                        // we need that because url.getPath() may have url encoded symbols,
+                        // which are getting decoded when calling uri.getPath()
+                        new URI(url.getPath()).getPath()
+                );
+            }
+        }
+
+        if (file == null) {
+            throw new NotFoundException();
+        }
+
+        EntityTag eTag = null;
+        Date lastModified = null;
+        if (isFileCacheEnabled()) {
+
+            eTag = computeEntityTag(file);
+            lastModified = new Date(file.lastModified());
+
+            builder = request.evaluatePreconditions(
+                    lastModified, eTag);
+        }
+
+        // the resoruce's information was modified, return it
+        if (builder == null) {
+            builder = Response.ok();
+
+            if (fileResource != null) {
+                builder.entity(fileResource);
+            } else {
+                builder.entity(
+                        urlInputStream != null ?
+                                urlInputStream :
+                                urlConnection.getInputStream());
+            }
+
+            if (isFileCacheEnabled()) {
+                builder.tag(eTag).lastModified(lastModified);
+            }
+
+            int dot = filePath.lastIndexOf('.');
+
+            if (dot > 0) {
+                String ext = filePath.substring(dot + 1);
+                String ct = MimeType.get(ext, MediaType.APPLICATION_OCTET_STREAM);
+                if (ct != null) {
+                    builder.type(ct);
+                }
+            } else {
+                builder.type(MimeType.get("html"));
+            }
         }
 
         return builder.build();
+    }
+
+    private boolean isFileCacheEnabled() {
+        return application.getMode().isProd();
+    }
+
+    private File getJarFile(final String path) throws MalformedURLException, FileNotFoundException {
+        final int jarDelimIdx = path.indexOf("!/");
+        if (jarDelimIdx == -1) {
+            throw new MalformedURLException("The jar file delimeter were not found");
+        }
+
+        final File file = new File(path.substring(0, jarDelimIdx));
+
+        if (!file.exists() || !file.isFile()) {
+            throw new FileNotFoundException("The jar file was not found");
+        }
+
+        return file;
+    }
+
+    static class JarURLInputStream extends java.io.FilterInputStream {
+
+        private final JarURLConnection jarConnection;
+        private final JarFile jarFile;
+
+        JarURLInputStream(final JarURLConnection jarConnection,
+                          final JarFile jarFile,
+                          final InputStream src) {
+            super(src);
+            this.jarConnection = jarConnection;
+            this.jarFile = jarFile;
+        }
+
+        @Override
+        public void close() throws IOException {
+            try {
+                super.close();
+            } finally {
+                closeJarFileIfNeeded(jarConnection, jarFile);
+            }
+        }
     }
 }

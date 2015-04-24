@@ -14,7 +14,7 @@ import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
-import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -82,14 +82,14 @@ public class AssetsFeature implements Feature {
     }
 
     /**
-     * <p>findAsset.</p>
+     * <p>lookupAsset.</p>
      *
      * @param name a {@link java.lang.String} object.
      * @param file a {@link java.lang.String} object.
-     * @return a {@link java.io.InputStream} object.
+     * @return a {@link URL} object.
      */
-    public static InputStream findAsset(String name, String file) {
-        InputStream in = null;
+    public static URL lookupAsset(String name, String file) {
+        URL url = null;
 
         if (name.startsWith("/")) {
             name = name.substring(1);
@@ -109,13 +109,13 @@ public class AssetsFeature implements Feature {
                 if (!dir.endsWith("/") && !file.startsWith("/")) {
                     dir = dir + "/";
                 }
-                in = IOUtils.getResourceAsStream(dir + file);
-                if (in != null) {
+                url = IOUtils.getResource(dir + file);
+                if (url != null) {
                     break;
                 }
             }
         }
-        return in;
+        return url;
     }
 
     /**
