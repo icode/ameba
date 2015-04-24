@@ -142,7 +142,7 @@ public class AssetsResource {
         if (file == null) {
             // if it's not a jar file - we don't know what to do with that
             // so not adding it to the file cache
-            if (isFileCacheEnabled() && "jar".equals(url.getProtocol())) {
+            if ("jar".equals(url.getProtocol())) {
                 file = getJarFile(
                         // we need that because url.getPath() may have url encoded symbols,
                         // which are getting decoded when calling uri.getPath()
