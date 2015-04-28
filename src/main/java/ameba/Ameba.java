@@ -97,13 +97,7 @@ public class Ameba {
 
         List<String> list = Lists.newArrayList();
 
-        list.add(Application.DEFAULT_APP_CONF);
-
         String idCommand = "--#";
-        String[] conf = Application.DEFAULT_APP_CONF.split("\\.");
-        String idPrefix = conf[0];
-        String idSuffix = "." + conf[1];
-
 
         int idArgLen = idCommand.length();
 
@@ -111,7 +105,7 @@ public class Ameba {
             if (arg.startsWith(idCommand)) {
                 String idConf = arg.substring(idArgLen);
                 if (StringUtils.isNotBlank(idConf)) {
-                    list.add(idPrefix + "_" + idConf + idSuffix);
+                    list.add(idConf);
                 }
             }
         }
@@ -147,11 +141,11 @@ public class Ameba {
     /**
      * <p>bootstrap.</p>
      *
-     * @param conf a {@link java.lang.String} object.
+     * @param ids a {@link java.lang.String} object.
      * @throws java.lang.Exception if any.
      */
-    public static void bootstrap(String... conf) throws Exception {
-        bootstrap(new Application(conf));
+    public static void bootstrap(String... ids) throws Exception {
+        bootstrap(new Application(ids));
     }
 
     /**

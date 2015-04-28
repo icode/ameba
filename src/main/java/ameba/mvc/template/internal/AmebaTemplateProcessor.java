@@ -30,19 +30,18 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
+import javax.inject.Provider;
 
 /**
  * <p>Abstract AmebaTemplateProcessor class.</p>
  *
  * @author icode
  */
-@Provider
 @Singleton
 public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> {
     private static Logger logger = LoggerFactory.getLogger(AmebaTemplateProcessor.class);
@@ -59,7 +58,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
     private MessageBodyWriter<Viewable> viewableMessageBodyWriter;
     private ErrorPageGenerator errorPageGenerator;
     @Inject
-    private javax.inject.Provider<ContainerRequest> request;
+    private Provider<ContainerRequest> request;
 
     /**
      * <p>Constructor for AmebaTemplateProcessor.</p>

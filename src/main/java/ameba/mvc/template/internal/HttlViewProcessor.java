@@ -19,7 +19,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.Provider;
+import javax.inject.Provider;
 import java.io.*;
 import java.text.ParseException;
 import java.util.HashMap;
@@ -33,7 +33,6 @@ import java.util.Properties;
  * @author ICode
  * @since 13-8-6 下午7:57
  */
-@Provider
 @Singleton
 public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
 
@@ -46,7 +45,7 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
     private static String REQ_TPL_PATH_KEY = HttlViewProcessor.class.getName() + ".template.path";
     private static Logger logger = LoggerFactory.getLogger(HttlViewProcessor.class);
     @Inject
-    private javax.inject.Provider<ContainerRequest> request;
+    private Provider<ContainerRequest> request;
 
     /**
      * <p>Constructor for HttlViewProcessor.</p>
@@ -72,8 +71,9 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
         if (!ArrayUtils.contains(extensions, "httl") && !ArrayUtils.contains(extensions, ".httl")) {
             extensions = ArrayUtils.add(extensions, "httl");
         }
-        if (!ArrayUtils.contains(extensions, "httl.httl") && !ArrayUtils.contains(extensions, ".httl.httl")) {
-            extensions = ArrayUtils.add(extensions, ".httl.httl");
+        if (!ArrayUtils.contains(extensions, "httl.html")
+                && !ArrayUtils.contains(extensions, ".httl.html")) {
+            extensions = ArrayUtils.add(extensions, ".httl.html");
         }
         return extensions;
     }
@@ -189,7 +189,8 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
             }};
         }
         if (httpHeaders != null)
-            setContentType(mediaType.equals(MediaType.WILDCARD_TYPE) ? MediaType.TEXT_HTML_TYPE : mediaType, httpHeaders);
+            setContentType(mediaType.equals(MediaType.WILDCARD_TYPE)
+                    ? MediaType.TEXT_HTML_TYPE : mediaType, httpHeaders);
         template.render(model, outputStream);
     }
 
@@ -212,7 +213,9 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
             for (String key : map.keySet()) {
                 if (key.startsWith(TEMPLATE_CONF_PREFIX)) {
                     String name;
-                    if (key.equals("template.suffix") || key.equals("template.directory") || key.equals("template.parser")) {
+                    if (key.equals("template.suffix")
+                            || key.equals("template.directory")
+                            || key.equals("template.parser")) {
                         name = key;
                     } else {
                         name = key.substring(TEMPLATE_CONF_PREFIX.length());

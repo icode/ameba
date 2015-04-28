@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.Provider;
+import javax.inject.Provider;
 import java.util.Set;
 
 /**
@@ -20,12 +20,11 @@ import java.util.Set;
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-27
  */
-@Provider
 @Singleton
 public class NotFoundForward implements ExtendedExceptionMapper<NotFoundException> {
 
     @Inject
-    private javax.inject.Provider<UriInfo> uriInfo;
+    private Provider<UriInfo> uriInfo;
     @Inject
     private ServiceLocator serviceLocator;
     private ThreadLocal<String> templatePath = new ThreadLocal<String>();

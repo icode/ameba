@@ -82,6 +82,7 @@ public class Application {
     private static final String REGISTER_CONF_PREFIX = "app.register.";
     private static final String ADDON_CONF_PREFIX = "app.addon.";
     private static final String JERSEY_CONF_NAME_PREFIX = "app.sys.core.";
+    private static final String DEFAULT_LOGBACK_CONF = "log.groovy";
     private static final String SCAN_CLASSES_CACHE_FILE = IOUtils.getResource("/").getPath() + "conf/classes.list";
     private static InitializationLogger logger;
     private static String INFO_SPLITOR = "---------------------------------------------------";
@@ -97,28 +98,39 @@ public class Application {
     private Set<AddOn> addOns;
     private ResourceConfig config;
     private Set<String> scanPkgs;
-
-    /**
-     * <p>Constructor for Application.</p>
-     */
-    public Application() {
-        this(DEFAULT_APP_CONF);
-    }
+    private String[] ids;
 
     /**
      * <p>Constructor for Application.</p>
      *
-     * @param confFile a {@link java.lang.String} object.
+     * @param ids a {@link java.lang.String} object.
      */
-    public Application(String... confFile) {
+    public Application(String... ids) {
 
         if (Ameba.getApp() != null) {
             throw new AmebaException("已经存在一个应用实例");
         }
 
+        this.ids = ids;
         logger = new InitializationLogger(Application.class, this);
 
-        configFiles = confFile;
+        Set<String> configFiles = Sets.newLinkedHashSet();
+        configFiles.add(DEFAULT_APP_CONF);
+
+        if (ids != null && ids.length > 0) {
+            String[] conf = DEFAULT_APP_CONF.split("\\.");
+            String idPrefix = conf[0];
+            String idSuffix = "." + conf[1];
+
+            for (String id : ids) {
+                if (StringUtils.isNotBlank(id)) {
+                    String confFile = idPrefix + "_" + id + idSuffix;
+                    configFiles.add(confFile);
+                }
+            }
+        }
+
+        this.configFiles = configFiles.toArray(new String[configFiles.size()]);
 
         configure();
     }
@@ -127,6 +139,7 @@ public class Application {
         configure();
     }
 
+    @SuppressWarnings("unchecked")
     private void configure() {
 
         config = new ResourceConfig();
@@ -270,8 +283,6 @@ public class Application {
                 out = FileUtils.openOutputStream(cacheFile);
 
                 IOUtils.writeLines(acceptClasses, null, out);
-            } catch (FileNotFoundException e) {
-                logger.error("write class cache file error", e);
             } catch (IOException e) {
                 logger.error("write class cache file error", e);
             } finally {
@@ -421,9 +432,7 @@ public class Application {
                 }
             } catch (ClassNotFoundException e) {
                 throw new ConfigErrorException("插件 " + entry.name + " 未找到,在鍵 " + entry.key + " 配置项。");
-            } catch (InstantiationException e) {
-                throw new ConfigErrorException("插件 " + entry.name + " 无法初始化,在鍵 " + entry.key + " 配置项。");
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 throw new ConfigErrorException("插件 " + entry.name + " 无法初始化,在鍵 " + entry.key + " 配置项。");
             } catch (Exception e) {
                 logger.error("插件 " + entry.name + " 出错,在鍵 " + entry.key + " 配置项。", e);
@@ -1347,22 +1356,42 @@ public class Application {
      */
     private void configureLogger(Properties properties) {
         //set logback config file
-        URL loggerConfigFile = getResource(StringUtils.defaultIfBlank(properties.getProperty("logger.config.file"), "conf/logback.groovy"));
+        URL loggerConfigFile = getResource("conf/logback_" + getMode().name().toLowerCase() + ".groovy");
 
-        if (loggerConfigFile == null) {
-            loggerConfigFile = getResource("conf/logback-" + getMode().name().toLowerCase() + ".groovy");
-        }
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        context.reset();
+        context.putProperty("appName", getApplicationName());
+        String appPackage = properties.getProperty("app.package");
+        context.putProperty("appPackage", appPackage);
+        String traceEnabled = properties.getProperty("ameba.trace.enabled");
+        context.putProperty("ameba.trace.enabled", traceEnabled);
 
         if (loggerConfigFile != null) {
-            LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-            context.reset();
-            context.putProperty("appName", getApplicationName());
-            String appPackage = properties.getProperty("app.package");
-            context.putProperty("appPackage", appPackage);
-            String traceEnabled = properties.getProperty("ameba.trace.enabled");
-            context.putProperty("ameba.trace.enabled", traceEnabled);
             GafferUtil.runGafferConfiguratorOn(context, this, loggerConfigFile);
         }
+
+        String confDir = "conf/log/";
+
+        URL userLoggerConfigFile = getResource(StringUtils.defaultIfBlank(
+                properties.getProperty("logger.config.file"), "conf/" + DEFAULT_LOGBACK_CONF));
+
+        if (userLoggerConfigFile != null) {
+            GafferUtil.runGafferConfiguratorOn(context, this, userLoggerConfigFile);
+        }
+
+        if (ids != null && ids.length > 0) {
+
+            String[] logConf = DEFAULT_LOGBACK_CONF.split("\\.");
+            String logConfPrefix = logConf[0];
+            String logConfSuffix = "." + logConf[1];
+
+            for (String id : ids) {
+                URL configFile = getResource(confDir + logConfPrefix + "_" + id + logConfSuffix);
+                if (configFile != null)
+                    GafferUtil.runGafferConfiguratorOn(context, this, configFile);
+            }
+        }
+
 
         //java.util.logging.Logger proxy
         java.util.logging.Logger rootLogger = LogManager.getLogManager().getLogger("");
