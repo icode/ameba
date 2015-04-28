@@ -11,13 +11,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.mvc.Viewable;
-import org.jvnet.hk2.annotations.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.servlet.ServletContext;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -54,11 +52,10 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
      * <p>Constructor for HttlViewProcessor.</p>
      *
      * @param config a {@link javax.ws.rs.core.Configuration} object.
-     * @param servletContext a {@link javax.servlet.ServletContext} object.
      */
     @Inject
-    public HttlViewProcessor(Configuration config, @Optional ServletContext servletContext) {
-        super(config, servletContext, CONFIG_SUFFIX, getExtends(config));
+    public HttlViewProcessor(Configuration config) {
+        super(config, CONFIG_SUFFIX, getExtends(config));
     }
 
     static String[] getExtends(Configuration config) {
@@ -67,7 +64,7 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
         extension = StringUtils.deleteWhitespace(extension);
 
         if (StringUtils.isEmpty(extension)) {
-            return new String[]{".httl"};
+            return new String[]{".httl.html", ".httl"};
         } else {
             extension = extension.toLowerCase();
         }
@@ -75,10 +72,15 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
         if (!ArrayUtils.contains(extensions, "httl") && !ArrayUtils.contains(extensions, ".httl")) {
             extensions = ArrayUtils.add(extensions, "httl");
         }
+        if (!ArrayUtils.contains(extensions, "httl.httl") && !ArrayUtils.contains(extensions, ".httl.httl")) {
+            extensions = ArrayUtils.add(extensions, ".httl.httl");
+        }
         return extensions;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected TemplateException createException(Exception e, Template template) {
         TemplateException ecx;
@@ -121,7 +123,9 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
         return ecx;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected Template resolve(String templatePath, Reader reader) throws Exception {
         Template template = null;
@@ -172,7 +176,9 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
         return engine.parseTemplate(content);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeTemplate(Template template, final Viewable viewable, MediaType mediaType,
                               MultivaluedMap<String, Object> httpHeaders, OutputStream outputStream) throws Exception {

@@ -193,6 +193,10 @@
                     <artifactId>javax.ws.rs-api</artifactId>
                     <groupId>javax.ws.rs</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>servlet-api</artifactId>
+                    <groupId>javax.servlet</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!-- bean validation -->

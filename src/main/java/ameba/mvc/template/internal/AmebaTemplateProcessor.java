@@ -8,6 +8,7 @@ import ameba.util.IOUtils;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
@@ -27,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.servlet.ServletContext;
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
@@ -49,19 +49,8 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
     private final ConcurrentMap<String, T> cache;
     private final String suffix;
     private final Configuration config;
-    private final ServletContext servletContext;
     private final String[] basePath;
     private final Charset encoding;
-    /**
-     * Create an instance of the processor with injected {@link javax.ws.rs.core.Configuration config} and
-     * (optional) {@link javax.servlet.ServletContext servlet context}.
-     *
-     * @param config              configuration to configure this processor from.
-     * @param servletContext      (optional) servlet context to obtain template resources from.
-     * @param propertySuffix      suffix to distinguish properties for current template processor.
-     * @param supportedExtensions supported template file extensions.
-     */
-
     Set<String> supportedExtensions;
     @Context
     private MessageBodyWorkers workers;
@@ -76,15 +65,13 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
      * <p>Constructor for AmebaTemplateProcessor.</p>
      *
      * @param config              a {@link javax.ws.rs.core.Configuration} object.
-     * @param servletContext      a {@link javax.servlet.ServletContext} object.
      * @param propertySuffix      a {@link java.lang.String} object.
      * @param supportedExtensions a {@link java.lang.String} object.
      */
-    public AmebaTemplateProcessor(Configuration config, ServletContext servletContext, String propertySuffix, String... supportedExtensions) {
+    public AmebaTemplateProcessor(Configuration config, String propertySuffix, String... supportedExtensions) {
         this.config = config;
         this.suffix = '.' + propertySuffix;
-        this.servletContext = servletContext;
-        Map properties = config.getProperties();
+        Map<String, Object> properties = config.getProperties();
         String basePath = PropertiesHelper.getValue(properties, MvcFeature.TEMPLATE_BASE_PATH + this.suffix, String.class, null);
         if (basePath == null) {
             basePath = PropertiesHelper.getValue(properties, MvcFeature.TEMPLATE_BASE_PATH, "", null);
@@ -125,16 +112,6 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
      */
     protected String[] getBasePath() {
         return this.basePath;
-    }
-
-    /**
-     * <p>Getter for the field <code>servletContext</code>.</p>
-     *
-     * @return a {@link javax.servlet.ServletContext} object.
-     * @since 0.1.6e
-     */
-    protected ServletContext getServletContext() {
-        return this.servletContext;
     }
 
     /**
@@ -204,9 +181,9 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
      * <p>getTemplateObjectFactory.</p>
      *
      * @param serviceLocator a {@link org.glassfish.hk2.api.ServiceLocator} object.
-     * @param type a {@link java.lang.Class} object.
-     * @param defaultValue a {@link org.glassfish.jersey.internal.util.collection.Value} object.
-     * @param <F> a F object.
+     * @param type           a {@link java.lang.Class} object.
+     * @param defaultValue   a {@link org.glassfish.jersey.internal.util.collection.Value} object.
+     * @param <F>            a F object.
      * @return a F object.
      */
     protected <F> F getTemplateObjectFactory(ServiceLocator serviceLocator, Class<F> type, Value<F> defaultValue) {
@@ -238,7 +215,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
     /**
      * <p>setContentType.</p>
      *
-     * @param mediaType a {@link javax.ws.rs.core.MediaType} object.
+     * @param mediaType   a {@link javax.ws.rs.core.MediaType} object.
      * @param httpHeaders a {@link javax.ws.rs.core.MultivaluedMap} object.
      * @return a {@link java.nio.charset.Charset} object.
      * @since 0.1.6e
@@ -249,7 +226,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         MediaType finalMediaType;
         if (charset == null) {
             encoding = this.getEncoding();
-            HashMap typeList = new HashMap(mediaType.getParameters());
+            HashMap<String, String> typeList = Maps.newHashMap(mediaType.getParameters());
             typeList.put("charset", encoding.name());
             finalMediaType = new MediaType(mediaType.getType(), mediaType.getSubtype(), typeList);
         } else {
@@ -257,9 +234,9 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
             finalMediaType = mediaType;
         }
 
-        ArrayList typeList1 = new ArrayList(1);
-        typeList1.add(finalMediaType.toString());
-        httpHeaders.put("Content-Type", typeList1);
+        List<Object> typeList = Lists.newArrayListWithCapacity(1);
+        typeList.add(finalMediaType.toString());
+        httpHeaders.put("Content-Type", typeList);
         return encoding;
     }
 
@@ -276,62 +253,54 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
     private T resolve(String name) {
         Iterator var2 = this.getTemplatePaths(name).iterator();
 
-        while (true) {
-            String template;
-            InputStreamReader reader;
-            do {
-                if (!var2.hasNext()) {
-                    return null;
-                }
-
-                template = (String) var2.next();
-                reader = null;
-                InputStream e;
-                if (this.servletContext != null) {
-                    e = this.servletContext.getResourceAsStream(template);
-                    reader = e != null ? new InputStreamReader(e) : null;
-                }
-
-                if (reader == null) {
-                    e = this.getClass().getResourceAsStream(template);
-                    if (e == null) {
-                        e = this.getClass().getClassLoader().getResourceAsStream(template);
-                    }
-
-                    reader = e != null ? new InputStreamReader(e) : null;
-                }
-
-                if (reader == null) {
-                    try {
-                        reader = new InputStreamReader(new FileInputStream(template), this.encoding);
-                    } catch (FileNotFoundException var16) {
-                        //no op
-                    }
-                }
-            } while (reader == null);
-
-            try {
-                return this.resolve(template, reader);
-            } catch (Exception e) {
-                logger.warn(LocalizationMessages.TEMPLATE_RESOLVE_ERROR(template), e);
-                RuntimeException r;
-                try {
-                    r = createException(e, null);
-                } catch (Exception ex) {
-                    if (ex instanceof AmebaException) {
-                        r = (RuntimeException) ex;
-                    } else {
-                        r = new TemplateException("create resolve Exception error", ex, -1);
-                    }
-                }
-                throw r;
-            } finally {
-                IOUtils.closeQuietly(reader);
+        String template;
+        InputStreamReader reader;
+        do {
+            if (!var2.hasNext()) {
+                return null;
             }
+
+            template = (String) var2.next();
+            InputStream e;
+            e = Thread.currentThread().getStackTrace()[0].getClass().getResourceAsStream(template);
+            if (e == null) {
+                e = IOUtils.getResourceAsStream(template);
+            }
+
+            reader = e != null ? new InputStreamReader(e) : null;
+
+            if (reader == null) {
+                try {
+                    reader = new InputStreamReader(new FileInputStream(template), this.encoding);
+                } catch (FileNotFoundException var16) {
+                    //no op
+                }
+            }
+        } while (reader == null);
+
+        try {
+            return this.resolve(template, reader);
+        } catch (Exception e) {
+            logger.warn(LocalizationMessages.TEMPLATE_RESOLVE_ERROR(template), e);
+            RuntimeException r;
+            try {
+                r = createException(e, null);
+            } catch (Exception ex) {
+                if (ex instanceof AmebaException) {
+                    r = (RuntimeException) ex;
+                } else {
+                    r = new TemplateException("create resolve Exception error", ex, -1);
+                }
+            }
+            throw r;
+        } finally {
+            IOUtils.closeQuietly(reader);
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public T resolve(String name, MediaType mediaType) {
         if (this.cache != null) {
@@ -348,7 +317,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
     /**
      * <p>createException.</p>
      *
-     * @param e a {@link java.lang.Exception} object.
+     * @param e        a {@link java.lang.Exception} object.
      * @param template a T object.
      * @return a {@link ameba.mvc.template.TemplateException} object.
      */
@@ -358,13 +327,15 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
      * <p>resolve.</p>
      *
      * @param templatePath a {@link java.lang.String} object.
-     * @param reader a {@link java.io.Reader} object.
+     * @param reader       a {@link java.io.Reader} object.
      * @return a T object.
      * @throws java.lang.Exception if any.
      */
     protected abstract T resolve(String templatePath, Reader reader) throws Exception;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeTo(T templateReference, Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException {
         try {
@@ -405,10 +376,10 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
      * <p>writeTemplate.</p>
      *
      * @param templateReference a T object.
-     * @param viewable a {@link org.glassfish.jersey.server.mvc.Viewable} object.
-     * @param mediaType a {@link javax.ws.rs.core.MediaType} object.
-     * @param httpHeaders a {@link javax.ws.rs.core.MultivaluedMap} object.
-     * @param out a {@link java.io.OutputStream} object.
+     * @param viewable          a {@link org.glassfish.jersey.server.mvc.Viewable} object.
+     * @param mediaType         a {@link javax.ws.rs.core.MediaType} object.
+     * @param httpHeaders       a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param out               a {@link java.io.OutputStream} object.
      * @throws java.lang.Exception if any.
      */
     public abstract void writeTemplate(T templateReference, Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws Exception;
