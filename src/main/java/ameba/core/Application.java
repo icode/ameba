@@ -1370,8 +1370,6 @@ public class Application {
             GafferUtil.runGafferConfiguratorOn(context, this, loggerConfigFile);
         }
 
-        String confDir = "conf/log/";
-
         URL userLoggerConfigFile = getResource(StringUtils.defaultIfBlank(
                 properties.getProperty("logger.config.file"), "conf/" + DEFAULT_LOGBACK_CONF));
 
@@ -1381,6 +1379,7 @@ public class Application {
 
         if (ids != null && ids.length > 0) {
 
+            String confDir = "conf/log/";
             String[] logConf = DEFAULT_LOGBACK_CONF.split("\\.");
             String logConfPrefix = logConf[0];
             String logConfSuffix = "." + logConf[1];
