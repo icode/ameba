@@ -12,6 +12,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.internal.util.collection.Ref;
@@ -93,9 +94,9 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param id id object
      * @return id string
      * @see #insert(Model)
-     * @see #patch(Object, Model)
+     * @see #patch(String, Model)
      * @see #insert(Model)
-     * @see #patch(Object, Model)
+     * @see #patch(String, Model)
      */
     protected String idToString(@NotNull ID id) {
         return id.toString();
@@ -196,14 +197,15 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see {@link javax.ws.rs.PUT}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#replace(Object, Model)}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#replace(String, Model)}
      * @see {@link javax.ws.rs.PUT}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#replace(Object, Model)}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#replace(String, Model)}
      */
-    public Response replace(@PathParam("id") final ID id, @NotNull @Valid final M model) throws Exception {
+    public Response replace(@PathParam("id") final String id, @NotNull @Valid final M model) throws Exception {
 
         BeanDescriptor descriptor = getModelBeanDescriptor();
-        descriptor.convertSetId(id, (EntityBean) model);
+        final ID mId = stringToId(id);
+        descriptor.convertSetId(mId, (EntityBean) model);
         EbeanUtils.forceUpdateAllProperties(server, model);
 
         final Response.ResponseBuilder builder = Response.noContent();
@@ -221,7 +223,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 preInsertModel(model);
                 insertModel(model);
                 postInsertModel(model);
-                builder.status(Response.Status.CREATED).location(buildLocationUri(id, true));
+                builder.status(Response.Status.CREATED).location(buildLocationUri(mId, true));
             }
         });
         return builder.build();
@@ -269,13 +271,13 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see {@link ameba.core.ws.rs.PATCH}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#patch(Object, Model)}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#patch(String, Model)}
      * @see {@link ameba.core.ws.rs.PATCH}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#patch(Object, Model)}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#patch(String, Model)}
      */
-    public Response patch(@PathParam("id") final ID id, @NotNull final M model) throws Exception {
+    public Response patch(@PathParam("id") final String id, @NotNull final M model) throws Exception {
         BeanDescriptor descriptor = getModelBeanDescriptor();
-        descriptor.convertSetId(id, (EntityBean) model);
+        descriptor.convertSetId(stringToId(id), (EntityBean) model);
         final Response.ResponseBuilder builder = Response.noContent()
                 .contentLocation(uriInfo.getAbsolutePath());
         return executeTx(new TxCallable<Response>() {
@@ -452,30 +454,57 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     }
 
     /**
-     * Find a model given its Id.
+     * Find a model or model list given its Ids.
      *
-     * @param id the id of the model.
+     * @param ids the id of the model.
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see {@link javax.ws.rs.GET}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#findById}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#findByIds}
      * @see {@link javax.ws.rs.GET}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#findById}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#findByIds}
      */
-    public Response findById(@NotNull @PathParam("id") final ID id) throws Exception {
+    public Response findByIds(@NotNull @PathParam("ids") final PathSegment ids) throws Exception {
         final Query<M> query = server.find(modelType);
-
-        Object model = executeTx(new TxCallable<Object>() {
+        final ID firstId = stringToId(ids.getPath());
+        Set<String> idSet = ids.getMatrixParameters().keySet();
+        Object model;
+        final TxRunnable configureQuery = new TxRunnable() {
             @Override
-            public Object call() throws Exception {
+            public void run() throws Exception {
                 configDefaultQuery(query);
-                configFindByIdQuery(query);
+                configFindByIdsQuery(query);
                 applyUriQuery(query, false);
-                M m = query.setId(id).findUnique();
-
-                return processFoundModel(m);
             }
-        });
+        };
+        if (!idSet.isEmpty()) {
+            final List<ID> idCollection = Lists.newArrayList();
+            idCollection.add(firstId);
+            idCollection.addAll(Collections2.transform(idSet, new Function<String, ID>() {
+                @Nullable
+                @Override
+                public ID apply(String input) {
+                    return stringToId(input);
+                }
+            }));
+            model = executeTx(new TxCallable() {
+                @Override
+                public Object call() throws Exception {
+                    configureQuery.run();
+                    List<M> m = query.where().idIn(idCollection).findList();
+                    return processFoundByIdsModelList(m);
+                }
+            });
+        } else {
+            model = executeTx(new TxCallable<Object>() {
+                @Override
+                public Object call() throws Exception {
+                    configureQuery.run();
+                    M m = query.setId(firstId).findUnique();
+                    return processFoundByIdModel(m);
+                }
+            });
+        }
 
         if (model != null)
             return Response.ok(model).build();
@@ -484,7 +513,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     }
 
     /**
-     * Configure the "Find By Id" query.
+     * Configure the "Find By Ids" query.
      * <p>
      * This is only used when no PathProperties where set via UriOptions.
      * </p>
@@ -495,7 +524,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param query a {@link com.avaje.ebean.Query} object.
      * @throws java.lang.Exception if any.
      */
-    protected void configFindByIdQuery(final Query<M> query) throws Exception {
+    protected void configFindByIdsQuery(final Query<M> query) throws Exception {
 
     }
 
@@ -506,8 +535,12 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link java.lang.Object} object.
      * @throws java.lang.Exception if any.
      */
-    protected Object processFoundModel(final M model) throws Exception {
+    protected Object processFoundByIdModel(final M model) throws Exception {
         return model;
+    }
+
+    protected Object processFoundByIdsModelList(final List<M> models) throws Exception {
+        return models;
     }
 
     /**

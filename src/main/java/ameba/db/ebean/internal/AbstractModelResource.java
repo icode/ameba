@@ -65,7 +65,7 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
      */
     @PUT
     @Path("{id}")
-    public final Response replace(@PathParam("id") final ID id, @NotNull @Valid final M model) throws Exception {
+    public final Response replace(@PathParam("id") final String id, @NotNull @Valid final M model) throws Exception {
         return super.replace(id, model);
     }
 
@@ -83,7 +83,7 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
      */
     @PATCH
     @Path("{id}")
-    public final Response patch(@PathParam("id") final ID id, @NotNull final M model) throws Exception {
+    public final Response patch(@PathParam("id") final String id, @NotNull final M model) throws Exception {
         return super.patch(id, model);
     }
 
@@ -105,16 +105,16 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
     }
 
     /**
-     * Find a model given its Id.
+     * Find a model or model list given its Ids.
      *
-     * @param id the id of the model.
+     * @param ids the id of the model.
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      */
     @GET
-    @Path("{id}")
-    public final Response findById(@NotNull @PathParam("id") final ID id) throws Exception {
-        return super.findById(id);
+    @Path("{ids}")
+    public final Response findByIds(@NotNull @PathParam("ids") final PathSegment ids) throws Exception {
+        return super.findByIds(ids);
     }
 
     /**
