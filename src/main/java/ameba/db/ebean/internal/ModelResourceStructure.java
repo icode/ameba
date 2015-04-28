@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import javax.persistence.OptimisticLockException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.*;
@@ -77,7 +78,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     }
 
     /**
-     * convert string to id for delete deleteMultiple
+     * convert string to id
      *
      * @param id id string
      * @return ID object
@@ -86,6 +87,21 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     @SuppressWarnings("unchecked")
     protected ID stringToId(String id) {
         return (ID) getModelBeanDescriptor().convertId(id);
+    }
+
+    /**
+     * convert string to id
+     *
+     * @param id string id
+     * @return ID
+     * @throws BadRequestException response status 400
+     */
+    protected final ID tryConvertId(String id) {
+        try {
+            return stringToId(id);
+        } catch (Exception e) {
+            throw new BadRequestException("Id syntax error", e);
+        }
     }
 
     /**
@@ -204,7 +220,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     public Response replace(@PathParam("id") final String id, @NotNull @Valid final M model) throws Exception {
 
         BeanDescriptor descriptor = getModelBeanDescriptor();
-        final ID mId = stringToId(id);
+        final ID mId = tryConvertId(id);
         descriptor.convertSetId(mId, (EntityBean) model);
         EbeanUtils.forceUpdateAllProperties(server, model);
 
@@ -277,7 +293,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      */
     public Response patch(@PathParam("id") final String id, @NotNull final M model) throws Exception {
         BeanDescriptor descriptor = getModelBeanDescriptor();
-        descriptor.convertSetId(stringToId(id), (EntityBean) model);
+        descriptor.convertSetId(tryConvertId(id), (EntityBean) model);
         final Response.ResponseBuilder builder = Response.noContent()
                 .contentLocation(uriInfo.getAbsolutePath());
         return executeTx(new TxCallable<Response>() {
@@ -345,7 +361,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @see {@link ameba.db.ebean.internal.AbstractModelResource#deleteMultiple(PathSegment)}
      */
     public Response deleteMultiple(@NotNull @PathParam("ids") final PathSegment ids) throws Exception {
-        final ID firstId = stringToId(ids.getPath());
+        final ID firstId = tryConvertId(ids.getPath());
         Set<String> idSet = ids.getMatrixParameters().keySet();
         final Response.ResponseBuilder builder = Response.noContent();
         final TxRunnable failProcess = new TxRunnable() {
@@ -361,7 +377,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 @Nullable
                 @Override
                 public ID apply(String input) {
-                    return stringToId(input);
+                    return tryConvertId(input);
                 }
             }));
             executeTx(new TxRunnable() {
@@ -466,7 +482,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      */
     public Response findByIds(@NotNull @PathParam("ids") final PathSegment ids) throws Exception {
         final Query<M> query = server.find(modelType);
-        final ID firstId = stringToId(ids.getPath());
+        final ID firstId = tryConvertId(ids.getPath());
         Set<String> idSet = ids.getMatrixParameters().keySet();
         Object model;
         final TxRunnable configureQuery = new TxRunnable() {
@@ -484,7 +500,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 @Nullable
                 @Override
                 public ID apply(String input) {
-                    return stringToId(input);
+                    return tryConvertId(input);
                 }
             }));
             model = executeTx(new TxCallable() {
