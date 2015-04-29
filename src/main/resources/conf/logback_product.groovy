@@ -35,5 +35,4 @@ String appPackage = context.getProperty("appPackage");
 if (appPackage != null)
     logger(appPackage, INFO)
 logger("ameba", INFO)
-logger("ameba.mvc.template.internal.HttlEngine", WARN)
 root(WARN, ["CONSOLE", "FILE"])

@@ -34,7 +34,6 @@ logger("com.avaje.ebeaninternal.server.deploy.BeanDescriptor", isTrace ? TRACE :
 
 logger("httl", WARN)
 logger("ameba", isTrace ? TRACE : DEBUG)
-logger("ameba.mvc.template.internal.HttlEngine", WARN)
 if (appPackage != null)
     logger(appPackage, TRACE)
 root(WARN, ["CONSOLE"])
