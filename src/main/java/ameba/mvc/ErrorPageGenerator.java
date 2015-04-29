@@ -31,23 +31,41 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
      * Constant <code>DEFAULT_ERROR_PAGE_DIR="/error/"</code>
      */
     public static final String DEFAULT_ERROR_PAGE_DIR = "/error/";
-    /** Constant <code>DEFAULT_404_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 404.httl"</code> */
+    /**
+     * Constant <code>DEFAULT_404_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 404.httl"</code>
+     */
     public static final String DEFAULT_404_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "404.httl";
-    /** Constant <code>DEFAULT_5XX_PRODUCT_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 500.httl"</code> */
+    /**
+     * Constant <code>DEFAULT_5XX_PRODUCT_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 500.httl"</code>
+     */
     public static final String DEFAULT_5XX_PRODUCT_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "500.httl";
-    /** Constant <code>DEFAULT_501_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 501.httl"</code> */
+    /**
+     * Constant <code>DEFAULT_501_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 501.httl"</code>
+     */
     public static final String DEFAULT_501_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "501.httl";
-    /** Constant <code>DEFAULT_403_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 403.httl"</code> */
+    /**
+     * Constant <code>DEFAULT_403_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 403.httl"</code>
+     */
     public static final String DEFAULT_403_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "403.httl";
-    /** Constant <code>DEFAULT_400_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 400.httl"</code> */
+    /**
+     * Constant <code>DEFAULT_400_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 400.httl"</code>
+     */
     public static final String DEFAULT_400_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400.httl";
-    /** Constant <code>DEFAULT_405_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 405.httl"</code> */
+    /**
+     * Constant <code>DEFAULT_405_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 405.httl"</code>
+     */
     public static final String DEFAULT_405_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "405.httl";
-    /** Constant <code>DEFAULT_406_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 406.httl"</code> */
+    /**
+     * Constant <code>DEFAULT_406_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 406.httl"</code>
+     */
     public static final String DEFAULT_406_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "406.httl";
-    /** Constant <code>DEFAULT_415_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 415.httl"</code> */
+    /**
+     * Constant <code>DEFAULT_415_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 415.httl"</code>
+     */
     public static final String DEFAULT_415_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "415.httl";
-    /** Constant <code>errorTemplateMap</code> */
+    /**
+     * Constant <code>errorTemplateMap</code>
+     */
     protected static final HashMap<Integer, String> errorTemplateMap = Maps.newHashMap();
     private static final Logger logger = LoggerFactory.getLogger(ErrorPageGenerator.class);
     private static String defaultErrorTemplate;
@@ -109,7 +127,9 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         return status;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Response toResponse(Throwable exception) {
         ContainerRequestContext request = requestProvider.get();

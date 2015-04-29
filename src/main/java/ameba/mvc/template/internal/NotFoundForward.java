@@ -8,10 +8,10 @@ import org.glassfish.jersey.server.mvc.spi.TemplateProcessor;
 import org.glassfish.jersey.spi.ExtendedExceptionMapper;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import javax.inject.Provider;
 import java.util.Set;
 
 /**
@@ -49,7 +49,9 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
         return "/" + uriInfo.get().getPath();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isMappable(NotFoundException exception) {
         String path = getCurrentPath();

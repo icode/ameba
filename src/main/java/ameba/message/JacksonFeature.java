@@ -70,8 +70,8 @@ public class JacksonFeature implements Feature {
                     JacksonUtils.configureMapper(app.getMode().isDev(), xmlMapper);
                     JacksonUtils.configureMapper(app.getMode().isDev(), objectMapper);
 
-                    bind(xmlMapper).to(XmlMapper.class);
-                    bind(objectMapper).to(ObjectMapper.class);
+                    bind(xmlMapper).to(XmlMapper.class).proxy(false);
+                    bind(objectMapper).to(ObjectMapper.class).proxy(false);
                 }
             });
 

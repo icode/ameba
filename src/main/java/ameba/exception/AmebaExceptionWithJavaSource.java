@@ -40,12 +40,12 @@ public abstract class AmebaExceptionWithJavaSource extends AmebaException implem
     /**
      * <p>Constructor for AmebaExceptionWithJavaSource.</p>
      *
-     * @param message a {@link java.lang.String} object.
-     * @param cause a {@link java.lang.Throwable} object.
-     * @param line a {@link java.lang.Integer} object.
+     * @param message    a {@link java.lang.String} object.
+     * @param cause      a {@link java.lang.Throwable} object.
+     * @param line       a {@link java.lang.Integer} object.
      * @param sourceFile an array of {@link java.io.File} objects.
-     * @param source a {@link java.util.List} object.
-     * @param lineIndex a {@link java.lang.Integer} object.
+     * @param source     a {@link java.util.List} object.
+     * @param lineIndex  a {@link java.lang.Integer} object.
      */
     protected AmebaExceptionWithJavaSource(String message, Throwable cause, Integer line, File[] sourceFile, List<String> source, Integer lineIndex) {
         super(message, cause);
@@ -58,42 +58,52 @@ public abstract class AmebaExceptionWithJavaSource extends AmebaException implem
     /**
      * <p>Constructor for AmebaExceptionWithJavaSource.</p>
      *
-     * @param message a {@link java.lang.String} object.
-     * @param cause a {@link java.lang.Throwable} object.
-     * @param line a {@link java.lang.Integer} object.
+     * @param message    a {@link java.lang.String} object.
+     * @param cause      a {@link java.lang.Throwable} object.
+     * @param line       a {@link java.lang.Integer} object.
      * @param sourceFile a {@link java.io.File} object.
-     * @param source a {@link java.util.List} object.
-     * @param lineIndex a {@link java.lang.Integer} object.
+     * @param source     a {@link java.util.List} object.
+     * @param lineIndex  a {@link java.lang.Integer} object.
      */
     protected AmebaExceptionWithJavaSource(String message, Throwable cause, Integer line, File sourceFile, List<String> source, Integer lineIndex) {
         this(message, cause, line, new File[]{sourceFile}, source, lineIndex);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public File getSourceFile() {
         return sourceFile[0];
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public File[] getSourceFiles() {
         return sourceFile;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getSource() {
         return source;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getLineNumber() {
         return line;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getLineIndex() {
         return lineIndex;

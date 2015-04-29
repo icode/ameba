@@ -140,20 +140,24 @@ public class OptionsMethodProcessor implements ModelProcessor {
      * <p>generateRespBuilder.</p>
      *
      * @param extendedUriInfo a {@link org.glassfish.jersey.server.ExtendedUriInfo} object.
-     * @param mediaType a {@link javax.ws.rs.core.MediaType} object.
+     * @param mediaType       a {@link javax.ws.rs.core.MediaType} object.
      * @return a {@link javax.ws.rs.core.Response.ResponseBuilder} object.
      */
     protected static Response.ResponseBuilder generateRespBuilder(ExtendedUriInfo extendedUriInfo, MediaType mediaType) {
         return generateRespBuilder(null, extendedUriInfo, mediaType, null);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ResourceModel processResourceModel(ResourceModel resourceModel, Configuration configuration) {
         return ModelProcessorUtil.enhanceResourceModel(resourceModel, false, methodList, true).build();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
         return ModelProcessorUtil.enhanceResourceModel(subResourceModel, true, methodList, true).build();

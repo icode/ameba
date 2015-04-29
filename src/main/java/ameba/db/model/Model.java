@@ -7,7 +7,6 @@ import javax.persistence.MappedSuperclass;
 import java.io.Serializable;
 
 /**
- *
  * @author sulijuan
  */
 @MappedSuperclass
@@ -29,8 +28,8 @@ public abstract class Model implements Serializable {
      * <p>withFinder.</p>
      *
      * @param server a {@link java.lang.String} object.
-     * @param <ID> a ID object.
-     * @param <T> a T object.
+     * @param <ID>   a ID object.
+     * @param <T>    a T object.
      * @return a {@link ameba.db.model.Finder} object.
      */
     public static <ID, T extends Model> Finder<ID, T> withFinder(String server) {
@@ -45,7 +44,7 @@ public abstract class Model implements Serializable {
      * <p>withFinder.</p>
      *
      * @param <ID> a ID object.
-     * @param <T> a T object.
+     * @param <T>  a T object.
      * @return a {@link ameba.db.model.Finder} object.
      */
     public static <ID, T extends Model> Finder<ID, T> withFinder() {
@@ -56,8 +55,8 @@ public abstract class Model implements Serializable {
      * <p>_getUpdater.</p>
      *
      * @param server a {@link java.lang.String} object.
-     * @param sql a {@link java.lang.String} object.
-     * @param <M> a M object.
+     * @param sql    a {@link java.lang.String} object.
+     * @param <M>    a M object.
      * @return a {@link ameba.db.model.Updater} object.
      * @since 0.1.6e
      */
@@ -69,8 +68,8 @@ public abstract class Model implements Serializable {
      * <p>withUpdater.</p>
      *
      * @param server a {@link java.lang.String} object.
-     * @param sql a {@link java.lang.String} object.
-     * @param <M> a M object.
+     * @param sql    a {@link java.lang.String} object.
+     * @param <M>    a M object.
      * @return a {@link ameba.db.model.Updater} object.
      * @since 0.1.6e
      */
@@ -98,7 +97,7 @@ public abstract class Model implements Serializable {
      * <p>_getPersister.</p>
      *
      * @param server a {@link java.lang.String} object.
-     * @param <M> a M object.
+     * @param <M>    a M object.
      * @return a {@link ameba.db.model.Persister} object.
      */
     protected <M extends Model> Persister<M> _getPersister(String server) {
@@ -109,7 +108,7 @@ public abstract class Model implements Serializable {
      * <p>withPersister.</p>
      *
      * @param server a {@link java.lang.String} object.
-     * @param <M> a M object.
+     * @param <M>    a M object.
      * @return a {@link ameba.db.model.Persister} object.
      */
     public <M extends Model> Persister<M> withPersister(String server) {

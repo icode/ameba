@@ -17,9 +17,13 @@ public class HttpPatchProperties {
      * Constant <code>METHOD_NAME="PATCH"</code>
      */
     public static final String METHOD_NAME = "PATCH";
-    /** Constant <code>ACCEPT_PATCH_HEADER="Accept-Patch"</code> */
+    /**
+     * Constant <code>ACCEPT_PATCH_HEADER="Accept-Patch"</code>
+     */
     public static final String ACCEPT_PATCH_HEADER = "Accept-Patch";
-    /** Constant <code>SUPPORT_PATCH_MEDIA_TYPES</code> */
+    /**
+     * Constant <code>SUPPORT_PATCH_MEDIA_TYPES</code>
+     */
     public static final List<String> SUPPORT_PATCH_MEDIA_TYPES =
             Lists.newArrayList(
                     APPLICATION_JSON_PATCH

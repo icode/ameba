@@ -42,7 +42,9 @@ public class ModelManager extends AddOn {
         return modelMap.get(name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setup(final Application application) {
         Configuration config = application.getConfiguration();

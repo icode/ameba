@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -35,7 +36,6 @@ import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
-import javax.inject.Provider;
 
 /**
  * <p>Abstract AmebaTemplateProcessor class.</p>
@@ -44,6 +44,7 @@ import javax.inject.Provider;
  */
 @Singleton
 public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> {
+    public static final String TEMPLATE_CONF_PREFIX = "template.";
     private static Logger logger = LoggerFactory.getLogger(AmebaTemplateProcessor.class);
     private final ConcurrentMap<String, T> cache;
     private final String suffix;
@@ -71,21 +72,14 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         this.config = config;
         this.suffix = '.' + propertySuffix;
         Map<String, Object> properties = config.getProperties();
-        String basePath = PropertiesHelper.getValue(properties, MvcFeature.TEMPLATE_BASE_PATH + this.suffix, String.class, null);
-        if (basePath == null) {
-            basePath = PropertiesHelper.getValue(properties, MvcFeature.TEMPLATE_BASE_PATH, "", null);
-        }
+        String basePath = TemplateUtils.getBasePath(properties, propertySuffix);
 
-        Collection<String> basePaths = Collections2.transform(Lists.newArrayList(basePath.split(",")), new Function<String, String>() {
-            @Override
-            public String apply(String s) {
-                return s.startsWith("/") ? s.substring(1) : s;
-            }
-        });
+        Collection<String> basePaths = TemplateUtils.getBasePaths(basePath);
 
         this.basePath = basePaths.toArray(new String[basePaths.size()]);
 
-        Boolean cacheEnabled = PropertiesHelper.getValue(properties, MvcFeature.CACHE_TEMPLATES + this.suffix, Boolean.class, null);
+        Boolean cacheEnabled = PropertiesHelper.getValue(properties,
+                MvcFeature.CACHE_TEMPLATES + this.suffix, Boolean.class, null);
         if (cacheEnabled == null) {
             cacheEnabled = PropertiesHelper.getValue(properties, MvcFeature.CACHE_TEMPLATES, false, null);
         }
@@ -336,7 +330,8 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
      * {@inheritDoc}
      */
     @Override
-    public void writeTo(T templateReference, Viewable viewable, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException {
+    public void writeTo(T templateReference, Viewable viewable, MediaType mediaType,
+                        MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException {
         try {
             writeTemplate(templateReference, viewable, mediaType, httpHeaders, out);
         } catch (Exception e) {

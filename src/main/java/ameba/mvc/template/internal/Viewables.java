@@ -15,7 +15,9 @@ public class Viewables {
      * Constant <code>PROTECTED_DIR="_protected"</code>
      */
     public static final String PROTECTED_DIR = "_protected";
-    /** Constant <code>PROTECTED_DIR_PATH="/ + PROTECTED_DIR"</code> */
+    /**
+     * Constant <code>PROTECTED_DIR_PATH="/ + PROTECTED_DIR"</code>
+     */
     public static final String PROTECTED_DIR_PATH = "/" + PROTECTED_DIR;
 
     private Viewables() {
@@ -80,7 +82,7 @@ public class Viewables {
     /**
      * <p>newProtected.</p>
      *
-     * @param name a {@link java.lang.String} object.
+     * @param name  a {@link java.lang.String} object.
      * @param model a {@link java.lang.Object} object.
      * @return a {@link org.glassfish.jersey.server.mvc.Viewable} object.
      */
@@ -121,7 +123,7 @@ public class Viewables {
      * <p>newDefaultViewable.</p>
      *
      * @param templateName a {@link java.lang.String} object.
-     * @param model a {@link java.lang.Object} object.
+     * @param model        a {@link java.lang.Object} object.
      * @return a {@link org.glassfish.jersey.server.mvc.Viewable} object.
      */
     public static Viewable newDefaultViewable(String templateName, Object model) {

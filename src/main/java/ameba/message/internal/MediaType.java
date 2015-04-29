@@ -12,18 +12,24 @@ public class MediaType extends javax.ws.rs.core.MediaType {
      * Constant <code>APPLICATION_PROTOBUF="application/x-protobuf"</code>
      */
     public static final String APPLICATION_PROTOBUF = "application/x-protobuf";
-    /** Constant <code>APPLICATION_PROTOBUF_TYPE</code> */
+    /**
+     * Constant <code>APPLICATION_PROTOBUF_TYPE</code>
+     */
     public static final javax.ws.rs.core.MediaType APPLICATION_PROTOBUF_TYPE = new MediaType("application", "x-protobuf");
-    /** Constant <code>APPLICATION_JSON_PATCH="application/json-patch+json"</code> */
+    /**
+     * Constant <code>APPLICATION_JSON_PATCH="application/json-patch+json"</code>
+     */
     public static final String APPLICATION_JSON_PATCH = "application/json-patch+json";
-    /** Constant <code>APPLICATION_JSON_PATCH_TYPE</code> */
+    /**
+     * Constant <code>APPLICATION_JSON_PATCH_TYPE</code>
+     */
     public static final javax.ws.rs.core.MediaType APPLICATION_JSON_PATCH_TYPE = new MediaType("application", "json-patch+json");
 
     /**
      * <p>Constructor for MediaType.</p>
      *
-     * @param type a {@link java.lang.String} object.
-     * @param subtype a {@link java.lang.String} object.
+     * @param type       a {@link java.lang.String} object.
+     * @param subtype    a {@link java.lang.String} object.
      * @param parameters a {@link java.util.Map} object.
      * @since 0.1.6e
      */
@@ -34,7 +40,7 @@ public class MediaType extends javax.ws.rs.core.MediaType {
     /**
      * <p>Constructor for MediaType.</p>
      *
-     * @param type a {@link java.lang.String} object.
+     * @param type    a {@link java.lang.String} object.
      * @param subtype a {@link java.lang.String} object.
      * @since 0.1.6e
      */
@@ -45,7 +51,7 @@ public class MediaType extends javax.ws.rs.core.MediaType {
     /**
      * <p>Constructor for MediaType.</p>
      *
-     * @param type a {@link java.lang.String} object.
+     * @param type    a {@link java.lang.String} object.
      * @param subtype a {@link java.lang.String} object.
      * @param charset a {@link java.lang.String} object.
      * @since 0.1.6e

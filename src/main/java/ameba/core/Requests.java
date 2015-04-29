@@ -123,10 +123,10 @@ public class Requests {
     /**
      * <p>readEntity.</p>
      *
-     * @param rawType a {@link java.lang.Class} object.
-     * @param type a {@link java.lang.reflect.Type} object.
+     * @param rawType     a {@link java.lang.Class} object.
+     * @param type        a {@link java.lang.reflect.Type} object.
      * @param annotations an array of {@link java.lang.annotation.Annotation} objects.
-     * @param <T> a T object.
+     * @param <T>         a T object.
      * @return a T object.
      */
     public static <T> T readEntity(Class<T> rawType, Type type, Annotation[] annotations) {
@@ -248,8 +248,8 @@ public class Requests {
      * <p>readEntity.</p>
      *
      * @param rawType a {@link java.lang.Class} object.
-     * @param type a {@link java.lang.reflect.Type} object.
-     * @param <T> a T object.
+     * @param type    a {@link java.lang.reflect.Type} object.
+     * @param <T>     a T object.
      * @return a T object.
      */
     public static <T> T readEntity(Class<T> rawType, Type type) {
@@ -279,7 +279,7 @@ public class Requests {
      * <p>readEntity.</p>
      *
      * @param rawType a {@link java.lang.Class} object.
-     * @param <T> a T object.
+     * @param <T>     a T object.
      * @return a T object.
      */
     public static <T> T readEntity(Class<T> rawType) {
@@ -354,7 +354,7 @@ public class Requests {
     /**
      * <p>setProperty.</p>
      *
-     * @param name a {@link java.lang.String} object.
+     * @param name   a {@link java.lang.String} object.
      * @param object a {@link java.lang.Object} object.
      */
     public static void setProperty(String name, Object object) {
@@ -411,10 +411,10 @@ public class Requests {
     /**
      * <p>readEntity.</p>
      *
-     * @param rawType a {@link java.lang.Class} object.
-     * @param type a {@link java.lang.reflect.Type} object.
+     * @param rawType            a {@link java.lang.Class} object.
+     * @param type               a {@link java.lang.reflect.Type} object.
      * @param propertiesDelegate a {@link org.glassfish.jersey.internal.PropertiesDelegate} object.
-     * @param <T> a T object.
+     * @param <T>                a T object.
      * @return a T object.
      */
     public static <T> T readEntity(Class<T> rawType, Type type, PropertiesDelegate propertiesDelegate) {
@@ -424,9 +424,9 @@ public class Requests {
     /**
      * <p>readEntity.</p>
      *
-     * @param rawType a {@link java.lang.Class} object.
+     * @param rawType            a {@link java.lang.Class} object.
      * @param propertiesDelegate a {@link org.glassfish.jersey.internal.PropertiesDelegate} object.
-     * @param <T> a T object.
+     * @param <T>                a T object.
      * @return a T object.
      */
     public static <T> T readEntity(Class<T> rawType, PropertiesDelegate propertiesDelegate) {
@@ -445,7 +445,7 @@ public class Requests {
     /**
      * <p>headers.</p>
      *
-     * @param name a {@link java.lang.String} object.
+     * @param name   a {@link java.lang.String} object.
      * @param values a {@link java.lang.Iterable} object.
      * @return a {@link org.glassfish.jersey.message.internal.InboundMessageContext} object.
      */
@@ -613,7 +613,7 @@ public class Requests {
     /**
      * <p>header.</p>
      *
-     * @param name a {@link java.lang.String} object.
+     * @param name  a {@link java.lang.String} object.
      * @param value a {@link java.lang.Object} object.
      * @return a {@link org.glassfish.jersey.message.internal.InboundMessageContext} object.
      */
@@ -634,9 +634,9 @@ public class Requests {
     /**
      * <p>readEntity.</p>
      *
-     * @param rawType a {@link java.lang.Class} object.
+     * @param rawType     a {@link java.lang.Class} object.
      * @param annotations an array of {@link java.lang.annotation.Annotation} objects.
-     * @param <T> a T object.
+     * @param <T>         a T object.
      * @return a T object.
      */
     public static <T> T readEntity(Class<T> rawType, Annotation[] annotations) {
@@ -646,7 +646,7 @@ public class Requests {
     /**
      * <p>headers.</p>
      *
-     * @param name a {@link java.lang.String} object.
+     * @param name   a {@link java.lang.String} object.
      * @param values a {@link java.lang.Object} object.
      * @return a {@link org.glassfish.jersey.message.internal.InboundMessageContext} object.
      */
@@ -700,10 +700,10 @@ public class Requests {
     /**
      * <p>readEntity.</p>
      *
-     * @param rawType a {@link java.lang.Class} object.
-     * @param annotations an array of {@link java.lang.annotation.Annotation} objects.
+     * @param rawType            a {@link java.lang.Class} object.
+     * @param annotations        an array of {@link java.lang.annotation.Annotation} objects.
      * @param propertiesDelegate a {@link org.glassfish.jersey.internal.PropertiesDelegate} object.
-     * @param <T> a T object.
+     * @param <T>                a T object.
      * @return a T object.
      */
     public static <T> T readEntity(Class<T> rawType, Annotation[] annotations, PropertiesDelegate propertiesDelegate) {
@@ -750,7 +750,7 @@ public class Requests {
      * <p>evaluatePreconditions.</p>
      *
      * @param lastModified a {@link java.util.Date} object.
-     * @param eTag a {@link javax.ws.rs.core.EntityTag} object.
+     * @param eTag         a {@link javax.ws.rs.core.EntityTag} object.
      * @return a {@link javax.ws.rs.core.Response.ResponseBuilder} object.
      */
     public static Response.ResponseBuilder evaluatePreconditions(Date lastModified, EntityTag eTag) {
@@ -807,7 +807,7 @@ public class Requests {
     /**
      * <p>setRequestUri.</p>
      *
-     * @param baseUri a {@link java.net.URI} object.
+     * @param baseUri    a {@link java.net.URI} object.
      * @param requestUri a {@link java.net.URI} object.
      * @throws java.lang.IllegalStateException if any.
      */

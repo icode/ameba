@@ -48,7 +48,9 @@ public class FilteringJacksonJsonProvider extends JacksonJsonProvider {
                 , annotations, defaultView);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeTo(final Object value,
                         final Class<?> type,

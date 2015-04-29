@@ -89,7 +89,7 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Delete multiple model using Id's from the Matrix.
      * <p/>
      * success status 200

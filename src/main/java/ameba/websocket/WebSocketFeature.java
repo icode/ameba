@@ -34,7 +34,9 @@ public class WebSocketFeature implements Feature {
         return enabled;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean configure(FeatureContext context) {
         final Configuration config = context.getConfiguration();

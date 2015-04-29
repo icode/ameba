@@ -37,20 +37,26 @@ public abstract class AsyncEventBus<E extends Event, S extends ActorRef> extends
         return a.compareTo(b);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int mapSize() {
         return 128;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends E> classify(E event) {
         return (Class<? extends E>) event.getClass();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void publish(E event, S subscriber) {
         subscriber.tell(event, ActorRef.noSender());
@@ -60,7 +66,7 @@ public abstract class AsyncEventBus<E extends Event, S extends ActorRef> extends
      * <p>subscribe.</p>
      *
      * @param eventClass a {@link java.lang.Class} object.
-     * @param listener a {@link ameba.event.AsyncListener} object.
+     * @param listener   a {@link ameba.event.AsyncListener} object.
      * @return a boolean.
      */
     public abstract boolean subscribe(Class<? extends E> eventClass, final AsyncListener listener);
@@ -69,7 +75,7 @@ public abstract class AsyncEventBus<E extends Event, S extends ActorRef> extends
      * <p>unsubscribe.</p>
      *
      * @param eventClass a {@link java.lang.Class} object.
-     * @param listener a {@link ameba.event.AsyncListener} object.
+     * @param listener   a {@link ameba.event.AsyncListener} object.
      * @return a boolean.
      */
     public abstract boolean unsubscribe(Class<? extends E> eventClass, final AsyncListener listener);

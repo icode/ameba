@@ -34,7 +34,9 @@ public abstract class EndpointDelegate extends Endpoint {
      * Constant <code>MESSAGE_HANDLER_WHOLE_OR_PARTIAL="MessageHandler must implement MessageHa"{trunked}</code>
      */
     public static final String MESSAGE_HANDLER_WHOLE_OR_PARTIAL = "MessageHandler must implement MessageHandler.Whole or MessageHandler.Partial.";
-    /** Constant <code>DEFAULT_HANDLER</code> */
+    /**
+     * Constant <code>DEFAULT_HANDLER</code>
+     */
     protected static final InvocationHandler DEFAULT_HANDLER = new InvocationHandler() {
         @Override
         public Object invoke(Object target, Method method, Object[] args)
@@ -106,7 +108,9 @@ public abstract class EndpointDelegate extends Endpoint {
         getMessageStateRef().set(messageState);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final void onOpen(final Session session, final EndpointConfig config) {
         this.session = session;
@@ -184,8 +188,8 @@ public abstract class EndpointDelegate extends Endpoint {
      * <p>addMessageHandler.</p>
      *
      * @param messageClass a {@link java.lang.Class} object.
-     * @param handler a {@link javax.websocket.MessageHandler} object.
-     * @param <T> a T object.
+     * @param handler      a {@link javax.websocket.MessageHandler} object.
+     * @param <T>          a T object.
      */
     @SuppressWarnings("unchecked")
     protected <T> void addMessageHandler(Class<T> messageClass, final MessageHandler handler) {
@@ -219,7 +223,7 @@ public abstract class EndpointDelegate extends Endpoint {
      * <p>emmit.</p>
      *
      * @param eventInvocations a {@link java.util.List} object.
-     * @param isException a boolean.
+     * @param isException      a boolean.
      */
     protected void emmit(List<EventInvocation> eventInvocations, boolean isException) {
         try {
@@ -248,7 +252,9 @@ public abstract class EndpointDelegate extends Endpoint {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final void onClose(Session session, final CloseReason closeReason) {
         try {
@@ -276,7 +282,9 @@ public abstract class EndpointDelegate extends Endpoint {
 
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final void onError(Session session, Throwable thr) {
         if (thr instanceof InvocationTargetException) {

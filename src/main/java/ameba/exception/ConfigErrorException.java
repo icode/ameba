@@ -42,8 +42,8 @@ public class ConfigErrorException extends AmebaExceptionWithJavaSource {
      * <p>Constructor for ConfigErrorException.</p>
      *
      * @param message a {@link java.lang.String} object.
-     * @param cause a {@link java.lang.Throwable} object.
-     * @param line a {@link java.lang.Integer} object.
+     * @param cause   a {@link java.lang.Throwable} object.
+     * @param line    a {@link java.lang.Integer} object.
      */
     public ConfigErrorException(String message, Throwable cause, Integer line) {
         super(message, cause, line);
@@ -53,21 +53,25 @@ public class ConfigErrorException extends AmebaExceptionWithJavaSource {
      * <p>Constructor for ConfigErrorException.</p>
      *
      * @param message a {@link java.lang.String} object.
-     * @param key a {@link java.lang.String} object.
-     * @param cause a {@link java.lang.Throwable} object.
+     * @param key     a {@link java.lang.String} object.
+     * @param cause   a {@link java.lang.Throwable} object.
      */
     public ConfigErrorException(String message, String key, Throwable cause) {
         super(message, cause, -1);
         this.key = key;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public File getSourceFile() {
         return new File(Ameba.getApp().getConfigFiles()[0]);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public File[] getSourceFiles() {
 
@@ -91,13 +95,17 @@ public class ConfigErrorException extends AmebaExceptionWithJavaSource {
         return config;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getSource() {
         return getConfig() == null ? null : Lists.newArrayList(config.split("\\s"));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer getLineNumber() {
         if (line == null || line == -1) {

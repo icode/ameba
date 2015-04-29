@@ -43,7 +43,9 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <M extends T> Finder<ID, M> on(String server) {
@@ -95,19 +97,25 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return server().createQuery(getModelType());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Query<T> createNamedQuery(String name) {
         return server().createNamedQuery(getModelType(), name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SqlQuery createNamedSqlQuery(String name) {
         return server().createNamedSqlQuery(name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public SqlQuery createSqlQuery(String sql) {
         return server().createSqlQuery(sql);
     }
@@ -123,14 +131,16 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Query<T> setPersistenceContextScope(PersistenceContextScope persistenceContextScope) {
         return query().setPersistenceContextScope(persistenceContextScope);
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Specifies a path to load including all its properties.
      */
     public Query<T> fetch(String path) {
@@ -140,7 +150,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Additionally specifies a <code>JoinConfig</code> to specify a 'query join' and/or define the lazy loading query.
      *
-     * @param path a {@link java.lang.String} object.
+     * @param path       a {@link java.lang.String} object.
      * @param joinConfig a {@link com.avaje.ebean.FetchConfig} object.
      * @return a {@link com.avaje.ebean.Query} object.
      */
@@ -149,14 +159,16 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Query<T> apply(PathProperties pathProperties) {
         return query().apply(pathProperties);
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Specifies a path to fetch with a specific list properties to include, to load a partial object.
      */
     public Query<T> fetch(String path, String fetchProperties) {
@@ -165,7 +177,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Additionally specifies a <code>FetchConfig</code> to use a separate query or lazy loading to load this path.
      */
     public Query<T> fetch(String assocProperty, String fetchProperties, FetchConfig fetchConfig) {
@@ -174,7 +186,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Applies a filter on the 'many' property list rather than the root level objects.
      */
     public ExpressionList<T> filterMany(String propertyName) {
@@ -239,7 +251,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Executes the query and returns the results as a map of the objects.
      */
     @SuppressWarnings("unchecked")
@@ -248,7 +260,9 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public PagedList<T> findPagedList(int i, int i2) {
         return query().findPagedList(i, i2);
     }
@@ -282,12 +296,16 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return (M) query().findUnique();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void findEach(QueryEachConsumer<T> consumer) {
         query().findEach(consumer);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void findEachWhile(QueryEachWhileConsumer<T> consumer) {
         query().findEachWhile(consumer);
     }
@@ -349,7 +367,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Adds an expression to the <code>having</code> clause and returns the query.
      */
     public Query<T> having(com.avaje.ebean.Expression addExpressionToHaving) {
@@ -378,7 +396,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets the <code>order by</code> clause, replacing the existing <code>order by</code> clause if there is one.
      * This is exactly the same as {@link #orderBy(String)}.
      */
@@ -398,7 +416,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Set the <code>order by</code> clause replacing the existing <code>order by</code> clause if there is one.
      * <p/>
      * This is exactly the same as {@link #order(String)}.
@@ -409,7 +427,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Explicitly sets a comma delimited list of the properties to fetch on the 'main' entity bean, to load a partial object.
      */
     public Query<T> select(String fetchProperties) {
@@ -418,7 +436,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Explicitly specifies whether to use 'Autofetch' for this query.
      */
     public Query<T> setAutofetch(boolean autofetch) {
@@ -427,7 +445,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Set the default lazy loading batch size to use.
      * <p/>
      * When lazy loading is invoked on beans loaded by this query then this sets the
@@ -439,7 +457,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets a hint, which for JDBC translates to <code>Statement.fetchSize()</code>.
      */
     public Query<T> setBufferFetchSizeHint(int fetchSize) {
@@ -448,7 +466,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets whether this query uses <code>DISTINCT</code>.
      */
     public Query<T> setDistinct(boolean isDistinct) {
@@ -457,7 +475,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets the first row to return for this query.
      */
     public Query<T> setFirstRow(int firstRow) {
@@ -466,7 +484,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets the ID value to query.
      */
     public Query<T> setId(Object id) {
@@ -475,7 +493,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * When set to <code>true</code>, all the beans from this query are loaded into the bean cache.
      */
     public Query<T> setLoadBeanCache(boolean loadBeanCache) {
@@ -484,7 +502,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets the property to use as keys for a map.
      */
     public Query<T> setMapKey(String mapKey) {
@@ -493,7 +511,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets the maximum number of rows to return in the query.
      */
     public Query<T> setMaxRows(int maxRows) {
@@ -502,7 +520,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Replaces any existing <code>order by</code> clause using an <code>OrderBy</code> object.
      * <p/>
      * This is exactly the same as {@link #setOrderBy(com.avaje.ebean.OrderBy)}.
@@ -513,7 +531,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Set an OrderBy object to replace any existing <code>order by</code> clause.
      * <p/>
      * This is exactly the same as {@link #setOrder(com.avaje.ebean.OrderBy)}.
@@ -524,7 +542,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets an ordered bind parameter according to its position.
      */
     public Query<T> setParameter(int position, Object value) {
@@ -533,7 +551,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets a named bind parameter.
      */
     public Query<T> setParameter(String name, Object value) {
@@ -542,7 +560,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets the OQL query to run
      */
     public Query<T> setQuery(String oql) {
@@ -551,7 +569,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets <code>RawSql</code> to use for this query.
      */
     public Query<T> setRawSql(RawSql rawSql) {
@@ -560,7 +578,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets whether the returned beans will be read-only.
      */
     public Query<T> setReadOnly(boolean readOnly) {
@@ -569,7 +587,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets a timeout on this query.
      */
     public Query<T> setTimeout(int secs) {
@@ -578,7 +596,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets whether to use the bean cache.
      */
     public Query<T> setUseCache(boolean useBeanCache) {
@@ -587,7 +605,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Sets whether to use the query cache.
      */
     public Query<T> setUseQueryCache(boolean useQueryCache) {
@@ -615,7 +633,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Adds additional clauses to the <code>where</code> clause.
      */
     public Query<T> where(String addToWhereClause) {
@@ -624,7 +642,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * Execute the select with "for update" which should lock the record "on read"
      */
     public Query<T> setForUpdate(boolean forUpdate) {

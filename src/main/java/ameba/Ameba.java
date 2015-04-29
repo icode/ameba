@@ -22,7 +22,9 @@ public class Ameba {
      * Constant <code>logger</code>
      */
     public static final Logger logger = LoggerFactory.getLogger(Ameba.class);
-    /** Constant <code>LOGO="\n\n    _                   _          "{trunked}</code> */
+    /**
+     * Constant <code>LOGO="\n\n    _                   _          "{trunked}</code>
+     */
     public static final String LOGO = "\n\n" +
             "    _                   _           \n" +
             "   / \\   _ __ ___   ___| |__   __ _ \n" +

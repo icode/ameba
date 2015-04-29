@@ -190,7 +190,7 @@ public abstract class Updater<M extends Model> {
     /**
      * Bind a named parameter (same as bind).
      *
-     * @param name a {@link java.lang.String} object.
+     * @param name  a {@link java.lang.String} object.
      * @param param a {@link java.lang.Object} object.
      * @return a {@link com.avaje.ebean.Update} object.
      */
@@ -212,7 +212,7 @@ public abstract class Updater<M extends Model> {
     /**
      * Bind a named parameter that is null (same as bind).
      *
-     * @param name a {@link java.lang.String} object.
+     * @param name     a {@link java.lang.String} object.
      * @param jdbcType a int.
      * @return a {@link com.avaje.ebean.Update} object.
      */

@@ -40,15 +40,25 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
      * Constant <code>PARAM_NAME_PORFILE_ENABLE="ds.profileEnable"</code>
      */
     public final static String PARAM_NAME_PORFILE_ENABLE = "ds.profileEnable";
-    /** Constant <code>PARAM_NAME_SESSION_STAT_MAX_COUNT="ds.sessionStatMaxCount"</code> */
+    /**
+     * Constant <code>PARAM_NAME_SESSION_STAT_MAX_COUNT="ds.sessionStatMaxCount"</code>
+     */
     public final static String PARAM_NAME_SESSION_STAT_MAX_COUNT = "ds.sessionStatMaxCount";
-    /** Constant <code>PARAM_NAME_EXCLUSIONS="ds.exclusions"</code> */
+    /**
+     * Constant <code>PARAM_NAME_EXCLUSIONS="ds.exclusions"</code>
+     */
     public static final String PARAM_NAME_EXCLUSIONS = "ds.exclusions";
-    /** Constant <code>PARAM_NAME_PRINCIPAL_COOKIE_NAME="ds.principalCookieName"</code> */
+    /**
+     * Constant <code>PARAM_NAME_PRINCIPAL_COOKIE_NAME="ds.principalCookieName"</code>
+     */
     public static final String PARAM_NAME_PRINCIPAL_COOKIE_NAME = "ds.principalCookieName";
-    /** Constant <code>PARAM_NAME_REAL_IP_HEADER="ds.realIpHeader"</code> */
+    /**
+     * Constant <code>PARAM_NAME_REAL_IP_HEADER="ds.realIpHeader"</code>
+     */
     public static final String PARAM_NAME_REAL_IP_HEADER = "ds.realIpHeader";
-    /** Constant <code>DEFAULT_MAX_STAT_SESSION_COUNT=1000 * 100</code> */
+    /**
+     * Constant <code>DEFAULT_MAX_STAT_SESSION_COUNT=1000 * 100</code>
+     */
     public final static int DEFAULT_MAX_STAT_SESSION_COUNT = 1000 * 100;
     private static final Logger logger = LoggerFactory.getLogger(WebStatFilter.class);
     /**
@@ -154,7 +164,9 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
         return uriStat;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String requestURI = getRequestURI(requestContext);
@@ -188,7 +200,9 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
 //        }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         String requestURI = getRequestURI(requestContext);

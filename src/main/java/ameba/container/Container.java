@@ -190,7 +190,6 @@ public abstract class Container {
 
     /**
      * <p>doReload.</p>
-     *
      */
     protected abstract void doReload(ResourceConfig odlConfig) throws Exception;
 

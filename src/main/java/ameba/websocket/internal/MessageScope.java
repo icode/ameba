@@ -75,7 +75,9 @@ public class MessageScope implements Context<MessageScoped> {
         return scopeInstance;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <U> U findOrCreate(ActiveDescriptor<U> activeDescriptor, ServiceHandle<?> root) {
         final Instance instance = current();
@@ -88,14 +90,18 @@ public class MessageScope implements Context<MessageScoped> {
         return retVal;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean containsKey(ActiveDescriptor<?> descriptor) {
         Instance instance = current();
         return instance.contains(descriptor);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void destroyOne(ActiveDescriptor<?> descriptor) {
         final Instance instance = current();
@@ -112,19 +118,25 @@ public class MessageScope implements Context<MessageScoped> {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean supportsNullCreation() {
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isActive() {
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void shutdown() {
         currentScopeInstance = null;

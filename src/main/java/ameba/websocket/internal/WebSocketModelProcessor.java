@@ -67,7 +67,9 @@ public class WebSocketModelProcessor implements ModelProcessor {
         return result != null ? result : resourceModel;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
         return subResourceModel;

@@ -41,104 +41,138 @@ public class EbeanUpdater<M extends Model> extends Updater<M> {
         return update;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <E extends M> Updater<E> on(String server) {
         return new EbeanUpdater(server, getModelType(), getSqlOrName());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getName() {
         return getUpdate().getName();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SqlUpdate sqlUpdate() {
         return server.createSqlUpdate(getSqlOrName());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Update namedUpdate() {
         return server.createNamedUpdate(getModelType(), getSqlOrName());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SqlUpdate namedSqlUpdate() {
         return server.createNamedSqlUpdate(getSqlOrName());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Update<M> setNotifyCache(boolean notifyCache) {
         return getUpdate().setNotifyCache(notifyCache);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Update<M> setTimeout(int secs) {
         return getUpdate().setTimeout(secs);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int execute() {
         return getUpdate().execute();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Update<M> set(int position, Object value) {
         return getUpdate().set(position, value);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Update<M> setParameter(int position, Object value) {
         return getUpdate().setParameter(position, value);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Update<M> setNull(int position, int jdbcType) {
         return getUpdate().setNull(position, jdbcType);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Update<M> setNullParameter(int position, int jdbcType) {
         return getUpdate().setNullParameter(position, jdbcType);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Update<M> set(String name, Object value) {
         return getUpdate().set(name, value);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Update<M> setParameter(String name, Object param) {
         return getUpdate().setParameter(name, param);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Update<M> setNull(String name, int jdbcType) {
         return getUpdate().setNull(name, jdbcType);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Update<M> setNullParameter(String name, int jdbcType) {
         return getUpdate().setNullParameter(name, jdbcType);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getGeneratedSql() {
         return getUpdate().getGeneratedSql();

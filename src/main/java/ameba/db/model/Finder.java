@@ -24,8 +24,8 @@ public abstract class Finder<ID, T> {
      * Creates a finder for entity of modelType <code>T</code> with <I extends ID> I of modelType <code>ID</code>, using a specific Ebean server.
      *
      * @param serverName a {@link java.lang.String} object.
-     * @param idType a {@link java.lang.Class} object.
-     * @param modelType a {@link java.lang.Class} object.
+     * @param idType     a {@link java.lang.Class} object.
+     * @param modelType  a {@link java.lang.Class} object.
      */
     public Finder(String serverName, Class<ID> idType, Class<T> modelType) {
         if (StringUtils.isBlank(serverName)) {
@@ -209,9 +209,9 @@ public abstract class Finder<ID, T> {
     /**
      * <p>fetch.</p>
      *
-     * @param assocProperty a {@link java.lang.String} object.
+     * @param assocProperty   a {@link java.lang.String} object.
      * @param fetchProperties a {@link java.lang.String} object.
-     * @param fetchConfig a {@link com.avaje.ebean.FetchConfig} object.
+     * @param fetchConfig     a {@link com.avaje.ebean.FetchConfig} object.
      * @return a {@link com.avaje.ebean.Query} object.
      */
     public abstract Query<T> fetch(String assocProperty, String fetchProperties, FetchConfig fetchConfig);
@@ -227,7 +227,7 @@ public abstract class Finder<ID, T> {
     /**
      * <p>fetch.</p>
      *
-     * @param path a {@link java.lang.String} object.
+     * @param path       a {@link java.lang.String} object.
      * @param joinConfig a {@link com.avaje.ebean.FetchConfig} object.
      * @return a {@link com.avaje.ebean.Query} object.
      */
@@ -297,9 +297,9 @@ public abstract class Finder<ID, T> {
      * <p>findMap.</p>
      *
      * @param keyProperty a {@link java.lang.String} object.
-     * @param keyType a {@link java.lang.Class} object.
-     * @param <K> a K object.
-     * @param <M> a M object.
+     * @param keyType     a {@link java.lang.Class} object.
+     * @param <K>         a K object.
+     * @param <M>         a M object.
      * @return a {@link java.util.Map} object.
      */
     public abstract <K, M extends T> Map<K, M> findMap(String keyProperty, Class<K> keyType);
@@ -344,7 +344,7 @@ public abstract class Finder<ID, T> {
      * <p>findPagedList.</p>
      *
      * @param pageIndex a int.
-     * @param pageSize a int.
+     * @param pageSize  a int.
      * @return a {@link com.avaje.ebean.PagedList} object.
      */
     public abstract PagedList<T> findPagedList(int pageIndex, int pageSize);
@@ -352,7 +352,7 @@ public abstract class Finder<ID, T> {
     /**
      * <p>setParameter.</p>
      *
-     * @param name a {@link java.lang.String} object.
+     * @param name  a {@link java.lang.String} object.
      * @param value a {@link java.lang.Object} object.
      * @return a {@link com.avaje.ebean.Query} object.
      */
@@ -362,7 +362,7 @@ public abstract class Finder<ID, T> {
      * <p>setParameter.</p>
      *
      * @param position a int.
-     * @param value a {@link java.lang.Object} object.
+     * @param value    a {@link java.lang.Object} object.
      * @return a {@link com.avaje.ebean.Query} object.
      */
     public abstract Query<T> setParameter(int position, Object value);

@@ -1,8 +1,10 @@
 package ameba.filter;
 
+import ameba.core.Application;
 import org.glassfish.jersey.message.MessageUtils;
 import org.slf4j.Logger;
 
+import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -40,6 +42,10 @@ public class BaseLoggingFilter {
     private final AtomicLong _id = new AtomicLong(0);
     private final boolean printEntity;
     private final int maxEntitySize;
+    private Boolean printMoreType;
+
+    @Inject
+    private Application application;
 
 
     /**
@@ -69,6 +75,13 @@ public class BaseLoggingFilter {
         this.logger = logger;
         this.printEntity = true;
         this.maxEntitySize = maxEntitySize;
+    }
+
+    private boolean getPrintMoreType() {
+        if (printMoreType == null) {
+            this.printMoreType = "true".equalsIgnoreCase((String) application.getProperty("ameba.trace.enabled"));
+        }
+        return printMoreType;
     }
 
     private void log(final StringBuilder b) {
@@ -166,10 +179,10 @@ public class BaseLoggingFilter {
     }
 
     private boolean isSupportPrintType(MediaType mediaType) {
-        return mediaType.getType().equals("text")
+        return (getPrintMoreType() && (mediaType.getType().equals("text")
+                || mediaType.getSubtype().equals("javascript")))
                 || mediaType.getSubtype().equals("json")
-                || mediaType.getSubtype().equals("xml")
-                || mediaType.getSubtype().equals("javascript");
+                || mediaType.getSubtype().equals("xml");
     }
 
     public void filter(final ContainerRequestContext requestContext, final ContainerResponseContext responseContext)

@@ -39,7 +39,9 @@ public class ParameterInjectionBinder extends AbstractBinder {
     private static final String PATH_PARAM_ERR_MSG = "@PathParam parameter class must be String.";
     private static final String QUERY_PARAM_ERR_MSG = "@QueryParam parameter class must be String, String[] or List<String>";
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void configure() {
 

@@ -146,7 +146,7 @@ public abstract class AsyncListener<E extends Event> implements Listener<E> {
     /**
      * <p>preRestart.</p>
      *
-     * @param reason a {@link java.lang.Throwable} object.
+     * @param reason  a {@link java.lang.Throwable} object.
      * @param message a {@link scala.Option} object.
      * @throws java.lang.Exception if any.
      */
@@ -182,7 +182,7 @@ public abstract class AsyncListener<E extends Event> implements Listener<E> {
     /**
      * <p>aroundPreRestart.</p>
      *
-     * @param reason a {@link java.lang.Throwable} object.
+     * @param reason  a {@link java.lang.Throwable} object.
      * @param message a {@link scala.Option} object.
      */
     public void aroundPreRestart(Throwable reason, Option<Object> message) {

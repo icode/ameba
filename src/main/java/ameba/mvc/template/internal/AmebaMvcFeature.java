@@ -17,8 +17,6 @@ import java.util.regex.Pattern;
  */
 public class AmebaMvcFeature implements Feature {
 
-    private static final String TPL_ENGINE_DIR_PR = "template.directory.engine.";
-    private static final String TPL_DIR = "template.directory";
     private static final String TPL_CACHE = "template.caching";
     private static final String TPL_MODULE_DIR_PR = "template.directory.module.";
 
@@ -35,12 +33,14 @@ public class AmebaMvcFeature implements Feature {
         Map<String, String> tempConf = Maps.newHashMap();
 
         for (String key : context.getConfiguration().getPropertyNames()) {
-            if (key.startsWith(TPL_ENGINE_DIR_PR)) {//模板引擎默认路径
-                String engine = key.replaceFirst(Pattern.quote(TPL_ENGINE_DIR_PR.substring(0, TPL_ENGINE_DIR_PR.length() - 1)), "");
+            if (key.startsWith(TemplateUtils.TPL_ENGINE_DIR_PR)) {//模板引擎默认路径
+                String engine = key.replaceFirst(Pattern.quote(
+                        TemplateUtils.TPL_ENGINE_DIR_PR.substring(0, TemplateUtils.TPL_ENGINE_DIR_PR.length() - 1)
+                ), "");
                 String confKey = MvcFeature.TEMPLATE_BASE_PATH + engine;
                 String value = (String) context.getConfiguration().getProperty(confKey);
                 String append = (String) context.getConfiguration().getProperty(key);
-                value = getTplDirConf(value, engine.substring(1), context, tempConf);
+                value = TemplateUtils.getTemplateEngineDirConfig(value, engine.substring(1), context, tempConf);
                 if (StringUtils.isBlank(value)) {
                     value = append;
                 } else {
@@ -55,7 +55,7 @@ public class AmebaMvcFeature implements Feature {
                     confKey = MvcFeature.TEMPLATE_BASE_PATH + "." + engine;
                     String value = (String) context.getConfiguration().getProperty(confKey);
                     String append = (String) context.getConfiguration().getProperty(key);
-                    value = getTplDirConf(value, engine, context, tempConf);
+                    value = TemplateUtils.getTemplateEngineDirConfig(value, engine, context, tempConf);
                     if (StringUtils.isBlank(value)) {
                         value = append;
                     } else {
@@ -74,7 +74,7 @@ public class AmebaMvcFeature implements Feature {
         }
 
         context.property(MvcFeature.TEMPLATE_BASE_PATH,
-                context.getConfiguration().getProperty(TPL_DIR));
+                context.getConfiguration().getProperty(TemplateUtils.TPL_DIR));
 
         context.property(MvcFeature.CACHE_TEMPLATES,
                 context.getConfiguration().getProperty(TPL_CACHE));
@@ -82,18 +82,4 @@ public class AmebaMvcFeature implements Feature {
         return true;
     }
 
-    private String getTplDirConf(String value, String engine, FeatureContext context, Map<String, String> tempConf) {
-        if (StringUtils.isBlank(value)) {
-            value = tempConf.get(TPL_ENGINE_DIR_PR + engine);
-        }
-
-        if (StringUtils.isBlank(value)) {
-            value = (String) context.getConfiguration().getProperty(TPL_ENGINE_DIR_PR + engine);
-        }
-
-        if (StringUtils.isBlank(value)) {
-            value = (String) context.getConfiguration().getProperty(TPL_DIR);
-        }
-        return value;
-    }
 }

@@ -33,7 +33,9 @@ public class FilteringObjectWriterModifier extends ObjectWriterModifier {
         this.filterProvider = filterProvider;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ObjectWriter modify(final EndpointConfigBase<?> endpoint,
                                final MultivaluedMap<String, Object> responseHeaders,

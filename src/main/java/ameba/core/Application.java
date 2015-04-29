@@ -350,7 +350,7 @@ public class Application {
         register(new AbstractBinder() {
             @Override
             protected void configure() {
-                bind(Application.this).to(Application.class);
+                bind(Application.this).to(Application.class).proxy(false);
             }
         });
     }
