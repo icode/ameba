@@ -1,8 +1,6 @@
 package ameba.mvc.template;
 
-import ameba.mvc.template.internal.HttlViewProcessor;
-import ameba.mvc.template.internal.NotFoundForward;
-import ameba.mvc.template.internal.TemplateUtils;
+import ameba.mvc.template.internal.*;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
@@ -15,6 +13,7 @@ import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -41,9 +40,10 @@ public class HttlMvcFeature implements Feature {
         Configuration config = context.getConfiguration();
         Map<String, Object> map = config.getProperties();
 
-        final String encoding = (String) map.get("app.encoding");
+        String encoding = (String) map.get("app.encoding");
 
         if (StringUtils.isNotBlank(encoding)) {
+            encoding = Charset.forName(encoding).name().toLowerCase();
             properties.put("input.encoding", encoding);
             properties.put("output.encoding", encoding);
             properties.put("message.encoding", encoding);
@@ -83,8 +83,11 @@ public class HttlMvcFeature implements Feature {
 
 
         properties.put("template.suffix", StringUtils.join(exts, ","));
+        properties.put("loaders", HttlClasspathLoader.class.getName());
+        properties.put("engine", HttlEngine.class.getName());
 
-        final Engine engine = Engine.getEngine(properties);
+        final HttlEngine engine = (HttlEngine) Engine.getEngine(properties);
+        engine.inited();
 
         context.register(new AbstractBinder() {
             @Override

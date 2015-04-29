@@ -144,7 +144,7 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
     }
 
     private Template resolve(String templatePath) throws Exception {
-        return engine.getTemplate(templatePath, getEncoding());
+        return engine.getTemplate(templatePath, getEncoding().name().toLowerCase());
     }
 
     private Template resolve(Reader reader) throws Exception {
