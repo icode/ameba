@@ -1,8 +1,6 @@
 package ameba.mvc.template.internal;
 
-import ameba.core.Frameworks;
 import ameba.exception.AmebaException;
-import ameba.mvc.ErrorPageGenerator;
 import ameba.mvc.template.TemplateException;
 import ameba.util.IOUtils;
 import com.google.common.base.Function;
@@ -15,9 +13,6 @@ import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.glassfish.jersey.internal.util.ReflectionHelper;
 import org.glassfish.jersey.internal.util.collection.DataStructures;
 import org.glassfish.jersey.internal.util.collection.Value;
-import org.glassfish.jersey.message.MessageBodyWorkers;
-import org.glassfish.jersey.server.ContainerRequest;
-import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.mvc.MvcFeature;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.glassfish.jersey.server.mvc.internal.LocalizationMessages;
@@ -26,13 +21,11 @@ import org.glassfish.jersey.server.mvc.spi.TemplateProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.inject.Singleton;
-import javax.ws.rs.core.*;
-import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import java.io.*;
-import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -51,15 +44,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
     private final Configuration config;
     private final String[] basePath;
     private final Charset encoding;
-    Set<String> supportedExtensions;
-    @Context
-    private MessageBodyWorkers workers;
-    @Inject
-    private ServiceLocator serviceLocator;
-    private MessageBodyWriter<Viewable> viewableMessageBodyWriter;
-    private ErrorPageGenerator errorPageGenerator;
-    @Inject
-    private Provider<ContainerRequest> request;
+    private final Set<String> supportedExtensions;
 
     /**
      * <p>Constructor for AmebaTemplateProcessor.</p>
@@ -107,36 +92,6 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         return this.basePath;
     }
 
-    /**
-     * <p>Getter for the field <code>viewableMessageBodyWriter</code>.</p>
-     *
-     * @return a {@link javax.ws.rs.ext.MessageBodyWriter} object.
-     */
-    public MessageBodyWriter<Viewable> getViewableMessageBodyWriter() {
-        if (viewableMessageBodyWriter == null)
-            synchronized (this) {
-                if (viewableMessageBodyWriter == null) {
-                    viewableMessageBodyWriter = Frameworks.getViewableMessageBodyWriter(workers);
-                }
-            }
-        return viewableMessageBodyWriter;
-    }
-
-    /**
-     * <p>Getter for the field <code>errorPageGenerator</code>.</p>
-     *
-     * @return a {@link ameba.mvc.ErrorPageGenerator} object.
-     */
-    protected ErrorPageGenerator getErrorPageGenerator() {
-        if (errorPageGenerator == null)
-            synchronized (this) {
-                if (errorPageGenerator == null) {
-                    this.errorPageGenerator = Frameworks.getErrorPageGenerator(serviceLocator);
-                }
-            }
-        return errorPageGenerator;
-    }
-
     private Collection<String> getTemplatePaths(String name) {
 
         Set<String> paths = Sets.newLinkedHashSet();
@@ -151,11 +106,11 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
     private Collection<String> getTemplatePaths(String name, String basePath) {
         String lowerName = name.toLowerCase();
         String templatePath = basePath.endsWith("/") ? basePath + name.substring(1) : basePath + name;
-        Iterator var4 = this.supportedExtensions.iterator();
+        Iterator iterator = this.supportedExtensions.iterator();
 
         String extension;
         do {
-            if (!var4.hasNext()) {
+            if (!iterator.hasNext()) {
                 final String finalTemplatePath = templatePath;
                 return Collections2.transform(this.supportedExtensions, new Function<String, String>() {
                     public String apply(String input) {
@@ -164,7 +119,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
                 });
             }
 
-            extension = (String) var4.next();
+            extension = (String) iterator.next();
         } while (!lowerName.endsWith(extension));
 
         return Collections.singleton(templatePath);
@@ -244,16 +199,16 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
     }
 
     private T resolve(String name) {
-        Iterator var2 = this.getTemplatePaths(name).iterator();
+        Iterator iterator = this.getTemplatePaths(name).iterator();
 
         String template;
         InputStreamReader reader;
         do {
-            if (!var2.hasNext()) {
+            if (!iterator.hasNext()) {
                 return null;
             }
 
-            template = (String) var2.next();
+            template = (String) iterator.next();
             InputStream e;
             e = Thread.currentThread().getStackTrace()[0].getClass().getResourceAsStream(template);
             if (e == null) {
@@ -265,7 +220,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
             if (reader == null) {
                 try {
                     reader = new InputStreamReader(new FileInputStream(template), this.encoding);
-                } catch (FileNotFoundException var16) {
+                } catch (FileNotFoundException ex) {
                     //no op
                 }
             }
@@ -274,7 +229,6 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         try {
             return this.resolve(template, reader);
         } catch (Exception e) {
-            logger.warn(LocalizationMessages.TEMPLATE_RESOLVE_ERROR(template), e);
             RuntimeException r;
             try {
                 r = createException(e, null);
@@ -345,24 +299,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
                     r = new TemplateException("create writeTo Exception error", ex, -1);
                 }
             }
-
-            try {
-                viewable = (Viewable) getErrorPageGenerator().toResponse(r).getEntity();
-                getViewableMessageBodyWriter().writeTo(viewable,
-                        Viewable.class, Viewable.class, new Annotation[]{},
-                        mediaType, httpHeaders,
-                        out);
-                request.get().getResponseWriter()
-                        .writeResponseStatusAndHeaders(
-                                -1,
-                                new ContainerResponse(
-                                        request.get(),
-                                        Response.serverError().build()
-                                )
-                        ).flush();
-            } catch (Exception ex) {
-                logger.error("send error message error", ex);
-            }
+            throw r;
         }
     }
 

@@ -1,21 +1,17 @@
 package ameba.core;
 
-import ameba.mvc.ErrorPageGenerator;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import jersey.repackaged.com.google.common.base.Function;
 import jersey.repackaged.com.google.common.collect.Collections2;
 import jersey.repackaged.com.google.common.collect.Lists;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.internal.inject.Providers;
 import org.glassfish.jersey.message.MessageBodyWorkers;
 import org.glassfish.jersey.model.internal.RankedComparator;
 import org.glassfish.jersey.model.internal.RankedProvider;
 import org.glassfish.jersey.server.mvc.Viewable;
 
-import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.MessageBodyWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -29,24 +25,6 @@ import java.util.*;
  */
 public class Frameworks {
     private Frameworks() {
-    }
-
-    /**
-     * <p>getErrorPageGenerator.</p>
-     *
-     * @param serviceLocator a {@link org.glassfish.hk2.api.ServiceLocator} object.
-     * @return a {@link ameba.mvc.ErrorPageGenerator} object.
-     */
-    public static ErrorPageGenerator getErrorPageGenerator(ServiceLocator serviceLocator) {
-        final Set<ExceptionMapper> exceptionMappers = Sets.newLinkedHashSet();
-        exceptionMappers.addAll(Providers.getCustomProviders(serviceLocator, ExceptionMapper.class));
-        exceptionMappers.addAll(Providers.getProviders(serviceLocator, ExceptionMapper.class));
-        for (ExceptionMapper t : exceptionMappers) {
-            if (t instanceof ErrorPageGenerator) {
-                return (ErrorPageGenerator) t;
-            }
-        }
-        return null;
     }
 
     /**

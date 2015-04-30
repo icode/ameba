@@ -12,6 +12,7 @@ public class ErrorMessage extends Result {
 
     @JsonIgnore
     private Throwable throwable;
+    private int status;
 
     public ErrorMessage(boolean success) {
         super(success);
@@ -47,5 +48,13 @@ public class ErrorMessage extends Result {
 
     public void setThrowable(Throwable throwable) {
         this.throwable = throwable;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 }

@@ -1,31 +1,36 @@
 package ameba.mvc;
 
+import ameba.core.Frameworks;
+import ameba.message.ErrorMessage;
 import ameba.mvc.template.internal.Viewables;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.message.internal.MessageBodyProviderNotFoundException;
+import org.glassfish.jersey.message.MessageBodyWorkers;
 import org.glassfish.jersey.server.mvc.Viewable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.MessageBodyWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 错误处理页面配置
  *
  * @author icode
  */
-@Provider
 @Singleton
-public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
+public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
     // 模板引擎会去掉第一个斜线
     /**
      * Constant <code>DEFAULT_ERROR_PAGE_DIR="/error/"</code>
@@ -66,12 +71,13 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
     /**
      * Constant <code>errorTemplateMap</code>
      */
-    protected static final HashMap<Integer, String> errorTemplateMap = Maps.newHashMap();
-    private static final Logger logger = LoggerFactory.getLogger(ErrorPageGenerator.class);
+    protected static final Map<Integer, String> errorTemplateMap = Maps.newHashMap();
     private static String defaultErrorTemplate;
 
-    @Context
-    protected javax.inject.Provider<ContainerRequestContext> requestProvider;
+    @Inject
+    protected Provider<ContainerRequestContext> requestProvider;
+    @Inject
+    private Provider<MessageBodyWorkers> workers;
 
     static void pushErrorMap(int status, String tpl) {
         errorTemplateMap.put(status, tpl);
@@ -86,8 +92,8 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
      *
      * @return a {@link java.util.HashMap} object.
      */
-    public static HashMap<Integer, String> getErrorTemplateMap() {
-        return errorTemplateMap;
+    public static Map<Integer, String> getErrorTemplateMap() {
+        return Collections.unmodifiableMap(errorTemplateMap);
     }
 
     /**
@@ -103,39 +109,46 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
         defaultErrorTemplate = template;
     }
 
-    /**
-     * <p>getStatus.</p>
-     *
-     * @param exception a {@link java.lang.Throwable} object.
-     * @return a int.
-     * @since 0.1.6e
-     */
-    protected int getStatus(Throwable exception) {
-        int status = 500;
-        if (exception instanceof InternalServerErrorException) {
-            if (exception.getCause() instanceof MessageBodyProviderNotFoundException) {
-                MessageBodyProviderNotFoundException e = (MessageBodyProviderNotFoundException) exception.getCause();
-                if (e.getMessage().startsWith("MessageBodyReader")) {
-                    status = 415;
-                } else if (e.getMessage().startsWith("MessageBodyWriter")) {
-                    status = 406;
-                }
-            }
-        } else if (exception instanceof WebApplicationException) {
-            status = ((WebApplicationException) exception).getResponse().getStatus();
-        }
-        return status;
+    protected Viewable createViewable(String tplName, ContainerRequestContext request,
+                                      int status, Throwable exception) {
+        Error error = new Error(
+                request,
+                status,
+                exception);
+
+        return Viewables.newDefaultViewable(tplName, error);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Response toResponse(Throwable exception) {
-        ContainerRequestContext request = requestProvider.get();
-        int status = getStatus(exception);
+    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+        return ErrorMessage.class.isAssignableFrom(type)
+                && (mediaType.getSubtype().equals("html")
+                || mediaType.getSubtype().equals("xhtml+xml"));
+    }
 
-        String tplName = errorTemplateMap.get(status);
+    @Override
+    public long getSize(ErrorMessage errorMessage,
+                        Class<?> type, Type genericType,
+                        Annotation[] annotations, MediaType mediaType) {
+        return -1;
+    }
+
+    protected String getErrorTemplate(int status) {
+        return errorTemplateMap.get(status);
+    }
+
+    @Override
+    public void writeTo(ErrorMessage errorMessage,
+                        Class<?> type,
+                        Type genericType,
+                        Annotation[] annotations,
+                        MediaType mediaType,
+                        MultivaluedMap<String, Object> httpHeaders,
+                        OutputStream entityStream) throws IOException, WebApplicationException {
+        ContainerRequestContext request = requestProvider.get();
+        int status = errorMessage.getStatus();
+
+        String tplName = getErrorTemplate(status);
         if (StringUtils.isBlank(tplName)) {
             if (StringUtils.isBlank(defaultErrorTemplate)) {
                 if (status < 500) {
@@ -172,23 +185,25 @@ public class ErrorPageGenerator implements ExceptionMapper<Throwable> {
                 tplName = defaultErrorTemplate;
             }
         }
-        Object viewable = createViewable(tplName, request, status, exception);
-        if (status == 500)
-            logger.error("服务器错误", exception);
-
-        return Response.status(status).entity(viewable).build();
+        Viewable viewable = createViewable(tplName, request, status, errorMessage.getThrowable());
+        writeViewable(viewable, mediaType, httpHeaders, entityStream);
     }
 
-    private Viewable createViewable(String tplName, ContainerRequestContext request,
-                                    int status, Throwable exception) {
-        Error error = new Error(
-                request,
-                status,
-                exception);
-
-        return Viewables.newDefaultViewable(tplName, error);
+    protected void writeViewable(Viewable viewable,
+                                 MediaType mediaType,
+                                 MultivaluedMap<String, Object> httpHeaders,
+                                 OutputStream entityStream) throws IOException {
+        MessageBodyWriter<Viewable> writer = Frameworks.getViewableMessageBodyWriter(workers.get());
+        if (writer != null) {
+            writer.writeTo(viewable,
+                    Viewable.class,
+                    Viewable.class,
+                    new Annotation[0],
+                    mediaType,
+                    httpHeaders,
+                    entityStream);
+        }
     }
-
 
     public static class Error {
         private int status;

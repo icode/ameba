@@ -62,7 +62,7 @@ public class ErrorPageFeature implements Feature {
                             if (StringUtils.isNotBlank(va))
                                 errorMap.put(statusCode, va.startsWith("/") ? va : "/" + va);
                         } catch (Exception e) {
-                            logger.error("parse http.compression.minSize error", e);
+                            logger.error("parse error status mapping error", e);
                         }
                     }
                 }

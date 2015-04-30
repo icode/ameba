@@ -7,6 +7,7 @@ import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import httl.Engine;
 import httl.Template;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.mvc.Viewable;
@@ -21,6 +22,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.*;
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,16 +69,22 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
             List<String> msgSource = Lists.newArrayList(e.getMessage().split("\n"));
             File file = getTemplateFile(template);
             List<String> source = Lists.newArrayList();
-            source.add(msgSource.get(4));
-            source.add(msgSource.get(5));
-            Integer line;
+            String sourceString = getTemplateSource(template);
+
+            if (StringUtils.isNotBlank(sourceString)) {
+                Collections.addAll(source, sourceString.split("\n"));
+            }
+            int line = -1;
+            int lineIndex = -1;
             try {
-                line = Integer.valueOf(msgSource.get(1).split(",")[1].split(":")[1].trim());
+                String[] positionInfo = msgSource.get(1).split(",");
+                lineIndex = Integer.valueOf(positionInfo[0].split(":")[1].trim()) - 1;
+                line = Integer.valueOf(positionInfo[1].split(":")[1].trim()) - 1;
             } catch (Exception ex) {
-                line = 0;
+                // no op
             }
             ecx = new TemplateException(msgSource.get(0)
-                    + "\n" + msgSource.get(1).replace(", in:", ""), e, line, file, source, 0);
+                    + "\n" + msgSource.get(1).replace(", in:", ""), e, line, file, source, lineIndex);
         } else if (template != null) {
             List<String> sources;
 
@@ -91,8 +99,25 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
             File tFile = getTemplateFile(template);
 
             if (e instanceof FileNotFoundException || e.getCause() instanceof FileNotFoundException) {
+
+                int line = -1;
+                int lineIndex = -1;
+                String fileName = e.getMessage().replace("Not found template ", "");
+                fileName = fileName.substring(fileName.lastIndexOf("/"), fileName.lastIndexOf(" in"));
+                for (String s : sources) {
+                    line++;
+                    lineIndex = s.indexOf(fileName);
+                    if (lineIndex > -1) {
+                        lineIndex++;
+                        break;
+                    }
+                }
+                if (lineIndex == -1) {
+                    line = -1;
+                }
+
                 ecx = new TemplateNotFoundException(e.getMessage(),
-                        e, -1, tFile, sources, -1);
+                        e, line, tFile, sources, lineIndex);
             } else {
                 ecx = new TemplateException("Write template error in  " + tFile.getPath() + ". " + e.getMessage(),
                         e, -1, tFile, sources, -1);
@@ -110,6 +135,7 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
     protected Template resolve(String templatePath, Reader reader) throws Exception {
         Template template = null;
         if (templatePath != null) {
+            request.get().setProperty(REQ_TPL_PATH_KEY, templatePath);
             try {
                 template = resolve(templatePath);
             } catch (Exception e) {
@@ -123,18 +149,22 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
             template = resolve(reader);
         }
 
-        if (template != null) {
-            request.get().setProperty(REQ_TPL_PATH_KEY, templatePath);
-        }
-
         return template;
     }
 
     private String getTemplateSource(Template template) {
-        try {
-            return template.getSource();
-        } catch (IOException e) {
-            logger.error("get template source code error", e);
+        if (template != null) {
+            try {
+                return template.getSource();
+            } catch (IOException e) {
+                logger.error("get template source code error", e);
+            }
+        } else {
+            try {
+                return IOUtils.readFromResource((String) request.get().getProperty(REQ_TPL_PATH_KEY));
+            } catch (IOException e) {
+                logger.error("read template file error", e);
+            }
         }
         return "";
     }
