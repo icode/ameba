@@ -1,4 +1,4 @@
-package ameba.message;
+package ameba.message.error;
 
 import ameba.util.Result;
 import com.fasterxml.jackson.annotation.JsonIgnore;

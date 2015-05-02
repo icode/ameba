@@ -7,7 +7,6 @@ import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import httl.Engine;
 import httl.Template;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.mvc.Viewable;
@@ -103,11 +102,11 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
                 int line = -1;
                 int lineIndex = -1;
                 String fileName = e.getMessage().replace("Not found template ", "");
-                fileName = fileName.substring(fileName.lastIndexOf("/"), fileName.lastIndexOf(" in"));
+                fileName = fileName.substring(fileName.lastIndexOf("/") + 1, fileName.lastIndexOf(" in"));
                 for (String s : sources) {
                     line++;
                     lineIndex = s.indexOf(fileName);
-                    if (lineIndex > -1) {
+                    if (lineIndex > -1 && s.contains("${") && s.contains("}")) {
                         lineIndex++;
                         break;
                     }

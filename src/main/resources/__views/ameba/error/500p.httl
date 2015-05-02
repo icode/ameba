@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+<!--#set(ameba.mvc.ErrorPageGenerator.Error model)-->
 <html>
 <head>
     <meta charset="utf-8">
-    <title>拒绝请求</title>
+    <title>${model.errorMessage.message}</title>
     <style>
         html, body, pre {
             margin: 0;
@@ -12,30 +12,31 @@
         }
         h1 {
             margin: 0;
-            background: #333;
+            background: #533CAD;
             padding: 20px 45px;
             color: #fff;
             text-shadow: 1px 1px 1px rgba(0,0,0,.3);
-            border-bottom: 1px solid #111;
+            border-bottom: 1px solid #3A0B9F;
             font-size: 28px;
         }
         p#detail {
             margin: 0;
             padding: 15px 45px;
-            background: #888;
-            border-top: 4px solid #666;
-            color: #111;
+            background: #BCACF6;
+            border-top: 4px solid #7365B6;
+            color: #312073;
             text-shadow: 1px 1px 1px rgba(255,255,255,.3);
             font-size: 14px;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid #39325B;
         }
     </style>
+
 </head>
 <body>
-<h1>服务器拒绝请求</h1>
+<h1>${model.errorMessage.message}</h1>
 
 <p id="detail">
-    你必须被授权才能访问该页面。
+    ${model.errorMessage.description}
 </p>
 
 </body>

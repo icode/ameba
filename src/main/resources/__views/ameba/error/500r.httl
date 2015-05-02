@@ -1,8 +1,9 @@
+<!--#set(ameba.mvc.ErrorPageGenerator.Error model)-->
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>不支持的媒体类型</title>
+    <title>${model.errorMessage.message}</title>
     <style>
         html, body, pre {
             margin: 0;
@@ -32,10 +33,11 @@
     </style>
 </head>
 <body>
-<h1>不支持的媒体类型</h1>
+<h1>${model.errorMessage.message}</h1>
 
 <p id="detail">
-    对于当前请求的方法和所请求的资源，请求中提交的实体并不是服务器中所支持的格式，因此请求被拒绝。
+    ${model.errorMessage.description}
+    ${model.request.UriInfo.absolutePath.toString.unescapeUrl}
 </p>
 
 </body>

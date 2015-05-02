@@ -1,9 +1,10 @@
 <!--#set(ameba.mvc.ErrorPageGenerator.Error model)-->
 <!DOCTYPE html>
+<!--#set(ameba.mvc.ErrorPageGenerator.Error model)-->
 <html>
 <head>
     <meta charset="utf-8">
-    <title>请求地址不存在</title>
+    <title>${model.errorMessage.message}</title>
     <style>
         html, body, pre {
             margin: 0;
@@ -13,30 +14,30 @@
         }
         h1 {
             margin: 0;
-            background: #AD632A;
+            background: #333;
             padding: 20px 45px;
             color: #fff;
             text-shadow: 1px 1px 1px rgba(0,0,0,.3);
-            border-bottom: 1px solid #9F5805;
+            border-bottom: 1px solid #111;
             font-size: 28px;
         }
         p#detail {
             margin: 0;
             padding: 15px 45px;
-            background: #F6A960;
-            border-top: 4px solid #D29052;
-            color: #733512;
+            background: #888;
+            border-top: 4px solid #666;
+            color: #111;
             text-shadow: 1px 1px 1px rgba(255,255,255,.3);
             font-size: 14px;
-            border-bottom: 1px solid #BA7F5B;
+            border-bottom: 1px solid #333;
         }
     </style>
 </head>
 <body>
-<h1>请求地址不存在</h1>
+<h1>${model.errorMessage.message}</h1>
 
 <p id="detail">
-    ${model.request.UriInfo.absolutePath.toString.unescapeUrl}
+    ${model.errorMessage.description}
 </p>
 
 </body>

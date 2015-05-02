@@ -52,6 +52,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.security.AccessController;
@@ -681,7 +682,11 @@ public class Application {
         while (confs.hasMoreElements()) {
             InputStream in = null;
             try {
-                in = confs.nextElement().openStream();
+                URLConnection connection = confs.nextElement().openConnection();
+                if (getMode().isDev()) {
+                    connection.setUseCaches(false);
+                }
+                in = connection.getInputStream();
                 modeProperties.load(in);
             } catch (IOException e) {
                 logger.warn("读取[conf/" + mode.name().toLowerCase() + ".conf]出错", e);
@@ -806,7 +811,12 @@ public class Application {
 
                     logger.info("加载模块 {}", modelName);
                     logger.debug("读取[{}]文件配置", toExternalForm(url));
-                    in = url.openStream();
+                    URLConnection connection = url.openConnection();
+
+                    if (getMode().isDev()) {
+                        connection.setUseCaches(false);
+                    }
+                    in = connection.getInputStream();
                 } catch (IOException e) {
                     logger.error("读取[{}]出错", toExternalForm(url));
                 }

@@ -1,7 +1,7 @@
 package ameba.mvc;
 
 import ameba.core.Frameworks;
-import ameba.message.ErrorMessage;
+import ameba.message.error.ErrorMessage;
 import ameba.mvc.template.internal.Viewables;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
@@ -37,37 +37,22 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
      */
     public static final String DEFAULT_ERROR_PAGE_DIR = "/error/";
     /**
-     * Constant <code>DEFAULT_404_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 404.httl"</code>
+     * Constant <code>DEFAULT_500_RED_PRODUCT_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 500r.httl"</code>
      */
-    public static final String DEFAULT_404_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "404.httl";
+    public static final String DEFAULT_500_RED_PRODUCT_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "500r.httl";
     /**
-     * Constant <code>DEFAULT_5XX_PRODUCT_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 500.httl"</code>
+     * Constant <code>DEFAULT_501_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 500p.httl"</code>
      */
-    public static final String DEFAULT_5XX_PRODUCT_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "500.httl";
+    public static final String DEFAULT_500_PURPLE_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "500p.httl";
     /**
-     * Constant <code>DEFAULT_501_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 501.httl"</code>
+     * Constant <code>DEFAULT_400_BLACK_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 403.httl"</code>
      */
-    public static final String DEFAULT_501_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "501.httl";
+    public static final String DEFAULT_400_BLACK_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400b.httl";
     /**
-     * Constant <code>DEFAULT_403_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 403.httl"</code>
+     * Constant <code>DEFAULT_400_ORANGE_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 400o.httl"</code>
      */
-    public static final String DEFAULT_403_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "403.httl";
-    /**
-     * Constant <code>DEFAULT_400_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 400.httl"</code>
-     */
-    public static final String DEFAULT_400_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400.httl";
-    /**
-     * Constant <code>DEFAULT_405_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 405.httl"</code>
-     */
-    public static final String DEFAULT_405_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "405.httl";
-    /**
-     * Constant <code>DEFAULT_406_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 406.httl"</code>
-     */
-    public static final String DEFAULT_406_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "406.httl";
-    /**
-     * Constant <code>DEFAULT_415_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 415.httl"</code>
-     */
-    public static final String DEFAULT_415_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "415.httl";
+    public static final String DEFAULT_400_ORANGE_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400o.httl";
+
     /**
      * Constant <code>errorTemplateMap</code>
      */
@@ -110,11 +95,12 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
     }
 
     protected Viewable createViewable(String tplName, ContainerRequestContext request,
-                                      int status, Throwable exception) {
+                                      int status, Throwable exception, ErrorMessage errorMessage) {
         Error error = new Error(
                 request,
                 status,
-                exception);
+                exception,
+                errorMessage);
 
         return Viewables.newDefaultViewable(tplName, error);
     }
@@ -155,37 +141,28 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
                     switch (status) {
                         case 401:
                         case 403:
-                            tplName = DEFAULT_403_ERROR_PAGE;
-                            break;
-                        case 404:
-                            tplName = DEFAULT_404_ERROR_PAGE;
-                            break;
                         case 405:
-                            tplName = DEFAULT_405_ERROR_PAGE;
-                            break;
                         case 406:
-                            tplName = DEFAULT_406_ERROR_PAGE;
-                            break;
                         case 415:
-                            tplName = DEFAULT_415_ERROR_PAGE;
+                            tplName = DEFAULT_400_BLACK_ERROR_PAGE;
                             break;
                         default:
-                            tplName = DEFAULT_400_ERROR_PAGE;
+                            tplName = DEFAULT_400_ORANGE_ERROR_PAGE;
                     }
                 } else {
                     switch (status) {
                         case 501:
-                            tplName = DEFAULT_501_ERROR_PAGE;
+                            tplName = DEFAULT_500_PURPLE_ERROR_PAGE;
                             break;
                         default:
-                            tplName = DEFAULT_5XX_PRODUCT_ERROR_PAGE;
+                            tplName = DEFAULT_500_RED_PRODUCT_ERROR_PAGE;
                     }
                 }
             } else {
                 tplName = defaultErrorTemplate;
             }
         }
-        Viewable viewable = createViewable(tplName, request, status, errorMessage.getThrowable());
+        Viewable viewable = createViewable(tplName, request, status, errorMessage.getThrowable(), errorMessage);
         writeViewable(viewable, mediaType, httpHeaders, entityStream);
     }
 
@@ -209,18 +186,24 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
         private int status;
         private ContainerRequestContext request;
         private Throwable exception;
+        private ErrorMessage errorMessage;
 
         public Error() {
         }
 
-        public Error(ContainerRequestContext request, int status, Throwable exception) {
+        public Error(ContainerRequestContext request, int status, Throwable exception, ErrorMessage message) {
             this.status = status;
             this.exception = exception;
             this.request = request;
+            this.errorMessage = message;
         }
 
         public int getStatus() {
             return status;
+        }
+
+        public ErrorMessage getErrorMessage() {
+            return errorMessage;
         }
 
         public ContainerRequestContext getRequest() {

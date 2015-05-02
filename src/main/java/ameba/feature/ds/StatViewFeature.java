@@ -307,7 +307,7 @@ public class StatViewFeature implements Feature {
             if (username.equals(uname) && password.equals(pwd)) {
                 return Response.ok("success").cookie(new NewCookie(SESSION_USER_KEY, authorizeToken)).build();
             } else {
-                return Response.ok("error").build();
+                return Response.ok("ameba/message/error").build();
             }
         }
 
