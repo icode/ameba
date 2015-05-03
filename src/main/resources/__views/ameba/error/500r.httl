@@ -11,33 +11,34 @@
             font-family: Monaco, 'Lucida Console', monospace;
             background: #ECECEC;
         }
+
         h1 {
             margin: 0;
-            background: #333;
+            background: #A31012;
             padding: 20px 45px;
             color: #fff;
-            text-shadow: 1px 1px 1px rgba(0,0,0,.3);
-            border-bottom: 1px solid #111;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, .3);
+            border-bottom: 1px solid #690000;
             font-size: 28px;
         }
+
         p#detail {
-            margin: 0;
+            background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#AE1113), to(#A31012));
+            border-top: 1px solid #790000;
+            border-bottom: 1px solid #590000;
             padding: 15px 45px;
-            background: #888;
-            border-top: 4px solid #666;
-            color: #111;
-            text-shadow: 1px 1px 1px rgba(255,255,255,.3);
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, .5);
+            color: white;
             font-size: 14px;
-            border-bottom: 1px solid #333;
+            margin: 0;
         }
     </style>
 </head>
-<body>
-<h1>${model.errorMessage.message}</h1>
+<body id="error-page">
+<h1>${model.exception.message}</h1>
 
 <p id="detail">
     ${model.errorMessage.description}
-    ${model.request.UriInfo.absolutePath.toString.unescapeUrl}
 </p>
 
 </body>

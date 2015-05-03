@@ -37,6 +37,7 @@
 
 <p id="detail">
     ${model.errorMessage.description}
+    <br/>
     ${model.request.UriInfo.absolutePath.toString.unescapeUrl}
 </p>
 

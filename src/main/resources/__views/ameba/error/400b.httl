@@ -1,6 +1,5 @@
 <!--#set(ameba.mvc.ErrorPageGenerator.Error model)-->
 <!DOCTYPE html>
-<!--#set(ameba.mvc.ErrorPageGenerator.Error model)-->
 <html>
 <head>
     <meta charset="utf-8">
