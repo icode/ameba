@@ -24,7 +24,7 @@
 
         p#detail {
             background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#AE1113), to(#A31012));
-            border-top: 1px solid #790000;
+            border-top: 4px solid #790000;
             border-bottom: 1px solid #590000;
             padding: 15px 45px;
             text-shadow: 1px 1px 0 rgba(0, 0, 0, .5);
