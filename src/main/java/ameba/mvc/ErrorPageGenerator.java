@@ -33,9 +33,9 @@ import java.util.Map;
 public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
     // 模板引擎会去掉第一个斜线
     /**
-     * Constant <code>DEFAULT_ERROR_PAGE_DIR="/error/"</code>
+     * Constant <code>DEFAULT_ERROR_PAGE_DIR="/_protected/error/"</code>
      */
-    public static final String DEFAULT_ERROR_PAGE_DIR = "/error/";
+    public static final String DEFAULT_ERROR_PAGE_DIR = "/_protected/error/";
     /**
      * Constant <code>DEFAULT_500_RED_PRODUCT_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 500r.httl"</code>
      */
