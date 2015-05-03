@@ -1,8 +1,10 @@
-package ameba.mvc.template.internal;
+package ameba.mvc.template.httl.internal;
 
-import ameba.mvc.template.HttlMvcFeature;
 import ameba.mvc.template.TemplateException;
 import ameba.mvc.template.TemplateNotFoundException;
+import ameba.mvc.template.httl.HttlMvcFeature;
+import ameba.mvc.template.internal.AmebaTemplateProcessor;
+import ameba.mvc.template.internal.TemplateUtils;
 import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import httl.Engine;
@@ -77,7 +79,7 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
             int lineIndex = -1;
             try {
                 String[] positionInfo = msgSource.get(1).split(",");
-                lineIndex = Integer.valueOf(positionInfo[0].split(":")[1].trim()) - 1;
+                lineIndex = Integer.valueOf(positionInfo[2].split(":")[1].trim()) - 1;
                 line = Integer.valueOf(positionInfo[1].split(":")[1].trim()) - 1;
             } catch (Exception ex) {
                 // no op

@@ -28,8 +28,19 @@ public class Messages {
     }
 
 
+    public static String get(Locale locale, String key, Object... args) {
+        return get(DEFAULT_BUNDLE_NAME, getLocale(locale), key, args);
+    }
+
     public static String get(String bundleName, String key, Object... args) {
         return get(bundleName, getLocale(), key, args);
+    }
+
+    private static Locale getLocale(Locale locale) {
+        if (locale == null) {
+            return getLocale();
+        }
+        return locale;
     }
 
     private static Locale getLocale() {
@@ -54,10 +65,12 @@ public class Messages {
 
             if (bundle == null) {
                 try {
-                    bundle = ResourceBundle.getBundle(bundleName,
+                    bundle = ResourceBundle.getBundle(
+                            bundleName,
                             locale,
                             ClassUtils.getContextClassLoader(),
-                            new MultiResourceBundleControl());
+                            new MultiResourceBundleControl()
+                    );
                 } catch (MissingResourceException e) {
                     // no op
                 }
@@ -78,7 +91,11 @@ public class Messages {
                 msg = bundle.getString(key);
             } catch (MissingResourceException e) {
                 // notice that this may throw a MissingResourceException of its own (caught below)
-                msg = bundle.getString("undefined");
+                try {
+                    msg = bundle.getString("undefined");
+                } catch (MissingResourceException ex) {
+                    return getDefaultMessage(key, args);
+                }
             }
 
             return MessageFormat.format(msg, args);
@@ -93,7 +110,7 @@ public class Messages {
         StringBuilder sb = new StringBuilder();
         sb.append("[failed to localize] ");
         sb.append(key);
-        if (args != null) {
+        if (args != null && args.length > 0) {
             sb.append('(');
             for (int i = 0; i < args.length; ++i) {
                 if (i != 0) {

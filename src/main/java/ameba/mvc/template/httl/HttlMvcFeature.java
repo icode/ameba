@@ -1,10 +1,15 @@
-package ameba.mvc.template;
+package ameba.mvc.template.httl;
 
-import ameba.mvc.template.internal.*;
+import ameba.mvc.template.httl.internal.HttlClasspathLoader;
+import ameba.mvc.template.httl.internal.HttlEngine;
+import ameba.mvc.template.httl.internal.HttlViewProcessor;
+import ameba.mvc.template.internal.NotFoundForward;
+import ameba.mvc.template.internal.TemplateUtils;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 import httl.Engine;
+import httl.spi.methods.MessageMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
@@ -85,9 +90,11 @@ public class HttlMvcFeature implements Feature {
         properties.put("template.suffix", StringUtils.join(exts, ","));
         properties.put("loaders", HttlClasspathLoader.class.getName());
         properties.put("engine", HttlEngine.class.getName());
+        properties.put("import.methods-", MessageMethod.class.getName());
+        properties.put("import.methods+", "ameba.mvc.template.httl.internal.MessageMethod");
+        properties.put("localized", "false");
 
-        final HttlEngine engine = (HttlEngine) Engine.getEngine(properties);
-        engine.inited();
+        final Engine engine = Engine.getEngine(properties);
 
         context.register(new AbstractBinder() {
             @Override

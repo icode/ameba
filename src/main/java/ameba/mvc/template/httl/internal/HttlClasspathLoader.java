@@ -1,4 +1,4 @@
-package ameba.mvc.template.internal;
+package ameba.mvc.template.httl.internal;
 
 import ameba.util.IOUtils;
 import com.google.common.collect.Lists;

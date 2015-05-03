@@ -1,4 +1,4 @@
-package ameba.mvc.template.internal;
+package ameba.mvc.template.httl.internal;
 
 import httl.spi.Loader;
 import httl.spi.Logger;
@@ -25,10 +25,12 @@ public class HttlEngine extends DefaultEngine {
 
     public void setPreload(boolean preload) {
         this.preload = preload;
+        super.setPreload(preload);
     }
 
     public void setTemplateSuffix(String[] suffix) {
         this.templateSuffix = suffix;
+        super.setTemplateSuffix(suffix);
     }
 
     public void setLogger(Logger logger) {
