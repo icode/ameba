@@ -19,7 +19,8 @@
             border-bottom: 1px solid #3A0B9F;
             font-size: 28px;
         }
-        p#detail {
+
+        #detail {
             margin: 0;
             padding: 15px 45px;
             background: #BCACF6;
@@ -33,11 +34,6 @@
 
 </head>
 <body>
-<h1>${model.errorMessage.message}</h1>
-
-<p id="detail">
-    ${model.errorMessage.description}
-</p>
-
+${include("err_body.httl")}
 </body>
 </html>

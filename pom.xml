@@ -329,6 +329,11 @@
             <artifactId>json-patch</artifactId>
             <version>${json-patch.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.thoughtworks.paranamer</groupId>
+            <artifactId>paranamer</artifactId>
+            <version>${paranamer.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.amebastack</groupId>
@@ -405,6 +410,7 @@
         <ameba.utils.version>0.1.6e</ameba.utils.version>
         <osgi.version>4.2.0</osgi.version>
         <json-patch.version>1.7</json-patch.version>
+        <paranamer.version>2.7</paranamer.version>
         <jersey.version>[2.12,3.0)</jersey.version>
         <slf4j.version>[1.7.7,2.0.0)</slf4j.version>
         <logback.version>[1.1.2,2.0.0)</logback.version>

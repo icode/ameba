@@ -22,7 +22,7 @@
             font-size: 28px;
         }
 
-        p#detail {
+        #detail {
             background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#AE1113), to(#A31012));
             border-top: 4px solid #790000;
             border-bottom: 1px solid #590000;
@@ -34,12 +34,7 @@
         }
     </style>
 </head>
-<body id="error-page">
-<h1>${model.exception.message}</h1>
-
-<p id="detail">
-    ${model.errorMessage.description}
-</p>
-
+<body>
+${include("err_body.httl")}
 </body>
 </html>

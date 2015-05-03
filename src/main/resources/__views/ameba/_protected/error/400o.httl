@@ -20,7 +20,8 @@
             border-bottom: 1px solid #9F5805;
             font-size: 28px;
         }
-        p#detail {
+
+        #detail {
             margin: 0;
             padding: 15px 45px;
             background: #F6A960;
@@ -33,13 +34,6 @@
     </style>
 </head>
 <body>
-<h1>${model.errorMessage.message}</h1>
-
-<p id="detail">
-    ${model.errorMessage.description}
-    <br/>
-    ${model.request.UriInfo.absolutePath.toString.unescapeUrl}
-</p>
-
+${include("err_body.httl")}
 </body>
 </html>

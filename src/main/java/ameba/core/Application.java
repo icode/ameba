@@ -661,6 +661,8 @@ public class Application {
             }
         }
 
+        map.put(ServerProperties.PROCESSING_RESPONSE_ERRORS_ENABLED, "true");
+
         //移除转化需要的临时属性
         for (String key : removeKeys) {
             configMap.remove(key);

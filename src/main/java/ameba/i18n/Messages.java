@@ -1,5 +1,6 @@
 package ameba.i18n;
 
+import ameba.Ameba;
 import ameba.core.Requests;
 import ameba.util.ClassUtils;
 import com.google.common.collect.HashBasedTable;
@@ -16,7 +17,8 @@ import java.util.ResourceBundle;
  */
 public class Messages {
 
-    public static final String DEFAULT_BUNDLE_NAME = "conf/messages/message";
+    public static final String BUNDLE_DIR = "conf/messages/";
+    public static final String BUNDLE_NAME = BUNDLE_DIR + "message";
     private static final Table<String, Locale, ResourceBundle> RESOURCE_BUNDLES = HashBasedTable.create();
 
 
@@ -24,12 +26,12 @@ public class Messages {
     }
 
     public static String get(String key, Object... args) {
-        return get(DEFAULT_BUNDLE_NAME, key, args);
+        return get(BUNDLE_NAME, key, args);
     }
 
 
     public static String get(Locale locale, String key, Object... args) {
-        return get(DEFAULT_BUNDLE_NAME, getLocale(locale), key, args);
+        return get(BUNDLE_NAME, getLocale(locale), key, args);
     }
 
     public static String get(String bundleName, String key, Object... args) {
@@ -59,27 +61,36 @@ public class Messages {
         return locale;
     }
 
+    public static ResourceBundle getResourceBundle(String bundleName, Locale locale) {
+        ResourceBundle bundle = null;
+
+        if (!Ameba.getApp().getMode().isDev()) {
+            bundle = RESOURCE_BUNDLES.get(bundleName, locale);
+        }
+        try {
+            bundle = ResourceBundle.getBundle(
+                    bundleName,
+                    locale,
+                    ClassUtils.getContextClassLoader(),
+                    new MultiResourceBundleControl()
+            );
+        } catch (MissingResourceException e) {
+            // no op
+        }
+
+        if (bundle != null && !Ameba.getApp().getMode().isDev()) {
+            RESOURCE_BUNDLES.put(bundleName, locale, bundle);
+        }
+
+        return bundle;
+    }
+
     public static String get(String bundleName, Locale locale, String key, Object... args) {
         try {
-            ResourceBundle bundle = RESOURCE_BUNDLES.get(bundleName, locale);
+            ResourceBundle bundle = getResourceBundle(bundleName, locale);
 
             if (bundle == null) {
-                try {
-                    bundle = ResourceBundle.getBundle(
-                            bundleName,
-                            locale,
-                            ClassUtils.getContextClassLoader(),
-                            new MultiResourceBundleControl()
-                    );
-                } catch (MissingResourceException e) {
-                    // no op
-                }
-
-                if (bundle == null) {
-                    return getDefaultMessage(key, args);
-                } else {
-                    RESOURCE_BUNDLES.put(bundleName, locale, bundle);
-                }
+                return getDefaultMessage(key, args);
             }
 
             if (key == null) {

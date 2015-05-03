@@ -1,5 +1,6 @@
 package ameba.message.error;
 
+import ameba.i18n.Messages;
 import ameba.util.Result;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -9,13 +10,14 @@ import java.util.List;
  * @author icode
  */
 public class ErrorMessage extends Result {
-
+    @JsonIgnore
+    public final static String LOCALE_FILE = "ameba.message.error.localization";
     @JsonIgnore
     private Throwable throwable;
     private int status;
 
-    public ErrorMessage(boolean success) {
-        super(success);
+    public ErrorMessage() {
+        super(false);
     }
 
     public ErrorMessage(String message, List<Error> errors) {
@@ -41,6 +43,28 @@ public class ErrorMessage extends Result {
     public ErrorMessage(String message, String description, List<Error> errors) {
         super(message, description, errors);
     }
+
+    public static String getLocaleMessage(String key) {
+        return Messages.get(LOCALE_FILE, key);
+    }
+
+    public static String getLocaleMessage(int status) {
+        return getLocaleMessage(status + ".error.message");
+    }
+
+    public static String getLocaleMessage() {
+        return getLocaleMessage("default.error.message");
+    }
+
+    public static String getLocaleDescription() {
+        return getLocaleMessage("default.error.description");
+    }
+
+
+    public static String getLocaleDescription(int status) {
+        return getLocaleMessage(status + ".error.description");
+    }
+
 
     public Throwable getThrowable() {
         return throwable;

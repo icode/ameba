@@ -1,0 +1,48 @@
+<style>
+    .errors {
+        list-style: none;
+        display: block;
+        padding-left: 15px;
+    }
+
+    .uri {
+        margin: 10px 0;
+    }
+
+    .errors-title {
+        margin: 10px 0 0 0;
+    }
+</style>
+<!--#set(ameba.mvc.ErrorPageGenerator.Error model)-->
+<h1>${model.errorMessage.message}</h1>
+
+<div id="detail">
+    <div class="uri">
+        ${model.request.UriInfo.absolutePath.toString.unescapeUrl}
+    </div>
+    <div class="main-description">
+        ${model.errorMessage.description}
+    </div>
+    <h3 class="errors-title">
+        ${"template.errors.title".message}
+    </h3>
+    <ol class="errors">
+        <!--#for(ameba.util.Result.Error error : model.errorMessage.errors)-->
+        <li class="error">
+            <span>${for.index + 1}. </span>
+            <!--#if(error.code != null)-->
+            <span>${"template.error.code".message}: ${error.code}</span>
+            <!--#end-->
+            <!--#if(error.message != null)-->
+            <span>${"template.error.message".message}: ${error.message}</span>
+            <!--#end-->
+            <!--#if(error.description != null)-->
+            <span>${"template.error.description".message}: ${error.description}</span>
+            <!--#end-->
+            <!--#if(error.source != null)-->
+            <span>${"template.error.source".message}: ${error.source}</span>
+            <!--#end-->
+        </li>
+        <!--#end-->
+    </ol>
+</div>

@@ -179,10 +179,10 @@ public class BaseLoggingFilter {
     }
 
     private boolean isSupportPrintType(MediaType mediaType) {
-        return (getPrintMoreType() && (mediaType.getType().equals("text")
+        return mediaType != null && ((getPrintMoreType() && (mediaType.getType().equals("text")
                 || mediaType.getSubtype().equals("javascript")))
                 || mediaType.getSubtype().equals("json")
-                || mediaType.getSubtype().equals("xml");
+                || mediaType.getSubtype().equals("xml"));
     }
 
     public void filter(final ContainerRequestContext requestContext, final ContainerResponseContext responseContext)
