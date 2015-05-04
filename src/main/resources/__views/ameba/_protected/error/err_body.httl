@@ -30,7 +30,9 @@
     <ol class="errors">
         <!--#for(ameba.util.Result.Error error : model.errorMessage.errors)-->
         <li class="error">
+            <!--#if(for.size > 1)-->
             <span>${for.index + 1}. </span>
+            <!--#end-->
             <!--#if(error.code != null)-->
             <span>${"template.error.code".message}: ${error.code}</span>
             <!--#end-->

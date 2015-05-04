@@ -6,8 +6,8 @@ import ameba.db.ebean.internal.EbeanModelProcessor;
 import ameba.db.ebean.jackson.JacksonEbeanModule;
 import ameba.db.ebean.jackson.JsonIOExceptionMapper;
 import ameba.db.migration.DatabaseMigrationFeature;
+import ameba.db.model.Model;
 import ameba.db.model.ModelManager;
-import ameba.exception.ConfigErrorException;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
@@ -226,17 +226,22 @@ public class EbeanFeature extends OrmFeature {
             config.setDdlRun(false);
             config.setJsonFactory(jsonFactory);
             config.setContainerConfig(containerConfig);
+            config.setPackages(null);
+            config.setJars(null);
+            config.setResourceDirectory(null);
 
             if (name.equals(DataSourceManager.getDefaultDataSourceName())) {
                 config.setDefaultServer(true);
             }
 
             Set<Class> classes = ModelManager.getModels(name);
-            if (classes == null) {
-                throw new ConfigErrorException("please config db.{name}.models property");
-            }
-            for (Class clazz : classes) {
-                config.addClass(clazz);
+            if (classes != null) {
+                for (Class clazz : classes) {
+                    config.addClass(clazz);
+                }
+            } else {
+                // ebean 如果没有class就会自动搜索
+                config.addClass(Model.class);
             }
 
             final boolean genDdl = PropertiesHelper.getValue(appConfig.getProperties(),

@@ -24,10 +24,6 @@ public class RsAddOnFeature implements Feature {
             context.register(JsonPatchInterceptor.class);
         }
 
-        if (!context.getConfiguration().isRegistered(DefaultContentTypeFilter.class)) {
-            context.register(DefaultContentTypeFilter.class);
-        }
-
         context.register(new AddOnBinder());
         return false;
     }
