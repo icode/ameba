@@ -1,5 +1,6 @@
 package ameba.validation;
 
+import ameba.message.error.ErrorMessage;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.glassfish.jersey.server.validation.ValidationError;
@@ -31,18 +32,18 @@ public final class ValidationHelper {
      * @param violation exception containing constraint violations.
      * @return list of validation errors (not {@code null}).
      */
-    public static List<ValidationError> constraintViolationToValidationErrors(
+    public static List<ErrorMessage.Error> constraintViolationToValidationErrors(
             final ConstraintViolationException violation) {
         return Lists.transform(Lists.newArrayList(violation.getConstraintViolations()),
-                new Function<ConstraintViolation<?>, ValidationError>() {
+                new Function<ConstraintViolation<?>, ErrorMessage.Error>() {
 
                     @Override
-                    public ValidationError apply(final ConstraintViolation<?> violation) {
-                        return new ValidationError(
+                    public ErrorMessage.Error apply(final ConstraintViolation<?> violation) {
+                        return new ErrorMessage.Error(
+                                violation.getMessageTemplate().hashCode(),
                                 violation.getMessage(),
-                                violation.getMessageTemplate(),
-                                getViolationPath(violation),
-                                getViolationInvalidValue(violation.getInvalidValue())
+                                null,
+                                getViolationPath(violation)
                         );
                     }
                 });

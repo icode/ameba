@@ -4,6 +4,7 @@ import ameba.db.DataSourceManager;
 import ameba.db.OrmFeature;
 import ameba.db.ebean.internal.EbeanModelProcessor;
 import ameba.db.ebean.jackson.JacksonEbeanModule;
+import ameba.db.ebean.jackson.JsonIOExceptionMapper;
 import ameba.db.migration.DatabaseMigrationFeature;
 import ameba.db.model.ModelManager;
 import ameba.exception.ConfigErrorException;
@@ -151,7 +152,8 @@ public class EbeanFeature extends OrmFeature {
             return false;
         }
 
-        context.register(EbeanModelProcessor.class);
+        context.register(EbeanModelProcessor.class)
+                .register(JsonIOExceptionMapper.class);
 
         for (EbeanServer server : SERVERS) {
             try {

@@ -1,12 +1,11 @@
-package ameba.message;
+package ameba.message.jackson;
 
 import ameba.core.Application;
 import ameba.core.ws.rs.HttpPatchProperties;
 import ameba.message.internal.*;
+import ameba.message.jackson.internal.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.jaxrs.base.JsonMappingExceptionMapper;
-import com.fasterxml.jackson.jaxrs.base.JsonParseExceptionMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
@@ -75,8 +74,7 @@ public class JacksonFeature implements Feature {
                 }
             });
 
-            context.register(JsonParseExceptionMapper.class);
-            context.register(JsonMappingExceptionMapper.class);
+            context.register(JsonProcessingExceptionMapper.class);
             if (EntityFilteringFeature.enabled(config)) {
                 context.register(JacksonFilteringFeature.class);
                 context.register(FilteringJacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);

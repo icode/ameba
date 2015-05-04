@@ -1,4 +1,4 @@
-package ameba.message.internal;
+package ameba.message.jackson.internal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;

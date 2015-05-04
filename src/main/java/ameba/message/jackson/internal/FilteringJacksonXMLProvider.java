@@ -1,8 +1,8 @@
-package ameba.message.internal;
+package ameba.message.jackson.internal;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
-import com.fasterxml.jackson.jaxrs.json.JsonEndpointConfig;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.jaxrs.xml.XMLEndpointConfig;
 import org.glassfish.jersey.message.filtering.spi.ObjectProvider;
 
 import javax.inject.Inject;
@@ -15,36 +15,36 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 /**
- * <p>FilteringJacksonJsonProvider class.</p>
+ * <p>FilteringJacksonXMLProvider class.</p>
  *
  * @author icode
  * @since 0.1.6e
  */
 @Singleton
-public class FilteringJacksonJsonProvider extends JacksonJsonProvider {
+public class FilteringJacksonXMLProvider extends JacksonXMLProvider {
 
     @Inject
     private Provider<ObjectProvider<FilterProvider>> provider;
 
     /**
-     * <p>Constructor for FilteringJacksonJsonProvider.</p>
+     * <p>Constructor for FilteringJacksonXMLProvider.</p>
      *
-     * @param objectMapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
+     * @param xmlMapper a {@link com.fasterxml.jackson.dataformat.xml.XmlMapper} object.
      */
     @Inject
-    public FilteringJacksonJsonProvider(ObjectMapper objectMapper) {
-        super(objectMapper);
+    public FilteringJacksonXMLProvider(XmlMapper xmlMapper) {
+        super(xmlMapper);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected JsonEndpointConfig _configForWriting(final ObjectMapper mapper, final Annotation[] annotations,
-                                                   final Class<?> defaultView) {
+    protected XMLEndpointConfig _configForWriting(final XmlMapper mapper, final Annotation[] annotations,
+                                                  final Class<?> defaultView) {
 
         return super._configForWriting(
-                JacksonUtils.configFilterIntrospector(mapper)
+                (XmlMapper) JacksonUtils.configFilterIntrospector(mapper)
                 , annotations, defaultView);
     }
 

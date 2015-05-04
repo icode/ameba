@@ -81,4 +81,12 @@ public class ErrorMessage extends Result {
     public void setStatus(int status) {
         this.status = status;
     }
+
+    public static ErrorMessage fromStatus(int status){
+        ErrorMessage errorMessage = new ErrorMessage();
+        errorMessage.setStatus(status);
+        errorMessage.setMessage(ErrorMessage.getLocaleMessage(status));
+        errorMessage.setDescription(ErrorMessage.getLocaleDescription(status));
+        return errorMessage;
+    }
 }

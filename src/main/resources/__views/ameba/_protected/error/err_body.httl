@@ -23,6 +23,7 @@
     <div class="main-description">
         ${model.errorMessage.description}
     </div>
+    <!--#if(model.errorMessage.errors != null && model.errorMessage.errors.size > 0)-->
     <h3 class="errors-title">
         ${"template.errors.title".message}
     </h3>
@@ -45,4 +46,5 @@
         </li>
         <!--#end-->
     </ol>
+    <!--#end-->
 </div>

@@ -17,7 +17,6 @@ import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import java.util.List;
@@ -35,8 +34,6 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
     private static final Logger logger = LoggerFactory.getLogger(DefaultExceptionMapper.class);
     @Inject
     private Application application;
-    @Context
-    private HttpHeaders headers;
 
     protected int getHttpStatus(Throwable exception) {
         int status = 500;
@@ -106,31 +103,38 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
     }
 
     protected List<Result.Error> parseErrors(Throwable exception, int status) {
-        List<Result.Error> errors = Lists.newArrayList();
+        List<Result.Error> errors = null;
+        if (status == 500 || status == 400) {
+            boolean isDev = application.getMode().isDev();
+            errors = Lists.newArrayList();
+            Throwable cause = exception;
+            while (cause != null) {
+                StackTraceElement[] stackTraceElements = cause.getStackTrace();
+                if (stackTraceElements != null && stackTraceElements.length > 0) {
+                    Result.Error error = new Result.Error(
+                            cause.getClass().getCanonicalName().hashCode(),
+                            cause.getMessage());
 
-        Throwable cause = exception;
-        while (cause != null) {
-            StackTraceElement[] stackTraceElements = cause.getStackTrace();
-            if (stackTraceElements != null && stackTraceElements.length > 0) {
-                StackTraceElement stackTraceElement = stackTraceElements[0];
-                String source = stackTraceElement.toString();
-                Result.Error error = new Result.Error(
-                        cause.getClass().getCanonicalName().hashCode(),
-                        cause.getMessage());
+                    if (isDev) {
+                        if (status == 500) {
+                            StringBuilder descBuilder = new StringBuilder();
+                            for (StackTraceElement element : stackTraceElements) {
+                                descBuilder
+                                        .append(element.toString())
+                                        .append("\n");
+                            }
 
-                StringBuilder descBuilder = new StringBuilder();
-                for (StackTraceElement element : stackTraceElements) {
-                    descBuilder
-                            .append(element.toString())
-                            .append("\n");
+                            error.setDescription(descBuilder.toString());
+                        }
+                        StackTraceElement stackTraceElement = stackTraceElements[0];
+                        String source = stackTraceElement.toString();
+                        error.setSource(source);
+                    }
+
+                    errors.add(error);
                 }
-
-                error.setDescription(descBuilder.toString());
-                error.setSource(source);
-
-                errors.add(error);
+                cause = cause.getCause();
             }
-            cause = cause.getCause();
         }
 
         return errors;
@@ -155,24 +159,14 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
         message.setThrowable(exception);
         message.setMessage(parseMessage(exception, status));
         message.setDescription(parseDescription(exception, status));
-        if (application.getMode().isDev() && status == 500) {
-            message.setErrors(parseErrors(exception, status));
-        }
+        message.setErrors(parseErrors(exception, status));
 
         if (status == 500) {
             logger.error("系统发生错误", exception);
         }
 
-        Response.ResponseBuilder response = Response.status(status);
-
-        List<MediaType> accepts = headers.getAcceptableMediaTypes();
-        if (accepts != null && accepts.size() > 0) {
-            MediaType m = accepts.get(0);
-            response.type(m);
-        } else {
-            response.type(headers.getMediaType());
-        }
-
-        return response.entity(message).build();
+        return Response.status(status)
+                .type(ExceptionMapperUtils.getResponseType())
+                .entity(message).build();
     }
 }
