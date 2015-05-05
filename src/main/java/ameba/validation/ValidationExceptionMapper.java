@@ -26,7 +26,7 @@ public class ValidationExceptionMapper implements ExceptionMapper<ConstraintViol
 
     @Override
     public Response toResponse(final ConstraintViolationException exception) {
-        logger.debug(LocalizationMessages.CONSTRAINT_VIOLATIONS_ENCOUNTERED(), exception);
+        logger.trace(LocalizationMessages.CONSTRAINT_VIOLATIONS_ENCOUNTERED(), exception);
         Response.Status status = ValidationHelper.getResponseStatus(exception);
         ErrorMessage errorMessage = ErrorMessage.fromStatus(status.getStatusCode());
         errorMessage.setThrowable(exception);
