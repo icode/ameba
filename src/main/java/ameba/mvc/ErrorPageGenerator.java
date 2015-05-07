@@ -35,23 +35,23 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
     /**
      * Constant <code>DEFAULT_ERROR_PAGE_DIR="/_protected/error/"</code>
      */
-    public static final String DEFAULT_ERROR_PAGE_DIR = "/_protected/error/";
+    protected static final String DEFAULT_ERROR_PAGE_DIR = "/_protected/error/";
     /**
      * Constant <code>DEFAULT_500_RED_PRODUCT_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 500r.httl"</code>
      */
-    public static final String DEFAULT_500_RED_PRODUCT_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "500r.httl";
+    protected static final String DEFAULT_500_RED_PRODUCT_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "500r.httl";
     /**
      * Constant <code>DEFAULT_501_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 500p.httl"</code>
      */
-    public static final String DEFAULT_500_PURPLE_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "500p.httl";
+    protected static final String DEFAULT_500_PURPLE_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "500p.httl";
     /**
      * Constant <code>DEFAULT_400_BLACK_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 403.httl"</code>
      */
-    public static final String DEFAULT_400_BLACK_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400b.httl";
+    protected static final String DEFAULT_400_BLACK_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400b.httl";
     /**
      * Constant <code>DEFAULT_400_ORANGE_ERROR_PAGE="DEFAULT_ERROR_PAGE_DIR + 400o.httl"</code>
      */
-    public static final String DEFAULT_400_ORANGE_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400o.httl";
+    protected static final String DEFAULT_400_ORANGE_ERROR_PAGE = DEFAULT_ERROR_PAGE_DIR + "400o.httl";
 
     /**
      * Constant <code>errorTemplateMap</code>

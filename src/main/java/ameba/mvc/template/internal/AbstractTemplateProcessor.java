@@ -16,50 +16,54 @@ import org.glassfish.jersey.internal.util.collection.Value;
 import org.glassfish.jersey.server.mvc.MvcFeature;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.glassfish.jersey.server.mvc.internal.LocalizationMessages;
-import org.glassfish.jersey.server.mvc.internal.TemplateHelper;
 import org.glassfish.jersey.server.mvc.spi.TemplateProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * <p>Abstract AmebaTemplateProcessor class.</p>
+ * <p>Abstract AbstractTemplateProcessor class.</p>
  *
  * @author icode
  */
 @Singleton
-public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> {
+public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<T> {
     public static final String TEMPLATE_CONF_PREFIX = "template.";
-    private static Logger logger = LoggerFactory.getLogger(AmebaTemplateProcessor.class);
+    private static Logger logger = LoggerFactory.getLogger(AbstractTemplateProcessor.class);
     private final ConcurrentMap<String, T> cache;
     private final String suffix;
     private final Configuration config;
     private final String[] basePath;
     private final Charset encoding;
     private final Set<String> supportedExtensions;
+    @Context
+    private ResourceInfo resourceInfo;
 
     /**
-     * <p>Constructor for AmebaTemplateProcessor.</p>
+     * <p>Constructor for AbstractTemplateProcessor.</p>
      *
      * @param config              a {@link javax.ws.rs.core.Configuration} object.
      * @param propertySuffix      a {@link java.lang.String} object.
      * @param supportedExtensions a {@link java.lang.String} object.
      */
-    public AmebaTemplateProcessor(Configuration config, String propertySuffix, String... supportedExtensions) {
+    public AbstractTemplateProcessor(Configuration config, String propertySuffix, String... supportedExtensions) {
         this.config = config;
         this.suffix = '.' + propertySuffix;
         Map<String, Object> properties = config.getProperties();
-        String basePath = TemplateUtils.getBasePath(properties, propertySuffix);
+        String basePath = TemplateHelper.getBasePath(properties, propertySuffix);
 
-        Collection<String> basePaths = TemplateUtils.getBasePaths(basePath);
+        Collection<String> basePaths = TemplateHelper.getBasePaths(basePath);
 
         this.basePath = basePaths.toArray(new String[basePaths.size()]);
 
@@ -135,7 +139,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
      * @return a F object.
      */
     protected <F> F getTemplateObjectFactory(ServiceLocator serviceLocator, Class<F> type, Value<F> defaultValue) {
-        Object objectFactoryProperty = this.config.getProperty("jersey.config.server.mvc.factory" + this.suffix);
+        Object objectFactoryProperty = this.config.getProperty(MvcFeature.TEMPLATE_OBJECT_FACTORY + this.suffix);
         if (objectFactoryProperty != null) {
             if (type.isAssignableFrom(objectFactoryProperty.getClass())) {
                 return type.cast(objectFactoryProperty);
@@ -198,33 +202,82 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
         return this.encoding;
     }
 
-    private T resolve(String name) {
-        Iterator iterator = this.getTemplatePaths(name).iterator();
+    protected String resolveJarFile() {
+        Class resourceClass = resourceInfo.getResourceClass();
+        if (resourceClass == null) return null;
+        String classFile = resourceClass.getName().replace(".", "/") + ".class";
+        URL classUrl = IOUtils.getResource(classFile);
+        String urlProtocol = classUrl.getProtocol();
+        if (urlProtocol.equals("jar")) {
+            String path = classUrl.getPath();
+            return path.substring(0, path.length() - classFile.length() - 1);
+        }
+        return null;
+    }
 
-        String template;
-        InputStreamReader reader;
+    protected InputStream getNearTemplateStream(String jarFile, String template) {
+        if (jarFile != null) {
+            Enumeration<URL> urls = IOUtils.getResources(template);
+            while (urls.hasMoreElements()) {
+                URL url = urls.nextElement();
+                if (url.getPath().startsWith(jarFile)) {
+                    try {
+                        return url.openStream();
+                    } catch (IOException e) {
+                        // no op
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private InputStreamReader newReader(String template, InputStream in) {
+        InputStreamReader reader = in != null ? new InputStreamReader(in) : null;
+
+        if (reader == null) {
+            try {
+                return new InputStreamReader(new FileInputStream(template), this.encoding);
+            } catch (FileNotFoundException ex) {
+                //no op
+            }
+        }
+        return reader;
+    }
+
+    private T resolve(String name) {
+        Collection<String> tpls = this.getTemplatePaths(name);
+        Iterator iterator = tpls.iterator();
+        String jarFile = resolveJarFile();
+        String template = null;
+        InputStreamReader reader = null;
+        InputStream in = null;
         do {
             if (!iterator.hasNext()) {
-                return null;
+                break;
             }
 
             template = (String) iterator.next();
-            InputStream e;
-            e = Thread.currentThread().getStackTrace()[0].getClass().getResourceAsStream(template);
-            if (e == null) {
-                e = IOUtils.getResourceAsStream(template);
-            }
 
-            reader = e != null ? new InputStreamReader(e) : null;
+            in = getNearTemplateStream(jarFile, template);
 
-            if (reader == null) {
-                try {
-                    reader = new InputStreamReader(new FileInputStream(template), this.encoding);
-                } catch (FileNotFoundException ex) {
-                    //no op
-                }
-            }
+            reader = newReader(template, in);
         } while (reader == null);
+
+        if (reader == null) {
+            iterator = tpls.iterator();
+            do {
+                if (!iterator.hasNext()) {
+                    return null;
+                }
+
+                template = (String) iterator.next();
+
+                in = IOUtils.getResourceAsStream(template);
+
+                reader = newReader(template, in);
+            } while (reader == null);
+        }
 
         try {
             return this.resolve(template, reader);
@@ -242,6 +295,7 @@ public abstract class AmebaTemplateProcessor<T> implements TemplateProcessor<T> 
             throw r;
         } finally {
             IOUtils.closeQuietly(reader);
+            IOUtils.closeQuietly(in);
         }
     }
 

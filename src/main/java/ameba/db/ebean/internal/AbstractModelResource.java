@@ -65,7 +65,7 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
      */
     @PUT
     @Path("{id}")
-    public final Response replace(@PathParam("id") final String id, @NotNull @Valid final M model) throws Exception {
+    public final Response replace(@PathParam("id") final ID id, @NotNull @Valid final M model) throws Exception {
         return super.replace(id, model);
     }
 
@@ -83,7 +83,7 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
      */
     @PATCH
     @Path("{id}")
-    public final Response patch(@PathParam("id") final String id, @NotNull final M model) throws Exception {
+    public final Response patch(@PathParam("id") final ID id, @NotNull final M model) throws Exception {
         return super.patch(id, model);
     }
 
@@ -100,8 +100,9 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
      */
     @DELETE
     @Path("{ids}")
-    public final Response deleteMultiple(@NotNull @PathParam("ids") final PathSegment ids) throws Exception {
-        return super.deleteMultiple(ids);
+    public final Response deleteMultiple(@NotNull @PathParam("ids") ID id,
+                                         @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
+        return super.deleteMultiple(id, ids);
     }
 
     /**
@@ -113,8 +114,9 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
      */
     @GET
     @Path("{ids}")
-    public final Response findByIds(@NotNull @PathParam("ids") final PathSegment ids) throws Exception {
-        return super.findByIds(ids);
+    public final Response findByIds(@NotNull @PathParam("ids") ID id,
+                                    @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
+        return super.findByIds(id, ids);
     }
 
     /**

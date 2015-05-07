@@ -4,7 +4,7 @@ import ameba.mvc.template.httl.internal.HttlClasspathLoader;
 import ameba.mvc.template.httl.internal.HttlEngine;
 import ameba.mvc.template.httl.internal.HttlViewProcessor;
 import ameba.mvc.template.internal.NotFoundForward;
-import ameba.mvc.template.internal.TemplateUtils;
+import ameba.mvc.template.internal.TemplateHelper;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
@@ -18,7 +18,6 @@ import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
-import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -45,14 +44,10 @@ public class HttlMvcFeature implements Feature {
         Configuration config = context.getConfiguration();
         Map<String, Object> map = config.getProperties();
 
-        String encoding = (String) map.get("app.encoding");
+        String encoding = TemplateHelper.getTemplateOutputEncoding(config, "." + CONFIG_SUFFIX).name().toLowerCase();
 
-        if (StringUtils.isNotBlank(encoding)) {
-            encoding = Charset.forName(encoding).name().toLowerCase();
-            properties.put("input.encoding", encoding);
-            properties.put("output.encoding", encoding);
-            properties.put("message.encoding", encoding);
-        }
+        properties.put("input.encoding", encoding);
+        properties.put("output.encoding", encoding);
 
         String keyPrefix = HttlViewProcessor.TEMPLATE_CONF_PREFIX + CONFIG_SUFFIX + ".";
 
@@ -69,12 +64,12 @@ public class HttlMvcFeature implements Feature {
             }
         }
 
-        String basePath = TemplateUtils.getBasePath(map, CONFIG_SUFFIX);
-        Collection<String> basePaths = TemplateUtils.getBasePaths(basePath);
+        String basePath = TemplateHelper.getBasePath(map, CONFIG_SUFFIX);
+        Collection<String> basePaths = TemplateHelper.getBasePaths(basePath);
 
         properties.put("template.directory", StringUtils.join(basePaths, ","));
 
-        String[] supportedExtensions = TemplateUtils.getExtends(config, CONFIG_SUFFIX,
+        String[] supportedExtensions = TemplateHelper.getExtends(config, CONFIG_SUFFIX,
                 HttlViewProcessor.DEFAULT_TEMPLATE_EXTENSIONS);
 
         Set<String> exts = Sets.newHashSet(Collections2.transform(

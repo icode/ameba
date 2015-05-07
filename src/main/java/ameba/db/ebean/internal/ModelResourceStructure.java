@@ -82,7 +82,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      *
      * @param id id string
      * @return ID object
-     * @see #deleteMultiple(PathSegment)
+     * @see #deleteMultiple(ID, PathSegment)
      */
     @SuppressWarnings("unchecked")
     protected ID stringToId(String id) {
@@ -96,9 +96,9 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return ID
      * @throws BadRequestException response status 400
      */
-    protected final ID tryConvertId(String id) {
+    protected final ID tryConvertId(Object id) {
         try {
-            return stringToId(id);
+            return stringToId(id.toString());
         } catch (Exception e) {
             throw new BadRequestException("Id syntax error", e);
         }
@@ -110,9 +110,9 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param id id object
      * @return id string
      * @see #insert(Model)
-     * @see #patch(String, Model)
+     * @see #patch(ID, Model)
      * @see #insert(Model)
-     * @see #patch(String, Model)
+     * @see #patch(ID, Model)
      */
     protected String idToString(@NotNull ID id) {
         return id.toString();
@@ -217,7 +217,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @see {@link javax.ws.rs.PUT}
      * @see {@link ameba.db.ebean.internal.AbstractModelResource#replace(String, Model)}
      */
-    public Response replace(@PathParam("id") final String id, @NotNull @Valid final M model) throws Exception {
+    public Response replace(@PathParam("id") final ID id, @NotNull @Valid final M model) throws Exception {
 
         BeanDescriptor descriptor = getModelBeanDescriptor();
         final ID mId = tryConvertId(id);
@@ -291,7 +291,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @see {@link ameba.core.ws.rs.PATCH}
      * @see {@link ameba.db.ebean.internal.AbstractModelResource#patch(String, Model)}
      */
-    public Response patch(@PathParam("id") final String id, @NotNull final M model) throws Exception {
+    public Response patch(@PathParam("id") final ID id, @NotNull final M model) throws Exception {
         BeanDescriptor descriptor = getModelBeanDescriptor();
         descriptor.convertSetId(tryConvertId(id), (EntityBean) model);
         final Response.ResponseBuilder builder = Response.noContent()
@@ -352,6 +352,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * <br/>
      * logical delete status 202
      *
+     * @param id The id use for path matching type
      * @param ids The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
@@ -360,7 +361,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @see {@link javax.ws.rs.DELETE}
      * @see {@link ameba.db.ebean.internal.AbstractModelResource#deleteMultiple(PathSegment)}
      */
-    public Response deleteMultiple(@NotNull @PathParam("ids") final PathSegment ids) throws Exception {
+    public Response deleteMultiple(@NotNull @PathParam("ids") ID id,
+                                   @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
         final ID firstId = tryConvertId(ids.getPath());
         Set<String> idSet = ids.getMatrixParameters().keySet();
         final Response.ResponseBuilder builder = Response.noContent();
@@ -472,6 +474,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     /**
      * Find a model or model list given its Ids.
      *
+     * @param id The id use for path matching type
      * @param ids the id of the model.
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
@@ -480,7 +483,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @see {@link javax.ws.rs.GET}
      * @see {@link ameba.db.ebean.internal.AbstractModelResource#findByIds}
      */
-    public Response findByIds(@NotNull @PathParam("ids") final PathSegment ids) throws Exception {
+    public Response findByIds(@NotNull @PathParam("ids") ID id,
+                              @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
         final Query<M> query = server.find(modelType);
         final ID firstId = tryConvertId(ids.getPath());
         Set<String> idSet = ids.getMatrixParameters().keySet();

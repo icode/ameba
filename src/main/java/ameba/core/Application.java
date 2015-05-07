@@ -239,6 +239,8 @@ public class Application {
             Set<String> foundClasses = Sets.newHashSet();
             List<String> acceptClasses = Lists.newArrayList();
             while (scanner.hasNext()) {
+                String fileName = scanner.next();
+                if (!fileName.endsWith(".class")) continue;
                 ClassFoundEvent.ClassInfo info = new ClassFoundEvent.ClassInfo() {
 
                     InputStream in;
@@ -256,7 +258,7 @@ public class Application {
                         closeQuietly(in);
                     }
                 };
-                info.fileName = scanner.next();
+                info.fileName = fileName;
                 String className = info.getCtClass().getName();
                 if (!foundClasses.contains(className)) {
                     ClassFoundEvent event = new ClassFoundEvent(info);
@@ -1592,11 +1594,11 @@ public class Application {
             }
 
             public CtClass getCtClass() {
-                if (ctClass == null) {
+                if (ctClass == null && fileName.endsWith(".class")) {
                     try {
                         ctClass = ClassPool.getDefault().makeClass(getFileStream());
                     } catch (IOException e) {
-                        throw new AmebaException("make class error", e);
+                        logger.error("make class error", e);
                     }
                 }
                 return ctClass;
@@ -1608,7 +1610,11 @@ public class Application {
 
             public Object[] getAnnotations() {
                 if (annotations == null) {
-                    annotations = getCtClass().getAvailableAnnotations();
+                    try {
+                        annotations = getCtClass().getAvailableAnnotations();
+                    } catch (Exception | Error e) {
+                        return new Object[0];
+                    }
                 }
                 return annotations;
             }

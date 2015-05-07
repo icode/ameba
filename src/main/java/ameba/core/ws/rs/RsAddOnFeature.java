@@ -20,9 +20,9 @@ public class RsAddOnFeature implements Feature {
     @Override
     public boolean configure(FeatureContext context) {
 
-        if (!context.getConfiguration().isRegistered(JsonPatchInterceptor.class)) {
-            context.register(JsonPatchInterceptor.class);
-        }
+//        if (!context.getConfiguration().isRegistered(JsonPatchInterceptor.class)) {
+//            context.register(JsonPatchInterceptor.class);
+//        }
 
         context.register(new AddOnBinder());
         return false;

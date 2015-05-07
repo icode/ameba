@@ -3,8 +3,8 @@ package ameba.mvc.template.httl.internal;
 import ameba.mvc.template.TemplateException;
 import ameba.mvc.template.TemplateNotFoundException;
 import ameba.mvc.template.httl.HttlMvcFeature;
-import ameba.mvc.template.internal.AmebaTemplateProcessor;
-import ameba.mvc.template.internal.TemplateUtils;
+import ameba.mvc.template.internal.AbstractTemplateProcessor;
+import ameba.mvc.template.internal.TemplateHelper;
 import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import httl.Engine;
@@ -35,12 +35,15 @@ import java.util.Map;
  * @since 13-8-6 下午7:57
  */
 @Singleton
-public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
+public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
 
     /**
      * Constant <code>CONFIG_SUFFIX="httl"</code>
      */
-    public static final String[] DEFAULT_TEMPLATE_EXTENSIONS = new String[]{".httl.html", ".httl"};
+    public static final String[] DEFAULT_TEMPLATE_EXTENSIONS = new String[]{
+            "." + HttlMvcFeature.CONFIG_SUFFIX + ".html",
+            "." + HttlMvcFeature.CONFIG_SUFFIX
+    };
 
     private static String REQ_TPL_PATH_KEY = HttlViewProcessor.class.getName() + ".template.path";
     private static Logger logger = LoggerFactory.getLogger(HttlViewProcessor.class);
@@ -57,7 +60,7 @@ public class HttlViewProcessor extends AmebaTemplateProcessor<Template> {
     @Inject
     public HttlViewProcessor(Configuration config) {
         super(config, HttlMvcFeature.CONFIG_SUFFIX,
-                TemplateUtils.getExtends(config, HttlMvcFeature.CONFIG_SUFFIX, DEFAULT_TEMPLATE_EXTENSIONS));
+                TemplateHelper.getExtends(config, HttlMvcFeature.CONFIG_SUFFIX, DEFAULT_TEMPLATE_EXTENSIONS));
     }
 
     /**

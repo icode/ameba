@@ -22,6 +22,8 @@ import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,6 +164,7 @@ public class EbeanFeature extends OrmFeature {
                 logger.warn("shut old ebean server has a error", e);
             }
         }
+        SERVERS.clear();
 
         final Configuration appConfig = context.getConfiguration();
 
@@ -284,6 +287,27 @@ public class EbeanFeature extends OrmFeature {
                 }
             }
         }
+
+        context.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                for (EbeanServer server : SERVERS) {
+                    String name = server.getName();
+                    createBuilder(server).named(name);
+
+                    if (name.equals(DataSourceManager.getDefaultDataSourceName())) {
+                        createBuilder(server);
+                    }
+                }
+            }
+
+            private ScopedBindingBuilder<SpiEbeanServer> createBuilder(EbeanServer server) {
+                return bind((SpiEbeanServer) server)
+                        .to(EbeanServer.class)
+                        .to(SpiEbeanServer.class)
+                        .proxy(false);
+            }
+        });
         return true;
     }
 
