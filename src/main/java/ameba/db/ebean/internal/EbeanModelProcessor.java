@@ -283,7 +283,6 @@ public class EbeanModelProcessor implements WriterInterceptor {
      * todo
      *
      * @param queryParams uri query params
-     * @param queryParams uri query params
      * @param query       query
      */
     public static void applyWhere(MultivaluedMap<String, String> queryParams, Query query) {
@@ -297,7 +296,6 @@ public class EbeanModelProcessor implements WriterInterceptor {
     /**
      * apply uri query parameter on query
      *
-     * @param queryParams  uri query params
      * @param queryParams  uri query params
      * @param query        Query
      * @param needPageList need page list
@@ -407,14 +405,13 @@ public class EbeanModelProcessor implements WriterInterceptor {
                 query = (Query) o;
             } else if (o instanceof ExpressionList) {
                 query = ((ExpressionList) o).query();
-            } else if (o instanceof FutureList) {
-                query = ((FutureList) o).getQuery();
             }
+
             if (query != null) {
                 FutureRowCount rowCount = applyUriQuery(queryParams, query);
                 BeanList list;
                 if (o instanceof FutureList) {
-                    list = (BeanList) query.findFutureList().getUnchecked();
+                    list = (BeanList) ((FutureList) o).getUnchecked();
                 } else {
                     list = (BeanList) query.findList();
                 }
