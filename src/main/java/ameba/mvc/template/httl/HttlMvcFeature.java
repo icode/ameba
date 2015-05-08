@@ -9,7 +9,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 import httl.Engine;
-import httl.spi.methods.MessageMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
@@ -59,7 +58,12 @@ public class HttlMvcFeature implements Feature {
                 } else if (name.startsWith("template.")) {
                     continue;
                 }
-
+                // 累加ameba配置值，并累加到httl-default上，${name}++ 会变为${name}+
+                if (name.endsWith("s")) {
+                    if (!name.endsWith("+")) {
+                        name = name.concat("+");
+                    }
+                }
                 properties.put(name, map.get(key));
             }
         }
@@ -85,9 +89,9 @@ public class HttlMvcFeature implements Feature {
         properties.put("template.suffix", StringUtils.join(exts, ","));
         properties.put("loaders", HttlClasspathLoader.class.getName());
         properties.put("engine", HttlEngine.class.getName());
-        properties.put("import.methods-", MessageMethod.class.getName());
-        properties.put("import.methods+", "ameba.mvc.template.httl.internal.MessageMethod");
         properties.put("localized", "false");
+        properties.put("output.writer", "false");
+        properties.put("import.methods-", "httl.spi.methods.MessageMethod");
 
         final Engine engine = Engine.getEngine(properties);
 

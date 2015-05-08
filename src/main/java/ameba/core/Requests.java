@@ -33,7 +33,7 @@ public class Requests {
     private Requests() {
     }
 
-    private static Request getRequest() {
+    public static Request getRequest() {
         Request request = (Request) requestProvider.get();
         if (request == null) {
             throw new AmebaException("Can not found current request, please check in request scope.");

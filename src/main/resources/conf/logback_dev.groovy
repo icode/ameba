@@ -1,5 +1,6 @@
 package conf
 
+import ameba.core.Application
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.core.ConsoleAppender
 
@@ -12,9 +13,10 @@ appender("CONSOLE", ConsoleAppender) {
 }
 
 
-String appPackage = context.getProperty("appPackage");
-String trace = context.getProperty("ameba.trace.enabled");
+Application app = context.getObject("application");
+String trace = app.getProperty("ameba.trace.enabled");
 boolean isTrace = "true".equalsIgnoreCase(trace);
+String appPackage = app.getProperty("app.package");
 
 logger("org.glassfish.jersey.filter.LoggingFilter", INFO)
 logger("org.glassfish", WARN)
@@ -31,6 +33,7 @@ logger("com.avaje.ebeaninternal.server.transaction", isTrace ? TRACE : DEBUG)
 logger("com.avaje.ebeaninternal.server.cluster", DEBUG)
 logger("com.avaje.ebeaninternal.server.lib", DEBUG)
 logger("com.avaje.ebeaninternal.server.deploy.BeanDescriptor", isTrace ? TRACE : DEBUG)
+logger("com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager", app.getMode().isDev() ? WARN : ERROR)
 
 logger("httl", WARN)
 logger("ameba", isTrace ? TRACE : DEBUG)

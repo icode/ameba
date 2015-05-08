@@ -1374,11 +1374,7 @@ public class Application {
 
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         context.reset();
-        context.putProperty("appName", getApplicationName());
-        String appPackage = properties.getProperty("app.package");
-        context.putProperty("appPackage", appPackage);
-        String traceEnabled = properties.getProperty("ameba.trace.enabled");
-        context.putProperty("ameba.trace.enabled", traceEnabled);
+        context.putObject("application", this);
 
         if (loggerConfigFile != null) {
             GafferUtil.runGafferConfiguratorOn(context, this, loggerConfigFile);

@@ -1,5 +1,6 @@
 package conf
 
+import ameba.core.Application
 import ameba.util.IOUtils
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.core.ConsoleAppender
@@ -14,8 +15,10 @@ appender("CONSOLE", ConsoleAppender) {
         pattern = "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
     }
 }
+Application app = context.getObject("application");
+String appPackage = app.getProperty("app.package");
+String appName = app.getProperty("appName");
 
-String appName = context.getProperty("appName");
 appender("FILE", RollingFileAppender) {
     rollingPolicy(TimeBasedRollingPolicy) {
         fileNamePattern = IOUtils.getResource("").getFile() + "../logs/" + appName + ".%d{yyyy-MM-dd}-%i.log"
@@ -29,7 +32,6 @@ appender("FILE", RollingFileAppender) {
     }
 }
 
-String appPackage = context.getProperty("appPackage");
 if (appPackage != null)
     logger(appPackage, DEBUG)
 

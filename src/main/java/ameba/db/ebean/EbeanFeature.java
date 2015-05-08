@@ -221,7 +221,7 @@ public class EbeanFeature extends OrmFeature {
             config.loadFromProperties(eBeanConfig);
             config.setPackages(null);
             config.setJars(null);
-            config.setRegisterJmxMBeans(Boolean.parseBoolean((String) appConfig.getProperty("app.jmx.enabled")));
+            config.setRegisterJmxMBeans("true".equals(appConfig.getProperty("app.jmx.enabled")));
             config.setName(name);
             config.setDataSourceJndiName(null);
             config.setDataSource(DataSourceManager.getDataSource(name));//设置为druid数据源
@@ -261,9 +261,11 @@ public class EbeanFeature extends OrmFeature {
                 excludes = excludeStr.split(",");
             }
 
-            logger.info("连接数据源 {} ...", name);
+            logger.debug("Connecting [{}] database ...", name);
 
             final EbeanServer server = EbeanServerFactory.create(config);
+
+            logger.info("Database [{}] connected at {}", name, appConfig.getProperty("db." + name + ".url"));
 
             JacksonEbeanModule module = new JacksonEbeanModule(server, locator);
 

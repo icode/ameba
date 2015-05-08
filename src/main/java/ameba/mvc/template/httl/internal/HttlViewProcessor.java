@@ -170,7 +170,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
                 logger.error("read template file error", e);
             }
         }
-        return "";
+        return null;
     }
 
     private File getTemplateFile(Template template) {
