@@ -34,7 +34,7 @@ public class Messages {
         return get(BUNDLE_NAME, getLocale(locale), key, args);
     }
 
-    public static String get(String bundleName, String key, Object... args) {
+    public static String get(String bundleName, String key, Object[] args) {
         return get(bundleName, getLocale(), key, args);
     }
 
@@ -64,21 +64,27 @@ public class Messages {
     public static ResourceBundle getResourceBundle(String bundleName, Locale locale) {
         ResourceBundle bundle = null;
 
-        if (!Ameba.getApp().getMode().isDev()) {
+        boolean isDev = false;
+        if (Ameba.getApp() != null) {
+            isDev = Ameba.getApp().getMode().isDev();
+        }
+        if (!isDev) {
             bundle = RESOURCE_BUNDLES.get(bundleName, locale);
         }
-        try {
-            bundle = ResourceBundle.getBundle(
-                    bundleName,
-                    locale,
-                    ClassUtils.getContextClassLoader(),
-                    new MultiResourceBundleControl()
-            );
-        } catch (MissingResourceException e) {
-            // no op
+        if (bundle == null) {
+            try {
+                bundle = ResourceBundle.getBundle(
+                        bundleName,
+                        locale,
+                        ClassUtils.getContextClassLoader(),
+                        new MultiResourceBundleControl()
+                );
+            } catch (MissingResourceException e) {
+                // no op
+            }
         }
 
-        if (bundle != null && !Ameba.getApp().getMode().isDev()) {
+        if (bundle != null && !isDev) {
             RESOURCE_BUNDLES.put(bundleName, locale, bundle);
         }
 

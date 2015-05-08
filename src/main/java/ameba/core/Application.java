@@ -8,6 +8,7 @@ import ameba.event.SystemEventBus;
 import ameba.exception.AmebaException;
 import ameba.exception.ConfigErrorException;
 import ameba.feature.AmebaFeature;
+import ameba.i18n.Messages;
 import ameba.lib.InitializationLogger;
 import ameba.util.ClassUtils;
 import ameba.util.IOUtils;
@@ -109,7 +110,7 @@ public class Application {
     public Application(String... ids) {
 
         if (Ameba.getApp() != null) {
-            throw new AmebaException("已经存在一个应用实例");
+            throw new AmebaException(Messages.get("info.application.exists"));
         }
 
         this.ids = ids;
@@ -154,7 +155,7 @@ public class Application {
             //将默认配置放入临时配置对象,占坑(index),不清除内存,防止module替换默认配置,允许application.conf替换
             configMap.putAll((Map) properties);
         } catch (Exception e) {
-            logger.warn("读取[conf/default.conf]出错", e);
+            logger.warn(Messages.get("info.module.conf.error", "conf/default.conf"), e);
         }
 
         List<String> appConf = Lists.newArrayListWithExpectedSize(configFiles.length);
@@ -183,8 +184,8 @@ public class Application {
         if (!isInitialized())
             Ameba.printInfo();
 
-        logger.info("初始化...");
-        logger.info("应用配置文件 {}", appConf);
+        logger.info(Messages.get("info.init"));
+        logger.info(Messages.get("info.app.conf", appConf));
 
         //读取模式配置
         readModeConfig(configMap);
@@ -227,13 +228,13 @@ public class Application {
 
         addOnDone();
 
-        logger.info("装载特性...");
+        logger.info(Messages.get("info.feature.load"));
     }
 
     private void scanClasses() {
         URL cacheList = IOUtils.getResource(SCAN_CLASSES_CACHE_FILE);
         if (cacheList == null || getMode().isDev()) {
-            logger.debug("scan files ...");
+            logger.debug(Messages.get("info.scan.classes"));
             final PackageNamesScanner scanner = new PackageNamesScanner(
                     scanPkgs.toArray(new String[scanPkgs.size()]), true);
             Set<String> foundClasses = Sets.newHashSet();
@@ -287,13 +288,13 @@ public class Application {
 
                 IOUtils.writeLines(acceptClasses, null, out);
             } catch (IOException e) {
-                logger.error("write class cache file error", e);
+                logger.error(Messages.get("info.write.class.cache.error"), e);
             } finally {
                 acceptClasses.clear();
                 closeQuietly(out);
             }
         } else {
-            logger.debug("read files from scan cache ...");
+            logger.debug(Messages.get("info.read.class.cache.error"));
             InputStream in = null;
             try {
                 in = cacheList.openStream();
@@ -323,7 +324,7 @@ public class Application {
                 }
                 closeQuietly(reader);
             } catch (IOException e) {
-                logger.error("read classes cache list error", e);
+                logger.error(Messages.get("info.read.class.cache.error"), e);
             } finally {
                 closeQuietly(in);
             }
@@ -339,12 +340,12 @@ public class Application {
 
             @Override
             public RequestEventListener onRequest(org.glassfish.jersey.server.monitoring.RequestEvent requestEvent) {
-                logger.getSource().trace("on request {}", requestEvent.getType().name());
+                logger.getSource().trace(Messages.get("info.on.request", requestEvent.getType().name()));
                 AmebaFeature.publishEvent(new RequestEvent(requestEvent));
                 return new RequestEventListener() {
                     @Override
                     public void onEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
-                        logger.getSource().trace("on request {}", event.getType().name());
+                        logger.getSource().trace(Messages.get("info.on.request", event.getType().name()));
                         AmebaFeature.publishEvent(new RequestEvent(event));
                     }
                 };
@@ -406,8 +407,8 @@ public class Application {
                             sortPriority = Ints.tryParse(sortStr);
                             if (sortPriority == null || sortPriority < 0 || sortPriority > Integer.MAX_VALUE) {
                                 throw new ConfigErrorException(
-                                        "插件配置出错，执行优先级设置错误，必须为last或数字（且大于-1小于"
-                                                + Integer.MAX_VALUE + "）。配置 " + key);
+                                        Messages.get("info.addon.key.priority.error", Integer.MAX_VALUE, key)
+                                );
                             }
                         }
                     }
@@ -422,7 +423,7 @@ public class Application {
         }
 
         for (SortEntry entry : addOnSorts) {
-            logger.debug("注册插件 [{}({})}", entry.key, entry.className);
+            logger.debug(Messages.get("info.addon.register.item", entry.key, entry.className));
             try {
                 Class addOnClass = ClassUtils.getClass(entry.className);
                 if (AddOn.class.isAssignableFrom(addOnClass)) {
@@ -431,14 +432,14 @@ public class Application {
                     if (f)
                         addOn.setup(this);
                 } else {
-                    throw new ConfigErrorException("插件 " + entry.name + " 类配置必须实现ameba.core.AddOn,在鍵 " + entry.key + " 配置项。");
+                    throw new ConfigErrorException(Messages.get("info.addon.register.error.interface", entry.name, entry.key));
                 }
             } catch (ClassNotFoundException e) {
-                throw new ConfigErrorException("插件 " + entry.name + " 未找到,在鍵 " + entry.key + " 配置项。");
+                throw new ConfigErrorException(Messages.get("info.addon.register.error.not.found", entry.name, entry.key));
             } catch (InstantiationException | IllegalAccessException e) {
-                throw new ConfigErrorException("插件 " + entry.name + " 无法初始化,在鍵 " + entry.key + " 配置项。");
+                throw new ConfigErrorException(Messages.get("info.addon.register.error.init", entry.name, entry.key));
             } catch (Exception e) {
-                logger.error("插件 " + entry.name + " 出错,在鍵 " + entry.key + " 配置项。", e);
+                logger.error(Messages.get("info.addon.register.error", entry.name, entry.key), e);
             }
         }
     }
@@ -448,7 +449,7 @@ public class Application {
             try {
                 addOn.done(this);
             } catch (Exception e) {
-                logger.error("插件出错,在 " + addOn.getClass(), e);
+                logger.error(Messages.get("info.addon.error", addOn.getClass().getName()), e);
             }
         }
     }
@@ -463,7 +464,7 @@ public class Application {
     }
 
     private void configureFeature(Map<String, Object> configMap) {
-        logger.info("注册特性");
+        logger.debug(Messages.get("info.feature.register"));
 
         int suc = 0, fail = 0, beak = 0;
 
@@ -488,8 +489,8 @@ public class Application {
                             sortPriority = Ints.tryParse(sortStr);
                             if (sortPriority == null || sortPriority < 0 || sortPriority > Integer.MAX_VALUE) {
                                 throw new ConfigErrorException(
-                                        "特性配置出错，执行优先级设置错误，必须为last或数字（且大于-1小于"
-                                                + Integer.MAX_VALUE + "）。配置 " + key);
+                                        Messages.get("info.feature.key.priority.error", Integer.MAX_VALUE, key)
+                                );
                             }
                         }
                     }
@@ -500,8 +501,8 @@ public class Application {
                         diPriority = Ints.tryParse(name.substring(prioritySp + 1));
                         if (diPriority == null || diPriority < 0 || diPriority > Integer.MAX_VALUE) {
                             throw new ConfigErrorException(
-                                    "特性配置出错，DI优先级设置错误，必须为数字，且大于-1小于"
-                                            + Integer.MAX_VALUE + "。配置 " + key);
+                                    Messages.get("info.feature.key.priority.error", Integer.MAX_VALUE, key)
+                            );
                         }
                     }
 
@@ -524,11 +525,11 @@ public class Application {
 
         for (FeatureEntry entry : featureEntries) {
             try {
-                logger.debug("注册特性[{}({})]", entry.name, entry.className);
+                logger.debug(Messages.get("info.feature.register.item", entry.name, entry.className));
                 Class clazz = ClassUtils.getClass(entry.className);
                 if (isRegistered(clazz)) {
                     beak++;
-                    logger.warn("并未注册装特性[{}({})]，因为该特性已存在", entry.name, clazz);
+                    logger.warn(Messages.get("info.feature.exists", entry.name, clazz));
                     continue;
                 }
 
@@ -537,9 +538,9 @@ public class Application {
             } catch (ClassNotFoundException e) {
                 fail++;
                 if (!entry.name.startsWith("default."))
-                    logger.error("获取特性失败", e);
+                    logger.error(Messages.get("info.feature.sys.get.error"), e);
                 else
-                    logger.warn("未找到系统默认特性[" + entry.className + "]", e);
+                    logger.warn(Messages.get("info.feature.sys.not.found", entry.className), e);
             }
         }
 
@@ -550,11 +551,11 @@ public class Application {
             registers = registerStr.split(",");
             for (String register : registers) {
                 try {
-                    logger.debug("注册特性[{}]", register);
+                    logger.debug(Messages.get("info.feature.register.item", "app.registers", register));
                     Class clazz = ClassUtils.getClass(register);
                     if (isRegistered(clazz)) {
                         beak++;
-                        logger.warn("并未注册特性[{}]，因为该特性已存在", register);
+                        logger.warn(Messages.get("info.feature.exists", register));
                         continue;
                     }
 
@@ -563,14 +564,14 @@ public class Application {
                 } catch (ClassNotFoundException e) {
                     fail++;
                     if (!register.startsWith("default."))
-                        logger.error("获取特性失败", e);
+                        logger.error(Messages.get("info.feature.sys.get.error"), e);
                     else
-                        logger.warn("未找到系统默认特性[" + register + "]", e);
+                        logger.warn(Messages.get("info.feature.not.found.error", register), e);
                 }
             }
         }
 
-        logger.info("成功注册{}个特性，失败{}个，跳过{}个", suc, fail, beak);
+        logger.info(Messages.get("info.feature.collect", suc, fail, beak));
     }
 
     private void subscribeResourceEvent() {
@@ -626,7 +627,11 @@ public class Application {
             }
         }
         packages = ArrayUtils.removeElement(packages, "");
-        logger.info("设置资源扫描包:{}", StringUtils.join(packages, ","));
+        if (packages.length > 0) {
+            logger.info(Messages.get("info.configure.resource.package", StringUtils.join(packages, ",")));
+        } else {
+            logger.warn(Messages.get("info.configure.resource.package.none"));
+        }
         packages(packages);
         subscribeResourceEvent();
     }
@@ -657,7 +662,7 @@ public class Application {
                         map.put((String) filed.get(null), configMap.get(key));
                         removeKeys.add(key);
                     } catch (IllegalAccessException e) {
-                        logger.error("无法获取设置的键值", e);
+                        logger.error(Messages.get("info.config.error.key", key), e);
                     }
                 }
             }
@@ -693,7 +698,7 @@ public class Application {
                 in = connection.getInputStream();
                 modeProperties.load(in);
             } catch (IOException e) {
-                logger.warn("读取[conf/" + mode.name().toLowerCase() + ".conf]出错", e);
+                logger.warn(Messages.get("info.module.conf.error", "conf/" + mode.name().toLowerCase() + ".conf"), e);
             } finally {
                 closeQuietly(in);
             }
@@ -716,6 +721,18 @@ public class Application {
 
     private void subscribeServerEvent() {
         SystemEventBus.subscribe(Container.StartupEvent.class, new Listener<Container.StartupEvent>() {
+
+            final String line = "\n";
+            final String lineStart = "- ";
+            final String lineChild = " >";
+            final StringBuilder builder = new StringBuilder();
+
+            void appendInfo(String key, Object... value) {
+                builder.append(lineStart)
+                        .append(Messages.get(key, value))
+                        .append(line);
+            }
+
             @Override
             public void onReceive(Container.StartupEvent event) {
 
@@ -725,53 +742,44 @@ public class Application {
                     Runtime r = Runtime.getRuntime();
                     r.gc();
 
-                    String startUsedTime = Times.toDuration(System.currentTimeMillis() - timestamp);
-
-                    StringBuilder builder = new StringBuilder();
-                    builder
-                            .append("Ameba版本  >   ")
-                            .append(Ameba.getVersion())
-                            .append("\n")
-                            .append("HTTP容器   >   ")
-                            .append(StringUtils.defaultString(container.getType(), "Unknown"))
-                            .append("\n")
-                            .append("启动用时    >   ")
-                            .append(startUsedTime)
-                            .append("\n")
-                            .append("应用名称    >   ")
-                            .append(getApplicationName())
-                            .append("\n")
-                            .append("应用版本    >   ")
-                            .append(getApplicationVersion())
-                            .append("\n")
-                            .append("内存使用    >   ")
-                            .append(FileUtils.byteCountToDisplaySize((r.totalMemory() - r.freeMemory())))
-                            .append("/")
-                            .append(FileUtils.byteCountToDisplaySize(r.maxMemory()))
-                            .append("\n")
-                            .append("启用JMX    >   ")
-                            .append(isJmxEnabled())
-                            .append("\n")
-                            .append("应用模式    >   ")
-                            .append(getMode())
-                            .append("\n")
-                            .append("监听地址    >   ");
+                    final String startUsedTime = Times.toDuration(System.currentTimeMillis() - timestamp);
+                    builder.append(line)
+                            .append(INFO_SPLITOR)
+                            .append(line);
+                    appendInfo("info.ameba.version", Ameba.getVersion());
+                    appendInfo("info.http.container", StringUtils.defaultString(container.getType(), "Unknown"));
+                    appendInfo("info.start.time", startUsedTime);
+                    appendInfo("info.app.name", getApplicationName());
+                    appendInfo("info.app.version", getApplicationVersion());
+                    appendInfo(
+                            "info.memory.usage",
+                            FileUtils.byteCountToDisplaySize((r.totalMemory() - r.freeMemory())),
+                            FileUtils.byteCountToDisplaySize(r.maxMemory())
+                    );
+                    appendInfo("info.jmx.enabled", Messages.get("info.enabled." + isJmxEnabled()));
+                    appendInfo("info.app.mode", Messages.get("info.app.mode." + getMode().name().toLowerCase()));
+                    builder.append(lineStart)
+                            .append(Messages.get("info.locations"));
 
                     List<Connector> connectors = getConnectors();
                     if (connectors != null && connectors.size() > 0) {
                         for (Connector connector : connectors) {
-                            builder.append("\n             ")
-                                    .append(connector.getHttpServerBaseUri());
+                            builder.append(line)
+                                    .append(lineStart)
+                                    .append(lineChild);
+                            builder.append(connector.getHttpServerBaseUri());
                         }
                     } else {
-                        builder.append("\n             无");
-                        logger.warn("请通过connector.[Name].port配置监听端口");
+                        builder.append(line)
+                                .append(lineStart)
+                                .append(lineChild)
+                                .append(Messages.get("info.locations.none"));
+                        logger.warn(Messages.get("info.connector.none"));
                     }
-
-                    logger.getSource().info("应用已启动\n{}\n{}\n{}",
-                            INFO_SPLITOR,
-                            builder,
-                            INFO_SPLITOR);
+                    builder.append(line)
+                            .append(INFO_SPLITOR);
+                    logger.info(Messages.get("info.started"));
+                    logger.getSource().info(builder.toString());
                 }
 
                 initialized = true;
@@ -790,7 +798,7 @@ public class Application {
 
     @SuppressWarnings("unchecked")
     private void readModuleConfig(Map<String, Object> configMap) {
-        logger.info("读取模块配置...");
+        logger.info(Messages.get("info.module.load.conf"));
         //读取模块配置
         Enumeration<URL> moduleUrls = IOUtils.getResources("conf/module.conf");
         Properties moduleProperties = new LinkedProperties();
@@ -813,8 +821,8 @@ public class Application {
                     int fileIndex = modelName.lastIndexOf("/");
                     modelName = modelName.substring(fileIndex + 1);
 
-                    logger.info("加载模块 {}", modelName);
-                    logger.debug("读取[{}]文件配置", toExternalForm(url));
+                    logger.info(Messages.get("info.module.load", modelName));
+                    logger.debug(Messages.get("info.module.load.item.conf", toExternalForm(url)));
                     URLConnection connection = url.openConnection();
 
                     if (getMode().isDev()) {
@@ -822,23 +830,23 @@ public class Application {
                     }
                     in = connection.getInputStream();
                 } catch (IOException e) {
-                    logger.error("读取[{}]出错", toExternalForm(url));
+                    logger.error(Messages.get("info.load.error", toExternalForm(url)));
                 }
                 if (in != null) {
                     try {
                         moduleProperties.load(in);
                     } catch (Exception e) {
-                        logger.error("读取[{}]出错", toExternalForm(url));
+                        logger.error(Messages.get("info.load.error", toExternalForm(url)));
                     }
                 } else {
-                    logger.error("读取[{}]出错", toExternalForm(url));
+                    logger.error(Messages.get("info.load.error", toExternalForm(url)));
                 }
                 closeQuietly(in);
             }
             configMap.putAll((Map) moduleProperties);
             moduleProperties.clear();
         } else {
-            logger.info("未找到附加模块");
+            logger.info(Messages.get("info.module.none"));
         }
     }
 
@@ -854,29 +862,29 @@ public class Application {
                 while (urls.hasMoreElements()) {
                     urlList.add(urls.nextElement().toExternalForm());
                 }
-                String errorMsg = "存在多个程序配置,请使用唯一的程序配置文件:\n" + StringUtils.join(urlList, "\n");
+                String errorMsg = Messages.get("info.load.config.multi.error", StringUtils.join(urlList, "\n"));
                 logger.error(errorMsg);
                 throw new ConfigErrorException(errorMsg);
             }
 
             try {
-                logger.trace("读取[{}]文件配置", toExternalForm(url));
+                logger.trace(Messages.get("info.load", toExternalForm(url)));
                 in = url.openStream();
             } catch (IOException e) {
-                logger.error("读取[{}]出错", toExternalForm(url));
+                logger.error(Messages.get("info.load.error", toExternalForm(url)));
             }
             if (in != null) {
                 try {
                     properties.load(in);
                 } catch (Exception e) {
-                    logger.error("读取[{}]出错", toExternalForm(url));
+                    logger.error(Messages.get("info.load.error", toExternalForm(url)));
                 }
             } else {
-                logger.error("读取[{}]出错", toExternalForm(url));
+                logger.error(Messages.get("info.load.error", toExternalForm(url)));
             }
             closeQuietly(in);
         } else {
-            logger.warn("未找到{}文件,请何实", confFile);
+            logger.warn(Messages.get("info.load.error.not.found", confFile));
         }
         return url;
     }
