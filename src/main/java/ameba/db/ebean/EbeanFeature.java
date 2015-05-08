@@ -8,6 +8,7 @@ import ameba.db.ebean.jackson.JsonIOExceptionMapper;
 import ameba.db.migration.DatabaseMigrationFeature;
 import ameba.db.model.Model;
 import ameba.db.model.ModelManager;
+import ameba.i18n.Messages;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
@@ -261,11 +262,11 @@ public class EbeanFeature extends OrmFeature {
                 excludes = excludeStr.split(",");
             }
 
-            logger.debug("Connecting [{}] database ...", name);
+            logger.debug(Messages.get("info.db.connect", name));
 
             final EbeanServer server = EbeanServerFactory.create(config);
 
-            logger.info("Database [{}] connected at {}", name, appConfig.getProperty("db." + name + ".url"));
+            logger.info(Messages.get("info.db.connected", name, appConfig.getProperty("db." + name + ".url")));
 
             JacksonEbeanModule module = new JacksonEbeanModule(server, locator);
 
