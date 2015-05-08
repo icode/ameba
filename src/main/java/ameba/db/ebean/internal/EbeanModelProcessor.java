@@ -245,6 +245,12 @@ public class EbeanModelProcessor implements WriterInterceptor {
      */
     public static FutureRowCount applyPageList(MultivaluedMap<String, String> queryParams, Query query) {
 
+        FutureRowCount futureRowCount = null;
+        String reqTotalCount = getSingleParam(queryParams.get(REQ_TOTAL_COUNT_PARAM_NAME));
+        if (reqTotalCount != null && !"false".equalsIgnoreCase(reqTotalCount)) {
+            futureRowCount = query.findFutureRowCount();
+        }
+
         Integer maxRows = getSingleIntegerParam(queryParams.get(PER_PAGE_PARAM_NAME));
 
         if (maxRows == null && DEFAULT_PER_PAGE != null && DEFAULT_PER_PAGE > 0) {
@@ -268,12 +274,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
             query.setFirstRow(firstRow);
         }
 
-        String reqTotalCount = getSingleParam(queryParams.get(REQ_TOTAL_COUNT_PARAM_NAME));
-        if (reqTotalCount != null && !"false".equalsIgnoreCase(reqTotalCount)) {
-            return query.findFutureRowCount();
-        }
-
-        return null;
+        return futureRowCount;
     }
 
     /**
