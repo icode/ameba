@@ -3,6 +3,7 @@ package ameba;
 import ameba.container.Container;
 import ameba.core.Application;
 import ameba.exception.AmebaException;
+import ameba.i18n.Messages;
 import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -115,7 +116,7 @@ public class Ameba {
         try {
             bootstrap(list.toArray(new String[list.size()]));
         } catch (Throwable e) {
-            logger.error("发生错误,10s后退出", e);
+            logger.error(Messages.get("info.service.error.shutdown"), e);
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException e1) {
@@ -158,14 +159,14 @@ public class Ameba {
      */
     public static synchronized void bootstrap(Application application) throws Exception {
         if (Ameba.container != null) {
-            throw new AmebaException("无法启动多个实例");
+            throw new AmebaException(Messages.get("info.service.start"));
         }
 
         app = application;
         container = Container.create(app);
 
         // run
-        logger.info("启动服务...");
+        logger.info(Messages.get("info.service.start"));
         container.start();
     }
 
@@ -173,13 +174,13 @@ public class Ameba {
      * <p>shutdown.</p>
      */
     public static synchronized void shutdown() {
-        logger.info("关闭服务器...");
+        logger.info(Messages.get("info.service.shutdown"));
         if (container != null)
             try {
                 container.shutdown();
             } catch (Exception e) {
-                logger.error("服务器关闭出错", e);
+                logger.error(Messages.get("info.service.error.shutdown"), e);
             }
-        logger.info("服务器已关闭");
+        logger.info(Messages.get("info.service.shutdown.done"));
     }
 }
