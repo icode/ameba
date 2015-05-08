@@ -45,7 +45,7 @@ public class ErrorMessage extends Result {
     }
 
     public static String getLocaleMessage(String key) {
-        return Messages.get(LOCALE_FILE, key);
+        return Messages.get(LOCALE_FILE, key, null);
     }
 
     public static String getLocaleMessage(int status) {
