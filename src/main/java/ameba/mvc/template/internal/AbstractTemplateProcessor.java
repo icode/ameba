@@ -215,31 +215,27 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
         return null;
     }
 
-    protected InputStream getNearTemplateStream(String jarFile, String template) {
+    protected URL getNearTemplateURL(String jarFile, String template) {
         if (jarFile != null) {
             Enumeration<URL> urls = IOUtils.getResources(template);
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
                 if (url.getPath().startsWith(jarFile)) {
-                    try {
-                        return url.openStream();
-                    } catch (IOException e) {
-                        // no op
-                    }
+                    return url;
                 }
             }
         }
         return null;
     }
 
-    private InputStreamReader newReader(String template, InputStream in) {
+    private InputStreamReader newReader(URL templateURL, InputStream in) {
         InputStreamReader reader = in != null ? new InputStreamReader(in) : null;
 
         if (reader == null) {
             try {
-                return new InputStreamReader(new FileInputStream(template), this.encoding);
-            } catch (FileNotFoundException ex) {
-                //no op
+                return new InputStreamReader(templateURL.openStream(), this.encoding);
+            } catch (IOException e) {
+                // no op
             }
         }
         return reader;
@@ -249,9 +245,10 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
         Collection<String> tpls = this.getTemplatePaths(name);
         Iterator iterator = tpls.iterator();
         String jarFile = resolveJarFile();
-        String template = null;
+        String template;
         InputStreamReader reader = null;
         InputStream in = null;
+        URL url = null;
         do {
             if (!iterator.hasNext()) {
                 break;
@@ -259,9 +256,16 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
 
             template = (String) iterator.next();
 
-            in = getNearTemplateStream(jarFile, template);
+            url = getNearTemplateURL(jarFile, template);
+            if (url != null) {
+                try {
+                    in = url.openStream();
+                } catch (IOException e) {
+                    // no op
+                }
 
-            reader = newReader(template, in);
+                reader = newReader(url, in);
+            }
         } while (reader == null);
 
         if (reader == null) {
@@ -273,14 +277,15 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
 
                 template = (String) iterator.next();
 
-                in = IOUtils.getResourceAsStream(template);
+                url = IOUtils.getResource(template);
 
-                reader = newReader(template, in);
+                if (url != null)
+                    reader = newReader(url, in);
             } while (reader == null);
         }
 
         try {
-            return this.resolve(template, reader);
+            return this.resolve(url, reader);
         } catch (Exception e) {
             RuntimeException r;
             try {
@@ -327,12 +332,12 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
     /**
      * <p>resolve.</p>
      *
-     * @param templatePath a {@link java.lang.String} object.
-     * @param reader       a {@link java.io.Reader} object.
+     * @param templateURL a {@link java.lang.String} object.
+     * @param reader      a {@link java.io.Reader} object.
      * @return a T object.
      * @throws java.lang.Exception if any.
      */
-    protected abstract T resolve(String templatePath, Reader reader) throws Exception;
+    protected abstract T resolve(URL templateURL, Reader reader) throws Exception;
 
     /**
      * {@inheritDoc}

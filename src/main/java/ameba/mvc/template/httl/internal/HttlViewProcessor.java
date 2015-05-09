@@ -22,6 +22,8 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -136,12 +138,12 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
      * {@inheritDoc}
      */
     @Override
-    protected Template resolve(String templatePath, Reader reader) throws Exception {
+    protected Template resolve(URL templateURL, Reader reader) throws Exception {
         Template template = null;
-        if (templatePath != null) {
-            request.get().setProperty(REQ_TPL_PATH_KEY, templatePath);
+        if (templateURL != null) {
+            request.get().setProperty(REQ_TPL_PATH_KEY, templateURL);
             try {
-                template = resolve(templatePath);
+                template = resolve(templateURL);
             } catch (Exception e) {
                 if (reader != null) {
                     template = resolve(reader);
@@ -165,7 +167,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
             }
         } else {
             try {
-                return IOUtils.readFromResource((String) request.get().getProperty(REQ_TPL_PATH_KEY));
+                return IOUtils.read(((URL) request.get().getProperty(REQ_TPL_PATH_KEY)).openStream());
             } catch (IOException e) {
                 logger.error("read template file error", e);
             }
@@ -174,11 +176,15 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
     }
 
     private File getTemplateFile(Template template) {
-        return new File((String) request.get().getProperty(REQ_TPL_PATH_KEY));
+        try {
+            return new File(((URL) request.get().getProperty(REQ_TPL_PATH_KEY)).toURI());
+        } catch (URISyntaxException e) {
+            return null;
+        }
     }
 
-    private Template resolve(String templatePath) throws Exception {
-        return engine.getTemplate(templatePath, getEncoding().name().toLowerCase());
+    private Template resolve(URL templateURL) throws Exception {
+        return engine.getTemplate(templateURL.toExternalForm(), getEncoding().name().toLowerCase());
     }
 
     private Template resolve(Reader reader) throws Exception {

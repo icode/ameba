@@ -233,6 +233,7 @@ public class EbeanFeature extends OrmFeature {
             config.setPackages(null);
             config.setJars(null);
             config.setResourceDirectory(null);
+            config.setDisableClasspathSearch(true);
 
             if (name.equals(DataSourceManager.getDefaultDataSourceName())) {
                 config.setDefaultServer(true);
@@ -243,9 +244,6 @@ public class EbeanFeature extends OrmFeature {
                 for (Class clazz : classes) {
                     config.addClass(clazz);
                 }
-            } else {
-                // ebean 如果没有class就会自动搜索
-                config.addClass(Model.class);
             }
 
             final boolean genDdl = PropertiesHelper.getValue(appConfig.getProperties(),

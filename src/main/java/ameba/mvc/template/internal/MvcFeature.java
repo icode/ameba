@@ -44,30 +44,14 @@ public class MvcFeature implements Feature {
                         TemplateHelper.TPL_ENGINE_DIR_PR.substring(0, TemplateHelper.TPL_ENGINE_DIR_PR.length() - 1)
                 ), "");
                 String confKey = TEMPLATE_BASE_PATH + engine;
-                String value = (String) config.getProperty(confKey);
-                String append = (String) config.getProperty(key);
-                value = TemplateHelper.getTemplateEngineDirConfig(value, engine.substring(1), context, tempConf);
-                if (StringUtils.isBlank(value)) {
-                    value = append;
-                } else {
-                    value += "," + append;
-                }
-                tempConf.put(confKey, value);
+                append(config, engine, tempConf, key, confKey, context);
             } else if (key.startsWith(TPL_MODULE_DIR_PR)) {//模块自定义模板路径
                 String confKey = key.replaceFirst(Pattern.quote(TPL_MODULE_DIR_PR), "");
                 int i = confKey.indexOf(".");
                 if (i != -1) {
                     String engine = confKey.substring(0, i);
                     confKey = TEMPLATE_BASE_PATH + "." + engine;
-                    String value = (String) config.getProperty(confKey);
-                    String append = (String) config.getProperty(key);
-                    value = TemplateHelper.getTemplateEngineDirConfig(value, engine, context, tempConf);
-                    if (StringUtils.isBlank(value)) {
-                        value = append;
-                    } else {
-                        value += "," + append;
-                    }
-                    tempConf.put(confKey, value);
+                    append(config, engine, tempConf, key, confKey, context);
                 }
             } else if (key.startsWith(TPL_CACHE + ".")) {
                 tempConf.put(CACHE_TEMPLATES + key.replaceFirst(Pattern.quote(TPL_CACHE), ""),
@@ -88,4 +72,32 @@ public class MvcFeature implements Feature {
         return true;
     }
 
+    void append(Configuration config,
+                String engine,
+                Map<String, String> tempConf,
+                String key, String confKey,
+                FeatureContext context) {
+
+        String value = (String) config.getProperty(confKey);
+        String append = (String) config.getProperty(key);
+
+        String old = tempConf.get(confKey);
+        if (StringUtils.isNotBlank(value)) {
+            if (StringUtils.isNotBlank(old)) {
+                value = old + "," + value;
+            }
+        } else {
+            value = old;
+        }
+        
+        value = TemplateHelper.getTemplateEngineDirConfig(value, engine, context, tempConf);
+
+        if (StringUtils.isBlank(value)) {
+            value = append;
+        } else {
+            value += "," + append;
+        }
+
+        tempConf.put(confKey, value);
+    }
 }

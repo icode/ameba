@@ -1,52 +1,52 @@
 package ameba.mvc.template.httl.internal;
 
 import httl.Engine;
-import httl.spi.loaders.resources.ClasspathResource;
 import httl.spi.loaders.resources.InputStreamResource;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Locale;
-import java.util.jar.JarFile;
 
 /**
  * @author icode
  */
 public class HttlClasspathResource extends InputStreamResource {
 
-    public HttlClasspathResource(Engine engine, String name, Locale locale, String encoding) {
+    private URL url;
+
+    public HttlClasspathResource(Engine engine, String name, String path, Locale locale, String encoding) {
         super(engine, name, locale, encoding);
+        try {
+            url = new URL(path);
+        } catch (MalformedURLException e) {
+            //no op
+        }
     }
 
     @Override
     public InputStream openStream() throws IOException {
-        return null;
+        return url.openStream();
     }
 
     @Override
     protected URL getUrl() {
-        return super.getUrl();
-    }
-
-    @Override
-    public long getLastModified() {
-        return super.getLastModified();
+        return url;
     }
 
     @Override
     public long getLength() {
-//        try {
-//            JarFile jarFile = new JarFile(file);
-//            try {
-//                return jarFile.getEntry(getName()).getSize();
-//            } finally {
-//                jarFile.close();
-//            }
-//        } catch (IOException e) {
-//            return super.getLength();
-//        }
+        try {
+            URLConnection urlConnection = url.openConnection();
+            if (urlConnection != null) {
+                return urlConnection.getContentLength();
+            }
+        } catch (IOException e) {
+            // no op
+        }
         return super.getLength();
     }
+
 }
