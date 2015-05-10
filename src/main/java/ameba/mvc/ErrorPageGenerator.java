@@ -108,7 +108,7 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return ErrorMessage.class.isAssignableFrom(type)
-                && (mediaType.getSubtype().equals("html")
+                && mediaType != null && (mediaType.getSubtype().equals("html")
                 || mediaType.getSubtype().equals("xhtml+xml"));
     }
 

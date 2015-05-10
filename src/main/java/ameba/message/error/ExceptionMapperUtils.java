@@ -1,6 +1,7 @@
 package ameba.message.error;
 
 import ameba.core.Requests;
+import org.glassfish.jersey.server.ContainerRequest;
 
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -13,7 +14,11 @@ public class ExceptionMapperUtils {
     }
 
     public static MediaType getResponseType() {
-        List<MediaType> accepts = Requests.getAcceptableMediaTypes();
+        return getResponseType(Requests.getRequest());
+    }
+
+    public static MediaType getResponseType(ContainerRequest request) {
+        List<MediaType> accepts = request.getAcceptableMediaTypes();
         MediaType m;
         if (accepts != null && accepts.size() > 0) {
             m = accepts.get(0);

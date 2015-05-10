@@ -1,16 +1,12 @@
 package ameba.mvc.template.internal;
 
 import com.google.common.collect.Lists;
-import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.collections4.Predicate;
 import org.glassfish.jersey.server.mvc.Template;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 import javax.annotation.Priority;
-import javax.inject.Inject;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;

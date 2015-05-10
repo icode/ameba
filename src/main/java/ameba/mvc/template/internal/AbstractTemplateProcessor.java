@@ -228,18 +228,6 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
         return null;
     }
 
-    private InputStreamReader newReader(URL templateURL, InputStream in) {
-        InputStreamReader reader = in != null ? new InputStreamReader(in) : null;
-
-        if (reader == null) {
-            try {
-                return new InputStreamReader(templateURL.openStream(), this.encoding);
-            } catch (IOException e) {
-                // no op
-            }
-        }
-        return reader;
-    }
 
     private T resolve(String name) {
         Collection<String> tpls = this.getTemplatePaths(name);
@@ -260,11 +248,11 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
             if (url != null) {
                 try {
                     in = url.openStream();
+                    if (in != null)
+                        reader = new InputStreamReader(in, this.encoding);
                 } catch (IOException e) {
                     // no op
                 }
-
-                reader = newReader(url, in);
             }
         } while (reader == null);
 
@@ -279,8 +267,15 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
 
                 url = IOUtils.getResource(template);
 
-                if (url != null)
-                    reader = newReader(url, in);
+                if (url != null) {
+                    try {
+                        in = url.openStream();
+                        if (in != null)
+                            reader = new InputStreamReader(in, this.encoding);
+                    } catch (IOException e) {
+                        // no op
+                    }
+                }
             } while (reader == null);
         }
 

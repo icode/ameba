@@ -89,7 +89,7 @@ public class MvcFeature implements Feature {
         } else {
             value = old;
         }
-        
+
         value = TemplateHelper.getTemplateEngineDirConfig(value, engine, context, tempConf);
 
         if (StringUtils.isBlank(value)) {

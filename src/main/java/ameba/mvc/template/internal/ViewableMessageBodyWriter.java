@@ -1,5 +1,6 @@
 package ameba.mvc.template.internal;
 
+import com.google.common.collect.Lists;
 import jersey.repackaged.com.google.common.collect.Sets;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.Providers;
@@ -14,6 +15,7 @@ import org.glassfish.jersey.server.mvc.spi.ViewableContextException;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.*;
@@ -35,7 +37,7 @@ import java.util.Set;
  * @author icode
  */
 @ConstrainedTo(RuntimeType.SERVER)
-@Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_XHTML_XML, "*/*"})
+@Singleton
 final class ViewableMessageBodyWriter implements MessageBodyWriter<Viewable> {
 
     @Inject
@@ -67,9 +69,8 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Viewable> {
                         final MediaType mediaType,
                         final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException, WebApplicationException {
-
         try {
-            final ResolvedViewable resolvedViewable = resolve(viewable);
+            final ResolvedViewable resolvedViewable = resolve(viewable, mediaType);
             if (resolvedViewable == null) {
                 final String message = LocalizationMessages
                         .TEMPLATE_NAME_COULD_NOT_BE_RESOLVED(viewable.getTemplateName());
@@ -87,18 +88,24 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Viewable> {
      * Resolve the given {@link org.glassfish.jersey.server.mvc.Viewable viewable} using
      * {@link org.glassfish.jersey.server.mvc.spi.ViewableContext}.
      *
-     * @param viewable viewable to be resolved.
+     * @param viewable  viewable to be resolved.
+     * @param mediaType mediaType to be resolved.
      * @return resolved viewable or {@code null}, if the viewable cannot be resolved.
      */
-    private ResolvedViewable resolve(final Viewable viewable) {
+    private ResolvedViewable resolve(final Viewable viewable, MediaType mediaType) {
         if (viewable instanceof ResolvedViewable) {
             return (ResolvedViewable) viewable;
         } else {
             final ViewableContext viewableContext = getViewableContext();
             final Set<TemplateProcessor> templateProcessors = getTemplateProcessors();
 
-            final List<MediaType> producibleMediaTypes = TemplateHelper
+            List<MediaType> producibleMediaTypes = TemplateHelper
                     .getProducibleMediaTypes(requestProvider.get(), extendedUriInfoProvider.get(), null);
+
+            if (!producibleMediaTypes.contains(mediaType)) {
+                producibleMediaTypes = Lists.newArrayList(producibleMediaTypes);
+                producibleMediaTypes.add(0, mediaType);
+            }
 
             final Class<?> resourceClass = resourceInfoProvider.get().getResourceClass();
             if (viewable instanceof ImplicitViewable) {

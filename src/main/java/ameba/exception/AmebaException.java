@@ -4,6 +4,7 @@ import ameba.Ameba;
 import com.google.common.collect.Lists;
 
 import java.io.File;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -106,11 +107,11 @@ public class AmebaException extends RuntimeException {
     }
 
     /**
-     * <p>getSourceFile.</p>
+     * <p>getSourceUrls.</p>
      *
      * @return a {@link java.io.File} object.
      */
-    public File getSourceFile() {
+    public URL getSourceUrl() {
         return null;
     }
 

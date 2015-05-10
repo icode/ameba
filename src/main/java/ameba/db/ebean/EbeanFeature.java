@@ -6,7 +6,6 @@ import ameba.db.ebean.internal.EbeanModelProcessor;
 import ameba.db.ebean.jackson.JacksonEbeanModule;
 import ameba.db.ebean.jackson.JsonIOExceptionMapper;
 import ameba.db.migration.DatabaseMigrationFeature;
-import ameba.db.model.Model;
 import ameba.db.model.ModelManager;
 import ameba.i18n.Messages;
 import com.avaje.ebean.Ebean;

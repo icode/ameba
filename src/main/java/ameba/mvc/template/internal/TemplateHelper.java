@@ -70,7 +70,7 @@ public class TemplateHelper {
         final List<Variant> variants = VariantSelector.selectVariants(containerRequest, Variant.mediaTypes(mediaTypes)
                 .build(), varyHeaderValue == null ? Refs.<String>emptyRef() : varyHeaderValue);
 
-        return jersey.repackaged.com.google.common.collect.Lists.transform(variants, new jersey.repackaged.com.google.common.base.Function<Variant, MediaType>() {
+        return Lists.transform(variants, new Function<Variant, MediaType>() {
             @Override
             public MediaType apply(final Variant variant) {
                 return MediaTypes.stripQualityParams(variant.getMediaType());

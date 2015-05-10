@@ -1,6 +1,6 @@
 package ameba.exception;
 
-import java.io.File;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -12,24 +12,12 @@ import java.util.List;
 public interface SourceAttachment {
 
     /**
-     * <p>getSourceFile.</p>
-     *
-     * @return a {@link java.io.File} object.
-     */
-    File getSourceFile();
-
-    /**
-     * <p>getSourceFiles.</p>
+     * <p>getSourceUrl.</p>
      *
      * @return an array of {@link java.io.File} objects.
      */
-    File[] getSourceFiles();
+    URL getSourceUrl();
 
-    /**
-     * <p>getSource.</p>
-     *
-     * @return a {@link java.util.List} object.
-     */
     List<String> getSource();
 
     /**

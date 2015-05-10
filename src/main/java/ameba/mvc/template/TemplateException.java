@@ -1,8 +1,12 @@
 package ameba.mvc.template;
 
 import ameba.exception.AmebaExceptionWithJavaSource;
+import ameba.util.IOUtils;
+import com.google.common.collect.Lists;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -35,14 +39,29 @@ public class TemplateException extends AmebaExceptionWithJavaSource {
     /**
      * <p>Constructor for TemplateException.</p>
      *
-     * @param message    a {@link java.lang.String} object.
-     * @param cause      a {@link java.lang.Throwable} object.
-     * @param line       a {@link java.lang.Integer} object.
-     * @param sourceFile a {@link java.io.File} object.
-     * @param source     a {@link java.util.List} object.
-     * @param lineIndex  a {@link java.lang.Integer} object.
+     * @param message   a {@link java.lang.String} object.
+     * @param cause     a {@link java.lang.Throwable} object.
+     * @param line      a {@link java.lang.Integer} object.
+     * @param sourceUrl a {@link URL} object.
+     * @param source    a {@link java.util.List} object.
+     * @param lineIndex a {@link java.lang.Integer} object.
      */
-    public TemplateException(String message, Throwable cause, Integer line, File sourceFile, List<String> source, Integer lineIndex) {
-        super(message, cause, line, sourceFile, source, lineIndex);
+    public TemplateException(String message, Throwable cause, Integer line, Integer lineIndex,
+                             URL sourceUrl, List<String> source) {
+        super(message, cause, line, lineIndex, sourceUrl, source);
+    }
+
+    @Override
+    public List<String> getSource() {
+        InputStream in = null;
+        try {
+            in = sourceUrl.openStream();
+            return IOUtils.readLines(in);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
+        return Lists.newArrayList();
     }
 }

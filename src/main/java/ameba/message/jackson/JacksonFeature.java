@@ -2,7 +2,7 @@ package ameba.message.jackson;
 
 import ameba.core.Application;
 import ameba.core.ws.rs.HttpPatchProperties;
-import ameba.message.internal.*;
+import ameba.message.internal.MediaType;
 import ameba.message.jackson.internal.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;

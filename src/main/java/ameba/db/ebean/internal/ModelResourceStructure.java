@@ -352,7 +352,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * <br/>
      * logical delete status 202
      *
-     * @param id The id use for path matching type
+     * @param id  The id use for path matching type
      * @param ids The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
@@ -474,7 +474,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     /**
      * Find a model or model list given its Ids.
      *
-     * @param id The id use for path matching type
+     * @param id  The id use for path matching type
      * @param ids the id of the model.
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.

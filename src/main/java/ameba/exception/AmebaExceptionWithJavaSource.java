@@ -1,6 +1,6 @@
 package ameba.exception;
 
-import java.io.File;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -12,7 +12,7 @@ import java.util.List;
 public abstract class AmebaExceptionWithJavaSource extends AmebaException implements SourceAttachment {
 
     protected Integer line;
-    protected File[] sourceFile;
+    protected URL sourceUrl;
     protected List<String> source;
     protected Integer lineIndex;
 
@@ -40,57 +40,28 @@ public abstract class AmebaExceptionWithJavaSource extends AmebaException implem
     /**
      * <p>Constructor for AmebaExceptionWithJavaSource.</p>
      *
-     * @param message    a {@link java.lang.String} object.
-     * @param cause      a {@link java.lang.Throwable} object.
-     * @param line       a {@link java.lang.Integer} object.
-     * @param sourceFile an array of {@link java.io.File} objects.
-     * @param source     a {@link java.util.List} object.
-     * @param lineIndex  a {@link java.lang.Integer} object.
+     * @param message   a {@link java.lang.String} object.
+     * @param cause     a {@link java.lang.Throwable} object.
+     * @param line      a {@link java.lang.Integer} object.
+     * @param sourceUrl url
+     * @param source    a {@link java.util.List} object.
+     * @param lineIndex a {@link java.lang.Integer} object.
      */
-    protected AmebaExceptionWithJavaSource(String message, Throwable cause, Integer line, File[] sourceFile, List<String> source, Integer lineIndex) {
+    public AmebaExceptionWithJavaSource(String message, Throwable cause, Integer line, Integer lineIndex,
+                                        URL sourceUrl, List<String> source) {
         super(message, cause);
         this.line = line;
-        this.sourceFile = sourceFile;
+        this.sourceUrl = sourceUrl;
         this.source = source;
         this.lineIndex = lineIndex;
     }
 
     /**
-     * <p>Constructor for AmebaExceptionWithJavaSource.</p>
-     *
-     * @param message    a {@link java.lang.String} object.
-     * @param cause      a {@link java.lang.Throwable} object.
-     * @param line       a {@link java.lang.Integer} object.
-     * @param sourceFile a {@link java.io.File} object.
-     * @param source     a {@link java.util.List} object.
-     * @param lineIndex  a {@link java.lang.Integer} object.
-     */
-    protected AmebaExceptionWithJavaSource(String message, Throwable cause, Integer line, File sourceFile, List<String> source, Integer lineIndex) {
-        this(message, cause, line, new File[]{sourceFile}, source, lineIndex);
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
-    public File getSourceFile() {
-        return sourceFile[0];
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public File[] getSourceFiles() {
-        return sourceFile;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<String> getSource() {
-        return source;
+    public URL getSourceUrl() {
+        return sourceUrl;
     }
 
     /**
@@ -107,5 +78,10 @@ public abstract class AmebaExceptionWithJavaSource extends AmebaException implem
     @Override
     public Integer getLineIndex() {
         return lineIndex;
+    }
+
+    @Override
+    public List<String> getSource() {
+        return source;
     }
 }

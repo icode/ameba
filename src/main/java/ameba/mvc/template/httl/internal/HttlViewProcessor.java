@@ -22,7 +22,6 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.*;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.Collections;
@@ -73,7 +72,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
         TemplateException ecx;
         if (e instanceof ParseException) {
             List<String> msgSource = Lists.newArrayList(e.getMessage().split("\n"));
-            File file = getTemplateFile(template);
+            URL templateURL = getTemplateURL();
             List<String> source = Lists.newArrayList();
             String sourceString = getTemplateSource(template);
 
@@ -90,7 +89,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
                 // no op
             }
             ecx = new TemplateException(msgSource.get(0)
-                    + "\n" + msgSource.get(1).replace(", in:", ""), e, line, file, source, lineIndex);
+                    + "\n" + msgSource.get(1).replace(", in:", ""), e, line, lineIndex, templateURL, source);
         } else if (template != null) {
             List<String> sources;
 
@@ -102,7 +101,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
                 sources = Lists.newArrayList();
             }
 
-            File tFile = getTemplateFile(template);
+            URL templateURL = getTemplateURL();
 
             if (e instanceof FileNotFoundException || e.getCause() instanceof FileNotFoundException) {
 
@@ -123,10 +122,10 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
                 }
 
                 ecx = new TemplateNotFoundException(e.getMessage(),
-                        e, line, tFile, sources, lineIndex);
+                        e, line, lineIndex, templateURL, sources);
             } else {
-                ecx = new TemplateException("Write template error in  " + tFile.getPath() + ". " + e.getMessage(),
-                        e, -1, tFile, sources, -1);
+                ecx = new TemplateException("Write template error in  " + templateURL.getPath() + ". " + e.getMessage(),
+                        e, -1, -1, templateURL, sources);
             }
         } else {
             ecx = new TemplateException("template error", e, e.getStackTrace()[0].getLineNumber());
@@ -166,21 +165,21 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
                 logger.error("get template source code error", e);
             }
         } else {
+            InputStream in = null;
             try {
-                return IOUtils.read(((URL) request.get().getProperty(REQ_TPL_PATH_KEY)).openStream());
+                in = ((URL) request.get().getProperty(REQ_TPL_PATH_KEY)).openStream();
+                return IOUtils.read(in);
             } catch (IOException e) {
                 logger.error("read template file error", e);
+            } finally {
+                IOUtils.closeQuietly(in);
             }
         }
         return null;
     }
 
-    private File getTemplateFile(Template template) {
-        try {
-            return new File(((URL) request.get().getProperty(REQ_TPL_PATH_KEY)).toURI());
-        } catch (URISyntaxException e) {
-            return null;
-        }
+    private URL getTemplateURL() {
+        return (URL) request.get().getProperty(REQ_TPL_PATH_KEY);
     }
 
     private Template resolve(URL templateURL) throws Exception {

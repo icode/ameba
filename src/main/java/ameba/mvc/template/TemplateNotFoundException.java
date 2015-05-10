@@ -1,6 +1,6 @@
 package ameba.mvc.template;
 
-import java.io.File;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -32,14 +32,14 @@ public class TemplateNotFoundException extends TemplateException {
     /**
      * <p>Constructor for TemplateNotFoundException.</p>
      *
-     * @param message    a {@link java.lang.String} object.
-     * @param cause      a {@link java.lang.Throwable} object.
-     * @param line       a {@link java.lang.Integer} object.
-     * @param sourceFile a {@link java.io.File} object.
-     * @param source     a {@link java.util.List} object.
-     * @param lineIndex  a {@link java.lang.Integer} object.
+     * @param message   a {@link java.lang.String} object.
+     * @param cause     a {@link java.lang.Throwable} object.
+     * @param line      a {@link java.lang.Integer} object.
+     * @param sourceUrl a {@link URL} object.
+     * @param source    a {@link java.util.List} object.
+     * @param lineIndex a {@link java.lang.Integer} object.
      */
-    public TemplateNotFoundException(String message, Throwable cause, Integer line, File sourceFile, List<String> source, Integer lineIndex) {
-        super(message, cause, line, sourceFile, source, lineIndex);
+    public TemplateNotFoundException(String message, Throwable cause, Integer line, Integer lineIndex, URL sourceUrl, List<String> source) {
+        super(message, cause, line, lineIndex, sourceUrl, source);
     }
 }
