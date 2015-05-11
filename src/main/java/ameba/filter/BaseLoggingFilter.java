@@ -1,6 +1,7 @@
 package ameba.filter;
 
 import ameba.core.Application;
+import com.google.common.base.Charsets;
 import org.glassfish.jersey.message.MessageUtils;
 import org.slf4j.Logger;
 
@@ -170,7 +171,7 @@ public class BaseLoggingFilter {
         if (printEntity && context.hasEntity()
                 && isSupportPrintType(context.getMediaType())) {
             context.setEntityStream(
-                    logInboundEntity(b, context.getEntityStream(), MessageUtils.getCharset(context.getMediaType())));
+                    logInboundEntity(b, context.getEntityStream(), getCharset(context.getMediaType())));
         } else if (printEntity && context.hasEntity()) {
             b.append('\n').append("-- stream request entity --").append('\n');
         }
@@ -212,7 +213,15 @@ public class BaseLoggingFilter {
         final LoggingStream stream = (LoggingStream) writerInterceptorContext.getProperty(ENTITY_LOGGER_PROPERTY);
         writerInterceptorContext.proceed();
         if (stream != null) {
-            log(stream.getStringBuilder(MessageUtils.getCharset(writerInterceptorContext.getMediaType())));
+            log(stream.getStringBuilder(getCharset(writerInterceptorContext.getMediaType())));
+        }
+    }
+
+    private Charset getCharset(final MediaType media) {
+        try {
+            return MessageUtils.getCharset(media);
+        } catch (Exception e) {
+            return Charsets.UTF_8;
         }
     }
 

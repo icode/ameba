@@ -6,6 +6,7 @@ import ameba.db.model.Persister;
 import ameba.db.model.Updater;
 
 import javax.ws.rs.core.Feature;
+import javax.ws.rs.core.FeatureContext;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 
@@ -142,5 +143,14 @@ public abstract class OrmFeature implements Feature {
             }
         }
         return updaterConstructor;
+    }
+
+    @Override
+    public boolean configure(FeatureContext context) {
+        if (!context.getConfiguration().isRegistered(PersistenceExceptionMapper.class)) {
+            context.register(PersistenceExceptionMapper.class);
+            return true;
+        }
+        return false;
     }
 }

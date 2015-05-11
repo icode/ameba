@@ -88,10 +88,9 @@ public class JacksonUtils {
     /**
      * <p>configureMapper.</p>
      *
-     * @param isDev  a boolean.
      * @param mapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
      */
-    public static void configureMapper(boolean isDev, ObjectMapper mapper) {
+    public static void configureMapper(ObjectMapper mapper) {
         mapper.registerModule(new JodaModule());
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -100,17 +99,15 @@ public class JacksonUtils {
                 .disable(SerializationFeature.FAIL_ON_SELF_REFERENCES)
                 .disable(SerializationFeature.WRITE_NULL_MAP_VALUES)
                 .disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
-        if (isDev)
-            mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
-    public static void configureGenerator(UriInfo uriInfo, JsonGenerator generator) {
+    public static void configureGenerator(UriInfo uriInfo, JsonGenerator generator, boolean isDev) {
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         String pretty = params.getFirst("pretty");
-        if (pretty != null && !pretty.equalsIgnoreCase("false")) {
-            generator.useDefaultPrettyPrinter();
-        } else if ("false".equalsIgnoreCase(pretty)) {
+        if ("false".equalsIgnoreCase(pretty)) {
             generator.setPrettyPrinter(null);
+        } else if (pretty != null && !pretty.equalsIgnoreCase("false") || isDev) {
+            generator.useDefaultPrettyPrinter();
         }
     }
 

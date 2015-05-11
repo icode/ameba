@@ -150,6 +150,8 @@ public class EbeanFeature extends OrmFeature {
      */
     @Override
     public boolean configure(final FeatureContext context) {
+        super.configure(context);
+
         if (context.getConfiguration().isRegistered(EbeanModelProcessor.class)) {
             return false;
         }

@@ -35,8 +35,6 @@ public class JacksonFeature implements Feature {
 
     @Inject
     private ServiceLocator locator;
-    @Inject
-    private Application app;
 
     /**
      * {@inheritDoc}
@@ -66,8 +64,8 @@ public class JacksonFeature implements Feature {
                     XmlMapper xmlMapper = new XmlMapper();
                     ObjectMapper objectMapper = new ObjectMapper();
 
-                    JacksonUtils.configureMapper(app.getMode().isDev(), xmlMapper);
-                    JacksonUtils.configureMapper(app.getMode().isDev(), objectMapper);
+                    JacksonUtils.configureMapper(xmlMapper);
+                    JacksonUtils.configureMapper(objectMapper);
 
                     bind(xmlMapper).to(XmlMapper.class).proxy(false);
                     bind(objectMapper).to(ObjectMapper.class).proxy(false);

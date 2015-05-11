@@ -1,6 +1,7 @@
 package ameba.message.error;
 
 import ameba.i18n.Messages;
+import ameba.util.ClassUtils;
 import ameba.util.Result;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
@@ -8,6 +9,7 @@ import org.glassfish.jersey.message.internal.MessageBodyProviderNotFoundExceptio
 
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.container.ResourceInfo;
 import java.io.FileNotFoundException;
 import java.util.List;
 
@@ -97,7 +99,7 @@ public class ErrorMessage extends Result {
         return status;
     }
 
-    public static List<Result.Error> parseErrors(Throwable exception, int status, boolean isDev) {
+    public static List<Result.Error> parseErrors(Throwable exception, int status) {
         List<Result.Error> errors = null;
         if (status == 500 || status == 400) {
             errors = Lists.newArrayList();
@@ -109,21 +111,19 @@ public class ErrorMessage extends Result {
                             cause.getClass().getCanonicalName().hashCode(),
                             cause.getMessage());
 
-                    if (isDev) {
-                        if (status == 500) {
-                            StringBuilder descBuilder = new StringBuilder();
-                            for (StackTraceElement element : stackTraceElements) {
-                                descBuilder
-                                        .append(element.toString())
-                                        .append("\n");
-                            }
-
-                            error.setDescription(descBuilder.toString());
+                    if (status == 500) {
+                        StringBuilder descBuilder = new StringBuilder();
+                        for (StackTraceElement element : stackTraceElements) {
+                            descBuilder
+                                    .append(element.toString())
+                                    .append("\n");
                         }
-                        StackTraceElement stackTraceElement = stackTraceElements[0];
-                        String source = stackTraceElement.toString();
-                        error.setSource(source);
+
+                        error.setDescription(descBuilder.toString());
                     }
+                    StackTraceElement stackTraceElement = stackTraceElements[0];
+                    String source = stackTraceElement.toString();
+                    error.setSource(source);
 
                     errors.add(error);
                 }
@@ -182,6 +182,15 @@ public class ErrorMessage extends Result {
         }
 
         return desc;
+    }
+
+    public static String parseSource(ResourceInfo resourceInfo) {
+        if (resourceInfo != null) {
+            Class clazz = resourceInfo.getResourceClass();
+            if (clazz != null)
+                return ClassUtils.toString(clazz, resourceInfo.getResourceMethod());
+        }
+        return null;
     }
 
     public Throwable getThrowable() {
