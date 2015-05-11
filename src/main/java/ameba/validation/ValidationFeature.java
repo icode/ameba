@@ -28,6 +28,7 @@ public final class ValidationFeature implements Feature {
 
     @Override
     public boolean configure(final FeatureContext context) {
+        // disable Jersey default BeanValidation feature
         context.property(ServerProperties.BV_FEATURE_DISABLE, "true");
         context.register(new ValidationBinder())
                 .register(ValidationExceptionMapper.class)
