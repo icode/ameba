@@ -25,8 +25,6 @@ public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
 
     @Inject
     private Provider<UriInfo> uriInfoProvider;
-    @Inject
-    private Provider<ContainerRequest> requestProvider;
 
     /**
      * <p>Constructor for JacksonJsonProvider.</p>
@@ -41,9 +39,7 @@ public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
     @Override
     protected JsonGenerator _createGenerator(ObjectWriter writer, OutputStream rawStream, JsonEncoding enc) throws IOException {
         JsonGenerator generator = super._createGenerator(writer, rawStream, enc);
-        if (requestProvider.get().getMethod().equalsIgnoreCase("get")) {
-            JacksonUtils.configureGenerator(uriInfoProvider.get(), generator);
-        }
+        JacksonUtils.configureGenerator(uriInfoProvider.get(), generator);
         return generator;
     }
 }
