@@ -46,7 +46,7 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
                 null,
                 isDev ? ErrorMessage.parseSource(resourceInfo) : null
         ));
-        
+
         if (isDev) {
             errors.addAll(ErrorMessage.parseErrors(exception, errorMessage.getStatus()));
         }

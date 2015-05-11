@@ -13,6 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Priority;
+import javax.inject.Provider;
+import javax.inject.Singleton;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Configuration;
@@ -31,6 +33,7 @@ import java.util.concurrent.ExecutionException;
  * @author icode
  * @since 0.1.6e
  */
+@Singleton
 @Priority(Priorities.ENTITY_CODER)
 public class EbeanModelProcessor implements WriterInterceptor {
 
@@ -43,9 +46,9 @@ public class EbeanModelProcessor implements WriterInterceptor {
     static String WHERE_PARAM_NAME = "where";
     static Integer DEFAULT_PER_PAGE = 20;
     @Context
-    private Configuration configuration;
+    private Provider<Configuration> configurationProvider;
     @Context
-    private UriInfo uriInfo;
+    private Provider<UriInfo> uriInfoProvider;
 
     /**
      * <p>getFieldsParamName.</p>
@@ -345,6 +348,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
 
     @PostConstruct
     private void init() {
+        Configuration configuration = configurationProvider.get();
         final String fieldsParamName = (String) configuration.getProperty(EntityFieldsFilteringFeature.QUERY_FIELDS_PARAM_NAME);
         FIELDS_PARAM_NAME = StringUtils.isNotBlank(fieldsParamName) ? fieldsParamName : FIELDS_PARAM_NAME;
 
@@ -397,7 +401,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
         Object o = context.getEntity();
         if (o != null && isWriteable(o.getClass())) {
 
-            MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
+            MultivaluedMap<String, String> queryParams = uriInfoProvider.get().getQueryParameters();
             Query query = null;
             if (o instanceof Finder) {
                 query = ((Finder) o).query();

@@ -1,194 +1,206 @@
 package ameba.mvc.template.internal;
 
+import ameba.Ameba;
+import ameba.core.Application;
+import ameba.message.error.ErrorMessage;
 import com.google.common.collect.Lists;
-import jersey.repackaged.com.google.common.collect.Sets;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.internal.inject.Providers;
-import org.glassfish.jersey.server.ContainerRequest;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.Predicate;
+import org.apache.commons.lang3.ArrayUtils;
+import org.glassfish.jersey.internal.util.PropertiesHelper;
+import org.glassfish.jersey.message.MessageBodyWorkers;
 import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.glassfish.jersey.server.mvc.Viewable;
-import org.glassfish.jersey.server.mvc.internal.LocalizationMessages;
-import org.glassfish.jersey.server.mvc.spi.ResolvedViewable;
-import org.glassfish.jersey.server.mvc.spi.TemplateProcessor;
-import org.glassfish.jersey.server.mvc.spi.ViewableContext;
-import org.glassfish.jersey.server.mvc.spi.ViewableContextException;
+import org.glassfish.jersey.uri.UriTemplate;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import javax.ws.rs.*;
+import javax.ws.rs.ConstrainedTo;
+import javax.ws.rs.Produces;
+import javax.ws.rs.RuntimeType;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
- * {@link javax.ws.rs.ext.MessageBodyWriter Message body writer}
- * for {@link org.glassfish.jersey.server.mvc.Viewable viewable}
+ * {@link MessageBodyWriter Message body writer}
+ * for {@link Viewable viewable}
  * entities.
  *
  * @author Paul Sandoz
  * @author Michal Gajdos (michal.gajdos at oracle.com)
  * @author icode
  */
-@ConstrainedTo(RuntimeType.SERVER)
 @Singleton
-final class ViewableMessageBodyWriter implements MessageBodyWriter<Viewable> {
+@ConstrainedTo(RuntimeType.SERVER)
+@Produces({"text/html", "application/xhtml+xml", "*/*"})
+final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
 
-    @Inject
-    private ServiceLocator serviceLocator;
+    public static final String DISABLE_DATA_VIEW = "data.view.disabled";
+    public static final List<MediaType> TEMPLATE_PRODUCES = Lists.newArrayList(
+            MediaType.TEXT_HTML_TYPE,
+            MediaType.APPLICATION_XHTML_XML_TYPE
+    );
+    private static final String DATA_VIEW_DEFAULT = "data.view.default.";
+    public static final String DATA_VIEW_LIST = DATA_VIEW_DEFAULT + "list";
+    public static final String DATA_VIEW_ITEM = DATA_VIEW_DEFAULT + "item";
+    public static final String DATA_VIEW_NULL = DATA_VIEW_DEFAULT + "null";
+    private static final String DEFAULT_DATA_VIEW_PAGE_DIR = "/_protected/default/";
+    public static final String DEFAULT_DATA_LIST = DEFAULT_DATA_VIEW_PAGE_DIR + "list";
+    public static final String DEFAULT_DATA_ITEM = DEFAULT_DATA_VIEW_PAGE_DIR + "item";
+    public static final String DEFAULT_DATA_NULL = DEFAULT_DATA_VIEW_PAGE_DIR + "null";
+    private final boolean dataViewDisabled;
+    private final String dataViewList;
+    private final String dataViewItem;
+    private final String dataViewNull;
+
     @Context
-    private Provider<ExtendedUriInfo> extendedUriInfoProvider;
-    @Context
-    private Provider<ContainerRequest> requestProvider;
+    private Provider<ContainerRequestContext> requestProvider;
     @Context
     private Provider<ResourceInfo> resourceInfoProvider;
+    @Context
+    private Provider<ExtendedUriInfo> uriInfoProvider;
+    @Context
+    private Provider<MessageBodyWorkers> workersProvider;
+
+    @Inject
+    public ViewableMessageBodyWriter(Application application) {
+        dataViewDisabled = "true".equals(application.getProperty(DISABLE_DATA_VIEW));
+        Map<String, Object> properties = application.getProperties();
+        dataViewList = PropertiesHelper.getValue(properties, DATA_VIEW_LIST, DEFAULT_DATA_LIST, null);
+        dataViewItem = PropertiesHelper.getValue(properties, DATA_VIEW_ITEM, DEFAULT_DATA_ITEM, null);
+        dataViewNull = PropertiesHelper.getValue(properties, DATA_VIEW_NULL, DEFAULT_DATA_NULL, null);
+    }
 
     @Override
     public boolean isWriteable(final Class<?> type, final Type genericType, final Annotation[] annotations,
                                final MediaType mediaType) {
-        return Viewable.class.isAssignableFrom(type);
+        return isSupport(type, annotations);
     }
 
     @Override
-    public long getSize(final Viewable viewable, final Class<?> type, final Type genericType,
+    public long getSize(final Object viewable, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType) {
         return -1;
     }
 
     @Override
-    public void writeTo(final Viewable viewable,
+    public void writeTo(final Object entity,
                         final Class<?> type,
                         final Type genericType,
                         final Annotation[] annotations,
                         final MediaType mediaType,
                         final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException, WebApplicationException {
-        try {
-            final ResolvedViewable resolvedViewable = resolve(viewable, mediaType);
-            if (resolvedViewable == null) {
-                final String message = LocalizationMessages
-                        .TEMPLATE_NAME_COULD_NOT_BE_RESOLVED(viewable.getTemplateName());
-                throw new WebApplicationException(new ProcessingException(message), Response.Status.NOT_FOUND);
-            }
 
-            httpHeaders.putSingle(HttpHeaders.CONTENT_TYPE, resolvedViewable.getMediaType());
-            resolvedViewable.writeTo(entityStream, httpHeaders);
-        } catch (ViewableContextException vce) {
-            throw new NotFoundException(vce);
+        List<String> templates = Lists.newArrayList();
+        ResourceInfo resourceInfo = resourceInfoProvider.get();
+
+        if (resourceInfo != null && resourceInfo.getResourceMethod() != null) {
+            templates.add(resourceInfo.getResourceMethod().getName());
         }
-    }
-
-    /**
-     * Resolve the given {@link org.glassfish.jersey.server.mvc.Viewable viewable} using
-     * {@link org.glassfish.jersey.server.mvc.spi.ViewableContext}.
-     *
-     * @param viewable  viewable to be resolved.
-     * @param mediaType mediaType to be resolved.
-     * @return resolved viewable or {@code null}, if the viewable cannot be resolved.
-     */
-    private ResolvedViewable resolve(final Viewable viewable, MediaType mediaType) {
-        if (viewable instanceof ResolvedViewable) {
-            return (ResolvedViewable) viewable;
+        templates.add("index");
+        templates.add(getTemplatePath(uriInfoProvider.get()));
+        if (entity == null) {
+            templates.add(dataViewNull);
+        } else if (isItem(entity)) {
+            templates.add(dataViewItem);
         } else {
-            final ViewableContext viewableContext = getViewableContext();
-            final Set<TemplateProcessor> templateProcessors = getTemplateProcessors();
+            templates.add(dataViewList);
+        }
 
-            List<MediaType> producibleMediaTypes = TemplateHelper
-                    .getProducibleMediaTypes(requestProvider.get(), extendedUriInfoProvider.get(), null);
-
-            if (!producibleMediaTypes.contains(mediaType)) {
-                producibleMediaTypes = Lists.newArrayList(producibleMediaTypes);
-                producibleMediaTypes.add(0, mediaType);
+        Class clazz = Ameba.class;
+        if (resourceInfo != null) {
+            clazz = resourceInfo.getResourceClass();
+        } else {
+            List<Object> res = uriInfoProvider.get().getMatchedResources();
+            if (res != null && res.size() > 0) {
+                clazz = res.get(0).getClass();
             }
+        }
+        workersProvider.get().getMessageBodyWriter(
+                ImplicitViewable.class,
+                ImplicitViewable.class,
+                annotations,
+                mediaType)
 
-            final Class<?> resourceClass = resourceInfoProvider.get().getResourceClass();
-            if (viewable instanceof ImplicitViewable) {
-                // Template Names.
-                final ImplicitViewable implicitViewable = (ImplicitViewable) viewable;
+                .writeTo(new ImplicitViewable(templates, entity, clazz),
+                        ImplicitViewable.class,
+                        ImplicitViewable.class,
+                        annotations, mediaType,
+                        httpHeaders, entityStream);
+    }
 
-                for (final String templateName : implicitViewable.getTemplateNames()) {
-                    final Viewable simpleViewable = new Viewable(templateName, viewable.getModel());
 
-                    final ResolvedViewable resolvedViewable = resolve(simpleViewable, producibleMediaTypes,
-                            implicitViewable.getResolvingClass(), viewableContext, templateProcessors);
+    private boolean isItem(Object entity) {
+        return !(entity instanceof Collection)
+                && !entity.getClass().isArray();
+    }
 
-                    if (resolvedViewable != null) {
-                        return resolvedViewable;
+    private String getTemplatePath(ExtendedUriInfo uriInfo) {
+        StringBuilder builder = new StringBuilder();
+
+        for (UriTemplate template : uriInfo.getMatchedTemplates()) {
+            List<String> variables = template.getTemplateVariables();
+            String[] args = new String[variables.size()];
+            for (int i = 0; i < args.length; i++) {
+                args[i] = "{" + variables.get(i) + "}";
+            }
+            String uri = template.createURI(args);
+            if (!uri.equals("/") && !uri.equals(""))
+                builder.insert(0, uri);
+        }
+
+        return builder.toString().toLowerCase();
+    }
+
+    private boolean isSupport(Class entity, Annotation[] annotations) {
+        String[] p;
+        return !(dataViewDisabled
+                || Throwable.class.isAssignableFrom(entity)
+                || InputStream.class.isAssignableFrom(entity)
+                || OutputStream.class.isAssignableFrom(entity)
+                || Reader.class.isAssignableFrom(entity)
+                || Writer.class.isAssignableFrom(entity)
+                || ErrorMessage.class.isAssignableFrom(entity))
+
+                && ((p = TemplateHelper.getProduces(annotations)) == null
+                || -1 != ArrayUtils.indexOf(p,
+                new Predicate<String>() {
+                    @Override
+                    public boolean evaluate(String stringType) {
+                        if (stringType.equals(MediaType.WILDCARD)) return true;
+
+                        MediaType mediaType = MediaType.valueOf(stringType);
+                        return isSupportMediaType(mediaType);
                     }
-                }
-            } else {
-                return resolve(viewable, producibleMediaTypes, resourceClass, viewableContext, templateProcessors);
-            }
-
-            return null;
-        }
+                })) && -1 != ListUtils.indexOf(requestProvider.get().getAcceptableMediaTypes(),
+                new Predicate<MediaType>() {
+                    @Override
+                    public boolean evaluate(MediaType mediaType) {
+                        return isSupportMediaType(mediaType);
+                    }
+                });
     }
 
-    /**
-     * Resolve given {@link org.glassfish.jersey.server.mvc.Viewable viewable}
-     * for a list of {@link javax.ws.rs.core.MediaType mediaTypes} and a {@link Class resolvingClass}
-     * using given {@link org.glassfish.jersey.server.mvc.spi.ViewableContext viewableContext}
-     * and a set of {@link org.glassfish.jersey.server.mvc.spi.TemplateProcessor templateProcessors}
-     *
-     * @param viewable           viewable to be resolved.
-     * @param mediaTypes         producible media types.
-     * @param resolvingClass     non-null resolving class.
-     * @param viewableContext    viewable context.
-     * @param templateProcessors collection of available template processors.
-     * @return resolved viewable or {@code null}, if the viewable cannot be resolved.
-     */
-    private ResolvedViewable resolve(final Viewable viewable,
-                                     final List<MediaType> mediaTypes,
-                                     final Class<?> resolvingClass,
-                                     final ViewableContext viewableContext,
-                                     final Set<TemplateProcessor> templateProcessors) {
-        for (TemplateProcessor templateProcessor : templateProcessors) {
-            for (final MediaType mediaType : mediaTypes) {
-                final ResolvedViewable resolvedViewable = viewableContext
-                        .resolveViewable(viewable, mediaType, resolvingClass, templateProcessor);
-
-                if (resolvedViewable != null) {
-                    return resolvedViewable;
-                }
+    private boolean isSupportMediaType(MediaType mediaType) {
+        for (MediaType type : TEMPLATE_PRODUCES) {
+            if (mediaType.getType().equalsIgnoreCase(type.getType())
+                    && mediaType.getSubtype().equalsIgnoreCase(type.getSubtype())) {
+                return true;
             }
         }
-
-        return null;
-    }
-
-    /**
-     * Get a {@link java.util.LinkedHashSet collection} of available template processors.
-     *
-     * @return set of template processors.
-     */
-    private Set<TemplateProcessor> getTemplateProcessors() {
-        final Set<TemplateProcessor> templateProcessors = Sets.newLinkedHashSet();
-
-        templateProcessors.addAll(Providers.getCustomProviders(serviceLocator, TemplateProcessor.class));
-        templateProcessors.addAll(Providers.getProviders(serviceLocator, TemplateProcessor.class));
-
-        return templateProcessors;
-    }
-
-    /**
-     * Get {@link org.glassfish.jersey.server.mvc.spi.ViewableContext viewable context}.
-     * User defined (custom) contexts have higher priority than the default ones
-     * (i.e. {@link ResolvingViewableContext}).
-     *
-     * @return {@code non-null} viewable context.
-     */
-    private ViewableContext getViewableContext() {
-        final Set<ViewableContext> customProviders =
-                Providers.getCustomProviders(serviceLocator, ViewableContext.class);
-        if (!customProviders.isEmpty()) {
-            return customProviders.iterator().next();
-        }
-        return Providers.getProviders(serviceLocator, ViewableContext.class).iterator().next();
+        return false;
     }
 }

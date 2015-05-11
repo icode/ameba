@@ -100,9 +100,8 @@ public class ErrorMessage extends Result {
     }
 
     public static List<Result.Error> parseErrors(Throwable exception, int status) {
-        List<Result.Error> errors = null;
+        List<Result.Error> errors = Lists.newArrayList();
         if (status == 500 || status == 400) {
-            errors = Lists.newArrayList();
             Throwable cause = exception;
             while (cause != null) {
                 StackTraceElement[] stackTraceElements = cause.getStackTrace();

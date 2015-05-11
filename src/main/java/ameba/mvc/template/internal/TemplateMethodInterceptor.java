@@ -1,17 +1,15 @@
 package ameba.mvc.template.internal;
 
-import com.google.common.collect.Lists;
 import org.glassfish.jersey.server.mvc.Template;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 import javax.annotation.Priority;
+import javax.inject.Singleton;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Intercepts resource methods that are annotated by {@link Template template annotation} and does not return {@link Viewable}
@@ -22,18 +20,9 @@ import java.util.List;
  * @see org.glassfish.jersey.server.mvc.spi.ResolvedViewable
  * @see org.glassfish.jersey.server.mvc.internal.ViewableMessageBodyWriter
  */
+@Singleton
 @Priority(Priorities.ENTITY_CODER)
 class TemplateMethodInterceptor implements WriterInterceptor {
-
-    private static final String DEFAULT_DATA_VIEW_PAGE_DIR = "/_protected/default/";
-    private static final String DEFAULT_DATA_VIEW = DEFAULT_DATA_VIEW_PAGE_DIR + "viewer";
-    private static final List<MediaType> TEMPLATE_PRODUCES = Lists.newArrayList(
-            MediaType.TEXT_HTML_TYPE,
-            MediaType.APPLICATION_XHTML_XML_TYPE
-    );
-
-//    @Inject
-//    private ContainerRequestContext request;
 
     @Override
     public void aroundWriteTo(final WriterInterceptorContext context) throws IOException, WebApplicationException {
@@ -50,18 +39,4 @@ class TemplateMethodInterceptor implements WriterInterceptor {
         context.proceed();
     }
 
-//    private boolean isNeedViewable() {
-//        return -1 != ListUtils.indexOf(request.getAcceptableMediaTypes(), new Predicate<MediaType>() {
-//            @Override
-//            public boolean evaluate(MediaType mediaType) {
-//                for (MediaType type : TEMPLATE_PRODUCES) {
-//                    if (mediaType.getType().equalsIgnoreCase(type.getType())
-//                            && mediaType.getSubtype().equalsIgnoreCase(type.getSubtype())) {
-//                        return true;
-//                    }
-//                }
-//                return false;
-//            }
-//        });
-//    }
 }

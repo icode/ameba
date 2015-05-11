@@ -18,10 +18,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Configuration;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.List;
@@ -194,7 +191,7 @@ public class OptionsMethodProcessor implements ModelProcessor {
     }
 
     protected static class GenericOptionsInflector implements Inflector<ContainerRequestContext, Response> {
-        @Inject
+        @Context
         private ExtendedUriInfo extendedUriInfo;
 
         @Override

@@ -50,7 +50,7 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
     protected List<Result.Error> parseErrors(Throwable exception, int status) {
         List<Result.Error> errors = Lists.newArrayList();
         boolean isDev = application.getMode().isDev();
-        if (resourceInfo != null) {
+        if (resourceInfo != null && (status == 500 || status == 400)) {
             Class clazz = resourceInfo.getResourceClass();
             if (clazz != null) {
                 errors.add(new Result.Error(

@@ -10,7 +10,6 @@ import org.glassfish.jersey.server.model.ResourceModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -297,8 +296,8 @@ public class StatViewFeature implements Feature {
     @DsAuthorization
     public static class DsStatViewResource {
 
-        @Inject
-        UriInfo uriInfo;
+        @Context
+        private UriInfo uriInfo;
 
         @POST
         @Path("submitLogin")

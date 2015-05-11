@@ -4,12 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Priority;
+import javax.inject.Singleton;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.WriterInterceptor;
 
 /**
  * @author icode
  */
+@Singleton
 @Priority(Integer.MAX_VALUE)
 public class ResponseLoggingFilter extends BaseLoggingFilter implements ContainerResponseFilter, WriterInterceptor {
     private static final Logger logger = LoggerFactory.getLogger(ResponseLoggingFilter.class);

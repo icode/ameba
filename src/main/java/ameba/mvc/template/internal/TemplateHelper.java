@@ -16,6 +16,7 @@ import org.glassfish.jersey.server.mvc.MvcFeature;
 import org.glassfish.jersey.server.mvc.Template;
 import org.glassfish.jersey.server.mvc.Viewable;
 
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.core.MediaType;
@@ -114,6 +115,18 @@ public class TemplateHelper {
             for (Annotation annotation : annotations) {
                 if (annotation instanceof Template) {
                     return (Template) annotation;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static String[] getProduces(final Annotation[] annotations) {
+        if (annotations != null && annotations.length > 0) {
+            for (Annotation annotation : annotations) {
+                if (annotation instanceof Produces) {
+                    return ((Produces) annotation).value();
                 }
             }
         }

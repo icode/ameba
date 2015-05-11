@@ -1,6 +1,5 @@
 package ameba.message.jackson;
 
-import ameba.core.Application;
 import ameba.core.ws.rs.HttpPatchProperties;
 import ameba.message.internal.MediaType;
 import ameba.message.jackson.internal.*;

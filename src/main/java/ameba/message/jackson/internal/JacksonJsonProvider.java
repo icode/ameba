@@ -6,13 +6,13 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import org.glassfish.jersey.server.ContainerRequest;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.ws.rs.Priorities;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,7 +27,7 @@ import java.io.OutputStream;
 @Priority(Priorities.ENTITY_CODER)
 public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
 
-    @Inject
+    @Context
     private Provider<UriInfo> uriInfoProvider;
     @Inject
     private Application app;

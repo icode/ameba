@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.ws.rs.Priorities;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -25,7 +26,7 @@ import java.io.OutputStream;
 @Singleton
 @Priority(Priorities.ENTITY_CODER - 1)
 public class JacksonXMLProvider extends JacksonJaxbXMLProvider {
-    @Inject
+    @Context
     private Provider<UriInfo> uriInfoProvider;
     @Inject
     private Application app;

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Priority;
+import javax.inject.Singleton;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 
@@ -11,6 +12,7 @@ import javax.ws.rs.container.PreMatching;
  * @author icode
  */
 @PreMatching
+@Singleton
 @Priority(Integer.MIN_VALUE)
 public class RequestLoggingFilter extends BaseLoggingFilter implements ContainerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(RequestLoggingFilter.class);

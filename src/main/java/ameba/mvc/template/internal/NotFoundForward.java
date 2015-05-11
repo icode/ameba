@@ -10,6 +10,7 @@ import org.glassfish.jersey.spi.ExtendedExceptionMapper;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.Set;
@@ -23,7 +24,7 @@ import java.util.Set;
 @Singleton
 public class NotFoundForward implements ExtendedExceptionMapper<NotFoundException> {
 
-    @Inject
+    @Context
     private Provider<UriInfo> uriInfo;
     @Inject
     private ServiceLocator serviceLocator;
