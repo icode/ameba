@@ -1,6 +1,7 @@
 package ameba.db.ebean.internal;
 
 import ameba.db.ebean.EbeanFeature;
+import ameba.db.ebean.EbeanUtils;
 import ameba.db.model.Finder;
 import ameba.message.filtering.EntityFieldsFilteringFeature;
 import ameba.message.internal.PathProperties;
@@ -235,7 +236,7 @@ public class EbeanModelInterceptor implements WriterInterceptor {
         if (orders != null && orders.size() > 0) {
             OrderBy orderBy = query.orderBy();
             for (String order : orders) {
-                // todo
+                EbeanUtils.appendOrder(orderBy, order);
             }
         }
     }

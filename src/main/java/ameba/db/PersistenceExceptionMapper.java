@@ -31,7 +31,7 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
 
     @Override
     public Response toResponse(PersistenceException exception) {
-        logger.debug("Executing SQL error", exception);
+        logger.error("Executing SQL error", exception);
 
         ErrorMessage errorMessage = ErrorMessage.fromStatus(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         errorMessage.setThrowable(exception);

@@ -5,6 +5,7 @@ import ameba.db.ebean.jackson.CommonBeanSerializer;
 import ameba.message.filtering.EntityFieldsUtils;
 import ameba.message.internal.PathProperties.Apply;
 import ameba.message.internal.PathProperties.Props;
+import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.common.BeanMap;
@@ -14,8 +15,15 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.ws.rs.BadRequestException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+
+import static com.avaje.ebean.OrderBy.*;
 
 /**
  * <p>EbeanUtils class.</p>
@@ -113,5 +121,59 @@ public class EbeanUtils {
             Requests.setProperty(PATH_PROPS_PARSED, properties);
         }
         return properties;
+    }
+
+    public static <T> void appendOrder(OrderBy<T> orderBy, String orderByClause) {
+
+        if (orderByClause == null) {
+            return;
+        }
+
+        String[] chunks = orderByClause.split(",");
+        for (String chunk : chunks) {
+
+            String[] pairs = chunk.split(" ");
+            Property p = parseOrderProperty(pairs);
+            if (p != null) {
+                orderBy.add(p);
+            }
+        }
+    }
+
+    private static Property parseOrderProperty(String[] pairs) {
+        if (pairs.length == 0) {
+            return null;
+        }
+
+        ArrayList<String> wordList = Lists.newArrayListWithCapacity(pairs.length);
+        for (String pair : pairs) {
+            if (StringUtils.isNotBlank(pair)) {
+                wordList.add(pair);
+            }
+        }
+        if (wordList.isEmpty()) {
+            return null;
+        }
+        if (wordList.size() == 1) {
+            return new Property(wordList.get(0), true);
+        }
+        if (wordList.size() == 2) {
+            boolean asc = isOrderAscending(wordList.get(1));
+            return new Property(wordList.get(0), asc);
+        }
+        String m = "Parse OrderBy error. Expecting a max of 2 words in [" + Arrays.toString(pairs)
+                + "] but got " + wordList.size();
+        throw new BadRequestException(m);
+    }
+
+    private static boolean isOrderAscending(String s) {
+        s = s.toLowerCase();
+        if (s.startsWith("asc")) {
+            return true;
+        }
+        if (s.startsWith("desc")) {
+            return false;
+        }
+        throw new BadRequestException("Parse OrderBy error. Expecting [" + s + "] to be asc or desc?");
     }
 }
