@@ -213,9 +213,9 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see {@link javax.ws.rs.PUT}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#replace(String, Model)}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#replace(ID, Model)}
      * @see {@link javax.ws.rs.PUT}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#replace(String, Model)}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#replace(ID, Model)}
      */
     public Response replace(@PathParam("id") final ID id, @NotNull @Valid final M model) throws Exception {
 
@@ -287,9 +287,9 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see {@link ameba.core.ws.rs.PATCH}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#patch(String, Model)}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#patch(ID, Model)}
      * @see {@link ameba.core.ws.rs.PATCH}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#patch(String, Model)}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#patch(ID, Model)}
      */
     public Response patch(@PathParam("id") final ID id, @NotNull final M model) throws Exception {
         BeanDescriptor descriptor = getModelBeanDescriptor();
@@ -357,9 +357,9 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see {@link javax.ws.rs.DELETE}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#deleteMultiple(PathSegment)}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#deleteMultiple(ID, PathSegment)}
      * @see {@link javax.ws.rs.DELETE}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#deleteMultiple(PathSegment)}
+     * @see {@link ameba.db.ebean.internal.AbstractModelResource#deleteMultiple(ID, PathSegment)}
      */
     public Response deleteMultiple(@NotNull @PathParam("ids") ID id,
                                    @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
