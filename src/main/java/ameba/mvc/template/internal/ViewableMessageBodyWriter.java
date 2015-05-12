@@ -13,6 +13,7 @@ import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.glassfish.jersey.uri.UriTemplate;
 
+import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
@@ -28,6 +29,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import java.io.*;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
@@ -45,6 +47,7 @@ import java.util.Map;
 @Singleton
 @ConstrainedTo(RuntimeType.SERVER)
 @Produces({"text/html", "application/xhtml+xml", "*/*"})
+@Priority(Integer.MAX_VALUE)
 final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
 
     public static final String DISABLE_DATA_VIEW = "data.view.disabled";
@@ -56,7 +59,7 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
     public static final String DATA_VIEW_LIST = DATA_VIEW_DEFAULT + "list";
     public static final String DATA_VIEW_ITEM = DATA_VIEW_DEFAULT + "item";
     public static final String DATA_VIEW_NULL = DATA_VIEW_DEFAULT + "null";
-    private static final String DEFAULT_DATA_VIEW_PAGE_DIR = "/_protected/default/";
+    private static final String DEFAULT_DATA_VIEW_PAGE_DIR = Viewables.PROTECTED_DIR_PATH + "/default/";
     public static final String DEFAULT_DATA_LIST = DEFAULT_DATA_VIEW_PAGE_DIR + "list";
     public static final String DEFAULT_DATA_ITEM = DEFAULT_DATA_VIEW_PAGE_DIR + "item";
     public static final String DEFAULT_DATA_NULL = DEFAULT_DATA_VIEW_PAGE_DIR + "null";
@@ -86,7 +89,7 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
     @Override
     public boolean isWriteable(final Class<?> type, final Type genericType, final Annotation[] annotations,
                                final MediaType mediaType) {
-        return isSupport(type, annotations);
+        return isSupport(type, genericType, annotations);
     }
 
     @Override
@@ -111,7 +114,9 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
             templates.add(resourceInfo.getResourceMethod().getName());
         }
         templates.add("index");
-        templates.add(getTemplatePath(uriInfoProvider.get()));
+        String path = getTemplatePath(uriInfoProvider.get());
+        templates.add(Viewables.PROTECTED_DIR_PATH + path);
+        templates.add(path);
         if (entity == null) {
             templates.add(dataViewNull);
         } else if (isItem(entity)) {
@@ -165,15 +170,11 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
         return builder.toString().toLowerCase();
     }
 
-    private boolean isSupport(Class entity, Annotation[] annotations) {
+    private boolean isSupport(Class entity, Type genericType, Annotation[] annotations) {
         String[] p;
         return !(dataViewDisabled
-                || Throwable.class.isAssignableFrom(entity)
-                || InputStream.class.isAssignableFrom(entity)
-                || OutputStream.class.isAssignableFrom(entity)
-                || Reader.class.isAssignableFrom(entity)
-                || Writer.class.isAssignableFrom(entity)
-                || ErrorMessage.class.isAssignableFrom(entity))
+                || !isSupportEntity(entity)
+                || !isSupportGenericType(genericType))
 
                 && ((p = TemplateHelper.getProduces(annotations)) == null
                 || -1 != ArrayUtils.indexOf(p,
@@ -202,5 +203,28 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
             }
         }
         return false;
+    }
+
+    private boolean isSupportEntity(Class type) {
+        return !(Throwable.class.isAssignableFrom(type)
+                || Viewable.class.isAssignableFrom(type)
+                || InputStream.class.isAssignableFrom(type)
+                || OutputStream.class.isAssignableFrom(type)
+                || Reader.class.isAssignableFrom(type)
+                || Writer.class.isAssignableFrom(type)
+                || ErrorMessage.class.isAssignableFrom(type));
+    }
+
+    private boolean isSupportGenericType(Type type) {
+        if (type instanceof ParameterizedType) {
+            for (Type ti : ((ParameterizedType) type).getActualTypeArguments()) {
+                if (ti instanceof Class) {
+                    if (!isSupportEntity((Class) ti)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 }

@@ -1,6 +1,5 @@
 package ameba.mvc.template.internal;
 
-import com.google.common.collect.Lists;
 import jersey.repackaged.com.google.common.collect.Sets;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.Providers;
@@ -70,14 +69,22 @@ final class TemplateMessageBodyWriter implements MessageBodyWriter<Viewable> {
                         final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException, WebApplicationException {
         try {
-            final ResolvedViewable resolvedViewable = resolve(viewable, mediaType);
+            final ResolvedViewable resolvedViewable = resolve(viewable);
             if (resolvedViewable == null) {
                 final String message = LocalizationMessages
                         .TEMPLATE_NAME_COULD_NOT_BE_RESOLVED(viewable.getTemplateName());
                 throw new WebApplicationException(new ProcessingException(message), Response.Status.NOT_FOUND);
             }
 
-            httpHeaders.putSingle(HttpHeaders.CONTENT_TYPE, resolvedViewable.getMediaType());
+            MediaType mType = resolvedViewable.getMediaType();
+
+            if (mType == null
+                    || mType.isWildcardType()
+                    || mType.equals(MediaType.APPLICATION_OCTET_STREAM_TYPE)) {
+                mType = mediaType;
+            }
+
+            httpHeaders.putSingle(HttpHeaders.CONTENT_TYPE, mType);
             resolvedViewable.writeTo(entityStream, httpHeaders);
         } catch (ViewableContextException vce) {
             throw new NotFoundException(vce);
@@ -88,11 +95,10 @@ final class TemplateMessageBodyWriter implements MessageBodyWriter<Viewable> {
      * Resolve the given {@link org.glassfish.jersey.server.mvc.Viewable viewable} using
      * {@link org.glassfish.jersey.server.mvc.spi.ViewableContext}.
      *
-     * @param viewable  viewable to be resolved.
-     * @param mediaType mediaType to be resolved.
+     * @param viewable viewable to be resolved.
      * @return resolved viewable or {@code null}, if the viewable cannot be resolved.
      */
-    private ResolvedViewable resolve(final Viewable viewable, MediaType mediaType) {
+    private ResolvedViewable resolve(final Viewable viewable) {
         if (viewable instanceof ResolvedViewable) {
             return (ResolvedViewable) viewable;
         } else {
@@ -101,11 +107,6 @@ final class TemplateMessageBodyWriter implements MessageBodyWriter<Viewable> {
 
             List<MediaType> producibleMediaTypes = TemplateHelper
                     .getProducibleMediaTypes(requestProvider.get(), extendedUriInfoProvider.get(), null);
-
-            if (!producibleMediaTypes.contains(mediaType)) {
-                producibleMediaTypes = Lists.newArrayList(producibleMediaTypes);
-                producibleMediaTypes.add(0, mediaType);
-            }
 
             if (viewable instanceof ImplicitViewable) {
                 // Template Names.

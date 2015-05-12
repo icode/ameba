@@ -203,9 +203,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
                 put("model", viewable.getModel());
             }};
         }
-        if (httpHeaders != null)
-            setContentType(mediaType.equals(MediaType.WILDCARD_TYPE)
-                    ? MediaType.TEXT_HTML_TYPE : mediaType, httpHeaders);
+        
         template.render(model, outputStream);
     }
 }

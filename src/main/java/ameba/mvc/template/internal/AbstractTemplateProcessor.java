@@ -102,6 +102,7 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
 
         for (String path : basePath) {
             paths.addAll(getTemplatePaths(name, path));
+            paths.addAll(getTemplatePaths(name, path));
         }
 
         return paths;

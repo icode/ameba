@@ -86,11 +86,29 @@ class ResolvingViewableContext implements ViewableContext {
      * @param templateProcessor template processor to be used.
      * @return resolved viewable or {@code null} if the viewable cannot be resolved.
      */
-    @SuppressWarnings("unchecked")
-    private ResolvedViewable resolveRelativeViewable(final Viewable viewable, final Class<?> resolvingClass,
-                                                     final MediaType mediaType, final TemplateProcessor templateProcessor) {
+    private ResolvedViewable resolveRelativeViewable(final Viewable viewable,
+                                                     final Class<?> resolvingClass,
+                                                     final MediaType mediaType,
+                                                     final TemplateProcessor templateProcessor) {
         final String path = TemplateHelper.getTemplateName(viewable);
 
+        ResolvedViewable resolvedViewable = resolveRelativeViewable(Viewables.PROTECTED_DIR + "/" + path,
+                viewable, resolvingClass, mediaType, templateProcessor);
+
+        if (resolvedViewable == null) {
+            resolvedViewable = resolveRelativeViewable(path,
+                    viewable, resolvingClass, mediaType, templateProcessor);
+        }
+
+        return resolvedViewable;
+    }
+
+    @SuppressWarnings("unchecked")
+    private ResolvedViewable resolveRelativeViewable(final String path,
+                                                     final Viewable viewable,
+                                                     final Class<?> resolvingClass,
+                                                     final MediaType mediaType,
+                                                     final TemplateProcessor templateProcessor) {
         // Find in directories.
         for (Class c = resolvingClass; c != Object.class; c = c.getSuperclass()) {
             final String absolutePath = TemplateHelper.getAbsolutePath(c, path, '/');
