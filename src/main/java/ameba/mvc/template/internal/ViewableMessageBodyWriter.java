@@ -23,9 +23,7 @@ import javax.ws.rs.RuntimeType;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.*;
 import javax.ws.rs.ext.MessageBodyWriter;
 import java.io.*;
 import java.lang.annotation.Annotation;
@@ -126,6 +124,7 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
         }
 
         Class clazz = Ameba.class;
+
         if (resourceInfo != null) {
             clazz = resourceInfo.getResourceClass();
         } else {
@@ -208,6 +207,8 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
     private boolean isSupportEntity(Class type) {
         return !(Throwable.class.isAssignableFrom(type)
                 || Viewable.class.isAssignableFrom(type)
+                || Response.class.isAssignableFrom(type)
+                || StreamingOutput.class.isAssignableFrom(type)
                 || InputStream.class.isAssignableFrom(type)
                 || OutputStream.class.isAssignableFrom(type)
                 || Reader.class.isAssignableFrom(type)

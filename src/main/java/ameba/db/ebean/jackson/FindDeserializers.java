@@ -32,14 +32,17 @@ class FindDeserializers extends Deserializers.Base {
     }
 
     @Override
-    public JsonDeserializer<?> findCollectionDeserializer(CollectionType type, DeserializationConfig config,
-                                                          BeanDescription beanDesc, TypeDeserializer
-                                                                  elementTypeDeserializer, JsonDeserializer<?> elementDeserializer) throws JsonMappingException {
-
-        if (type.getRawClass().isAssignableFrom(BeanCollection.class)) {
-            return new BeanListTypeDeserializer(jsonContext, type.getContentType().getRawClass());
+    public JsonDeserializer<?> findCollectionDeserializer(CollectionType type,
+                                                          DeserializationConfig config,
+                                                          BeanDescription beanDesc,
+                                                          TypeDeserializer elementTypeDeserializer,
+                                                          JsonDeserializer<?> elementDeserializer)
+            throws JsonMappingException {
+        Class clazz = type.getContentType().getRawClass();
+        if (BeanCollection.class.isAssignableFrom(type.getRawClass())
+                || jsonContext.isSupportedType(clazz)) {
+            return new BeanListTypeDeserializer(jsonContext, clazz);
         }
-
         return null;
     }
 

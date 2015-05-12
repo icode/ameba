@@ -33,7 +33,7 @@ public class EntityFieldsScopeResolver implements ScopeResolver {
     /**
      * Query parameter name for fields feature, set to default value
      */
-    private static String FIELDS_PARAM_NAME = "fields";
+    static String FIELDS_PARAM_NAME = "fields";
 
     @Context
     private Configuration configuration;

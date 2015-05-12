@@ -665,10 +665,10 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param query        Query
      * @param needPageList need page list
      * @return page list count or null
-     * @see {@link ameba.db.ebean.internal.EbeanModelProcessor#applyUriQuery(MultivaluedMap, Query, boolean)}
+     * @see {@link EbeanModelInterceptor#applyUriQuery(MultivaluedMap, Query, boolean)}
      */
     protected FutureRowCount applyUriQuery(final Query<M> query, boolean needPageList) {
-        return EbeanModelProcessor.applyUriQuery(uriInfo.getQueryParameters(), query, needPageList);
+        return EbeanModelInterceptor.applyUriQuery(uriInfo.getQueryParameters(), query, needPageList);
     }
 
     /**
@@ -689,7 +689,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param rowCount     a {@link com.avaje.ebean.FutureRowCount} object.
      */
     protected void applyRowCountHeader(MultivaluedMap<String, Object> headerParams, Query query, FutureRowCount rowCount) {
-        EbeanModelProcessor.applyRowCountHeader(headerParams, query, rowCount);
+        EbeanModelInterceptor.applyRowCountHeader(headerParams, query, rowCount);
     }
 
     /**

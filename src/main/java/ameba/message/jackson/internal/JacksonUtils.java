@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.MapperConfigBase;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 import org.apache.commons.lang3.StringUtils;
@@ -91,7 +92,8 @@ public class JacksonUtils {
      * @param mapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
      */
     public static void configureMapper(ObjectMapper mapper) {
-        mapper.registerModule(new JodaModule());
+        mapper.registerModule(new JodaModule())
+                .registerModule(new GuavaModule());
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)

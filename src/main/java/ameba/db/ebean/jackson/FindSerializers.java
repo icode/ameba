@@ -38,7 +38,8 @@ class FindSerializers extends Serializers.Base {
     public JsonSerializer<?> findCollectionSerializer(SerializationConfig config, CollectionType type, BeanDescription
             beanDesc, TypeSerializer elementTypeSerializer, JsonSerializer<Object> elementValueSerializer) {
 
-        if (type.getRawClass().isAssignableFrom(BeanCollection.class)) {
+        if (BeanCollection.class.isAssignableFrom(type.getRawClass())
+                || jsonContext.isSupportedType(type.getContentType().getRawClass())) {
             return serialiser;
         }
 

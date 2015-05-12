@@ -198,11 +198,11 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
     public void writeTemplate(Template template, final Viewable viewable, MediaType mediaType,
                               MultivaluedMap<String, Object> httpHeaders, OutputStream outputStream) throws Exception {
         Object model = viewable.getModel();
-        if (!(model instanceof Map)) {
-            model = new HashMap<String, Object>() {{
-                put("model", viewable.getModel());
-            }};
-        }
+
+        final Object finalModel = model;
+        model = new HashMap<String, Object>() {{
+            put("model", finalModel);
+        }};
         
         template.render(model, outputStream);
     }

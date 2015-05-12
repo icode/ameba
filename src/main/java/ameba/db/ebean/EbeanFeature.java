@@ -2,7 +2,7 @@ package ameba.db.ebean;
 
 import ameba.db.DataSourceManager;
 import ameba.db.OrmFeature;
-import ameba.db.ebean.internal.EbeanModelProcessor;
+import ameba.db.ebean.internal.EbeanModelInterceptor;
 import ameba.db.ebean.jackson.JacksonEbeanModule;
 import ameba.db.ebean.jackson.JsonIOExceptionMapper;
 import ameba.db.migration.DatabaseMigrationFeature;
@@ -152,11 +152,11 @@ public class EbeanFeature extends OrmFeature {
     public boolean configure(final FeatureContext context) {
         super.configure(context);
 
-        if (context.getConfiguration().isRegistered(EbeanModelProcessor.class)) {
+        if (context.getConfiguration().isRegistered(EbeanModelInterceptor.class)) {
             return false;
         }
 
-        context.register(EbeanModelProcessor.class)
+        context.register(EbeanModelInterceptor.class)
                 .register(JsonIOExceptionMapper.class);
 
         for (EbeanServer server : SERVERS) {

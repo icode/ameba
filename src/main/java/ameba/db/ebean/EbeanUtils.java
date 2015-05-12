@@ -1,9 +1,10 @@
 package ameba.db.ebean;
 
 import ameba.core.Requests;
-import ameba.db.ebean.internal.EbeanModelProcessor;
-import ameba.db.ebean.jackson.BeanJsonSerializer;
 import ameba.db.ebean.jackson.CommonBeanSerializer;
+import ameba.message.filtering.EntityFieldsUtils;
+import ameba.message.internal.PathProperties.Apply;
+import ameba.message.internal.PathProperties.Props;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.common.BeanMap;
@@ -13,10 +14,8 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * <p>EbeanUtils class.</p>
@@ -25,6 +24,8 @@ import java.util.List;
  * @since 0.1.6e
  */
 public class EbeanUtils {
+    public static final String PATH_PROPS_PARSED = EbeanUtils.class + ".PathProperties";
+
     private EbeanUtils() {
     }
 
@@ -91,30 +92,26 @@ public class EbeanUtils {
      *
      * @return PathProperties
      * @see {@link JsonContext#toJson(Object, JsonGenerator, PathProperties)}
-     * @see {@link BeanJsonSerializer#serialize(Object, JsonGenerator, SerializerProvider)}
      * @see {@link CommonBeanSerializer#serialize(Object, JsonGenerator, SerializerProvider)}
      */
     public static PathProperties getCurrentRequestPathProperties() {
-        List<String> selectables = Requests.getUriInfo().getQueryParameters()
-                .get(EbeanModelProcessor.getFieldsParamName());
-        StringBuilder builder = new StringBuilder();
-        if (selectables != null) {
-            for (int i = 0; i < selectables.size(); i++) {
-                String s = selectables.get(i);
-                if (StringUtils.isNotBlank(s)) {
-                    if (!s.startsWith("(")) {
-                        builder.append("(");
-                    }
-                    builder.append(s);
-                    if (!s.startsWith(")")) {
-                        builder.append(")");
-                    }
-                    if (i < selectables.size() - 1) {
-                        builder.append(":");
-                    }
+        PathProperties properties = (PathProperties) Requests.getProperty(PATH_PROPS_PARSED);
+        if (properties == null) {
+            final ameba.message.internal.PathProperties pathProperties = EntityFieldsUtils.parsePathProperties();
+            final PathProperties finalProperties = properties = new PathProperties();
+            pathProperties.apply(new Apply<String, Props>() {
+                @Override
+                public void execute(Props props) {
+                    finalProperties.put(null, props.getProperties());
                 }
-            }
+
+                @Override
+                public void execute(String s, Props props) {
+                    finalProperties.put(s, props.getProperties());
+                }
+            });
+            Requests.setProperty(PATH_PROPS_PARSED, properties);
         }
-        return PathProperties.parse(builder.length() == 0 ? "(*)" : builder.toString());
+        return properties;
     }
 }

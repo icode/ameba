@@ -3,9 +3,10 @@ package ameba.db.ebean.internal;
 import ameba.db.ebean.EbeanFeature;
 import ameba.db.model.Finder;
 import ameba.message.filtering.EntityFieldsFilteringFeature;
+import ameba.message.internal.PathProperties;
 import com.avaje.ebean.*;
+import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.common.BeanList;
-import com.avaje.ebean.text.PathProperties;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
@@ -28,14 +29,14 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
- * <p>EbeanModelProcessor class.</p>
+ * <p>EbeanModelInterceptor class.</p>
  *
  * @author icode
  * @since 0.1.6e
  */
 @Singleton
 @Priority(Priorities.ENTITY_CODER)
-public class EbeanModelProcessor implements WriterInterceptor {
+public class EbeanModelInterceptor implements WriterInterceptor {
 
     static String FIELDS_PARAM_NAME = "fields";
     static String SORT_PARAM_NAME = "sort";
@@ -230,11 +231,11 @@ public class EbeanModelProcessor implements WriterInterceptor {
      * @param query       a {@link com.avaje.ebean.Query} object.
      */
     public static void applyOrderBy(MultivaluedMap<String, String> queryParams, Query query) {
-        List<String> orders = queryParams.get(EbeanModelProcessor.SORT_PARAM_NAME);
+        List<String> orders = queryParams.get(EbeanModelInterceptor.SORT_PARAM_NAME);
         if (orders != null && orders.size() > 0) {
             OrderBy orderBy = query.orderBy();
             for (String order : orders) {
-
+                // todo
             }
         }
     }
@@ -289,7 +290,7 @@ public class EbeanModelProcessor implements WriterInterceptor {
      * @param query       query
      */
     public static void applyWhere(MultivaluedMap<String, String> queryParams, Query query) {
-        List<String> wheres = queryParams.get(EbeanModelProcessor.WHERE_PARAM_NAME);
+        List<String> wheres = queryParams.get(EbeanModelInterceptor.WHERE_PARAM_NAME);
         if (wheres != null)
             for (String w : wheres) {
                 query.where(w);
@@ -432,6 +433,8 @@ public class EbeanModelProcessor implements WriterInterceptor {
 
                 context.setGenericType(((SpiQuery) query).getBeanType());
             }
+        } else if (o instanceof BeanCollection && !BeanCollection.class.isAssignableFrom(context.getType())) {
+            context.setEntity(o.getClass());
         }
 
         context.proceed();
