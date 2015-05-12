@@ -85,9 +85,7 @@ public class PropertiesResourceBundle extends ResourceBundle {
 
         public String nextElement() {
             if (this.hasMoreElements()) {
-                String var1 = this.next;
-                this.next = null;
-                return var1;
+                return this.next;
             } else {
                 throw new NoSuchElementException();
             }
