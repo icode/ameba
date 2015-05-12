@@ -80,42 +80,36 @@ public abstract class EventBus {
 
     /**
      * subscribe event by {@link ameba.event.Subscribe} annotation
-     * <p/>
-     * <pre>{@code
-     * <p/>
+     * <pre>
+     * {@code
+     *
      * class SubEevent {
-     * <p/>
      *     public SubEevent(){
      *         EventBus.subscribe(this);
      *     }
-     * <p/>
-     * <p/>
-     *     @@Subscribe({ Container.ReloadEvent.class })
+     *     {@literal @Subscribe({ Container.ReloadEvent.class })}
      *     private void doSome(MyEvent e){
      *         ....
      *     }
      * }
-     * <p/>
      * class SubEevent2 {
-     * <p/>
-     *     @@Subscribe({ Container.ReloadEvent.class })
+     *     {@literal @Subscribe({ Container.ReloadEvent.class })}
      *     private void doSome(){
      *         ....
      *     }
-     * <p/>
-     *     @@Subscribe({ Container.ReloadEvent.class })
+     *     {@literal @Subscribe({ Container.ReloadEvent.class })}
      *     private void doSome(MyEvent e){
      *         ....
      *     }
      * }
-     * <p/>
      * class SubEevent2 {
-     * <p/>
-     *     @@Subscribe({ Container.ReloadEvent.class })
+     *     {@literal @Subscribe({ Container.ReloadEvent.class })}
      *     private void doSome(){
      *         ....
      *     }
-     * <p/>
+     * }
+     * }
+     * </pre>
      *
      * @param obj class or instance
      * @since 0.1.6e

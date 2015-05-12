@@ -1,7 +1,6 @@
 package ameba.i18n;
 
 import com.google.common.collect.Maps;
-import sun.util.ResourceBundleEnumeration;
 
 import java.io.IOException;
 import java.util.*;
@@ -12,11 +11,13 @@ import java.util.*;
 public class PropertiesResourceBundle extends ResourceBundle {
     private Map<String, Object> lookup;
 
+    @SuppressWarnings("all")
     public PropertiesResourceBundle(Properties properties) throws IOException {
         lookup = Maps.newHashMap((Map) properties);
     }
 
     // Implements java.util.ResourceBundle.handleGetObject; inherits javadoc specification.
+    @SuppressWarnings("all")
     public Object handleGetObject(String key) {
         if (key == null) {
             throw new NullPointerException();
@@ -32,6 +33,7 @@ public class PropertiesResourceBundle extends ResourceBundle {
      * this <code>ResourceBundle</code> and its parent bundles.
      * @see #keySet()
      */
+    @SuppressWarnings("all")
     public Enumeration<String> getKeys() {
         ResourceBundle parent = this.parent;
         return new ResourceBundleEnumeration(lookup.keySet(),
@@ -47,7 +49,48 @@ public class PropertiesResourceBundle extends ResourceBundle {
      * @see #keySet()
      * @since 1.6
      */
+    @SuppressWarnings("all")
     protected Set<String> handleKeySet() {
         return lookup.keySet();
+    }
+
+    private class ResourceBundleEnumeration implements Enumeration<String> {
+        Set<String> set;
+        Iterator<String> iterator;
+        Enumeration<String> enumeration;
+        String next = null;
+
+        public ResourceBundleEnumeration(Set<String> set, Enumeration<String> enumeration) {
+            this.set = set;
+            this.iterator = set.iterator();
+            this.enumeration = enumeration;
+        }
+
+        public boolean hasMoreElements() {
+            if (this.next == null) {
+                if (this.iterator.hasNext()) {
+                    this.next = this.iterator.next();
+                } else if (this.enumeration != null) {
+                    while (this.next == null && this.enumeration.hasMoreElements()) {
+                        this.next = this.enumeration.nextElement();
+                        if (this.set.contains(this.next)) {
+                            this.next = null;
+                        }
+                    }
+                }
+            }
+
+            return this.next != null;
+        }
+
+        public String nextElement() {
+            if (this.hasMoreElements()) {
+                String var1 = this.next;
+                this.next = null;
+                return var1;
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
     }
 }

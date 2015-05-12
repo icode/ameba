@@ -99,8 +99,8 @@ public class EbeanUtils {
      * parse uri query param to PathProperties for Ebean.json().toJson()
      *
      * @return PathProperties
-     * @see {@link JsonContext#toJson(Object, JsonGenerator, PathProperties)}
-     * @see {@link CommonBeanSerializer#serialize(Object, JsonGenerator, SerializerProvider)}
+     * @see JsonContext#toJson(Object, JsonGenerator, PathProperties)
+     * @see CommonBeanSerializer#serialize(Object, JsonGenerator, SerializerProvider)
      */
     public static PathProperties getCurrentRequestPathProperties() {
         PathProperties properties = (PathProperties) Requests.getProperty(PATH_PROPS_PARSED);

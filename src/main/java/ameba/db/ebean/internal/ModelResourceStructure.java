@@ -82,7 +82,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      *
      * @param id id string
      * @return ID object
-     * @see #deleteMultiple(ID, PathSegment)
+     * @see ModelResourceStructure#deleteMultiple(Object, PathSegment)
      */
     @SuppressWarnings("unchecked")
     protected ID stringToId(String id) {
@@ -109,10 +109,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      *
      * @param id id object
      * @return id string
-     * @see #insert(Model)
-     * @see #patch(ID, Model)
-     * @see #insert(Model)
-     * @see #patch(ID, Model)
+     * @see ModelResourceStructure#insert(Model)
+     * @see ModelResourceStructure#patch(Object, Model)
      */
     protected String idToString(@NotNull ID id) {
         return id.toString();
@@ -147,10 +145,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param model the model to insert
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
-     * @see {@link javax.ws.rs.POST}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#insert(Model)}
-     * @see {@link javax.ws.rs.POST}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#insert(Model)}
+     * @see javax.ws.rs.POST
+     * @see ameba.db.ebean.internal.AbstractModelResource#insert(Model)
      */
     @SuppressWarnings("unchecked")
     public Response insert(@NotNull @Valid final M model) throws Exception {
@@ -212,10 +208,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param model the model to update
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
-     * @see {@link javax.ws.rs.PUT}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#replace(ID, Model)}
-     * @see {@link javax.ws.rs.PUT}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#replace(ID, Model)}
+     * @see javax.ws.rs.PUT
+     * @see ameba.db.ebean.internal.AbstractModelResource#replace(Object, Model)
      */
     public Response replace(@PathParam("id") final ID id, @NotNull @Valid final M model) throws Exception {
 
@@ -286,10 +280,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param model the model to update
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
-     * @see {@link ameba.core.ws.rs.PATCH}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#patch(ID, Model)}
-     * @see {@link ameba.core.ws.rs.PATCH}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#patch(ID, Model)}
+     * @see ameba.core.ws.rs.PATCH
+     * @see ameba.db.ebean.internal.AbstractModelResource#patch(Object, Model)
      */
     public Response patch(@PathParam("id") final ID id, @NotNull final M model) throws Exception {
         BeanDescriptor descriptor = getModelBeanDescriptor();
@@ -356,10 +348,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param ids The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
-     * @see {@link javax.ws.rs.DELETE}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#deleteMultiple(ID, PathSegment)}
-     * @see {@link javax.ws.rs.DELETE}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#deleteMultiple(ID, PathSegment)}
+     * @see javax.ws.rs.DELETE
+     * @see ameba.db.ebean.internal.AbstractModelResource#deleteMultiple(Object, PathSegment)
      */
     public Response deleteMultiple(@NotNull @PathParam("ids") ID id,
                                    @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
@@ -478,10 +468,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param ids the id of the model.
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
-     * @see {@link javax.ws.rs.GET}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#findByIds}
-     * @see {@link javax.ws.rs.GET}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#findByIds}
+     * @see javax.ws.rs.GET
+     * @see ameba.db.ebean.internal.AbstractModelResource#findByIds
      */
     public Response findByIds(@NotNull @PathParam("ids") ID id,
                               @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
@@ -572,10 +560,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      *
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
-     * @see {@link javax.ws.rs.GET}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#find()}
-     * @see {@link javax.ws.rs.GET}
-     * @see {@link ameba.db.ebean.internal.AbstractModelResource#find()}
+     * @see javax.ws.rs.GET
+     * @see ameba.db.ebean.internal.AbstractModelResource#find()
      */
     public Response find() throws Exception {
 
@@ -665,7 +651,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param query        Query
      * @param needPageList need page list
      * @return page list count or null
-     * @see {@link EbeanModelInterceptor#applyUriQuery(MultivaluedMap, Query, boolean)}
+     * @see EbeanModelInterceptor#applyUriQuery(MultivaluedMap, Query, boolean)
      */
     protected FutureRowCount applyUriQuery(final Query<M> query, boolean needPageList) {
         return EbeanModelInterceptor.applyUriQuery(uriInfo.getQueryParameters(), query, needPageList);
