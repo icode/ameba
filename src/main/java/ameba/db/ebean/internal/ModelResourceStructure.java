@@ -679,13 +679,13 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     }
 
     /**
-     * <p>processCheckRowCountError.</p>
+     * <p>processTransactionError.</p>
      *
      * @param callable a {@link ameba.db.ebean.internal.ModelResourceStructure.TxCallable} object.
      * @param process  a {@link ameba.db.ebean.internal.ModelResourceStructure.TxCallable} object.
      * @throws java.lang.Exception if any.
      */
-    protected <T> T processCheckRowCountError(TxCallable<T> callable, TxCallable<T> process) throws Exception {
+    protected <T> T processTransactionError(TxCallable<T> callable, TxCallable<T> process) throws Exception {
         try {
             return callable.call();
         } catch (Exception e) {
@@ -716,7 +716,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     protected void executeTx(TxScope scope, final TxRunnable r, final TxRunnable errorHandler) throws Exception {
         final ScopeTrans scopeTrans = server.createScopeTrans(scope);
         configureTransDefault();
-        processCheckRowCountError(new TxCallable() {
+        processTransactionError(new TxCallable() {
             @Override
             public Object call() throws Exception {
                 try {
@@ -783,7 +783,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     protected <O> O executeTx(TxScope scope, final TxCallable<O> c, final TxCallable<O> errorHandler) throws Exception {
         final ScopeTrans scopeTrans = server.createScopeTrans(scope);
         configureTransDefault();
-        return processCheckRowCountError(new TxCallable<O>() {
+        return processTransactionError(new TxCallable<O>() {
             @Override
             public O call() throws Exception {
                 try {
@@ -804,13 +804,13 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     }
 
     /**
-     * <p>processCheckRowCountError.</p>
+     * <p>processTransactionError.</p>
      *
      * @param callable a {@link ameba.db.ebean.internal.ModelResourceStructure.TxCallable} object.
      * @throws java.lang.Exception if any.
      */
-    protected <T> T processCheckRowCountError(TxCallable<T> callable) throws Exception {
-        return processCheckRowCountError(callable, null);
+    protected <T> T processTransactionError(TxCallable<T> callable) throws Exception {
+        return processTransactionError(callable, null);
     }
 
     /**
