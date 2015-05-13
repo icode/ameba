@@ -53,10 +53,10 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
             MediaType.TEXT_HTML_TYPE,
             MediaType.APPLICATION_XHTML_XML_TYPE
     );
-    private static final String DATA_VIEW_DEFAULT = "data.view.default.";
-    public static final String DATA_VIEW_LIST = DATA_VIEW_DEFAULT + "list";
-    public static final String DATA_VIEW_ITEM = DATA_VIEW_DEFAULT + "item";
-    public static final String DATA_VIEW_NULL = DATA_VIEW_DEFAULT + "null";
+    private static final String DATA_VIEW_DEFAULT_KEY_PRE = "data.view.default.";
+    public static final String DATA_VIEW_LIST_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "list";
+    public static final String DATA_VIEW_ITEM_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "item";
+    public static final String DATA_VIEW_NULL_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "null";
     private static final String DEFAULT_DATA_VIEW_PAGE_DIR = Viewables.PROTECTED_DIR_PATH + "/default/";
     public static final String DEFAULT_DATA_LIST = DEFAULT_DATA_VIEW_PAGE_DIR + "list";
     public static final String DEFAULT_DATA_ITEM = DEFAULT_DATA_VIEW_PAGE_DIR + "item";
@@ -79,9 +79,9 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
     public ViewableMessageBodyWriter(Application application) {
         dataViewDisabled = "true".equals(application.getProperty(DISABLE_DATA_VIEW));
         Map<String, Object> properties = application.getProperties();
-        dataViewList = PropertiesHelper.getValue(properties, DATA_VIEW_LIST, DEFAULT_DATA_LIST, null);
-        dataViewItem = PropertiesHelper.getValue(properties, DATA_VIEW_ITEM, DEFAULT_DATA_ITEM, null);
-        dataViewNull = PropertiesHelper.getValue(properties, DATA_VIEW_NULL, DEFAULT_DATA_NULL, null);
+        dataViewList = PropertiesHelper.getValue(properties, DATA_VIEW_LIST_KEY, DEFAULT_DATA_LIST, null);
+        dataViewItem = PropertiesHelper.getValue(properties, DATA_VIEW_ITEM_KEY, DEFAULT_DATA_ITEM, null);
+        dataViewNull = PropertiesHelper.getValue(properties, DATA_VIEW_NULL_KEY, DEFAULT_DATA_NULL, null);
     }
 
     @Override
