@@ -26,6 +26,7 @@ public class Connector {
      * Constant <code>CONNECTOR_CONF_PREFIX="connector."</code>
      */
     public static final String CONNECTOR_CONF_PREFIX = "connector.";
+    public static final String DEFAULT_NETWORK_HOST = "0.0.0.0";
     private static final Logger logger = LoggerFactory.getLogger(Connector.class);
     protected URI httpServerBaseUri;
     protected String host;

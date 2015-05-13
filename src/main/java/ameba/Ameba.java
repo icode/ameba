@@ -20,10 +20,6 @@ import java.util.List;
  */
 public class Ameba {
     /**
-     * Constant <code>logger</code>
-     */
-    public static final Logger logger = LoggerFactory.getLogger(Ameba.class);
-    /**
      * Constant <code>LOGO="\n\n    _                   _          "{trunked}</code>
      */
     public static final String LOGO = "\n\n" +
@@ -32,6 +28,10 @@ public class Ameba {
             "  / _ \\ | '_ ` _ \\ / _ \\ '_ \\ / _` |\n" +
             " / ___ \\| | | | | |  __/ |_) | (_| |\n" +
             "/_/   \\_\\_| |_| |_|\\___|_.__/ \\__,_|   {}\n\n";
+    /**
+     * Constant <code>logger</code>
+     */
+    private static final Logger logger = LoggerFactory.getLogger(Ameba.class);
     private static Application app;
     private static Container container;
     private static String version;

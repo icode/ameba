@@ -27,7 +27,7 @@ public abstract class Container {
     /**
      * Constant <code>logger</code>
      */
-    public static final Logger logger = LoggerFactory.getLogger(Container.class);
+    protected static final Logger logger = LoggerFactory.getLogger(Container.class);
 
     private Application application;
 
