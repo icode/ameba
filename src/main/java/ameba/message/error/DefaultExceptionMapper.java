@@ -91,7 +91,7 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
         message.setErrors(parseErrors(exception, status));
 
         if (status == 500) {
-            logger.error("系统发生错误", exception);
+            logger.error(message.getMessage(), exception);
         }
 
         return Response.status(status)
