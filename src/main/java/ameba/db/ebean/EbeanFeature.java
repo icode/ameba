@@ -305,8 +305,8 @@ public class EbeanFeature extends OrmFeature {
 
             private ScopedBindingBuilder<SpiEbeanServer> createBuilder(EbeanServer server) {
                 return bind((SpiEbeanServer) server)
-                        .to(EbeanServer.class)
                         .to(SpiEbeanServer.class)
+                        .to(EbeanServer.class)
                         .proxy(false);
             }
         });

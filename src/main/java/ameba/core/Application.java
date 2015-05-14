@@ -1382,7 +1382,7 @@ public class Application {
 
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         context.reset();
-        context.putObject("application", this);
+        context.putObject("properties", properties);
 
         if (loggerConfigFile != null) {
             GafferUtil.runGafferConfiguratorOn(context, this, loggerConfigFile);

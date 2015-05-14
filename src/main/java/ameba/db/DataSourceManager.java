@@ -7,6 +7,8 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,5 +104,27 @@ public class DataSourceManager extends AddOn {
                 logger.error("配置数据源出错", e);
             }
         }
+
+        app.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                for (Map.Entry<String, DataSource> entry : dataSourceMap.entrySet()) {
+                    DataSource ds = entry.getValue();
+                    String name = entry.getKey();
+                    createBuilder(ds).named(name);
+
+                    if (getDefaultDataSourceName().equals(name)) {
+                        createBuilder(ds);
+                    }
+                }
+            }
+
+            private ScopedBindingBuilder<DruidDataSource> createBuilder(DataSource dataSource) {
+                return bind((DruidDataSource) dataSource)
+                        .to(DruidDataSource.class)
+                        .to(DataSource.class)
+                        .proxy(false);
+            }
+        });
     }
 }

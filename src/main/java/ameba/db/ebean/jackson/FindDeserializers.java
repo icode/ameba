@@ -1,6 +1,5 @@
 package ameba.db.ebean.jackson;
 
-import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.text.json.JsonContext;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.Deserializers;
@@ -11,7 +10,6 @@ import com.fasterxml.jackson.databind.type.CollectionType;
  * Finds JsonDeserializer implementations for entity beans or entity bean collections.
  */
 class FindDeserializers extends Deserializers.Base {
-
 
     final JsonContext jsonContext;
 
@@ -38,11 +36,12 @@ class FindDeserializers extends Deserializers.Base {
                                                           TypeDeserializer elementTypeDeserializer,
                                                           JsonDeserializer<?> elementDeserializer)
             throws JsonMappingException {
-        Class clazz = type.getContentType().getRawClass();
-        if (BeanCollection.class.isAssignableFrom(type.getRawClass())
-                || jsonContext.isSupportedType(clazz)) {
-            return new BeanListTypeDeserializer(jsonContext, clazz);
-        }
+        // todo this is a ebean bug
+//        Class clazz = type.getContentType().getRawClass();
+//        if (Collection.class.isAssignableFrom(type.getRawClass())
+//                && jsonContext.isSupportedType(clazz)) {
+//            return new BeanListTypeDeserializer(jsonContext, clazz);
+//        }
         return null;
     }
 

@@ -34,8 +34,15 @@ public class JacksonEbeanModule extends SimpleModule {
      */
     @Override
     public void setupModule(SetupContext context) {
-        context.addSerializers(new FindSerializers(jsonContext));
-        context.addDeserializers(new FindDeserializers(jsonContext));
+        FindSerializers serializers = new FindSerializers(jsonContext);
+        locator.postConstruct(serializers);
+        locator.inject(serializers);
+        context.addSerializers(serializers);
+
+        FindDeserializers deserializers = new FindDeserializers(jsonContext);
+        locator.postConstruct(deserializers);
+        locator.inject(deserializers);
+        context.addDeserializers(deserializers);
     }
 
 }

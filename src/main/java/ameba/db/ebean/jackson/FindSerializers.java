@@ -1,6 +1,5 @@
 package ameba.db.ebean.jackson;
 
-import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.text.json.JsonContext;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JavaType;
@@ -9,6 +8,8 @@ import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.fasterxml.jackson.databind.type.CollectionType;
+
+import java.util.Collection;
 
 /**
  * Finds JsonSerializer's for entity bean types or entity bean collection types.
@@ -38,8 +39,8 @@ class FindSerializers extends Serializers.Base {
     public JsonSerializer<?> findCollectionSerializer(SerializationConfig config, CollectionType type, BeanDescription
             beanDesc, TypeSerializer elementTypeSerializer, JsonSerializer<Object> elementValueSerializer) {
 
-        if (BeanCollection.class.isAssignableFrom(type.getRawClass())
-                || jsonContext.isSupportedType(type.getContentType().getRawClass())) {
+        if (Collection.class.isAssignableFrom(type.getRawClass())
+                && jsonContext.isSupportedType(type.getContentType().getRawClass())) {
             return serialiser;
         }
 

@@ -7,6 +7,7 @@ import ch.qos.logback.core.ConsoleAppender
 import ch.qos.logback.core.rolling.RollingFileAppender
 import ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy
+import org.apache.commons.lang3.StringUtils
 
 import static ch.qos.logback.classic.Level.*
 
@@ -15,9 +16,12 @@ appender("CONSOLE", ConsoleAppender) {
         pattern = "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
     }
 }
-Application app = context.getObject("application");
-String appPackage = app.getProperty("app.package");
-String appName = app.getProperty("appName");
+Properties properties = context.getObject("properties");
+String appName = properties.getProperty("app.name");
+if (StringUtils.isBlank(appName)) {
+    appName = Application.DEFAULT_APP_NAME;
+}
+String appPackage = properties.getProperty("app.package");
 
 appender("FILE", RollingFileAppender) {
     rollingPolicy(TimeBasedRollingPolicy) {
