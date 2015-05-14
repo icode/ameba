@@ -21,7 +21,9 @@ class FindDeserializers extends Deserializers.Base {
     }
 
     @Override
-    public JsonDeserializer<?> findBeanDeserializer(JavaType type, DeserializationConfig config, BeanDescription beanDesc) throws JsonMappingException {
+    public JsonDeserializer<?> findBeanDeserializer(JavaType type,
+                                                    DeserializationConfig config,
+                                                    BeanDescription beanDesc) throws JsonMappingException {
 
         if (jsonContext.isSupportedType(type.getRawClass())) {
             return new BeanTypeDeserializer(jsonContext, type.getRawClass());
