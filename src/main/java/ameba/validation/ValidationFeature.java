@@ -24,7 +24,7 @@ import java.util.ResourceBundle;
  */
 public final class ValidationFeature implements Feature {
 
-    public static final String VALIDATION_MESSAGE_BUNDLE_NAME = Messages.BUNDLE_DIR + "validation_message";
+    public static final String VALIDATION_MESSAGE_BUNDLE_NAME = Messages.BUNDLE_DIR + "validationMessage";
 
     @Override
     public boolean configure(final FeatureContext context) {

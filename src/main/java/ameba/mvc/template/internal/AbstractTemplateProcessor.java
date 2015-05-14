@@ -3,6 +3,7 @@ package ameba.mvc.template.internal;
 import ameba.exception.AmebaException;
 import ameba.mvc.template.TemplateException;
 import ameba.util.IOUtils;
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -183,7 +184,11 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
             typeList.put("charset", encoding.name());
             finalMediaType = new MediaType(mediaType.getType(), mediaType.getSubtype(), typeList);
         } else {
-            encoding = Charset.forName(charset);
+            try {
+                encoding = Charset.forName(charset);
+            } catch (Exception e) {
+                encoding = Charsets.UTF_8;
+            }
             finalMediaType = mediaType;
         }
 

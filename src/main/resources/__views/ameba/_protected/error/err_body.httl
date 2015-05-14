@@ -34,16 +34,16 @@
             <span>${for.index + 1}. </span>
             <!--#end-->
             <!--#if(error.code != null)-->
-            <span>${"template.error.code".message}: ${error.code}</span>
+            <span>${"error.code".message}: ${error.code}</span>
             <!--#end-->
             <!--#if(error.message != null)-->
-            <span>${"template.error.message".message}: ${error.message}</span>
+            <span>${"error.message".message}: ${error.message}</span>
             <!--#end-->
             <!--#if(error.description != null)-->
-            <span>${"template.error.description".message}: ${error.description}</span>
+            <span>${"error.description".message}: ${error.description}</span>
             <!--#end-->
             <!--#if(error.source != null)-->
-            <span>${"template.error.source".message}: ${error.source}</span>
+            <span>${"error.source".message}: ${error.source}</span>
             <!--#end-->
         </li>
         <!--#end-->

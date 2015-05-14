@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class ErrorMessage extends Result {
     @JsonIgnore
-    public final static String LOCALE_FILE = "ameba.message.error.localization";
+    public final static String LOCALE_FILE = "ameba.message.error.http";
     @JsonIgnore
     private Throwable throwable;
     private int status;
@@ -206,5 +206,11 @@ public class ErrorMessage extends Result {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public String toString() {
+        return Messages.get("error.code") + ": " + getCode() + "\n"
+                + Messages.get("error.message") + ": " + getMessage() + "\n"
+                + Messages.get("error.description") + ": " + getDescription();
     }
 }
