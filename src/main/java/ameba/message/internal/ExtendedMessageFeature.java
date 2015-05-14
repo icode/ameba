@@ -10,7 +10,7 @@ public class ExtendedMessageFeature implements Feature {
     @Override
     public boolean configure(FeatureContext context) {
         if (!context.getConfiguration().isRegistered(TextMessageBodyWriter.class)) {
-            context.register(TextMessageBodyWriter.class);
+//            context.register(TextMessageBodyWriter.class);
         }
         return false;
     }
