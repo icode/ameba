@@ -11,7 +11,6 @@ public class ExtendedMessageFeature implements Feature {
     public boolean configure(FeatureContext context) {
         if (!context.getConfiguration().isRegistered(TextMessageBodyWriter.class)) {
             context.register(TextMessageBodyWriter.class);
-            context.register(NotSupportMessageBodyWriter.class);
         }
         return false;
     }
