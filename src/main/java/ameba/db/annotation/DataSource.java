@@ -9,9 +9,9 @@ import java.lang.annotation.*;
  * @author icode
  * @since 0.1.6e
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
 @Inherited
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
 public @interface DataSource {
     @NotNull String value();
 }

@@ -49,6 +49,7 @@ import java.util.Map;
 final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
 
     public static final String DISABLE_DATA_VIEW = "data.view.disabled";
+    public static final String DISABLE_DEFAULT_DATA_VIEW = "data.view.default.disabled";
     public static final List<MediaType> TEMPLATE_PRODUCES = Lists.newArrayList(
             MediaType.TEXT_HTML_TYPE,
             MediaType.APPLICATION_XHTML_XML_TYPE
@@ -62,6 +63,7 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
     public static final String DEFAULT_DATA_ITEM = DEFAULT_DATA_VIEW_PAGE_DIR + "item";
     public static final String DEFAULT_DATA_NULL = DEFAULT_DATA_VIEW_PAGE_DIR + "null";
     private final boolean dataViewDisabled;
+    private final boolean defaultDataViewDisabled;
     private final String dataViewList;
     private final String dataViewItem;
     private final String dataViewNull;
@@ -78,6 +80,7 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
     @Inject
     public ViewableMessageBodyWriter(Application application) {
         dataViewDisabled = "true".equals(application.getProperty(DISABLE_DATA_VIEW));
+        defaultDataViewDisabled = "true".equals(application.getProperty(DISABLE_DEFAULT_DATA_VIEW));
         Map<String, Object> properties = application.getProperties();
         dataViewList = PropertiesHelper.getValue(properties, DATA_VIEW_LIST_KEY, DEFAULT_DATA_LIST, null);
         dataViewItem = PropertiesHelper.getValue(properties, DATA_VIEW_ITEM_KEY, DEFAULT_DATA_ITEM, null);
@@ -115,12 +118,14 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
         String path = getTemplatePath(uriInfoProvider.get());
         templates.add(Viewables.PROTECTED_DIR_PATH + path);
         templates.add(path);
-        if (entity == null) {
-            templates.add(dataViewNull);
-        } else if (isItem(entity)) {
-            templates.add(dataViewItem);
-        } else {
-            templates.add(dataViewList);
+        if (!defaultDataViewDisabled) {
+            if (entity == null) {
+                templates.add(dataViewNull);
+            } else if (isItem(entity)) {
+                templates.add(dataViewItem);
+            } else {
+                templates.add(dataViewList);
+            }
         }
 
         Class clazz = Ameba.class;

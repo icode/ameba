@@ -1,6 +1,6 @@
 package ameba.db.ebean.jackson;
 
-import ameba.db.ebean.EbeanUtils;
+import com.avaje.ebean.text.PathProperties;
 import com.avaje.ebean.text.json.JsonContext;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -17,12 +17,14 @@ import java.io.IOException;
 public class CommonBeanSerializer<T> extends JsonSerializer<T> {
 
     final JsonContext jsonContext;
+    final PathProperties pathProperties;
 
     /**
      * Construct with the given JsonContext.
      */
-    CommonBeanSerializer(JsonContext jsonContext) {
+    CommonBeanSerializer(JsonContext jsonContext, PathProperties pathProperties) {
         this.jsonContext = jsonContext;
+        this.pathProperties = pathProperties;
     }
 
     /**
@@ -31,7 +33,10 @@ public class CommonBeanSerializer<T> extends JsonSerializer<T> {
     @Override
     public void serialize(T o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
 
-        // could look to pass/use the active view
-        jsonContext.toJson(o, jsonGenerator, EbeanUtils.getCurrentRequestPathProperties());
+        if (pathProperties != null) {
+            jsonContext.toJson(o, jsonGenerator, pathProperties);
+        } else {
+            jsonContext.toJson(o, jsonGenerator);
+        }
     }
 }

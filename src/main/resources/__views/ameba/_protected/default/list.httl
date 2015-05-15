@@ -1,9 +1,9 @@
-<!--#set(ameba.mvc.ErrorPageGenerator.Error model)-->
+<!--#set(Object model)-->
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title></title>
+    <title>${model.class.name}</title>
     <style>
         html, body, pre {
             margin: 0;
@@ -24,8 +24,6 @@
     </style>
 </head>
 <body>
-<!--#if()-->
 
-<!--#end-->
 </body>
 </html>
