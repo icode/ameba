@@ -128,18 +128,18 @@ public class PathProperties {
     }
 
     /**
-     * Apply these path properties as fetch paths to the query.
+     * Each these path properties as fetch paths to the query.
      */
-    public void apply(Apply<String, Props> apply) {
+    public void each(Each<String, Props> each) {
 
         for (Map.Entry<String, Props> entry : pathMap.entrySet()) {
             String path = entry.getKey();
             Props props = entry.getValue();
 
             if (StringUtils.isBlank(path)) {
-                apply.execute(props);
+                each.execute(props);
             } else {
-                apply.execute(path, props);
+                each.execute(path, props);
             }
         }
     }
@@ -148,7 +148,7 @@ public class PathProperties {
         return pathMap.get(null);
     }
 
-    public interface Apply<PATH, PROPS> {
+    public interface Each<PATH, PROPS> {
         void execute(PROPS props);
 
         void execute(PATH path, PROPS props);

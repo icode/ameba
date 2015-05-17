@@ -3,7 +3,7 @@ package ameba.db.ebean;
 import ameba.core.Requests;
 import ameba.db.ebean.jackson.CommonBeanSerializer;
 import ameba.message.filtering.EntityFieldsUtils;
-import ameba.message.internal.PathProperties.Apply;
+import ameba.message.internal.PathProperties.Each;
 import ameba.message.internal.PathProperties.Props;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.bean.EntityBean;
@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static com.avaje.ebean.OrderBy.*;
+import static com.avaje.ebean.OrderBy.Property;
 
 /**
  * <p>EbeanUtils class.</p>
@@ -107,7 +107,7 @@ public class EbeanUtils {
         if (properties == null) {
             final ameba.message.internal.PathProperties pathProperties = EntityFieldsUtils.parsePathProperties();
             final PathProperties finalProperties = properties = new PathProperties();
-            pathProperties.apply(new Apply<String, Props>() {
+            pathProperties.each(new Each<String, Props>() {
                 @Override
                 public void execute(Props props) {
                     finalProperties.put(null, props.getProperties());

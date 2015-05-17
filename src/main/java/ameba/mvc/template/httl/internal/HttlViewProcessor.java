@@ -27,7 +27,6 @@ import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 淘宝HTTL模板处理器
@@ -69,6 +68,14 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
      */
     @Override
     protected TemplateException createException(Exception e, Template template) {
+        Throwable cause = e;
+        while (cause != null) {
+            if (cause instanceof ParseException) {
+                e = (Exception) cause;
+                break;
+            }
+            cause = cause.getCause();
+        }
         TemplateException ecx;
         if (e instanceof ParseException) {
             List<String> msgSource = Lists.newArrayList(e.getMessage().split("\n"));
@@ -84,7 +91,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
             try {
                 String[] positionInfo = msgSource.get(1).split(",");
                 lineIndex = Integer.valueOf(positionInfo[2].split(":")[1].trim()) - 1;
-                line = Integer.valueOf(positionInfo[1].split(":")[1].trim()) - 1;
+                line = Integer.valueOf(positionInfo[1].split(":")[1].trim());
             } catch (Exception ex) {
                 // no op
             }
@@ -203,7 +210,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
         model = new HashMap<String, Object>() {{
             put("model", finalModel);
         }};
-        
+
         template.render(model, outputStream);
     }
 }

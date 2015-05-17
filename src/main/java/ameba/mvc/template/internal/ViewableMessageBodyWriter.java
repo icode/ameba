@@ -57,11 +57,11 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
     private static final String DATA_VIEW_DEFAULT_KEY_PRE = "data.view.default.";
     public static final String DATA_VIEW_LIST_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "list";
     public static final String DATA_VIEW_ITEM_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "item";
-    public static final String DATA_VIEW_NULL_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "null";
+    public static final String DATA_VIEW_NULL_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "empty";
     private static final String DEFAULT_DATA_VIEW_PAGE_DIR = Viewables.PROTECTED_DIR_PATH + "/default/";
     public static final String DEFAULT_DATA_LIST = DEFAULT_DATA_VIEW_PAGE_DIR + "list";
     public static final String DEFAULT_DATA_ITEM = DEFAULT_DATA_VIEW_PAGE_DIR + "item";
-    public static final String DEFAULT_DATA_NULL = DEFAULT_DATA_VIEW_PAGE_DIR + "null";
+    public static final String DEFAULT_DATA_NULL = DEFAULT_DATA_VIEW_PAGE_DIR + "empty";
     private final boolean dataViewDisabled;
     private final boolean defaultDataViewDisabled;
     private final String dataViewList;
@@ -119,7 +119,11 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
         templates.add(Viewables.PROTECTED_DIR_PATH + path);
         templates.add(path);
         if (!defaultDataViewDisabled) {
-            if (entity == null) {
+            if (entity == null
+                    || (entity instanceof Collection
+                    && ((Collection) entity).size() == 0)
+                    || (entity.getClass().isArray()
+                    && ((Object[]) entity).length == 0)) {
                 templates.add(dataViewNull);
             } else if (isItem(entity)) {
                 templates.add(dataViewItem);

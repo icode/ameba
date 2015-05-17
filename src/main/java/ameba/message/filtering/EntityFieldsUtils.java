@@ -2,9 +2,11 @@ package ameba.message.filtering;
 
 import ameba.core.Requests;
 import ameba.message.internal.PathProperties;
+import ameba.util.bean.BeanMap;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.core.UriInfo;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -72,4 +74,35 @@ public class EntityFieldsUtils {
         }
         return pathProperties;
     }
+
+    @SuppressWarnings("unchecked")
+    public static <T> BeanMap<T> filterBeanFields(T src, PathProperties pathProperties) {
+        return (BeanMap<T>) FilteringBeanMap.from(src, pathProperties);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> BeanMap[] filterBeanFields(T[] src, PathProperties pathProperties) {
+        return (BeanMap[]) FilteringBeanMap.from(src, pathProperties);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Collection<BeanMap<T>> filterBeanFields(Collection<T> src, PathProperties pathProperties) {
+        return (Collection<BeanMap<T>>) FilteringBeanMap.from(src, pathProperties);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> BeanMap<T> filterRequestFields(T src) {
+        return (BeanMap<T>) FilteringBeanMap.from(src, parsePathProperties());
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> BeanMap[] filterRequestFields(T[] src) {
+        return (BeanMap[]) FilteringBeanMap.from(src, parsePathProperties());
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> Collection<BeanMap<T>> filterRequestFields(Collection<T> src) {
+        return (Collection<BeanMap<T>>) FilteringBeanMap.from(src, parsePathProperties());
+    }
+
 }
