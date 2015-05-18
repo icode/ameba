@@ -56,7 +56,7 @@ public abstract class Container {
     @SuppressWarnings("unchecked")
     public static Container create(Application application) throws IllegalAccessException, InstantiationException {
 
-        String provider = (String) application.getProperty("app.container.provider");
+        String provider = (String) application.getProperty("container.provider");
         logger.debug("HTTP容器实现 {}", provider);
         try {
             Class<Container> ContainerClass = (Class<Container>) ClassUtils.getClass(provider);

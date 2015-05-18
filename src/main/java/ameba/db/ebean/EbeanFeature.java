@@ -223,7 +223,7 @@ public class EbeanFeature extends OrmFeature {
             config.loadFromProperties(eBeanConfig);
             config.setPackages(null);
             config.setJars(null);
-            config.setRegisterJmxMBeans("true".equals(appConfig.getProperty("app.jmx.enabled")));
+            config.setRegisterJmxMBeans("true".equals(appConfig.getProperty("jmx.enabled")));
             config.setName(name);
             config.setDataSourceJndiName(null);
             config.setDataSource(DataSourceManager.getDataSource(name));//设置为druid数据源

@@ -81,9 +81,9 @@ public class Application {
      * Constant <code>DEFAULT_APP_CONF="conf/application.conf"</code>
      */
     public static final String DEFAULT_APP_CONF = "conf/application.conf";
-    private static final String REGISTER_CONF_PREFIX = "app.register.";
-    private static final String ADDON_CONF_PREFIX = "app.addon.";
-    private static final String JERSEY_CONF_NAME_PREFIX = "app.sys.core.";
+    private static final String REGISTER_CONF_PREFIX = "register.";
+    private static final String ADDON_CONF_PREFIX = "addon.";
+    private static final String JERSEY_CONF_NAME_PREFIX = "sys.core.";
     private static final String DEFAULT_LOGBACK_CONF = "log.groovy";
     private static final String SCAN_CLASSES_CACHE_FILE = IOUtils.getResource("/").getPath() + "conf/classes.list";
     private static InitializationLogger logger;
@@ -547,13 +547,13 @@ public class Application {
         }
 
         String registerStr = StringUtils.deleteWhitespace(
-                StringUtils.defaultIfBlank((String) getProperty("app.registers"), ""));
+                StringUtils.defaultIfBlank((String) getProperty("registers"), ""));
         String[] registers;
         if (StringUtils.isNotBlank(registerStr)) {
             registers = registerStr.split(",");
             for (String register : registers) {
                 try {
-                    logger.debug(Messages.get("info.feature.register.item", "app.registers", register));
+                    logger.debug(Messages.get("info.feature.register.item", "registers", register));
                     Class clazz = ClassUtils.getClass(register);
                     if (isRegistered(clazz)) {
                         beak++;
@@ -714,7 +714,7 @@ public class Application {
     }
 
     private void configureServer() {
-        jmxEnabled = Boolean.parseBoolean((String) getProperty("app.jmx.enabled"));
+        jmxEnabled = Boolean.parseBoolean((String) getProperty("jmx.enabled"));
         if (jmxEnabled && getProperty(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED) == null)
             property(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED, jmxEnabled);
 
