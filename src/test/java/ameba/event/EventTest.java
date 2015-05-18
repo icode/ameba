@@ -14,53 +14,11 @@ public class EventTest {
 
     private static final Logger logger = LoggerFactory.getLogger(EventTest.class);
 
-
-    public static class AnnotationSub {
-        @Subscribe(TestEvent.class)
-        private void doSomething(TestEvent e) {
-            logger.info("AnnotationSub receive message : {}", e.message);
-        }
-
-        @Subscribe(value = TestEvent.class, async = true)
-        private void doAsyncSomething(TestEvent e) {
-            logger.info("Async AnnotationSub receive message : {}", e.message);
-        }
-
-        @Subscribe
-        private void doSomething2(TestEvent e) {
-            logger.info("CoC AnnotationSub receive message : {}", e.message);
-        }
-
-        @Subscribe(async = true)
-        private void doAsyncSomething2(TestEvent e) {
-            logger.info("Async CoC AnnotationSub receive message : {}", e.message);
-        }
-
-        @Subscribe
-        public void doSomething3(TestEvent e, TestEvent1 e1) {
-            if (e != null)
-                logger.info("doSomething3 CoC AnnotationSub receive TestEvent message : {}", e.message);
-            if (e1 != null)
-                logger.info("doSomething3 CoC AnnotationSub receive TestEvent1 message : {}", e1.message);
-        }
-    }
-
-    public static class ChildSub extends AnnotationSub {
-        @Subscribe
-        public void doSomething3(TestEvent e, TestEvent1 e1) {
-            if (e != null)
-                logger.info("doSomething3 CoC AnnotationSub receive TestEvent message : {}", e.message);
-            if (e1 != null)
-                logger.info("doSomething3 CoC AnnotationSub receive TestEvent1 message : {}", e1.message);
-        }
-
-    }
-
     @Test
     public void publish() {
 
         AddOn addOn = new Akka.AddOn();
-        addOn.setup(new Application());
+        addOn.setup(new TestApp());
 
         EventBus eventBus = EventBus.createMix();
 
@@ -125,6 +83,47 @@ public class EventTest {
         }
     }
 
+    public static class AnnotationSub {
+        @Subscribe(TestEvent.class)
+        private void doSomething(TestEvent e) {
+            logger.info("AnnotationSub receive message : {}", e.message);
+        }
+
+        @Subscribe(value = TestEvent.class, async = true)
+        private void doAsyncSomething(TestEvent e) {
+            logger.info("Async AnnotationSub receive message : {}", e.message);
+        }
+
+        @Subscribe
+        private void doSomething2(TestEvent e) {
+            logger.info("CoC AnnotationSub receive message : {}", e.message);
+        }
+
+        @Subscribe(async = true)
+        private void doAsyncSomething2(TestEvent e) {
+            logger.info("Async CoC AnnotationSub receive message : {}", e.message);
+        }
+
+        @Subscribe
+        public void doSomething3(TestEvent e, TestEvent1 e1) {
+            if (e != null)
+                logger.info("doSomething3 CoC AnnotationSub receive TestEvent message : {}", e.message);
+            if (e1 != null)
+                logger.info("doSomething3 CoC AnnotationSub receive TestEvent1 message : {}", e1.message);
+        }
+    }
+
+    public static class ChildSub extends AnnotationSub {
+        @Subscribe
+        public void doSomething3(TestEvent e, TestEvent1 e1) {
+            if (e != null)
+                logger.info("doSomething3 CoC AnnotationSub receive TestEvent message : {}", e.message);
+            if (e1 != null)
+                logger.info("doSomething3 CoC AnnotationSub receive TestEvent1 message : {}", e1.message);
+        }
+
+    }
+
     public static class TestEvent implements Event {
         public String message;
 
@@ -138,6 +137,11 @@ public class EventTest {
 
         public TestEvent1(String message) {
             this.message = message;
+        }
+    }
+
+    private class TestApp extends Application {
+        public TestApp() {
         }
     }
 }

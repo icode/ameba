@@ -87,7 +87,7 @@ public class Application {
     private static final String DEFAULT_LOGBACK_CONF = "log.groovy";
     private static final String SCAN_CLASSES_CACHE_FILE = IOUtils.getResource("/").getPath() + "conf/classes.list";
     private static InitializationLogger logger;
-    private static String INFO_SPLITOR = "---------------------------------------------------";
+    private static String INFO_SPLITER = "---------------------------------------------------";
     protected boolean jmxEnabled;
     private String[] configFiles;
     private long timestamp = System.currentTimeMillis();
@@ -98,9 +98,13 @@ public class Application {
     private File packageRoot;
     private Container container;
     private Set<AddOn> addOns;
-    private ResourceConfig config;
+    private ResourceConfig config = new ResourceConfig();
     private Set<String> scanPkgs;
     private String[] ids;
+
+    protected Application() {
+
+    }
 
     /**
      * <p>Constructor for Application.</p>
@@ -142,9 +146,7 @@ public class Application {
     }
 
     @SuppressWarnings("unchecked")
-    private void configure() {
-
-        config = new ResourceConfig();
+    protected void configure() {
 
         Map<String, Object> configMap = Maps.newLinkedHashMap();
         Properties properties = new LinkedProperties();
@@ -744,7 +746,7 @@ public class Application {
 
                     final String startUsedTime = Times.toDuration(System.currentTimeMillis() - timestamp);
                     builder.append(line)
-                            .append(INFO_SPLITOR)
+                            .append(INFO_SPLITER)
                             .append(line);
                     appendInfo("info.ameba.version", Ameba.getVersion());
                     appendInfo("info.http.container", StringUtils.defaultString(container.getType(), "Unknown"));
@@ -777,7 +779,7 @@ public class Application {
                         logger.warn(Messages.get("info.connector.none"));
                     }
                     builder.append(line)
-                            .append(INFO_SPLITOR);
+                            .append(INFO_SPLITER);
                     logger.info(Messages.get("info.started"));
                     logger.getSource().info(builder.toString());
                 }
