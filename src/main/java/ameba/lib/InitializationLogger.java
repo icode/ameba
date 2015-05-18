@@ -33,31 +33,31 @@ public class InitializationLogger implements Logger {
 
     @Override
     public void trace(String s) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.trace(s);
     }
 
     @Override
     public void trace(String s, Object o) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.trace(s, o);
     }
 
     @Override
     public void trace(String s, Object o, Object o1) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.trace(s, o, o1);
     }
 
     @Override
     public void trace(String s, Object... objects) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.trace(s, objects);
     }
 
     @Override
     public void trace(String s, Throwable throwable) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.trace(s, throwable);
     }
 
@@ -68,31 +68,31 @@ public class InitializationLogger implements Logger {
 
     @Override
     public void trace(Marker marker, String s) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.trace(marker, s);
     }
 
     @Override
     public void trace(Marker marker, String s, Object o) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.trace(marker, s, o);
     }
 
     @Override
     public void trace(Marker marker, String s, Object o, Object o1) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.trace(marker, s, o, o1);
     }
 
     @Override
     public void trace(Marker marker, String s, Object... objects) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.trace(marker, s, objects);
     }
 
     @Override
     public void trace(Marker marker, String s, Throwable throwable) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.trace(marker, s, throwable);
     }
 
@@ -103,31 +103,31 @@ public class InitializationLogger implements Logger {
 
     @Override
     public void debug(String s) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.debug(s);
     }
 
     @Override
     public void debug(String s, Object o) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.debug(s, o);
     }
 
     @Override
     public void debug(String s, Object o, Object o1) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.debug(s, o, o1);
     }
 
     @Override
     public void debug(String s, Object... objects) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.debug(s, objects);
     }
 
     @Override
     public void debug(String s, Throwable throwable) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.debug(s, throwable);
     }
 
@@ -138,31 +138,31 @@ public class InitializationLogger implements Logger {
 
     @Override
     public void debug(Marker marker, String s) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.debug(marker, s);
     }
 
     @Override
     public void debug(Marker marker, String s, Object o) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.debug(marker, s, o);
     }
 
     @Override
     public void debug(Marker marker, String s, Object o, Object o1) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.debug(marker, s, o, o1);
     }
 
     @Override
     public void debug(Marker marker, String s, Object... objects) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.debug(marker, s, objects);
     }
 
     @Override
     public void debug(Marker marker, String s, Throwable throwable) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.debug(marker, s, throwable);
     }
 
@@ -173,31 +173,31 @@ public class InitializationLogger implements Logger {
 
     @Override
     public void info(String s) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.info(s);
     }
 
     @Override
     public void info(String s, Object o) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.info(s, o);
     }
 
     @Override
     public void info(String s, Object o, Object o1) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.info(s, o, o1);
     }
 
     @Override
     public void info(String s, Object... objects) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.info(s, objects);
     }
 
     @Override
     public void info(String s, Throwable throwable) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.info(s, throwable);
     }
 
@@ -208,31 +208,31 @@ public class InitializationLogger implements Logger {
 
     @Override
     public void info(Marker marker, String s) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.info(marker, s);
     }
 
     @Override
     public void info(Marker marker, String s, Object o) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.info(marker, s, o);
     }
 
     @Override
     public void info(Marker marker, String s, Object o, Object o1) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.info(marker, s, o, o1);
     }
 
     @Override
     public void info(Marker marker, String s, Object... objects) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.info(marker, s, objects);
     }
 
     @Override
     public void info(Marker marker, String s, Throwable throwable) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.info(marker, s, throwable);
     }
 
@@ -243,31 +243,31 @@ public class InitializationLogger implements Logger {
 
     @Override
     public void warn(String s) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.warn(s);
     }
 
     @Override
     public void warn(String s, Object o) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.warn(s, o);
     }
 
     @Override
     public void warn(String s, Object... objects) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.warn(s, objects);
     }
 
     @Override
     public void warn(String s, Object o, Object o1) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.warn(s, o, o1);
     }
 
     @Override
     public void warn(String s, Throwable throwable) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.warn(s, throwable);
     }
 
@@ -278,31 +278,31 @@ public class InitializationLogger implements Logger {
 
     @Override
     public void warn(Marker marker, String s) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.warn(marker, s);
     }
 
     @Override
     public void warn(Marker marker, String s, Object o) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.warn(marker, s, o);
     }
 
     @Override
     public void warn(Marker marker, String s, Object o, Object o1) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.warn(marker, s, o, o1);
     }
 
     @Override
     public void warn(Marker marker, String s, Object... objects) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.warn(marker, s, objects);
     }
 
     @Override
     public void warn(Marker marker, String s, Throwable throwable) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.warn(marker, s, throwable);
     }
 
@@ -313,31 +313,31 @@ public class InitializationLogger implements Logger {
 
     @Override
     public void error(String s) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.error(s);
     }
 
     @Override
     public void error(String s, Object o) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.error(s, o);
     }
 
     @Override
     public void error(String s, Object o, Object o1) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.error(s, o, o1);
     }
 
     @Override
     public void error(String s, Object... objects) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.error(s, objects);
     }
 
     @Override
     public void error(String s, Throwable throwable) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.error(s, throwable);
     }
 
@@ -348,31 +348,35 @@ public class InitializationLogger implements Logger {
 
     @Override
     public void error(Marker marker, String s) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.error(marker, s);
     }
 
     @Override
     public void error(Marker marker, String s, Object o) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.error(marker, s, o);
     }
 
     @Override
     public void error(Marker marker, String s, Object o, Object o1) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.error(marker, s, o, o1);
     }
 
     @Override
     public void error(Marker marker, String s, Object... objects) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.error(marker, s, objects);
+    }
+
+    private boolean isInitialized() {
+        return application != null && application.isInitialized();
     }
 
     @Override
     public void error(Marker marker, String s, Throwable throwable) {
-        if (!application.isInitialized())
+        if (!isInitialized())
             logger.error(marker, s, throwable);
     }
 }

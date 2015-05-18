@@ -85,8 +85,8 @@ public class Application {
     private static final String ADDON_CONF_PREFIX = "addon.";
     private static final String JERSEY_CONF_NAME_PREFIX = "sys.core.";
     private static final String DEFAULT_LOGBACK_CONF = "log.groovy";
-    private static final String SCAN_CLASSES_CACHE_FILE = IOUtils.getResource("/").getPath() + "conf/classes.list";
-    private static InitializationLogger logger;
+    private static String SCAN_CLASSES_CACHE_FILE;
+    private static InitializationLogger logger = new InitializationLogger(Application.class, null);
     private static String INFO_SPLITER = "---------------------------------------------------";
     protected boolean jmxEnabled;
     private String[] configFiles;
@@ -97,13 +97,14 @@ public class Application {
     private File sourceRoot;
     private File packageRoot;
     private Container container;
-    private Set<AddOn> addOns;
+    private Set<AddOn> addOns = Sets.newLinkedHashSet();
     private ResourceConfig config = new ResourceConfig();
     private Set<String> scanPkgs;
     private String[] ids;
+    private Map<String, Object> srcProperties = Maps.newLinkedHashMap();
 
     protected Application() {
-
+        logger = new InitializationLogger(Application.class, this);
     }
 
     /**
@@ -120,6 +121,13 @@ public class Application {
         this.ids = ids;
         logger = new InitializationLogger(Application.class, this);
 
+        Set<String> configFiles = parseIds2ConfigFile(ids);
+        this.configFiles = configFiles.toArray(new String[configFiles.size()]);
+
+        configure();
+    }
+
+    public static Set<String> parseIds2ConfigFile(String... ids) {
         Set<String> configFiles = Sets.newLinkedHashSet();
         configFiles.add(DEFAULT_APP_CONF);
 
@@ -135,20 +143,102 @@ public class Application {
                 }
             }
         }
-
-        this.configFiles = configFiles.toArray(new String[configFiles.size()]);
-
-        configure();
+        return configFiles;
     }
 
-    public void reconfigure() {
-        configure();
+    private static String toExternalForm(URL url) {
+        if (url == null) return null;
+        try {
+            return URLDecoder.decode(url.toExternalForm(), Charset.defaultCharset().name());
+        } catch (Exception e) {
+            return url.toExternalForm();
+        }
     }
 
     @SuppressWarnings("unchecked")
-    protected void configure() {
+    public static void readModuleConfig(Map<String, Object> configMap, boolean isDev) {
+        logger.info(Messages.get("info.module.load.conf"));
+        //读取模块配置
+        Enumeration<URL> moduleUrls = IOUtils.getResources("conf/module.conf");
+        Properties moduleProperties = new LinkedProperties();
+        if (moduleUrls.hasMoreElements()) {
+            while (moduleUrls.hasMoreElements()) {
+                InputStream in = null;
+                URL url = moduleUrls.nextElement();
+                try {
+                    String modelName = url.getFile();
+                    int jarFileIndex = modelName.lastIndexOf("!");
+                    if (jarFileIndex != -1) {
+                        modelName = modelName.substring(0, jarFileIndex);
+                    }
 
-        Map<String, Object> configMap = Maps.newLinkedHashMap();
+                    jarFileIndex = modelName.lastIndexOf(".");
+                    if (jarFileIndex != -1) {
+                        modelName = modelName.substring(0, jarFileIndex);
+                    }
+
+                    int fileIndex = modelName.lastIndexOf("/");
+                    modelName = modelName.substring(fileIndex + 1);
+
+                    logger.info(Messages.get("info.module.load", modelName));
+                    logger.debug(Messages.get("info.module.load.item.conf", toExternalForm(url)));
+                    URLConnection connection = url.openConnection();
+
+                    if (isDev) {
+                        connection.setUseCaches(false);
+                    }
+                    in = connection.getInputStream();
+                } catch (IOException e) {
+                    logger.error(Messages.get("info.load.error", toExternalForm(url)));
+                }
+                if (in != null) {
+                    try {
+                        moduleProperties.load(in);
+                    } catch (Exception e) {
+                        logger.error(Messages.get("info.load.error", toExternalForm(url)));
+                    }
+                } else {
+                    logger.error(Messages.get("info.load.error", toExternalForm(url)));
+                }
+                closeQuietly(in);
+            }
+            configMap.putAll((Map) moduleProperties);
+            moduleProperties.clear();
+        } else {
+            logger.info(Messages.get("info.module.none"));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void readModeConfig(Map<String, Object> configMap, Mode mode) {
+        Properties modeProperties = new LinkedProperties();
+
+        //读取相应模式的配置文件
+        Enumeration<java.net.URL> confs = IOUtils.getResources("conf/" + mode.name().toLowerCase() + ".conf");
+        while (confs.hasMoreElements()) {
+            InputStream in = null;
+            try {
+                URLConnection connection = confs.nextElement().openConnection();
+                if (mode.isDev()) {
+                    connection.setUseCaches(false);
+                }
+                in = connection.getInputStream();
+                modeProperties.load(in);
+            } catch (IOException e) {
+                logger.warn(Messages.get("info.module.conf.error", "conf/" + mode.name().toLowerCase() + ".conf"), e);
+            } finally {
+                closeQuietly(in);
+            }
+        }
+        if (modeProperties.size() > 0)
+            //将模式配置放入临时配置对象
+            configMap.putAll((Map) modeProperties);
+
+        //清空应用程序模式配置
+        modeProperties.clear();
+    }
+
+    public static Properties readDefaultConfig(Map<String, Object> configMap) {
         Properties properties = new LinkedProperties();
 
         //读取系统默认配置
@@ -160,12 +250,64 @@ public class Application {
             logger.warn(Messages.get("info.module.conf.error", "conf/default.conf"), e);
         }
 
+        return properties;
+    }
+
+    public static URL readAppConfig(Properties properties, String confFile) {
+        Enumeration<URL> urls = IOUtils.getResources(confFile);
+        URL url = null;
+        if (urls.hasMoreElements()) {
+            InputStream in = null;
+            url = urls.nextElement();
+
+            if (urls.hasMoreElements()) {
+                List<String> urlList = Lists.newArrayList(toExternalForm(url));
+                while (urls.hasMoreElements()) {
+                    urlList.add(urls.nextElement().toExternalForm());
+                }
+                String errorMsg = Messages.get("info.load.config.multi.error", StringUtils.join(urlList, "\n"));
+                logger.error(errorMsg);
+                throw new ConfigErrorException(errorMsg);
+            }
+
+            try {
+                logger.trace(Messages.get("info.load", toExternalForm(url)));
+                in = url.openStream();
+            } catch (IOException e) {
+                logger.error(Messages.get("info.load.error", toExternalForm(url)));
+            }
+            if (in != null) {
+                try {
+                    properties.load(in);
+                } catch (Exception e) {
+                    logger.error(Messages.get("info.load.error", toExternalForm(url)));
+                }
+            } else {
+                logger.error(Messages.get("info.load.error", toExternalForm(url)));
+            }
+            closeQuietly(in);
+        } else {
+            logger.warn(Messages.get("info.load.error.not.found", confFile));
+        }
+        return url;
+    }
+
+    public void reconfigure() {
+        configure();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void configure() {
+
+        Properties properties = readDefaultConfig(srcProperties);
+
         List<String> appConf = Lists.newArrayListWithExpectedSize(configFiles.length);
         for (String conf : configFiles) {
             //读取应用程序配置
             URL appCfgUrl = readAppConfig(properties, conf);
             appConf.add(toExternalForm(appCfgUrl));
         }
+
         //获取应用程序模式
         try {
             mode = Mode.valueOf(properties.getProperty("app.mode").toUpperCase());
@@ -190,38 +332,35 @@ public class Application {
         logger.info(Messages.get("info.app.conf", appConf));
 
         //读取模式配置
-        readModeConfig(configMap);
+        readModeConfig(srcProperties, mode);
 
         //读取模块配置
-        readModuleConfig(configMap);
+        readModuleConfig(srcProperties, getMode().isDev());
 
         //将用户配置放入临时配置对象
         if (properties.size() > 0)
-            configMap.putAll((Map) properties);
+            srcProperties.putAll((Map) properties);
 
         //转换jersey配置项
-        convertJerseyConfig(configMap);
+        convertJerseyConfig(srcProperties);
 
         //将临时配置对象放入应用程序配置
-        addProperties(configMap);
+        addProperties(srcProperties);
 
         registerInstance();
 
         register(Requests.BindRequest.class);
 
-        addOnSetup(configMap);
+        addOnSetup(srcProperties);
 
         //配置资源
         configureResource();
 
         //配置特性
-        configureFeature(configMap);
+        configureFeature(srcProperties);
 
         //配置服务器相关
         configureServer();
-
-        //清空临时配置
-        configMap.clear();
 
         //清空临时读取的配置
         properties.clear();
@@ -234,6 +373,9 @@ public class Application {
     }
 
     private void scanClasses() {
+        if (SCAN_CLASSES_CACHE_FILE == null) {
+            SCAN_CLASSES_CACHE_FILE = IOUtils.getResource("/").getPath() + "conf/classes.list";
+        }
         URL cacheList = IOUtils.getResource(SCAN_CLASSES_CACHE_FILE);
         if (cacheList == null || getMode().isDev()) {
             logger.debug(Messages.get("info.scan.classes"));
@@ -391,7 +533,6 @@ public class Application {
     }
 
     private void addOnSetup(Map<String, Object> configMap) {
-        addOns = Sets.newHashSet();
         Set<SortEntry> addOnSorts = Sets.newTreeSet();
         for (String key : configMap.keySet()) {
             if (key.startsWith(ADDON_CONF_PREFIX)) {
@@ -684,35 +825,6 @@ public class Application {
         map.clear();
     }
 
-    @SuppressWarnings("unchecked")
-    private void readModeConfig(Map<String, Object> configMap) {
-        Properties modeProperties = new LinkedProperties();
-
-        //读取相应模式的配置文件
-        Enumeration<java.net.URL> confs = IOUtils.getResources("conf/" + mode.name().toLowerCase() + ".conf");
-        while (confs.hasMoreElements()) {
-            InputStream in = null;
-            try {
-                URLConnection connection = confs.nextElement().openConnection();
-                if (getMode().isDev()) {
-                    connection.setUseCaches(false);
-                }
-                in = connection.getInputStream();
-                modeProperties.load(in);
-            } catch (IOException e) {
-                logger.warn(Messages.get("info.module.conf.error", "conf/" + mode.name().toLowerCase() + ".conf"), e);
-            } finally {
-                closeQuietly(in);
-            }
-        }
-        if (modeProperties.size() > 0)
-            //将模式配置放入临时配置对象
-            configMap.putAll((Map) modeProperties);
-
-        //清空应用程序模式配置
-        modeProperties.clear();
-    }
-
     private void configureServer() {
         jmxEnabled = Boolean.parseBoolean((String) getProperty("jmx.enabled"));
         if (jmxEnabled && getProperty(ServerProperties.MONITORING_STATISTICS_MBEANS_ENABLED) == null)
@@ -787,108 +899,6 @@ public class Application {
                 initialized = true;
             }
         });
-    }
-
-    private String toExternalForm(URL url) {
-        if (url == null) return null;
-        try {
-            return URLDecoder.decode(url.toExternalForm(), Charset.defaultCharset().name());
-        } catch (Exception e) {
-            return url.toExternalForm();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void readModuleConfig(Map<String, Object> configMap) {
-        logger.info(Messages.get("info.module.load.conf"));
-        //读取模块配置
-        Enumeration<URL> moduleUrls = IOUtils.getResources("conf/module.conf");
-        Properties moduleProperties = new LinkedProperties();
-        if (moduleUrls.hasMoreElements()) {
-            while (moduleUrls.hasMoreElements()) {
-                InputStream in = null;
-                URL url = moduleUrls.nextElement();
-                try {
-                    String modelName = url.getFile();
-                    int jarFileIndex = modelName.lastIndexOf("!");
-                    if (jarFileIndex != -1) {
-                        modelName = modelName.substring(0, jarFileIndex);
-                    }
-
-                    jarFileIndex = modelName.lastIndexOf(".");
-                    if (jarFileIndex != -1) {
-                        modelName = modelName.substring(0, jarFileIndex);
-                    }
-
-                    int fileIndex = modelName.lastIndexOf("/");
-                    modelName = modelName.substring(fileIndex + 1);
-
-                    logger.info(Messages.get("info.module.load", modelName));
-                    logger.debug(Messages.get("info.module.load.item.conf", toExternalForm(url)));
-                    URLConnection connection = url.openConnection();
-
-                    if (getMode().isDev()) {
-                        connection.setUseCaches(false);
-                    }
-                    in = connection.getInputStream();
-                } catch (IOException e) {
-                    logger.error(Messages.get("info.load.error", toExternalForm(url)));
-                }
-                if (in != null) {
-                    try {
-                        moduleProperties.load(in);
-                    } catch (Exception e) {
-                        logger.error(Messages.get("info.load.error", toExternalForm(url)));
-                    }
-                } else {
-                    logger.error(Messages.get("info.load.error", toExternalForm(url)));
-                }
-                closeQuietly(in);
-            }
-            configMap.putAll((Map) moduleProperties);
-            moduleProperties.clear();
-        } else {
-            logger.info(Messages.get("info.module.none"));
-        }
-    }
-
-    private URL readAppConfig(Properties properties, String confFile) {
-        Enumeration<URL> urls = IOUtils.getResources(confFile);
-        URL url = null;
-        if (urls.hasMoreElements()) {
-            InputStream in = null;
-            url = urls.nextElement();
-
-            if (urls.hasMoreElements()) {
-                List<String> urlList = Lists.newArrayList(toExternalForm(url));
-                while (urls.hasMoreElements()) {
-                    urlList.add(urls.nextElement().toExternalForm());
-                }
-                String errorMsg = Messages.get("info.load.config.multi.error", StringUtils.join(urlList, "\n"));
-                logger.error(errorMsg);
-                throw new ConfigErrorException(errorMsg);
-            }
-
-            try {
-                logger.trace(Messages.get("info.load", toExternalForm(url)));
-                in = url.openStream();
-            } catch (IOException e) {
-                logger.error(Messages.get("info.load.error", toExternalForm(url)));
-            }
-            if (in != null) {
-                try {
-                    properties.load(in);
-                } catch (Exception e) {
-                    logger.error(Messages.get("info.load.error", toExternalForm(url)));
-                }
-            } else {
-                logger.error(Messages.get("info.load.error", toExternalForm(url)));
-            }
-            closeQuietly(in);
-        } else {
-            logger.warn(Messages.get("info.load.error.not.found", confFile));
-        }
-        return url;
     }
 
     /**
@@ -1420,6 +1430,10 @@ public class Application {
         }
         SLF4JBridgeHandler.install();
         rootLogger.setLevel(Level.ALL);
+    }
+
+    public Map<String, Object> getSrcProperties() {
+        return srcProperties;
     }
 
     /**
