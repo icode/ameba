@@ -312,7 +312,9 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
     public T resolve(String name, MediaType mediaType) {
         if (this.cache != null) {
             if (!this.cache.containsKey(name)) {
-                this.cache.putIfAbsent(name, this.resolve(name));
+                T t = this.resolve(name);
+                if (t != null)
+                    this.cache.putIfAbsent(name, t);
             }
 
             return this.cache.get(name);
