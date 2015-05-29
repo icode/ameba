@@ -1,21 +1,24 @@
 package ameba.db;
 
+import ameba.core.AddOn;
+import ameba.core.Application;
 import ameba.db.model.Finder;
 import ameba.db.model.Model;
 import ameba.db.model.Persister;
 import ameba.db.model.Updater;
+import ameba.exception.AmebaException;
+import ameba.util.ClassUtils;
 
-import javax.ws.rs.core.Feature;
-import javax.ws.rs.core.FeatureContext;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.util.Map;
 
 /**
- * <p>Abstract OrmFeature class.</p>
+ * <p>Abstract OrmAddOn class.</p>
  *
  * @author icode
  */
-public abstract class OrmFeature implements Feature {
+public class OrmAddOn extends AddOn {
     private static Class<? extends Finder> finderClass = null;
     private static Class<? extends Persister> persisterClass = null;
     private static Class<? extends Updater> updaterClass = null;
@@ -39,12 +42,12 @@ public abstract class OrmFeature implements Feature {
      * @param finderClass a {@link java.lang.Class} object.
      * @since 0.1.6e
      */
-    public static synchronized void setFinderClass(Class finderClass) {
-        if (OrmFeature.finderClass != null) return;
+    private static void setFinderClass(Class<? extends Finder> finderClass) {
+        if (OrmAddOn.finderClass != null) return;
         if (finderClass == null || Modifier.isAbstract(finderClass.getModifiers())) {
             throw new IllegalArgumentException("finder must instance of ameba.db.model.Finder");
         }
-        OrmFeature.finderClass = finderClass;
+        OrmAddOn.finderClass = finderClass;
     }
 
     /**
@@ -62,12 +65,12 @@ public abstract class OrmFeature implements Feature {
      * @param persisterClass a {@link java.lang.Class} object.
      * @since 0.1.6e
      */
-    public static synchronized void setPersisterClass(Class persisterClass) {
-        if (OrmFeature.persisterClass != null) return;
+    private static void setPersisterClass(Class<? extends Persister> persisterClass) {
+        if (OrmAddOn.persisterClass != null) return;
         if (persisterClass == null || Modifier.isAbstract(persisterClass.getModifiers())) {
             throw new IllegalArgumentException("persister must instance of ameba.db.model.Persister");
         }
-        OrmFeature.persisterClass = persisterClass;
+        OrmAddOn.persisterClass = persisterClass;
     }
 
     /**
@@ -86,12 +89,12 @@ public abstract class OrmFeature implements Feature {
      * @param updaterClass a {@link java.lang.Class} object.
      * @since 0.1.6e
      */
-    public static synchronized void setUpdaterClass(Class updaterClass) {
-        if (OrmFeature.updaterClass != null) return;
+    private static void setUpdaterClass(Class<? extends Updater> updaterClass) {
+        if (OrmAddOn.updaterClass != null) return;
         if (updaterClass == null || Modifier.isAbstract(updaterClass.getModifiers())) {
             throw new IllegalArgumentException("updater must instance of ameba.db.model.Updater");
         }
-        OrmFeature.updaterClass = updaterClass;
+        OrmAddOn.updaterClass = updaterClass;
     }
 
     /**
@@ -146,11 +149,20 @@ public abstract class OrmFeature implements Feature {
     }
 
     @Override
-    public boolean configure(FeatureContext context) {
-        if (!context.getConfiguration().isRegistered(PersistenceExceptionMapper.class)) {
-            context.register(PersistenceExceptionMapper.class);
-            return true;
+    @SuppressWarnings("unchecked")
+    public void setup(Application application) {
+
+        Map<String, Object> map = application.getSrcProperties();
+        String finder = (String) map.get("orm.finder");
+        String persister = (String) map.get("orm.persister");
+        String updater = (String) map.get("orm.updater");
+
+        try {
+            setFinderClass((Class<? extends Finder>) ClassUtils.getClass(finder));
+            setPersisterClass((Class<? extends Persister>) ClassUtils.getClass(persister));
+            setUpdaterClass((Class<? extends Updater>) ClassUtils.getClass(updater));
+        } catch (ClassNotFoundException e) {
+            throw new AmebaException(e);
         }
-        return false;
     }
 }

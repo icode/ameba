@@ -1,7 +1,7 @@
 package ameba.db.ebean;
 
 import ameba.db.DataSourceManager;
-import ameba.db.OrmFeature;
+import ameba.db.PersistenceExceptionMapper;
 import ameba.db.ebean.internal.EbeanModelInterceptor;
 import ameba.db.ebean.jackson.JacksonEbeanModule;
 import ameba.db.ebean.jackson.JsonIOExceptionMapper;
@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +44,7 @@ import java.util.Set;
  * @author icode
  * @since 2013-08-07
  */
-public class EbeanFeature extends OrmFeature {
+public class EbeanFeature implements Feature {
 
     /**
      * Constant <code>SORT_PARAM_NAME="model.query.param.sort"</code>
@@ -79,12 +80,6 @@ public class EbeanFeature extends OrmFeature {
     public static final String WHERE_PARAM_NAME = "model.query.param.where";
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
     private static final List<EbeanServer> SERVERS = Lists.newArrayList();
-
-    static {
-        setFinderClass(EbeanFinder.class);
-        setPersisterClass(EbeanPersister.class);
-        setUpdaterClass(EbeanUpdater.class);
-    }
 
     @Inject
     private ServiceLocator locator;
@@ -150,7 +145,9 @@ public class EbeanFeature extends OrmFeature {
      */
     @Override
     public boolean configure(final FeatureContext context) {
-        super.configure(context);
+        if (!context.getConfiguration().isRegistered(PersistenceExceptionMapper.class)) {
+            context.register(PersistenceExceptionMapper.class);
+        }
 
         if (context.getConfiguration().isRegistered(EbeanModelInterceptor.class)) {
             return false;

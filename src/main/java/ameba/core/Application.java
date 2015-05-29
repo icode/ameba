@@ -532,7 +532,7 @@ public class Application {
         return config;
     }
 
-    private void addOnSetup(Map<String, Object> configMap) {
+    protected void addOnSetup(Map<String, Object> configMap) {
         Set<SortEntry> addOnSorts = Sets.newTreeSet();
         for (String key : configMap.keySet()) {
             if (key.startsWith(ADDON_CONF_PREFIX)) {
@@ -587,7 +587,7 @@ public class Application {
         }
     }
 
-    private void addOnDone() {
+    protected void addOnDone() {
         for (AddOn addOn : addOns) {
             try {
                 addOn.done(this);
@@ -606,7 +606,7 @@ public class Application {
         return timestamp;
     }
 
-    private void configureFeature(Map<String, Object> configMap) {
+    protected void configureFeature(Map<String, Object> configMap) {
         logger.debug(Messages.get("info.feature.register"));
 
         int suc = 0, fail = 0, beak = 0;
