@@ -17,16 +17,19 @@ public class ClearCommentFilter extends AbstractFilter {
         CommentSyntaxFilter filter = new CommentSyntaxFilter();
         filter.setCommentLeft("//");
         filter.setCommentRight("\r\n");
+        filter.setCommentReplaceWith("\n");
         filters[0] = filter;
 
         filter = new CommentSyntaxFilter();
         filter.setCommentLeft("//");
         filter.setCommentRight("\n");
+        filter.setCommentReplaceWith("\n");
         filters[1] = filter;
 
         filter = new CommentSyntaxFilter();
         filter.setCommentLeft(Pattern.quote("/*"));
         filter.setCommentRight(Pattern.quote("*/"));
+        filter.setCommentReplaceWith("\n");
         filters[2] = filter;
 
     }

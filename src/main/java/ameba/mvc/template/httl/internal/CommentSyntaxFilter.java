@@ -12,6 +12,7 @@ public class CommentSyntaxFilter extends AbstractFilter {
     private String commentLeft;
 
     private String commentRight;
+    private String replace = "";
 
     private boolean removeDirectiveBlankLine;
 
@@ -31,6 +32,10 @@ public class CommentSyntaxFilter extends AbstractFilter {
         this.commentRight = commentRight;
     }
 
+    public void setCommentReplaceWith(String replace) {
+        this.replace = replace;
+    }
+
     /**
      * httl.properties: remove.directive.blank.line=true
      */
@@ -39,7 +44,7 @@ public class CommentSyntaxFilter extends AbstractFilter {
     }
 
     public String filter(String key, String value) {
-        value = value.replaceAll(commentLeft + ".*?" + commentRight, "\n");
+        value = value.replaceAll(commentLeft + ".*?" + commentRight, replace);
         if (removeDirectiveBlankLine) {
             value = StringUtils.trimBlankLine(value, true, true);
         }
