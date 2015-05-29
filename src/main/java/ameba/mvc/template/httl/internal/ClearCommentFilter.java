@@ -1,40 +1,53 @@
 package ameba.mvc.template.httl.internal;
 
 import httl.spi.Filter;
-import httl.spi.filters.CommentSyntaxFilter;
-import httl.spi.filters.MultiFilter;
+import httl.spi.filters.AbstractFilter;
+
+import java.util.regex.Pattern;
 
 /**
  * @author icode
  */
-public class ClearCommentFilter extends MultiFilter {
+public class ClearCommentFilter extends AbstractFilter {
 
-    private boolean removeDirectiveBlankLine;
+    private CommentSyntaxFilter[] filters;
 
     public ClearCommentFilter() {
-        Filter[] filters = new Filter[3];
+        filters = new CommentSyntaxFilter[3];
         CommentSyntaxFilter filter = new CommentSyntaxFilter();
         filter.setCommentLeft("//");
-        filter.setCommentRight("/n");
-        filter.setRemoveDirectiveBlankLine(removeDirectiveBlankLine);
+        filter.setCommentRight("\r\n");
         filters[0] = filter;
 
         filter = new CommentSyntaxFilter();
         filter.setCommentLeft("//");
-        filter.setCommentRight("/n/r");
-        filter.setRemoveDirectiveBlankLine(removeDirectiveBlankLine);
+        filter.setCommentRight("\n");
         filters[1] = filter;
 
         filter = new CommentSyntaxFilter();
-        filter.setCommentLeft("/*");
-        filter.setCommentRight("*/");
-        filter.setRemoveDirectiveBlankLine(removeDirectiveBlankLine);
+        filter.setCommentLeft(Pattern.quote("/*"));
+        filter.setCommentRight(Pattern.quote("*/"));
         filters[2] = filter;
 
-        setFilters(filters);
     }
 
     public void setRemoveDirectiveBlankLine(boolean removeDirectiveBlankLine) {
-        this.removeDirectiveBlankLine = removeDirectiveBlankLine;
+        for (CommentSyntaxFilter filter : filters) {
+            filter.setRemoveDirectiveBlankLine(removeDirectiveBlankLine);
+        }
+    }
+
+    @Override
+    public String filter(String key, String value) {
+        if (filters == null || filters.length == 0) {
+            return value;
+        }
+        if (filters.length == 1) {
+            return filters[0].filter(key, value);
+        }
+        for (Filter filter : filters) {
+            value = filter.filter(key, value);
+        }
+        return value;
     }
 }

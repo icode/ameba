@@ -92,7 +92,7 @@ public class HttlMvcFeature implements Feature {
         properties.put("localized", "false");
         properties.put("output.writer", "false");
         properties.put("import.methods-", "httl.spi.methods.MessageMethod");
-
+        
         final Engine engine = Engine.getEngine(properties);
 
         context.register(new AbstractBinder() {

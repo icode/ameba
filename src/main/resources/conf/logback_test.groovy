@@ -22,6 +22,8 @@ if (StringUtils.isBlank(appName)) {
     appName = Application.DEFAULT_APP_NAME;
 }
 String appPackage = properties.getProperty("app.package");
+String trace = properties.getProperty("ameba.trace.enabled");
+boolean isTrace = "true".equalsIgnoreCase(trace);
 
 appender("FILE", RollingFileAppender) {
     rollingPolicy(TimeBasedRollingPolicy) {
@@ -43,5 +45,5 @@ logger("org.glassfish.jersey.filter.LoggingFilter", INFO)
 logger("org.glassfish", WARN)
 logger("org.avaje.ebean", WARN)
 logger("httl", WARN)
-logger("ameba", TRACE)
+logger("ameba", isTrace ? TRACE : DEBUG)
 root(WARN, ["CONSOLE", "FILE"])
