@@ -1,11 +1,15 @@
 package ameba.db.ebean.jackson;
 
+import ameba.db.ebean.EbeanUtils;
 import com.avaje.ebean.text.PathProperties;
 import com.avaje.ebean.text.json.JsonContext;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import org.glassfish.jersey.server.ContainerRequest;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import java.io.IOException;
 
 /**
@@ -16,15 +20,24 @@ import java.io.IOException;
  */
 public class CommonBeanSerializer<T> extends JsonSerializer<T> {
 
+    private static final String REQ_PATH_PROPS = FindSerializers.class + ".currentRequestPathProperties";
     final JsonContext jsonContext;
-    final PathProperties pathProperties;
+    @Inject
+    private Provider<ContainerRequest> requestProvider;
+
 
     /**
      * Construct with the given JsonContext.
      */
-    CommonBeanSerializer(JsonContext jsonContext, PathProperties pathProperties) {
+    CommonBeanSerializer(JsonContext jsonContext) {
         this.jsonContext = jsonContext;
-        this.pathProperties = pathProperties;
+    }
+
+    private PathProperties getPathProperties() {
+        if (requestProvider.get().getProperty(REQ_PATH_PROPS) != null) return null;
+        PathProperties pathProperties = EbeanUtils.getCurrentRequestPathProperties();
+        requestProvider.get().setProperty(REQ_PATH_PROPS, pathProperties);
+        return pathProperties;
     }
 
     /**
@@ -32,6 +45,7 @@ public class CommonBeanSerializer<T> extends JsonSerializer<T> {
      */
     @Override
     public void serialize(T o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+        final PathProperties pathProperties = getPathProperties();
 
         if (pathProperties != null) {
             jsonContext.toJson(o, jsonGenerator, pathProperties);
