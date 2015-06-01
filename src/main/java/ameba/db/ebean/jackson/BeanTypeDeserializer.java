@@ -12,9 +12,9 @@ import java.io.IOException;
  */
 public class BeanTypeDeserializer extends JsonDeserializer {
 
-    final JsonContext jsonContext;
+    private final JsonContext jsonContext;
 
-    final Class<?> beanType;
+    private final Class<?> beanType;
 
     public BeanTypeDeserializer(JsonContext jsonContext, Class<?> beanType) {
         this.jsonContext = jsonContext;

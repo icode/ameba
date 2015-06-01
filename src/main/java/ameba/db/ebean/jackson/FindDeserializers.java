@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.type.CollectionType;
  */
 class FindDeserializers extends Deserializers.Base {
 
-    final JsonContext jsonContext;
+    private final JsonContext jsonContext;
 
     /**
      * Construct with the given JsonContext.

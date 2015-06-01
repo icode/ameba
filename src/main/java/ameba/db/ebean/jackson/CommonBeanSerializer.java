@@ -21,7 +21,7 @@ import java.io.IOException;
 public class CommonBeanSerializer<T> extends JsonSerializer<T> {
 
     private static final String REQ_PATH_PROPS = FindSerializers.class + ".currentRequestPathProperties";
-    final JsonContext jsonContext;
+    private final JsonContext jsonContext;
     @Inject
     private Provider<ContainerRequest> requestProvider;
 

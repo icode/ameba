@@ -10,10 +10,10 @@ import org.glassfish.hk2.api.ServiceLocator;
  */
 public class JacksonEbeanModule extends SimpleModule {
 
-    final JsonContext jsonContext;
-    final EbeanServer server;
+    private final JsonContext jsonContext;
+    private final EbeanServer server;
 
-    final ServiceLocator locator;
+    private final ServiceLocator locator;
 
     /**
      * Construct with a JsonContext obtained from an EbeanServer.

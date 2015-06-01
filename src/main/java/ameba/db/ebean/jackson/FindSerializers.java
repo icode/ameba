@@ -17,7 +17,7 @@ import java.util.Collection;
  * Finds JsonSerializer's for entity bean types or entity bean collection types.
  */
 class FindSerializers extends Serializers.Base {
-    final JsonContext jsonContext;
+    private final JsonContext jsonContext;
 
     @Inject
     private ServiceLocator locator;
