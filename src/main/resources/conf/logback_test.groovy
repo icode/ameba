@@ -41,7 +41,6 @@ appender("FILE", RollingFileAppender) {
 if (appPackage != null)
     logger(appPackage, DEBUG)
 
-logger("org.glassfish.jersey.filter.LoggingFilter", INFO)
 logger("org.glassfish", WARN)
 logger("org.avaje.ebean", WARN)
 logger("httl", WARN)

@@ -17,7 +17,6 @@ String trace = properties.getProperty("ameba.trace.enabled");
 boolean isTrace = "true".equalsIgnoreCase(trace);
 String appPackage = properties.getProperty("app.package");
 
-logger("org.glassfish.jersey.filter.LoggingFilter", INFO)
 logger("org.glassfish", WARN)
 
 logger("org.avaje.ebean.SQL", TRACE)
