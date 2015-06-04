@@ -2,12 +2,13 @@ package ameba.db.ebean.jackson;
 
 import com.avaje.ebean.text.json.JsonIOException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.glassfish.jersey.spi.ExceptionMappers;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Providers;
 
 /**
  * @author icode
@@ -15,16 +16,16 @@ import javax.ws.rs.ext.Providers;
 @Singleton
 public class JsonIOExceptionMapper implements ExceptionMapper<JsonIOException> {
 
-    @Context
-    private Providers providers;
+    @Inject
+    private Provider<ExceptionMappers> mappers;
 
     @Override
     public Response toResponse(JsonIOException exception) {
+        Throwable throwable = exception;
         if (exception.getCause() instanceof JsonProcessingException) {
-            return providers.getExceptionMapper(JsonProcessingException.class)
-                    .toResponse((JsonProcessingException) exception.getCause());
-        } else {
-            return providers.getExceptionMapper(Throwable.class).toResponse(exception);
+            throwable = exception.getCause();
         }
+
+        return mappers.get().findMapping(throwable).toResponse(throwable);
     }
 }

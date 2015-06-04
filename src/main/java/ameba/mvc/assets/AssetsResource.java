@@ -3,8 +3,10 @@ package ameba.mvc.assets;
 import ameba.core.Application;
 import ameba.message.internal.MediaType;
 import ameba.util.MimeType;
+import org.glassfish.jersey.spi.ExceptionMappers;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -32,6 +34,9 @@ public class AssetsResource {
 
     @Inject
     private Application application;
+
+    @Inject
+    private Provider<ExceptionMappers> mappers;
 
     private static void closeJarFileIfNeeded(final JarURLConnection jarConnection,
                                              final JarFile jarFile) throws IOException {
@@ -132,7 +137,8 @@ public class AssetsResource {
         }
 
         if (!found) {
-            throw new NotFoundException();
+            Throwable e = new NotFoundException();
+            return mappers.get().findMapping(e).toResponse(e);
         }
 
         File file = fileResource;
