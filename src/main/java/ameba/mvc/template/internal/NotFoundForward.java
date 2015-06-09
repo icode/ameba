@@ -29,7 +29,7 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
     private Provider<UriInfo> uriInfo;
     @Inject
     private ServiceLocator serviceLocator;
-    private ThreadLocal<String> templatePath = new ThreadLocal<String>();
+    private ThreadLocal<String> templatePath = new ThreadLocal<>();
 
     private Set<TemplateProcessor> getTemplateProcessors() {
         Set<TemplateProcessor> templateProcessors = Sets.newLinkedHashSet();
@@ -44,7 +44,11 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
      */
     @Override
     public Response toResponse(NotFoundException exception) {
-        return Response.ok(Viewables.newDefaultViewable(templatePath.get())).type(MediaType.TEXT_HTML_TYPE).build();
+        try {
+            return Response.ok(Viewables.newDefaultViewable(templatePath.get())).type(MediaType.TEXT_HTML_TYPE).build();
+        } finally {
+            templatePath.remove();
+        }
     }
 
     private String getCurrentPath() {

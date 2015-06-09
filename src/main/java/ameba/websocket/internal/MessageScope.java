@@ -32,7 +32,7 @@ public class MessageScope implements Context<MessageScoped> {
 
     private static Logger logger = LoggerFactory.getLogger(MessageScope.class);
 
-    private ThreadLocal<Instance> currentScopeInstance = new ThreadLocal<Instance>();
+    private ThreadLocal<Instance> currentScopeInstance = new ThreadLocal<>();
 
     /**
      * {@inheritDoc}
