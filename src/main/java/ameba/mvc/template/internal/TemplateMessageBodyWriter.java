@@ -77,10 +77,7 @@ final class TemplateMessageBodyWriter implements MessageBodyWriter<Viewable> {
             }
 
             MediaType mType = resolvedViewable.getMediaType();
-
-            if (mType == null
-                    || mType.isWildcardType()
-                    || mType.equals(MediaType.APPLICATION_OCTET_STREAM_TYPE)) {
+            if (mType == null || mType.isWildcardType()) {
                 mType = mediaType;
             }
 

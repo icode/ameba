@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.Set;
@@ -43,7 +44,7 @@ public class NotFoundForward implements ExtendedExceptionMapper<NotFoundExceptio
      */
     @Override
     public Response toResponse(NotFoundException exception) {
-        return Response.ok(Viewables.newDefaultViewable(templatePath.get())).build();
+        return Response.ok(Viewables.newDefaultViewable(templatePath.get())).type(MediaType.TEXT_HTML_TYPE).build();
     }
 
     private String getCurrentPath() {
