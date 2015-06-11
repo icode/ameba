@@ -12,6 +12,8 @@ import java.io.Serializable;
 @MappedSuperclass
 public abstract class Model implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * <p>_getFinder.</p>
      *
