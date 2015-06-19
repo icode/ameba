@@ -124,8 +124,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     protected void setForInsertId(final M model) {
         BeanDescriptor descriptor = getModelBeanDescriptor();
         EntityBeanIntercept intercept = ((EntityBean) model)._ebean_getIntercept();
-        if (descriptor.hasIdProperty(intercept)) {
-            BeanProperty idProp = descriptor.getIdProperty();
+        BeanProperty idProp = descriptor.getIdProperty();
+        if (idProp != null) {
             idProp.setValue((EntityBean) model, null);
             intercept.setPropertyUnloaded(idProp.getPropertyIndex());
         }
