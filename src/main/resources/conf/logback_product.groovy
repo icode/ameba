@@ -26,7 +26,7 @@ String appPackage = properties.getProperty("app.package");
 
 appender("FILE", RollingFileAppender) {
     rollingPolicy(TimeBasedRollingPolicy) {
-        fileNamePattern = IOUtils.getResource("").getFile() + "../logs/" + appName + ".%d{yyyy-MM-dd}-%i.log"
+        fileNamePattern = IOUtils.getResource("").getFile() + "logs/" + appName + ".%d{yyyy-MM-dd}-%i.log"
         maxHistory = 30
         timeBasedFileNamingAndTriggeringPolicy(SizeAndTimeBasedFNATP) {
             maxFileSize = "20MB"
