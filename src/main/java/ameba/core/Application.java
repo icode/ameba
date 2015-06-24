@@ -52,9 +52,7 @@ import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLDecoder;
+import java.net.*;
 import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
@@ -847,6 +845,43 @@ public class Application {
                         .append(line);
             }
 
+            void appendVistUrl(Connector connector) {
+                String httpStart = "http" + (connector.isSecureEnabled() ? "s" : "") + "://";
+                if (connector.getHost().equals("0.0.0.0")) {
+                    try {
+                        builder.append(line)
+                                .append(lineStart)
+                                .append(lineChild)
+                                .append(httpStart)
+                                .append(InetAddress.getLocalHost().getHostAddress())
+                                .append(":")
+                                .append(connector.getPort())
+                                .append("/");
+                    } catch (UnknownHostException e) {
+                        logger.error("get local addr error", e);
+                    }
+                    builder.append(line)
+                            .append(lineStart)
+                            .append(lineChild)
+                            .append(httpStart)
+                            .append("://localhost:")
+                            .append(connector.getPort())
+                            .append("/")
+                            .append(line)
+                            .append(lineStart)
+                            .append(lineChild)
+                            .append(httpStart)
+                            .append("://127.0.0.1:")
+                            .append(connector.getPort())
+                            .append("/");
+                } else {
+                    builder.append(line)
+                            .append(lineStart)
+                            .append(lineChild)
+                            .append(connector.getHttpServerBaseUri());
+                }
+            }
+
             @Override
             public void onReceive(Container.StartupEvent event) {
 
@@ -878,10 +913,7 @@ public class Application {
                     List<Connector> connectors = getConnectors();
                     if (connectors != null && connectors.size() > 0) {
                         for (Connector connector : connectors) {
-                            builder.append(line)
-                                    .append(lineStart)
-                                    .append(lineChild);
-                            builder.append(connector.getHttpServerBaseUri());
+                            appendVistUrl(connector);
                         }
                     } else {
                         builder.append(line)
