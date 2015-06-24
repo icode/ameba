@@ -1,5 +1,6 @@
 package ameba.db.ebean;
 
+import ameba.core.Application;
 import ameba.db.DataSourceManager;
 import ameba.db.PersistenceExceptionMapper;
 import ameba.db.ebean.internal.EbeanModelInterceptor;
@@ -88,6 +89,8 @@ public class EbeanFeature implements Feature {
     private ObjectMapper objectMapper;
     @Inject
     private XmlMapper xmlMapper;
+    @Inject
+    private Application application;
 
     /**
      * Helper method that generates the required evolution to properly run Ebean.
@@ -275,6 +278,7 @@ public class EbeanFeature implements Feature {
             // DDL
             if (genDdl) {
                 final String basePath = IOUtils.getResource("/").getPath()
+                        + (application.getMode().isDev() ? "../generated-sources/ameba/" : "temp/")
                         + DatabaseMigrationFeature.EVOLUTIONS_SUB_PATH + server.getName() + "/";
 
                 DdlGenerator ddl = new AmebaGenerator(excludes, basePath, (SpiEbeanServer) server);
