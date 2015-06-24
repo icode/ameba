@@ -18,6 +18,14 @@ import java.util.ResourceBundle;
  * @author icode
  */
 public class MultiResourceBundleControl extends ResourceBundle.Control {
+
+    boolean noCache = false;
+
+    @Override
+    public long getTimeToLive(String baseName, Locale locale) {
+        return noCache ? ResourceBundle.Control.TTL_DONT_CACHE : super.getTimeToLive(baseName, locale);
+    }
+
     @Override
     public ResourceBundle newBundle(
             String baseName, Locale locale, String format, ClassLoader loader, boolean reload)

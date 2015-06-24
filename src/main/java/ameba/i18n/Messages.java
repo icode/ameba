@@ -20,7 +20,7 @@ public class Messages {
     public static final String BUNDLE_DIR = "conf/messages/";
     public static final String BUNDLE_NAME = BUNDLE_DIR + "message";
     private static final Table<String, Locale, ResourceBundle> RESOURCE_BUNDLES = HashBasedTable.create();
-
+    private static final MultiResourceBundleControl BUNDLE_CONTROL = new MultiResourceBundleControl();
 
     private Messages() {
     }
@@ -67,6 +67,9 @@ public class Messages {
         boolean isDev = false;
         if (Ameba.getApp() != null) {
             isDev = Ameba.getApp().getMode().isDev();
+            if (isDev) {
+                BUNDLE_CONTROL.noCache = isDev;
+            }
         }
         if (!isDev) {
             bundle = RESOURCE_BUNDLES.get(bundleName, locale);
@@ -77,7 +80,7 @@ public class Messages {
                         bundleName,
                         locale,
                         ClassUtils.getContextClassLoader(),
-                        new MultiResourceBundleControl()
+                        BUNDLE_CONTROL
                 );
             } catch (MissingResourceException e) {
                 // no op
