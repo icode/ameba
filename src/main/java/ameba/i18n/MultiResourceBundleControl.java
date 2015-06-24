@@ -1,8 +1,10 @@
 package ameba.i18n;
 
+import ameba.util.IOUtils;
 import com.google.common.base.Charsets;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
@@ -64,18 +66,27 @@ public class MultiResourceBundleControl extends ResourceBundle.Control {
                                     if (urls != null && urls.hasMoreElements()) {
                                         properties = new Properties();
                                         while (urls.hasMoreElements()) {
-                                            URLConnection connection = urls.nextElement().openConnection();
+                                            URL url = urls.nextElement();
+                                            if (url.getPath().endsWith("/classes/" + resourceName)) continue;
+                                            URLConnection connection = url.openConnection();
                                             if (connection != null) {
                                                 // Disable caches to get fresh data for
                                                 // reloading.
                                                 if (reloadFlag) {
                                                     connection.setUseCaches(false);
                                                 }
-                                                properties.load(
-                                                        new InputStreamReader(
-                                                                connection.getInputStream(),
-                                                                Charsets.UTF_8)
-                                                );
+                                                InputStream in = null;
+                                                InputStreamReader reader = null;
+                                                try {
+                                                    in = connection.getInputStream();
+                                                    reader = new InputStreamReader(
+                                                            in,
+                                                            Charsets.UTF_8);
+                                                    properties.load(reader);
+                                                } finally {
+                                                    IOUtils.closeQuietly(reader);
+                                                    IOUtils.closeQuietly(in);
+                                                }
                                             }
                                         }
                                     }
