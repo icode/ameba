@@ -25,6 +25,7 @@ import java.util.Map;
  */
 public class DatabaseMigrationFeature extends LoggerOwner implements Feature {
 
+    public static final String EVOLUTIONS_SUB_PATH = "conf/evolutions/";
     private static String evolutionsBasePath;
     @Inject
     private Application app;
@@ -36,7 +37,7 @@ public class DatabaseMigrationFeature extends LoggerOwner implements Feature {
      */
     public static String getEvolutionsBasePath() {
         if (evolutionsBasePath == null) {
-            evolutionsBasePath = IOUtils.getResource("").getPath() + "conf/evolutions/";
+            evolutionsBasePath = IOUtils.getResource("").getPath() + EVOLUTIONS_SUB_PATH;
         }
         return evolutionsBasePath;
     }

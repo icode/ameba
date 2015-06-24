@@ -8,6 +8,7 @@ import ameba.db.ebean.jackson.JsonIOExceptionMapper;
 import ameba.db.migration.DatabaseMigrationFeature;
 import ameba.db.model.ModelManager;
 import ameba.i18n.Messages;
+import ameba.util.IOUtils;
 import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
@@ -245,7 +246,7 @@ public class EbeanFeature implements Feature {
             }
 
             final boolean genDdl = PropertiesHelper.getValue(appConfig.getProperties(),
-                    "db." + name + ".ddl.generate", false, Boolean.class, null);
+                    "db." + name + ".ddl.generate", true, Boolean.class, null);
 
 //            final boolean runDdl = PropertiesHelper.getValue(appConfig.getProperties(),
 //                    "db." + name + ".ddl.run", false, Boolean.class, null);
@@ -273,7 +274,8 @@ public class EbeanFeature implements Feature {
 
             // DDL
             if (genDdl) {
-                final String basePath = DatabaseMigrationFeature.getEvolutionsBasePath() + server.getName() + "/";
+                final String basePath = IOUtils.getResource("/").getPath()
+                        + DatabaseMigrationFeature.EVOLUTIONS_SUB_PATH + server.getName() + "/";
 
                 DdlGenerator ddl = new AmebaGenerator(excludes, basePath, (SpiEbeanServer) server);
 
