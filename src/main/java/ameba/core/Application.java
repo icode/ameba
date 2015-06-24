@@ -849,29 +849,43 @@ public class Application {
                 String httpStart = "http" + (connector.isSecureEnabled() ? "s" : "") + "://";
                 if (connector.getHost().equals("0.0.0.0")) {
                     try {
-                        builder.append(line)
-                                .append(lineStart)
-                                .append(lineChild)
-                                .append(httpStart)
-                                .append(InetAddress.getLocalHost().getHostAddress())
-                                .append(":")
-                                .append(connector.getPort())
-                                .append("/");
-                    } catch (UnknownHostException e) {
-                        logger.error("get local addr error", e);
+                        Enumeration netInterfaces = NetworkInterface.getNetworkInterfaces();
+                        while (netInterfaces.hasMoreElements()) {
+                            NetworkInterface ni = (NetworkInterface) netInterfaces
+                                    .nextElement();
+                            Enumeration nii = ni.getInetAddresses();
+                            while (nii.hasMoreElements()) {
+                                InetAddress ip = (InetAddress) nii.nextElement();
+                                if (ip instanceof Inet4Address) {
+                                    String ipAddr = ip.getHostAddress();
+                                    if (ipAddr != null && !ipAddr.equals("127.0.0.1")) {
+                                        builder.append(line)
+                                                .append(lineStart)
+                                                .append(lineChild)
+                                                .append(httpStart)
+                                                .append(ip.getHostAddress())
+                                                .append(":")
+                                                .append(connector.getPort())
+                                                .append("/");
+                                    }
+                                }
+                            }
+                        }
+                    } catch (SocketException e) {
+                        // noop
                     }
                     builder.append(line)
                             .append(lineStart)
                             .append(lineChild)
                             .append(httpStart)
-                            .append("://localhost:")
+                            .append("localhost:")
                             .append(connector.getPort())
                             .append("/")
                             .append(line)
                             .append(lineStart)
                             .append(lineChild)
                             .append(httpStart)
-                            .append("://127.0.0.1:")
+                            .append("127.0.0.1:")
                             .append(connector.getPort())
                             .append("/");
                 } else {
