@@ -195,7 +195,7 @@ public class AssetsResource {
                 String ext = filePath.substring(dot + 1);
                 String ct = MimeType.get(ext, MediaType.APPLICATION_OCTET_STREAM);
                 if (ct != null) {
-                    builder.type(ct);
+                    builder.header("Content-Type", ct);
                 }
             } else {
                 builder.type(MimeType.get("html"));
