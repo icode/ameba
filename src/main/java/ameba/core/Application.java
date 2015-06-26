@@ -834,7 +834,7 @@ public class Application {
     private void subscribeServerEvent() {
         SystemEventBus.subscribe(Container.StartupEvent.class, new Listener<Container.StartupEvent>() {
 
-            final String line = "\n";
+            final String line = System.getProperty("line.separator", "/n");
             final String lineStart = "- ";
             final String lineChild = " >";
             final StringBuilder builder = new StringBuilder();
