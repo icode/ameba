@@ -1,6 +1,7 @@
-package ameba.db.ebean.internal;
+package ameba.db.ebean.support;
 
 import ameba.db.ebean.EbeanUtils;
+import ameba.db.ebean.internal.EbeanModelInterceptor;
 import ameba.db.model.Model;
 import ameba.lib.LoggerOwner;
 import com.avaje.ebean.*;
@@ -146,7 +147,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.POST
-     * @see ameba.db.ebean.internal.AbstractModelResource#insert(Model)
+     * @see AbstractModelResource#insert(Model)
      */
     @SuppressWarnings("unchecked")
     public Response insert(@NotNull @Valid final M model) throws Exception {
@@ -209,7 +210,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.PUT
-     * @see ameba.db.ebean.internal.AbstractModelResource#replace(Object, Model)
+     * @see AbstractModelResource#replace(Object, Model)
      */
     public Response replace(@PathParam("id") final ID id, @NotNull @Valid final M model) throws Exception {
 
@@ -281,7 +282,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see ameba.core.ws.rs.PATCH
-     * @see ameba.db.ebean.internal.AbstractModelResource#patch(Object, Model)
+     * @see AbstractModelResource#patch(Object, Model)
      */
     public Response patch(@PathParam("id") final ID id, @NotNull final M model) throws Exception {
         BeanDescriptor descriptor = getModelBeanDescriptor();
@@ -349,7 +350,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.DELETE
-     * @see ameba.db.ebean.internal.AbstractModelResource#deleteMultiple(Object, PathSegment)
+     * @see AbstractModelResource#deleteMultiple(Object, PathSegment)
      */
     public Response deleteMultiple(@NotNull @PathParam("ids") ID id,
                                    @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
@@ -469,7 +470,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.GET
-     * @see ameba.db.ebean.internal.AbstractModelResource#findByIds
+     * @see AbstractModelResource#findByIds
      */
     public Response findByIds(@NotNull @PathParam("ids") ID id,
                               @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
@@ -561,7 +562,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.GET
-     * @see ameba.db.ebean.internal.AbstractModelResource#find()
+     * @see AbstractModelResource#find()
      */
     public Response find() throws Exception {
 
@@ -681,8 +682,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     /**
      * <p>processTransactionError.</p>
      *
-     * @param callable a {@link ameba.db.ebean.internal.ModelResourceStructure.TxCallable} object.
-     * @param process  a {@link ameba.db.ebean.internal.ModelResourceStructure.TxCallable} object.
+     * @param callable a {@link ModelResourceStructure.TxCallable} object.
+     * @param process  a {@link ModelResourceStructure.TxCallable} object.
      * @throws java.lang.Exception if any.
      */
     protected <T> T processTransactionError(TxCallable<T> callable, TxCallable<T> process) throws Exception {
@@ -710,7 +711,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * <p>executeTx.</p>
      *
      * @param scope a {@link com.avaje.ebean.TxScope} object.
-     * @param r     a {@link ameba.db.ebean.internal.ModelResourceStructure.TxRunnable} object.
+     * @param r     a {@link ModelResourceStructure.TxRunnable} object.
      * @throws java.lang.Exception if any.
      */
     protected void executeTx(TxScope scope, final TxRunnable r, final TxRunnable errorHandler) throws Exception {
@@ -742,7 +743,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     /**
      * <p>executeTx.</p>
      *
-     * @param r a {@link ameba.db.ebean.internal.ModelResourceStructure.TxRunnable} object.
+     * @param r a {@link ModelResourceStructure.TxRunnable} object.
      * @throws java.lang.Exception if any.
      */
     protected void executeTx(TxRunnable r) throws Exception {
@@ -757,7 +758,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     /**
      * <p>executeTx.</p>
      *
-     * @param c   a {@link ameba.db.ebean.internal.ModelResourceStructure.TxCallable} object.
+     * @param c   a {@link ModelResourceStructure.TxCallable} object.
      * @param <O> a O object.
      * @return a O object.
      * @throws java.lang.Exception if any.
@@ -775,7 +776,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * <p>executeTx.</p>
      *
      * @param scope a {@link com.avaje.ebean.TxScope} object.
-     * @param c     a {@link ameba.db.ebean.internal.ModelResourceStructure.TxCallable} object.
+     * @param c     a {@link ModelResourceStructure.TxCallable} object.
      * @param <O>   a O object.
      * @return a O object.
      * @throws java.lang.Exception if any.
@@ -806,7 +807,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     /**
      * <p>processTransactionError.</p>
      *
-     * @param callable a {@link ameba.db.ebean.internal.ModelResourceStructure.TxCallable} object.
+     * @param callable a {@link ModelResourceStructure.TxCallable} object.
      * @throws java.lang.Exception if any.
      */
     protected <T> T processTransactionError(TxCallable<T> callable) throws Exception {

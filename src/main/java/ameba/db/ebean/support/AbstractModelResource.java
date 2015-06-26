@@ -1,4 +1,4 @@
-package ameba.db.ebean.internal;
+package ameba.db.ebean.support;
 
 import ameba.core.ws.rs.PATCH;
 import ameba.db.model.Model;
