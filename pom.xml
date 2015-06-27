@@ -435,7 +435,7 @@
     </build>
 
     <properties>
-        <ameba.utils.version>0.1.7</ameba.utils.version>
+        <ameba.utils.version>0.1.7-GA</ameba.utils.version>
         <osgi.version>4.2.0</osgi.version>
         <json-patch.version>1.7</json-patch.version>
         <paranamer.version>2.7</paranamer.version>
@@ -446,13 +446,13 @@
         <druid.version>1.0.14</druid.version>
         <groovy.version>2.4.3</groovy.version>
         <httl.version>1.0.11</httl.version>
-        <liquibase.version>3.3.3</liquibase.version>
+        <liquibase.version>3.4.0</liquibase.version>
         <!--<rxjava.version>[1.0.7,2.0.0)</rxjava.version>-->
         <javax.websocket.version>1.1</javax.websocket.version>
         <json-patch.version>1.9</json-patch.version>
-        <jackson.core.version>2.5.3</jackson.core.version>
+        <jackson.core.version>2.5.4</jackson.core.version>
         <jackson.provider.version>${jackson.core.version}</jackson.provider.version>
-        <bean.validator.version>5.2.0.Beta1</bean.validator.version>
+        <bean.validator.version>5.2.0.CR1</bean.validator.version>
         <ebean.support.dir>ameba/db/ebean/support</ebean.support.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
