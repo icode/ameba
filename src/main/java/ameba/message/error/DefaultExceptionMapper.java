@@ -16,6 +16,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.List;
 @Priority(Priorities.USER)
 public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, ResponseErrorMapper {
 
+    public static final String BEFORE_EXCEPTION_KEY = DefaultExceptionMapper.class.getName() + "BEFORE_EXCEPTION";
     private static final Logger logger = LoggerFactory.getLogger(DefaultExceptionMapper.class);
     @Inject
     private Application application;
@@ -91,16 +93,19 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
         message.setDescription(parseDescription(exception, status));
         message.setErrors(parseErrors(exception, status));
 
+        MediaType type = ExceptionMapperUtils.getResponseType();
         if (status == 500) {
             String uri = "";
             if (Requests.getRequest() != null) {
                 uri = " > " + Requests.getUriInfo().getRequestUri();
             }
             logger.error(message.getMessage() + uri, exception);
+        } else if (status == 404) {
+            Requests.setProperty(BEFORE_EXCEPTION_KEY, exception);
         }
 
         return Response.status(status)
-                .type(ExceptionMapperUtils.getResponseType())
+                .type(type)
                 .entity(message).build();
     }
 }

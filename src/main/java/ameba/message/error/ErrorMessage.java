@@ -1,5 +1,6 @@
 package ameba.message.error;
 
+import ameba.core.Requests;
 import ameba.i18n.Messages;
 import ameba.util.ClassUtils;
 import ameba.util.Result;
@@ -82,6 +83,10 @@ public class ErrorMessage extends Result {
 
     public static int parseHttpStatus(Throwable exception) {
         int status = 500;
+        Exception ex = (Exception) Requests.getProperty(DefaultExceptionMapper.BEFORE_EXCEPTION_KEY);
+        if (ex != null) {
+            exception = ex;
+        }
         if (exception instanceof InternalServerErrorException) {
             if (exception.getCause() instanceof MessageBodyProviderNotFoundException) {
                 MessageBodyProviderNotFoundException e = (MessageBodyProviderNotFoundException) exception.getCause();

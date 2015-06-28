@@ -29,6 +29,11 @@ import java.util.*;
 public class HttlMvcFeature implements Feature {
 
     public static final String CONFIG_SUFFIX = "httl";
+    private static Properties templateProperties = new Properties();
+
+    public static Properties getTemplateProperties() {
+        return new Properties(templateProperties);
+    }
 
     /**
      * {@inheritDoc}
@@ -39,14 +44,13 @@ public class HttlMvcFeature implements Feature {
             context.register(NotFoundForward.class);
         }
 
-        Properties properties = new Properties();
         Configuration config = context.getConfiguration();
         Map<String, Object> map = config.getProperties();
 
         String encoding = TemplateHelper.getTemplateOutputEncoding(config, "." + CONFIG_SUFFIX).name().toLowerCase();
 
-        properties.put("input.encoding", encoding);
-        properties.put("output.encoding", encoding);
+        templateProperties.put("input.encoding", encoding);
+        templateProperties.put("output.encoding", encoding);
 
         String keyPrefix = HttlViewProcessor.TEMPLATE_CONF_PREFIX + CONFIG_SUFFIX + ".";
 
@@ -64,14 +68,14 @@ public class HttlMvcFeature implements Feature {
                         name = name.concat("+");
                     }
                 }
-                properties.put(name, map.get(key));
+                templateProperties.put(name, map.get(key));
             }
         }
 
         String basePath = TemplateHelper.getBasePath(map, CONFIG_SUFFIX);
         Collection<String> basePaths = TemplateHelper.getBasePaths(basePath);
 
-        properties.put("template.directory", StringUtils.join(basePaths, ","));
+        templateProperties.put("template.directory", StringUtils.join(basePaths, ","));
 
         String[] supportedExtensions = TemplateHelper.getExtends(config, CONFIG_SUFFIX,
                 HttlViewProcessor.DEFAULT_TEMPLATE_EXTENSIONS);
@@ -86,14 +90,14 @@ public class HttlMvcFeature implements Feature {
                 }));
 
 
-        properties.put("template.suffix", StringUtils.join(exts, ","));
-        properties.put("loaders", HttlClasspathLoader.class.getName());
-        properties.put("engine", HttlEngine.class.getName());
-        properties.put("localized", "false");
-        properties.put("output.writer", "false");
-        properties.put("import.methods-", "httl.spi.methods.MessageMethod");
-        
-        final Engine engine = Engine.getEngine(properties);
+        templateProperties.put("template.suffix", StringUtils.join(exts, ","));
+        templateProperties.put("loaders", HttlClasspathLoader.class.getName());
+        templateProperties.put("engine", HttlEngine.class.getName());
+        templateProperties.put("localized", "false");
+        templateProperties.put("output.writer", "false");
+        templateProperties.put("import.methods-", "httl.spi.methods.MessageMethod");
+
+        final Engine engine = Engine.getEngine(templateProperties);
 
         context.register(new AbstractBinder() {
             @Override

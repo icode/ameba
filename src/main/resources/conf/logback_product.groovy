@@ -9,8 +9,7 @@ import ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy
 import org.apache.commons.lang3.StringUtils
 
-import static ch.qos.logback.classic.Level.INFO
-import static ch.qos.logback.classic.Level.WARN
+import static ch.qos.logback.classic.Level.*
 
 appender("CONSOLE", ConsoleAppender) {
     encoder(PatternLayoutEncoder) {
@@ -40,4 +39,6 @@ appender("FILE", RollingFileAppender) {
 if (appPackage != null)
     logger(appPackage, INFO)
 logger("ameba", INFO)
+logger("org.glassfish.jersey.message.internal", OFF)
+logger("org.glassfish.jersey.server.ServerRuntime\$Responder", OFF)
 root(WARN, ["CONSOLE", "FILE"])

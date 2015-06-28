@@ -1,7 +1,10 @@
 package ameba.lib;
 
 import akka.actor.ActorSystem;
+import ameba.container.Container;
 import ameba.core.Application;
+import ameba.event.Listener;
+import ameba.event.SystemEventBus;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -30,6 +33,12 @@ public class Akka {
         public void setup(Application application) {
             String name = StringUtils.defaultString(application.getApplicationName(), "ameba");
             system = ActorSystem.create(name);
+            SystemEventBus.subscribe(Container.ShutdownEvent.class, new Listener<Container.ShutdownEvent>() {
+                @Override
+                public void onReceive(Container.ShutdownEvent event) {
+                    system.shutdown();
+                }
+            });
         }
     }
 }
