@@ -137,8 +137,7 @@ public class AssetsResource {
         }
 
         if (!found) {
-            Throwable e = new NotFoundException();
-            return mappers.get().findMapping(e).toResponse(e);
+            return notFound();
         }
 
         File file = fileResource;
@@ -158,7 +157,7 @@ public class AssetsResource {
         }
 
         if (file == null) {
-            throw new NotFoundException();
+            return notFound();
         }
 
         EntityTag eTag = null;
@@ -205,6 +204,12 @@ public class AssetsResource {
         return builder.build();
     }
 
+    private Response notFound() {
+        Throwable e = new NotFoundException();
+        return Response.fromResponse(mappers.get().findMapping(e).toResponse(e))
+                .type(MediaType.TEXT_HTML_TYPE).build();
+    }
+
     private boolean isFileCacheEnabled() {
         return application.getMode().isProd();
     }
@@ -212,13 +217,13 @@ public class AssetsResource {
     private File getJarFile(final String path) throws MalformedURLException, FileNotFoundException {
         final int jarDelimIdx = path.indexOf("!/");
         if (jarDelimIdx == -1) {
-            throw new MalformedURLException("The jar file delimeter were not found");
+            return null;
         }
 
         final File file = new File(path.substring(0, jarDelimIdx));
 
         if (!file.exists() || !file.isFile()) {
-            throw new FileNotFoundException("The jar file was not found");
+            return null;
         }
 
         return file;

@@ -1,6 +1,7 @@
 package ameba.message.error;
 
 import ameba.core.Application;
+import ameba.core.Requests;
 import ameba.util.ClassUtils;
 import ameba.util.Result;
 import com.google.common.collect.Lists;
@@ -91,7 +92,11 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
         message.setErrors(parseErrors(exception, status));
 
         if (status == 500) {
-            logger.error(message.getMessage(), exception);
+            String uri = "";
+            if (Requests.getRequest() != null) {
+                uri = " > " + Requests.getUriInfo().getRequestUri();
+            }
+            logger.error(message.getMessage() + uri, exception);
         }
 
         return Response.status(status)
