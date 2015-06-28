@@ -539,7 +539,7 @@ public class Application {
                     String name = key.substring(ADDON_CONF_PREFIX.length());
 
                     int sortSp = name.lastIndexOf(">");
-                    Integer sortPriority = Integer.MAX_VALUE / 2;
+                    Integer sortPriority = 1000;
                     if (sortSp != -1) {
                         String sortStr = name.substring(sortSp + 1);
                         if (sortStr.equalsIgnoreCase("last")) {
@@ -618,7 +618,7 @@ public class Application {
                     String name = key.substring(REGISTER_CONF_PREFIX.length());
 
                     int sortSp = name.lastIndexOf(">");
-                    Integer sortPriority = Integer.MAX_VALUE / 2;
+                    Integer sortPriority = 1000;
                     if (sortSp != -1) {
                         String sortStr = name.substring(sortSp + 1);
                         sortSp = name.lastIndexOf("!");

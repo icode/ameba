@@ -5,6 +5,7 @@ import ameba.mvc.template.httl.internal.HttlEngine;
 import ameba.mvc.template.httl.internal.HttlViewProcessor;
 import ameba.mvc.template.internal.NotFoundForward;
 import ameba.mvc.template.internal.TemplateHelper;
+import ameba.util.LinkedProperties;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
@@ -29,10 +30,12 @@ import java.util.*;
 public class HttlMvcFeature implements Feature {
 
     public static final String CONFIG_SUFFIX = "httl";
-    private static Properties templateProperties = new Properties();
+    private static final Properties templateProperties = new Properties();
 
     public static Properties getTemplateProperties() {
-        return new Properties(templateProperties);
+        Properties properties = new LinkedProperties();
+        properties.putAll(templateProperties);
+        return properties;
     }
 
     /**

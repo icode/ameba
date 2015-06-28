@@ -5,7 +5,13 @@ import ameba.container.Container;
 import ameba.core.Application;
 import ameba.event.Listener;
 import ameba.event.SystemEventBus;
+import ameba.util.LinkedProperties;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * <p>Akka class.</p>
@@ -32,7 +38,16 @@ public class Akka {
         @Override
         public void setup(Application application) {
             String name = StringUtils.defaultString(application.getApplicationName(), "ameba");
-            system = ActorSystem.create(name);
+            Properties properties = new LinkedProperties();
+
+            for (Map.Entry<String, Object> entry : application.getSrcProperties().entrySet()) {
+                if (!entry.getKey().contains("*")) {
+                    properties.put(entry.getKey(), entry.getValue());
+                }
+            }
+
+            Config config = ConfigFactory.parseProperties(properties).withFallback(ConfigFactory.load());
+            system = ActorSystem.create(name, config, application.getClassLoader());
             SystemEventBus.subscribe(Container.ShutdownEvent.class, new Listener<Container.ShutdownEvent>() {
                 @Override
                 public void onReceive(Container.ShutdownEvent event) {
