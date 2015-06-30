@@ -151,6 +151,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      */
     @SuppressWarnings("unchecked")
     public Response insert(@NotNull @Valid final M model) throws Exception {
+        matchedInsert(model);
         setForInsertId(model);
 
         executeTx(new TxRunnable() {
@@ -164,6 +165,10 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         ID id = (ID) server.getBeanId(model);
 
         return Response.created(buildLocationUri(id)).build();
+    }
+
+    protected void matchedInsert(final M model) throws Exception {
+
     }
 
     /**
@@ -213,9 +218,9 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @see AbstractModelResource#replace(Object, Model)
      */
     public Response replace(@PathParam("id") final ID id, @NotNull @Valid final M model) throws Exception {
-
-        BeanDescriptor descriptor = getModelBeanDescriptor();
+        matchedReplace(id, model);
         final ID mId = tryConvertId(id);
+        BeanDescriptor descriptor = getModelBeanDescriptor();
         descriptor.convertSetId(mId, (EntityBean) model);
         EbeanUtils.forceUpdateAllProperties(server, model);
 
@@ -238,6 +243,10 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
             }
         });
         return builder.build();
+    }
+
+    protected void matchedReplace(ID id, final M model) throws Exception {
+
     }
 
     /**
@@ -285,6 +294,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @see AbstractModelResource#patch(Object, Model)
      */
     public Response patch(@PathParam("id") final ID id, @NotNull final M model) throws Exception {
+        matchedPatch(id, model);
         BeanDescriptor descriptor = getModelBeanDescriptor();
         descriptor.convertSetId(tryConvertId(id), (EntityBean) model);
         final Response.ResponseBuilder builder = Response.noContent()
@@ -304,6 +314,10 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 return builder.status(422).build();
             }
         });
+    }
+
+    protected void matchedPatch(final ID id, final M model) throws Exception {
+
     }
 
     /**
@@ -354,6 +368,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      */
     public Response deleteMultiple(@NotNull @PathParam("ids") ID id,
                                    @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
+        matchedDelete(id, ids);
         final ID firstId = tryConvertId(ids.getPath());
         Set<String> idSet = ids.getMatrixParameters().keySet();
         final Response.ResponseBuilder builder = Response.noContent();
@@ -396,6 +411,10 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
             }, failProcess);
         }
         return builder.build();
+    }
+
+    protected void matchedDelete(ID id, PathSegment ids) throws Exception {
+
     }
 
     /**
@@ -474,6 +493,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      */
     public Response findByIds(@NotNull @PathParam("ids") ID id,
                               @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
+        matchedFindByIds(id, ids);
         final Query<M> query = server.find(modelType);
         final ID firstId = tryConvertId(ids.getPath());
         Set<String> idSet = ids.getMatrixParameters().keySet();
@@ -521,6 +541,10 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
             throw new NotFoundException();
     }
 
+    protected void matchedFindByIds(ID id, PathSegment ids) throws Exception {
+
+    }
+
     /**
      * Configure the "Find By Ids" query.
      * <p>
@@ -565,7 +589,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @see AbstractModelResource#find()
      */
     public Response find() throws Exception {
-
+        matchedFind();
         final Query<M> query = server.find(modelType);
 
         if (StringUtils.isNotBlank(defaultFindOrderBy)) {
@@ -596,6 +620,9 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         return response;
     }
 
+    protected void matchedFind() throws Exception {
+
+    }
 
     /**
      * Configure the "Find" query.

@@ -254,7 +254,7 @@ public class EbeanFeature implements Feature {
 //            final boolean runDdl = PropertiesHelper.getValue(appConfig.getProperties(),
 //                    "db." + name + ".ddl.run", false, Boolean.class, null);
 
-            String[] excludes = null;
+            String[] excludes = new String[0];
 
             String excludeStr = (String) appConfig.getProperty("db." + name + EXCLUDE_DDL_PKG_KEY_SUFFIX);
 
@@ -276,7 +276,7 @@ public class EbeanFeature implements Feature {
             SERVERS.add(server);
 
             // DDL
-            if (genDdl) {
+            if (genDdl) {// todo: db migration 可能总是需要输出的ddl
                 final String basePath = IOUtils.getResource("/").getPath()
                         + (application.getMode().isDev() ? "../generated-sources/ameba/" : "temp/")
                         + DatabaseMigrationFeature.EVOLUTIONS_SUB_PATH + server.getName() + "/";
