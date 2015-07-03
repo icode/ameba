@@ -44,16 +44,16 @@ import java.util.Map;
  */
 @Singleton
 @ConstrainedTo(RuntimeType.SERVER)
-@Produces({"text/html", "application/xhtml+xml", "*/*"})
+@Produces({"text/html", "application/xhtml+xml", "application/x-ms-application", "*/*"})
 @Priority(Integer.MAX_VALUE)
 final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
-
     public static final String DISABLE_DATA_VIEW = "data.view.disabled";
     public static final String DISABLE_DEFAULT_DATA_VIEW = "data.view.default.disabled";
     public static final List<MediaType> TEMPLATE_PRODUCES = Lists.newArrayList(
             MediaType.TEXT_HTML_TYPE,
             MediaType.APPLICATION_XHTML_XML_TYPE
     );
+    private static final MediaType LOW_IE_DEFAULT_REQ_TYPE = new MediaType("application", "x-ms-application");
     private static final String DATA_VIEW_DEFAULT_KEY_PRE = "data.view.default.";
     public static final String DATA_VIEW_LIST_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "list";
     public static final String DATA_VIEW_ITEM_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "item";
@@ -104,10 +104,12 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
                         final Class<?> type,
                         final Type genericType,
                         final Annotation[] annotations,
-                        final MediaType mediaType,
+                        MediaType mediaType,
                         final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException, WebApplicationException {
-
+        if (mediaType.equals(LOW_IE_DEFAULT_REQ_TYPE)) {
+            mediaType = MediaType.TEXT_HTML_TYPE;
+        }
         List<String> templates = Lists.newArrayList();
         ResourceInfo resourceInfo = resourceInfoProvider.get();
 
