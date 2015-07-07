@@ -1,7 +1,6 @@
 package ameba.mvc.template.httl;
 
 import ameba.mvc.template.httl.internal.HttlClasspathLoader;
-import ameba.mvc.template.httl.internal.HttlEngine;
 import ameba.mvc.template.httl.internal.HttlViewProcessor;
 import ameba.mvc.template.internal.NotFoundForward;
 import ameba.mvc.template.internal.TemplateHelper;
@@ -95,9 +94,10 @@ public class HttlMvcFeature implements Feature {
 
         templateProperties.put("template.suffix", StringUtils.join(exts, ","));
         templateProperties.put("loaders", HttlClasspathLoader.class.getName());
-        templateProperties.put("engine", HttlEngine.class.getName());
+//        templateProperties.put("engine", HttlEngine.class.getName());
         templateProperties.put("localized", "false");
         templateProperties.put("output.writer", "false");
+        templateProperties.put("output.stream", "true");
         templateProperties.put("import.methods-", "httl.spi.methods.MessageMethod");
 
         final Engine engine = Engine.getEngine(templateProperties);

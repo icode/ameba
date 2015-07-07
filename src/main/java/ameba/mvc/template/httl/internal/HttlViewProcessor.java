@@ -150,7 +150,7 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
             request.get().setProperty(REQ_TPL_PATH_KEY, templateURL);
             try {
                 template = resolve(templateURL);
-            } catch (Exception e) {
+            } catch (FileNotFoundException e) {
                 if (reader != null) {
                     template = resolve(reader);
                 } else {

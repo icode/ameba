@@ -325,7 +325,7 @@
 
         <!-- httl template -->
         <dependency>
-            <groupId>com.github.httl</groupId>
+            <groupId>org.amebastack.template</groupId>
             <artifactId>httl</artifactId>
             <version>${httl.version}</version>
         </dependency>
@@ -452,7 +452,7 @@
         <ebean.version>4.7.3</ebean.version>
         <druid.version>1.0.14</druid.version>
         <groovy.version>2.4.3</groovy.version>
-        <httl.version>1.0.11</httl.version>
+        <httl.version>1.0.12</httl.version>
         <liquibase.version>3.4.0</liquibase.version>
         <!--<rxjava.version>[1.0.7,2.0.0)</rxjava.version>-->
         <javax.websocket.version>1.1</javax.websocket.version>
