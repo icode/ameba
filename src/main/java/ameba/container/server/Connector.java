@@ -66,6 +66,17 @@ public class Connector {
      * @return a {@link ameba.container.server.Connector} object.
      */
     public static Connector createDefault(Map<String, String> properties) {
+        String portStr = StringUtils.defaultIfBlank(properties.get("port"), "80");
+        if (portStr.startsWith("$")) {
+            portStr = portStr.substring(1);
+            String p = System.getProperty(portStr);
+            if (StringUtils.isBlank(p)) {
+                portStr = System.getenv(portStr);
+            }
+            if (StringUtils.isBlank(p)) {
+                portStr = "80";
+            }
+        }
         Connector.Builder builder = Connector.Builder.create()
                 .rawProperties(properties)
                 .secureEnabled(Boolean.parseBoolean(properties.get("ssl.enabled")))
@@ -85,7 +96,7 @@ public class Connector {
                 .sslTrustStorePassword(properties.get("ssl.trust.store.password"))
                 .ajpEnabled(Boolean.parseBoolean(properties.get("ajp.enabled")))
                 .host(StringUtils.defaultIfBlank(properties.get("host"), "0.0.0.0"))
-                .port(Integer.valueOf(StringUtils.defaultIfBlank(properties.get("port"), "80")))
+                .port(Integer.valueOf(portStr))
                 .name(properties.get("name"));
 
         String keyStoreFile = properties.get("ssl.key.store.file");
