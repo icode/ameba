@@ -50,8 +50,8 @@ class FindSerializers extends Serializers.Base {
 
     private JsonSerializer createSerializer() {
         JsonSerializer serializer = new CommonBeanSerializer(jsonContext);
-        locator.postConstruct(serializer);
         locator.inject(serializer);
+        locator.postConstruct(serializer);
         return serializer;
     }
 
