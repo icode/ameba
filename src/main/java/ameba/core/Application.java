@@ -1527,18 +1527,6 @@ public class Application {
         }
     }
 
-    private static class State {
-        protected boolean jmxEnabled;
-        private Mode mode;
-        private CharSequence applicationVersion;
-        private File sourceRoot;
-        private File packageRoot;
-        private Container container;
-        private Set<AddOn> addOns;
-        private ResourceConfig config;
-        private Set<String> scanPkgs;
-    }
-
     public static class Event implements ameba.event.Event {
 
         ApplicationEvent event;
