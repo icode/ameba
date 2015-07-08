@@ -158,7 +158,7 @@ public class Application {
         logger.info(Messages.get("info.module.load.conf"));
         //读取模块配置
         Enumeration<URL> moduleUrls = IOUtils.getResources("conf/module.conf");
-        Properties moduleProperties = new LinkedProperties();
+        Properties moduleProperties = new Props();
         if (moduleUrls.hasMoreElements()) {
             while (moduleUrls.hasMoreElements()) {
                 InputStream in = null;
@@ -209,7 +209,7 @@ public class Application {
 
     @SuppressWarnings("unchecked")
     public static void readModeConfig(Map<String, Object> configMap, Mode mode) {
-        Properties modeProperties = new LinkedProperties();
+        Properties modeProperties = new Props();
 
         //读取相应模式的配置文件
         Enumeration<java.net.URL> confs = IOUtils.getResources("conf/" + mode.name().toLowerCase() + ".conf");
@@ -237,7 +237,7 @@ public class Application {
     }
 
     public static Properties readDefaultConfig(Map<String, Object> configMap) {
-        Properties properties = new LinkedProperties();
+        Properties properties = new Props();
 
         //读取系统默认配置
         try {
@@ -1504,6 +1504,26 @@ public class Application {
 
         public boolean isTest() {
             return this == TEST;
+        }
+    }
+
+    public static final class Props extends LinkedProperties {
+
+        @Override
+        public synchronized Object put(Object key, Object value) {
+
+            if (value instanceof String) {
+                String str = (String) value;
+                str = str.trim();
+                if (str.startsWith("$") && !str.startsWith("$$")) {
+                    str = str.substring(1);
+                    value = System.getProperty(str);
+                    if (StringUtils.isBlank((CharSequence) value)) {
+                        value = System.getenv(str);
+                    }
+                }
+            }
+            return super.put(key, value);
         }
     }
 
