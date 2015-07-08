@@ -6,7 +6,7 @@
     <groupId>org.amebastack</groupId>
     <artifactId>ameba</artifactId>
     <packaging>jar</packaging>
-    <version>0.1.7.Alpha2</version>
+    <version>0.1.7-SNAPSHOT</version>
     <name>Ameba-Framework</name>
     <description>A useful Java framework!</description>
 
