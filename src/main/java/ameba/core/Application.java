@@ -388,7 +388,7 @@ public class Application {
             }
         }
 
-        logger.debug(Messages.get("info.exclude.classes"), excludes);
+        logger.debug(Messages.get("info.exclude.classes", excludes));
     }
 
     private void scanClasses() {
