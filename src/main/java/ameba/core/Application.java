@@ -83,6 +83,8 @@ public class Application {
     private static final String ADDON_CONF_PREFIX = "addon.";
     private static final String JERSEY_CONF_NAME_PREFIX = "sys.core.";
     private static final String DEFAULT_LOGBACK_CONF = "log.groovy";
+    private static final String EXCLUDES_KEY = "exclude.classes";
+    private static final String EXCLUDES_KEY_PREFIX = EXCLUDES_KEY + ".";
     private static String SCAN_CLASSES_CACHE_FILE;
     private static InitializationLogger logger = new InitializationLogger(Application.class, null);
     private static String INFO_SPLITER = "---------------------------------------------------";
@@ -96,7 +98,8 @@ public class Application {
     private File packageRoot;
     private Container container;
     private Set<AddOn> addOns = Sets.newLinkedHashSet();
-    private ResourceConfig config = new ResourceConfig();
+    private Set<String> excludes = Sets.newLinkedHashSet();
+    private ResourceConfig config = new ExcludeResourceConfig(excludes);
     private Set<String> scanPkgs;
     private String[] ids;
     private Map<String, Object> srcProperties = Maps.newLinkedHashMap();
@@ -349,6 +352,8 @@ public class Application {
 
         register(Requests.BindRequest.class);
 
+        configureExclude(srcProperties);
+
         addOnSetup(srcProperties);
 
         //配置资源
@@ -368,6 +373,22 @@ public class Application {
         addOnDone();
 
         logger.info(Messages.get("info.feature.load"));
+    }
+
+    private void configureExclude(Map<String, Object> configMap) {
+
+        String ex = (String) configMap.get(EXCLUDES_KEY);
+        if (StringUtils.isNotBlank(ex)) {
+            addExcludes(ex);
+        }
+
+        for (String key : configMap.keySet()) {
+            if (key.startsWith(EXCLUDES_KEY_PREFIX)) {
+                addExcludes((String) configMap.get(key));
+            }
+        }
+
+        logger.debug(Messages.get("info.exclude.classes"), excludes);
     }
 
     private void scanClasses() {
@@ -604,7 +625,18 @@ public class Application {
         return timestamp;
     }
 
+    private void addExcludes(String ex) {
+        if (StringUtils.isNotBlank(ex)) {
+            for (String e : ex.split(",")) {
+                if (StringUtils.isNotBlank(e)) {
+                    excludes.add(e);
+                }
+            }
+        }
+    }
+
     protected void configureFeature(Map<String, Object> configMap) {
+
         logger.debug(Messages.get("info.feature.register"));
 
         int suc = 0, fail = 0, beak = 0;
@@ -717,7 +749,7 @@ public class Application {
 
     private void subscribeResourceEvent() {
 
-        final Set<ClassFoundEvent.ClassInfo> resources = Sets.newHashSet();
+        final Set<ClassFoundEvent.ClassInfo> resources = Sets.newLinkedHashSet();
 
         SystemEventBus.subscribe(ClassFoundEvent.class, new Listener<ClassFoundEvent>() {
             @Override
@@ -954,6 +986,7 @@ public class Application {
      * @return a {@link ameba.core.Application} object.
      */
     public Application register(Class<?> componentClass) {
+
         config.register(componentClass);
         return this;
     }
