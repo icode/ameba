@@ -1515,6 +1515,10 @@ public class Application {
         return srcProperties;
     }
 
+    public Set<String> getExcludes() {
+        return excludes;
+    }
+
     /**
      * <p>Getter for the field <code>addOns</code>.</p>
      *
