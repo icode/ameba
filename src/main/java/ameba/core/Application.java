@@ -102,7 +102,7 @@ public class Application {
     private ResourceConfig config = new ExcludeResourceConfig(excludes);
     private Set<String> scanPkgs;
     private String[] ids;
-    private Map<String, Object> srcProperties = Maps.newLinkedHashMap();
+    private Map<String, Object> srcProperties;
 
     protected Application() {
         logger = new InitializationLogger(Application.class, this);
@@ -157,11 +157,10 @@ public class Application {
     }
 
     @SuppressWarnings("unchecked")
-    public static void readModuleConfig(Map<String, Object> configMap, boolean isDev) {
+    public static void readModuleConfig(Properties properties, boolean isDev) {
         logger.info(Messages.get("info.module.load.conf"));
         //读取模块配置
         Enumeration<URL> moduleUrls = IOUtils.getResources("conf/module.conf");
-        Properties moduleProperties = new Props();
         if (moduleUrls.hasMoreElements()) {
             while (moduleUrls.hasMoreElements()) {
                 InputStream in = null;
@@ -194,7 +193,7 @@ public class Application {
                 }
                 if (in != null) {
                     try {
-                        moduleProperties.load(in);
+                        properties.load(in);
                     } catch (Exception e) {
                         logger.error(Messages.get("info.load.error", toExternalForm(url)));
                     }
@@ -203,16 +202,13 @@ public class Application {
                 }
                 closeQuietly(in);
             }
-            configMap.putAll((Map) moduleProperties);
-            moduleProperties.clear();
         } else {
             logger.info(Messages.get("info.module.none"));
         }
     }
 
     @SuppressWarnings("unchecked")
-    public static void readModeConfig(Map<String, Object> configMap, Mode mode) {
-        Properties modeProperties = new Props();
+    public static void readModeConfig(Properties properties, Mode mode) {
 
         //读取相应模式的配置文件
         Enumeration<java.net.URL> confs = IOUtils.getResources("conf/" + mode.name().toLowerCase() + ".conf");
@@ -224,29 +220,21 @@ public class Application {
                     connection.setUseCaches(false);
                 }
                 in = connection.getInputStream();
-                modeProperties.load(in);
+                properties.load(in);
             } catch (IOException e) {
                 logger.warn(Messages.get("info.module.conf.error", "conf/" + mode.name().toLowerCase() + ".conf"), e);
             } finally {
                 closeQuietly(in);
             }
         }
-        if (modeProperties.size() > 0)
-            //将模式配置放入临时配置对象
-            configMap.putAll((Map) modeProperties);
-
-        //清空应用程序模式配置
-        modeProperties.clear();
     }
 
-    public static Properties readDefaultConfig(Map<String, Object> configMap) {
+    public static Properties readDefaultConfig() {
         Properties properties = new Props();
 
         //读取系统默认配置
         try {
             properties.load(getResourceAsStream("conf/default.conf"));
-            //将默认配置放入临时配置对象,占坑(index),不清除内存,防止module替换默认配置,允许application.conf替换
-            configMap.putAll((Map) properties);
         } catch (Exception e) {
             logger.warn(Messages.get("info.module.conf.error", "conf/default.conf"), e);
         }
@@ -300,7 +288,7 @@ public class Application {
     @SuppressWarnings("unchecked")
     protected void configure() {
 
-        Properties properties = readDefaultConfig(srcProperties);
+        Properties properties = readDefaultConfig();
 
         List<String> appConf = Lists.newArrayListWithExpectedSize(configFiles.length);
         for (String conf : configFiles) {
@@ -333,20 +321,17 @@ public class Application {
         logger.info(Messages.get("info.app.conf", appConf));
 
         //读取模式配置
-        readModeConfig(srcProperties, mode);
+        readModeConfig(properties, mode);
 
         //读取模块配置
-        readModuleConfig(srcProperties, getMode().isDev());
-
-        //将用户配置放入临时配置对象
-        if (properties.size() > 0)
-            srcProperties.putAll((Map) properties);
+        readModuleConfig(properties, getMode().isDev());
 
         //转换jersey配置项
         convertJerseyConfig(srcProperties);
 
         //将临时配置对象放入应用程序配置
         addProperties(srcProperties);
+        srcProperties = Collections.unmodifiableMap((Map) properties);
 
         registerInstance();
 
