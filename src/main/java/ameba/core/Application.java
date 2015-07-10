@@ -334,6 +334,8 @@ public class Application {
         //将临时配置对象放入应用程序配置
         addProperties(srcProperties);
 
+        srcProperties = Collections.unmodifiableMap(srcProperties);
+
         registerInstance();
 
         register(Requests.BindRequest.class);
@@ -358,7 +360,6 @@ public class Application {
 
         addOnDone();
 
-        srcProperties = Collections.unmodifiableMap(srcProperties);
         logger.info(Messages.get("info.feature.load"));
     }
 
