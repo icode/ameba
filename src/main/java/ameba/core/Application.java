@@ -102,7 +102,7 @@ public class Application {
     private ResourceConfig config = new ExcludeResourceConfig(excludes);
     private Set<String> scanPkgs;
     private String[] ids;
-    private Map<String, Object> srcProperties;
+    private Map<String, Object> srcProperties = Maps.newHashMap();
 
     protected Application() {
         logger = new InitializationLogger(Application.class, this);
@@ -289,6 +289,7 @@ public class Application {
     protected void configure() {
 
         Properties properties = readDefaultConfig();
+        srcProperties = Collections.unmodifiableMap((Map) properties);
 
         List<String> appConf = Lists.newArrayListWithExpectedSize(configFiles.length);
         for (String conf : configFiles) {
@@ -331,7 +332,6 @@ public class Application {
 
         //将临时配置对象放入应用程序配置
         addProperties(srcProperties);
-        srcProperties = Collections.unmodifiableMap((Map) properties);
 
         registerInstance();
 
