@@ -102,7 +102,7 @@ public class Application {
     private ResourceConfig config = new ExcludeResourceConfig(excludes);
     private Set<String> scanPkgs;
     private String[] ids;
-    private Map<String, Object> srcProperties = Maps.newHashMap();
+    private Map<String, Object> srcProperties = Maps.newLinkedHashMap();
 
     protected Application() {
         logger = new InitializationLogger(Application.class, this);
@@ -289,7 +289,6 @@ public class Application {
     protected void configure() {
 
         Properties properties = readDefaultConfig();
-        srcProperties = Collections.unmodifiableMap((Map) properties);
 
         List<String> appConf = Lists.newArrayListWithExpectedSize(configFiles.length);
         for (String conf : configFiles) {
@@ -327,6 +326,8 @@ public class Application {
         //读取模块配置
         readModuleConfig(properties, getMode().isDev());
 
+        srcProperties.putAll((Map) properties);
+
         //转换jersey配置项
         convertJerseyConfig(srcProperties);
 
@@ -357,6 +358,7 @@ public class Application {
 
         addOnDone();
 
+        srcProperties = Collections.unmodifiableMap(srcProperties);
         logger.info(Messages.get("info.feature.load"));
     }
 
