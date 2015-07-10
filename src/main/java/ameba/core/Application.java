@@ -301,20 +301,20 @@ public class Application {
 
         //获取应用程序模式
         try {
-            mode = Mode.valueOf(properties.getProperty("app.mode").toUpperCase());
+            mode = Mode.valueOf(appProperties.getProperty("app.mode").toUpperCase());
         } catch (Exception e) {
             mode = Mode.PRODUCT;
         }
 
         //设置应用程序名称
-        setApplicationName(StringUtils.defaultString(properties.getProperty("app.name"), DEFAULT_APP_NAME));
-        applicationVersion = properties.getProperty("app.version");
+        setApplicationName(StringUtils.defaultString(appProperties.getProperty("app.name"), DEFAULT_APP_NAME));
+        applicationVersion = appProperties.getProperty("app.version");
         if (StringUtils.isBlank(applicationVersion)) {
             applicationVersion = new UnknownVersion();
         }
 
         //配置日志器
-        configureLogger(properties);
+        configureLogger(appProperties);
 
         if (!isInitialized())
             Ameba.printInfo();
