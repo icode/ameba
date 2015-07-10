@@ -77,9 +77,9 @@ public class EbeanFeature implements Feature {
      */
     public static final String EXCLUDE_DDL_PKG_KEY_SUFFIX = ".ddl.generate.excludes";
     /**
-     * Constant <code>WHERE_PARAM_NAME="model.query.param.where"</code>
+     * Constant <code>FILTER_PARAM_NAME="model.query.param.where"</code>
      */
-    public static final String WHERE_PARAM_NAME = "model.query.param.where";
+    public static final String FILTER_PARAM_NAME = "model.query.param.where";
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
     private static final List<EbeanServer> SERVERS = Lists.newArrayList();
 

@@ -45,7 +45,7 @@ public class EbeanModelInterceptor implements WriterInterceptor {
     static String PER_PAGE_PARAM_NAME = "per_page";
     static String REQ_TOTAL_COUNT_PARAM_NAME = "req_count";
     static String REQ_TOTAL_COUNT_HEADER_NAME = "X-Total-Count";
-    static String WHERE_PARAM_NAME = "where";
+    static String FILTER_PARAM_NAME = "filter";
     static Integer DEFAULT_PER_PAGE = 20;
     @Context
     private Provider<Configuration> configurationProvider;
@@ -107,12 +107,12 @@ public class EbeanModelInterceptor implements WriterInterceptor {
     }
 
     /**
-     * <p>getWhereParamName.</p>
+     * <p>getFilterParamName.</p>
      *
      * @return a {@link java.lang.String} object.
      */
-    public static String getWhereParamName() {
-        return WHERE_PARAM_NAME;
+    public static String getFilterParamName() {
+        return FILTER_PARAM_NAME;
     }
 
     /**
@@ -290,8 +290,8 @@ public class EbeanModelInterceptor implements WriterInterceptor {
      * @param queryParams uri query params
      * @param query       query
      */
-    public static void applyWhere(MultivaluedMap<String, String> queryParams, Query query) {
-        List<String> wheres = queryParams.get(EbeanModelInterceptor.WHERE_PARAM_NAME);
+    public static void applyFilter(MultivaluedMap<String, String> queryParams, Query query) {
+        List<String> wheres = queryParams.get(EbeanModelInterceptor.FILTER_PARAM_NAME);
         if (wheres != null)
             for (String w : wheres) {
                 query.where(w);
@@ -306,14 +306,14 @@ public class EbeanModelInterceptor implements WriterInterceptor {
      * @param needPageList need page list
      * @return page list count or null
      * @see #applyFetchProperties
-     * @see #applyWhere
+     * @see #applyFilter
      * @see #applyOrderBy
      * @see #applyPageList
      */
     public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams,
                                                Query query, boolean needPageList) {
         applyFetchProperties(queryParams, query);
-        applyWhere(queryParams, query);
+        applyFilter(queryParams, query);
         applyOrderBy(queryParams, query);
         if (needPageList)
             return applyPageList(queryParams, query);
@@ -369,8 +369,8 @@ public class EbeanModelInterceptor implements WriterInterceptor {
         final String reqTotalCountHeaderName = (String) configuration.getProperty(EbeanFeature.REQ_TOTAL_COUNT_HEADER_NAME);
         REQ_TOTAL_COUNT_HEADER_NAME = StringUtils.isNotBlank(reqTotalCountHeaderName) ? perPageParamName : REQ_TOTAL_COUNT_HEADER_NAME;
 
-        final String whereParamName = (String) configuration.getProperty(EbeanFeature.WHERE_PARAM_NAME);
-        WHERE_PARAM_NAME = StringUtils.isNotBlank(whereParamName) ? whereParamName : WHERE_PARAM_NAME;
+        final String filterParamName = (String) configuration.getProperty(EbeanFeature.FILTER_PARAM_NAME);
+        FILTER_PARAM_NAME = StringUtils.isNotBlank(filterParamName) ? filterParamName : FILTER_PARAM_NAME;
 
         final String defaultPerPage = (String) configuration.getProperty(EbeanFeature.DEFAULT_PER_PAGE_PARAM_NAME);
         if (StringUtils.isNotBlank(defaultPerPage)) {
