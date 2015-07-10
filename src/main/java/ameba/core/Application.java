@@ -290,10 +290,12 @@ public class Application {
 
         Properties properties = readDefaultConfig();
 
+        Properties appProperties = new Props();
+
         List<String> appConf = Lists.newArrayListWithExpectedSize(configFiles.length);
         for (String conf : configFiles) {
             //读取应用程序配置
-            URL appCfgUrl = readAppConfig(properties, conf);
+            URL appCfgUrl = readAppConfig(appProperties, conf);
             appConf.add(toExternalForm(appCfgUrl));
         }
 
@@ -325,6 +327,8 @@ public class Application {
 
         //读取模块配置
         readModuleConfig(properties, getMode().isDev());
+
+        properties.putAll(appProperties);
 
         srcProperties.putAll((Map) properties);
 
