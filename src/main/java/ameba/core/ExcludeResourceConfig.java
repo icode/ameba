@@ -25,8 +25,7 @@ class ExcludeResourceConfig extends ResourceConfig {
                 if (className.startsWith(e.substring(0, e.length() - 3))) {
                     return true;
                 }
-            }
-            if (e.endsWith(".*")) {
+            } else if (e.endsWith(".*")) {
                 int index = e.length() - 2;
                 if (className.startsWith(e.substring(0, index)) && className.indexOf(".", index + 1) == -1) {
                     return true;
