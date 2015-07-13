@@ -11,6 +11,8 @@ import java.util.List;
  * @author icode
  */
 public class ExceptionMapperUtils {
+    private static final MediaType LOW_IE_DEFAULT_REQ_TYPE = new MediaType("application", "x-ms-application");
+
     private ExceptionMapperUtils() {
     }
 
@@ -30,8 +32,8 @@ public class ExceptionMapperUtils {
         } else {
             m = Requests.getMediaType();
         }
-        if (m.isWildcardType()) {
-            m = MediaType.APPLICATION_JSON_TYPE;
+        if (m.isWildcardType() || m.equals(LOW_IE_DEFAULT_REQ_TYPE)) {
+            m = MediaType.TEXT_HTML_TYPE;
         }
         return m;
     }

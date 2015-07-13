@@ -383,6 +383,16 @@ public class Application {
         logger.debug(Messages.get("info.exclude.classes", excludes));
     }
 
+    private void addExcludes(String ex) {
+        if (StringUtils.isNotBlank(ex)) {
+            for (String e : ex.split(",")) {
+                if (StringUtils.isNotBlank(e)) {
+                    excludes.add(e);
+                }
+            }
+        }
+    }
+
     private void scanClasses() {
         if (SCAN_CLASSES_CACHE_FILE == null) {
             SCAN_CLASSES_CACHE_FILE = IOUtils.getResource("/").getPath() + "conf/classes.list";
@@ -615,16 +625,6 @@ public class Application {
      */
     public long getTimestamp() {
         return timestamp;
-    }
-
-    private void addExcludes(String ex) {
-        if (StringUtils.isNotBlank(ex)) {
-            for (String e : ex.split(",")) {
-                if (StringUtils.isNotBlank(e)) {
-                    excludes.add(e);
-                }
-            }
-        }
     }
 
     protected void configureFeature(Map<String, Object> configMap) {

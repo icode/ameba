@@ -25,6 +25,7 @@
         <!--#if(item != null && (item is Iterator || item is Iterable || item.class.isArray))-->
 
         <!--#else-->
+        <!--#if(item is Map)-->
         <!--#set(Map props = item)-->
         <!--#for(entry : props)-->
         <!--#if(!(entry is BeanMap))-->
@@ -38,6 +39,9 @@
 
         <!--#endif-->
         <!--#end-->
+        <!--#else-->
+        <td>${item}</td>
+        <!--#endif-->
         <!--#endif-->
     </tr>
     <!--#end-->
