@@ -3,7 +3,6 @@ package ameba.message.error;
 import ameba.core.Requests;
 import org.glassfish.jersey.server.ContainerRequest;
 
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -17,12 +16,15 @@ public class ExceptionMapperUtils {
     }
 
     public static MediaType getResponseType() {
-        return getResponseType(Requests.getRequest());
+        return getResponseType(Requests.getRequest(), null);
     }
 
-    public static MediaType getResponseType(ContainerRequest request) {
-        Exception e = (Exception) Requests.getProperty(DefaultExceptionMapper.BEFORE_EXCEPTION_KEY);
-        if (e != null && e instanceof NotFoundException) {
+    public static MediaType getResponseType(Integer status) {
+        return getResponseType(Requests.getRequest(), status);
+    }
+
+    public static MediaType getResponseType(ContainerRequest request, Integer status) {
+        if (status != null && status == 406) {
             return MediaType.TEXT_HTML_TYPE;
         }
         List<MediaType> accepts = request.getAcceptableMediaTypes();

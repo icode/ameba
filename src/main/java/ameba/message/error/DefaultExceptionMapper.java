@@ -93,7 +93,7 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
         message.setDescription(parseDescription(exception, status));
         message.setErrors(parseErrors(exception, status));
 
-        MediaType type = ExceptionMapperUtils.getResponseType();
+        MediaType type = ExceptionMapperUtils.getResponseType(status);
         if (status == 500) {
             String uri = "";
             if (Requests.getRequest() != null) {
