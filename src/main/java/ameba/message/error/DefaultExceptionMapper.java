@@ -31,7 +31,7 @@ import java.util.List;
 @Priority(Priorities.USER)
 public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, ResponseErrorMapper {
 
-    public static final String BEFORE_EXCEPTION_KEY = DefaultExceptionMapper.class.getName() + "BEFORE_EXCEPTION";
+    public static final String BEFORE_EXCEPTION_KEY = DefaultExceptionMapper.class.getName() + ".BEFORE_EXCEPTION";
     private static final Logger logger = LoggerFactory.getLogger(DefaultExceptionMapper.class);
     @Inject
     private Application application;
