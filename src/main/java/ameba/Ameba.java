@@ -19,15 +19,14 @@ import java.util.List;
  * @author icode
  */
 public class Ameba {
-    /**
-     * Constant <code>LOGO="\n\n    _                   _          "{trunked}</code>
-     */
-    public static final String LOGO = "\n\n" +
-            "    _                   _           \n" +
-            "   / \\   _ __ ___   ___| |__   __ _ \n" +
-            "  / _ \\ | '_ ` _ \\ / _ \\ '_ \\ / _` |\n" +
-            " / ___ \\| | | | | |  __/ |_) | (_| |\n" +
-            "/_/   \\_\\_| |_| |_|\\___|_.__/ \\__,_|   {}\n\n";
+    private static final String LINE = System.getProperty("line.separator", "/n");
+
+    public static final String LOGO = LINE + LINE +
+            "    _                   _           " + LINE +
+            "   / \\   _ __ ___   ___| |__   __ _ " + LINE +
+            "  / _ \\ | '_ ` _ \\ / _ \\ '_ \\ / _` |" + LINE +
+            " / ___ \\| | | | | |  __/ |_) | (_| |" + LINE +
+            "/_/   \\_\\_| |_| |_|\\___|_.__/ \\__,_|   {}" + LINE + LINE;
     /**
      * Constant <code>logger</code>
      */
