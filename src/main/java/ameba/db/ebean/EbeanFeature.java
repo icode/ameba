@@ -248,11 +248,13 @@ public class EbeanFeature implements Feature {
                 }
             }
 
-            final boolean genDdl = PropertiesHelper.getValue(appConfig.getProperties(),
-                    "db." + name + ".ddl.generate", true, Boolean.class, null);
+            final boolean isDev = application.getMode().isDev();
 
-//            final boolean runDdl = PropertiesHelper.getValue(appConfig.getProperties(),
-//                    "db." + name + ".ddl.run", false, Boolean.class, null);
+            final boolean genDdl = PropertiesHelper.getValue(appConfig.getProperties(),
+                    "db." + name + ".ddl.generate", isDev, Boolean.class, null);
+
+            final boolean runDdl = PropertiesHelper.getValue(appConfig.getProperties(),
+                    "db." + name + ".ddl.run", false, Boolean.class, null);
 
             String[] excludes = new String[0];
 
@@ -278,7 +280,7 @@ public class EbeanFeature implements Feature {
             // DDL
             if (genDdl) {// todo: db migration 可能总是需要输出的ddl
                 final String basePath = IOUtils.getResource("/").getPath()
-                        + (application.getMode().isDev() ? "../generated-sources/ameba/" : "temp/")
+                        + (isDev ? "../generated-sources/ameba/" : "temp/")
                         + DatabaseMigrationFeature.EVOLUTIONS_SUB_PATH + server.getName() + "/";
 
                 DdlGenerator ddl = new AmebaGenerator(excludes, basePath, (SpiEbeanServer) server);
@@ -287,8 +289,15 @@ public class EbeanFeature implements Feature {
                 try {
                     FileUtils.forceMkdir(new File(basePath));
                     ddl.generateDdl();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     logger.error("Create ddl error", e);
+                }
+                if (runDdl) {
+                    try {
+                        ddl.runDdl();
+                    } catch (Exception e) {
+                        logger.error("Run ddl error", e);
+                    }
                 }
             }
         }
