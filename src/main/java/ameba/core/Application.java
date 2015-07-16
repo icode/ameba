@@ -332,6 +332,8 @@ public class Application {
 
         srcProperties.putAll((Map) properties);
 
+        addOnSetup(srcProperties);
+
         //转换jersey配置项
         convertJerseyConfig(srcProperties);
 
@@ -345,8 +347,6 @@ public class Application {
         register(Requests.BindRequest.class);
 
         configureExclude(srcProperties);
-
-        addOnSetup(srcProperties);
 
         //配置资源
         configureResource();
