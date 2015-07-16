@@ -441,7 +441,7 @@
     </build>
 
     <properties>
-        <ameba.utils.version>0.1.7-GA</ameba.utils.version>
+        <ameba.utils.version>0.1.7.Final</ameba.utils.version>
         <osgi.version>4.2.0</osgi.version>
         <akka.logger>2.3.11</akka.logger>
         <json-patch.version>1.7</json-patch.version>
