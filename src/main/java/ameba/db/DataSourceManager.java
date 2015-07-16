@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import javax.ws.rs.core.Configuration;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,16 +61,16 @@ public class DataSourceManager extends AddOn {
      */
     @Override
     public void setup(final Application app) {
-        Configuration config = app.getConfiguration();
+        Map<String, Object> config = app.getSrcProperties();
 
-        String dsName = (String) config.getProperty("db.default");
+        String dsName = (String) config.get("db.default");
 
         if (StringUtils.isNotBlank(dsName)) {
             DEFAULT_DS_NAME = StringUtils.deleteWhitespace(dsName);
         }
 
         Map<String, Map<String, String>> map = Maps.newHashMap();
-        for (String key : config.getPropertyNames()) {
+        for (String key : config.keySet()) {
             key = StringUtils.deleteWhitespace(key);
             key = key.replaceAll("\\.{2,}", ".");
             if (key.startsWith(ModelManager.MODULE_MODELS_KEY_PREFIX)) continue;
@@ -84,7 +83,7 @@ public class DataSourceManager extends AddOn {
                     map.put(keys[1], sourceConfig);
                 }
                 if (StringUtils.isNotBlank(keys[2])) {
-                    sourceConfig.put(keys[2], String.valueOf(config.getProperty(key)));
+                    sourceConfig.put(keys[2], String.valueOf(config.get(key)));
                 }
             }
         }
