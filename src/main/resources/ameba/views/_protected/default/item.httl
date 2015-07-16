@@ -1,10 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="/assets/ameba/base/css/tables-min.css">
-</head>
-<body>
+#set(String append='
+<link rel="stylesheet" href="/assets/ameba/base/css/tables-min.css">
+')
+<!--${include("header.httl", ["title":model.class.simpleName, "append":append])}-->
 <!--#macro(renderTale(Map data))-->
 <table class="pure-table pure-table-bordered">
     <thead>
@@ -28,5 +25,4 @@
 <!--#end-->
 <!--#set(Map data = model.filter)-->
 <!--$!{renderTale(data)}-->
-</body>
-</html>
+<!--${include("footer.httl")}-->

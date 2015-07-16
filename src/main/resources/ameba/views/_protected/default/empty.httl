@@ -1,28 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>无数据</title>
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            font-family: Monaco, 'Lucida Console', monospace;
-            background: #ECECEC;
-        }
+#set(String append="
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        font-family: Monaco, 'Lucida Console', monospace;
+        background: #ECECEC;
+    }
 
-        h1 {
-            margin: 0;
-            background: #333;
-            padding: 20px 45px;
-            color: #fff;
-            text-shadow: 1px 1px 1px rgba(0, 0, 0, .3);
-            border-bottom: 1px solid #111;
-            font-size: 28px;
-        }
-    </style>
-</head>
-<body>
-<h1>没有相关数据</h1>
-</body>
-</html>
+    h1 {
+        margin: 0;
+        background: #333;
+        padding: 20px 45px;
+        color: #fff;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, .3);
+        border-bottom: 1px solid #111;
+        font-size: 28px;
+    }
+</style>
+")
+<!--${include("header.httl", ["title":"view.default.empty.title".message, "append":append])}-->
+<h1>${"view.default.empty".message}</h1>
+<!--${include("footer.httl")}-->
