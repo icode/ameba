@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.Embeddable;
 import javax.persistence.Entity;
-import javax.ws.rs.core.Configuration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -47,14 +46,14 @@ public class ModelManager extends AddOn {
      */
     @Override
     public void setup(final Application application) {
-        Configuration config = application.getConfiguration();
+        Map<String, Object> config = application.getSrcProperties();
         modelMap = Maps.newLinkedHashMap();
 
         Set<String> defaultModelsPkg = Sets.newLinkedHashSet();
         //db.default.models.pkg=
-        for (String key : config.getPropertyNames()) {
+        for (String key : config.keySet()) {
             if (key.startsWith(MODULE_MODELS_KEY_PREFIX)) {
-                String modelPackages = (String) config.getProperty(key);
+                String modelPackages = (String) config.get(key);
                 if (StringUtils.isNotBlank(modelPackages)) {
                     Collections.addAll(defaultModelsPkg, StringUtils.deleteWhitespace(modelPackages).split(","));
                 }
@@ -62,7 +61,7 @@ public class ModelManager extends AddOn {
         }
 
         for (String name : DataSourceManager.getDataSourceNames()) {
-            String modelPackages = (String) config.getProperty("db." + name + ".models");
+            String modelPackages = (String) config.get("db." + name + ".models");
             if (StringUtils.isNotBlank(modelPackages)) {
                 final Set<String> pkgs = Sets.newHashSet(StringUtils.deleteWhitespace(modelPackages).split(","));
 
