@@ -23,6 +23,10 @@ public class ExceptionMapperUtils {
         return getResponseType(Requests.getRequest(), status);
     }
 
+    public static MediaType getResponseType(ContainerRequest request) {
+        return getResponseType(request, null);
+    }
+
     public static MediaType getResponseType(ContainerRequest request, Integer status) {
         if (status != null && status == 406) {
             return MediaType.TEXT_HTML_TYPE;
