@@ -196,6 +196,7 @@ public class EbeanFeature implements Feature {
                     loadSettings(new PropertiesWrapper("db", name, properties));
                 }
             };
+            config.setJsonInclude(JsonConfig.Include.NON_EMPTY);
             config.setPersistBatch(PersistBatch.ALL);
             config.setNamingConvention(new UnderscoreNamingConvention() {
 
