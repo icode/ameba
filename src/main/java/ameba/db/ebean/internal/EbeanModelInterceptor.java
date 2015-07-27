@@ -225,8 +225,6 @@ public class EbeanModelInterceptor implements WriterInterceptor {
 
     /**
      * <p>applyOrderBy.</p>
-     * <p/>
-     * todo
      *
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
      * @param query       a {@link com.avaje.ebean.Query} object.
@@ -432,7 +430,7 @@ public class EbeanModelInterceptor implements WriterInterceptor {
 
                 context.setType(clazz);
 
-                context.setGenericType(((SpiQuery) query).getBeanType());
+                context.setGenericType(query.getBeanType());
             }
         } else if (o instanceof BeanCollection && !BeanCollection.class.isAssignableFrom(context.getType())) {
             context.setEntity(o.getClass());
