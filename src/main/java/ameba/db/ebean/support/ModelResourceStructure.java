@@ -7,7 +7,6 @@ import ameba.lib.LoggerOwner;
 import com.avaje.ebean.*;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebeaninternal.api.ScopeTrans;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
@@ -156,7 +155,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
 
         executeTx(new TxRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(Transaction t) throws Exception {
                 preInsertModel(model);
                 insertModel(model);
                 postInsertModel(model);
@@ -227,14 +226,14 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         final Response.ResponseBuilder builder = Response.noContent();
         executeTx(new TxRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(Transaction t) throws Exception {
                 preReplaceModel(model);
                 replaceModel(model);
                 postReplaceModel(model);
             }
         }, new TxRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(Transaction t) throws Exception {
                 logger().debug("not found model record, insert a model record.");
                 preInsertModel(model);
                 insertModel(model);
@@ -301,7 +300,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 .contentLocation(uriInfo.getAbsolutePath());
         return executeTx(new TxCallable<Response>() {
             @Override
-            public Response call() throws Exception {
+            public Response call(Transaction t) throws Exception {
                 prePatchModel(model);
                 patchModel(model);
                 postPatchModel(model);
@@ -309,7 +308,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
             }
         }, new TxCallable<Response>() {
             @Override
-            public Response call() {
+            public Response call(Transaction t) {
                 // id 无法对应数据。实体对象和补丁都正确，但无法处理请求，所以返回422
                 return builder.status(422).build();
             }
@@ -374,7 +373,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         final Response.ResponseBuilder builder = Response.noContent();
         final TxRunnable failProcess = new TxRunnable() {
             @Override
-            public void run() {
+            public void run(Transaction t) {
                 builder.status(Response.Status.NOT_FOUND);
             }
         };
@@ -390,7 +389,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
             }));
             executeTx(new TxRunnable() {
                 @Override
-                public void run() throws Exception {
+                public void run(Transaction t) throws Exception {
                     preDeleteMultipleModel(idCollection);
                     if (!deleteMultipleModel(idCollection)) {
                         builder.status(Response.Status.ACCEPTED);
@@ -401,7 +400,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         } else {
             executeTx(new TxRunnable() {
                 @Override
-                public void run() throws Exception {
+                public void run(Transaction t) throws Exception {
                     preDeleteModel(firstId);
                     if (!deleteModel(firstId)) {
                         builder.status(Response.Status.ACCEPTED);
@@ -500,7 +499,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         Object model;
         final TxRunnable configureQuery = new TxRunnable() {
             @Override
-            public void run() throws Exception {
+            public void run(Transaction t) throws Exception {
                 configDefaultQuery(query);
                 configFindByIdsQuery(query);
                 applyUriQuery(query, false);
@@ -518,8 +517,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
             }));
             model = executeTx(new TxCallable() {
                 @Override
-                public Object call() throws Exception {
-                    configureQuery.run();
+                public Object call(Transaction t) throws Exception {
+                    configureQuery.run(t);
                     List<M> m = query.where().idIn(idCollection).findList();
                     return processFoundByIdsModelList(m);
                 }
@@ -527,8 +526,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         } else {
             model = executeTx(new TxCallable<Object>() {
                 @Override
-                public Object call() throws Exception {
-                    configureQuery.run();
+                public Object call(Transaction t) throws Exception {
+                    configureQuery.run(t);
                     M m = query.setId(firstId).findUnique();
                     return processFoundByIdModel(m);
                 }
@@ -605,7 +604,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         Response.ResponseBuilder builder = Response.ok();
         Response response = builder.entity(executeTx(new TxCallable<Object>() {
                     @Override
-                    public Object call() throws Exception {
+                    public Object call(Transaction t) throws Exception {
                         configDefaultQuery(query);
                         configFindQuery(query);
                         rowCount.set(applyUriQuery(query));
@@ -713,55 +712,54 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param process  a {@link ModelResourceStructure.TxCallable} object.
      * @throws java.lang.Exception if any.
      */
-    protected <T> T processTransactionError(TxCallable<T> callable, TxCallable<T> process) throws Exception {
+    protected <T> T processTransactionError(Transaction t, TxCallable<T> callable, TxCallable<T> process) throws Exception {
         try {
-            return callable.call();
+            return callable.call(t);
         } catch (Exception e) {
-            return processCheckRowCountError(e, e, process);
+            return processCheckRowCountError(t, e, e, process);
         }
     }
 
-    protected <T> T processCheckRowCountError(Exception root, Throwable e, TxCallable<T> process) throws Exception {
+    protected <T> T processCheckRowCountError(Transaction t, Exception root, Throwable e, TxCallable<T> process) throws Exception {
         if (e == null) {
             throw root;
         }
         if (e instanceof OptimisticLockException) {
             if ("checkRowCount".equals(e.getStackTrace()[0].getMethodName())) {
                 if (process != null)
-                    return process.call();
+                    return process.call(t);
             }
         }
-        return processCheckRowCountError(root, e.getCause(), process);
+        return processCheckRowCountError(t, root, e.getCause(), process);
     }
 
     /**
      * <p>executeTx.</p>
      *
-     * @param scope a {@link com.avaje.ebean.TxScope} object.
-     * @param r     a {@link ModelResourceStructure.TxRunnable} object.
+     * @param r a {@link ModelResourceStructure.TxRunnable} object.
      * @throws java.lang.Exception if any.
      */
-    protected void executeTx(TxScope scope, final TxRunnable r, final TxRunnable errorHandler) throws Exception {
-        final ScopeTrans scopeTrans = server.createScopeTrans(scope);
-        configureTransDefault();
-        processTransactionError(new TxCallable() {
+    protected void executeTx(final TxRunnable r, final TxRunnable errorHandler) throws Exception {
+        final Transaction transaction = server.beginTransaction();
+        configureTransDefault(transaction);
+        processTransactionError(transaction, new TxCallable() {
             @Override
-            public Object call() throws Exception {
+            public Object call(Transaction t) throws Exception {
                 try {
-                    r.run();
-                } catch (Error e) {
-                    throw scopeTrans.caughtError(e);
-                } catch (Exception e) {
-                    throw scopeTrans.caughtThrowable(e);
+                    r.run(t);
+                    t.commit();
+                } catch (Throwable e) {
+                    t.rollback(e);
+                    throw e;
                 } finally {
-                    scopeTrans.onFinally();
+                    t.end();
                 }
                 return null;
             }
         }, errorHandler != null ? new TxCallable() {
             @Override
-            public Object call() throws Exception {
-                errorHandler.run();
+            public Object call(Transaction t) throws Exception {
+                errorHandler.run(t);
                 return null;
             }
         } : null);
@@ -774,12 +772,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @throws java.lang.Exception if any.
      */
     protected void executeTx(TxRunnable r) throws Exception {
-        executeTx(null, r, null);
-    }
-
-
-    protected void executeTx(TxRunnable r, TxRunnable errorHandler) throws Exception {
-        executeTx(null, r, errorHandler);
+        executeTx(r, null);
     }
 
     /**
@@ -791,54 +784,34 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @throws java.lang.Exception if any.
      */
     protected <O> O executeTx(TxCallable<O> c) throws Exception {
-        return executeTx(null, c, null);
+        return executeTx(c, null);
     }
 
 
-    protected <O> O executeTx(TxCallable<O> c, final TxCallable<O> errorHandler) throws Exception {
-        return executeTx(null, c, errorHandler);
-    }
-
-    /**
-     * <p>executeTx.</p>
-     *
-     * @param scope a {@link com.avaje.ebean.TxScope} object.
-     * @param c     a {@link ModelResourceStructure.TxCallable} object.
-     * @param <O>   a O object.
-     * @return a O object.
-     * @throws java.lang.Exception if any.
-     */
-    protected <O> O executeTx(TxScope scope, final TxCallable<O> c, final TxCallable<O> errorHandler) throws Exception {
-        final ScopeTrans scopeTrans = server.createScopeTrans(scope);
-        configureTransDefault();
-        return processTransactionError(new TxCallable<O>() {
+    @SuppressWarnings("unchecked")
+    protected <O> O executeTx(final TxCallable<O> c, final TxCallable<O> errorHandler) throws Exception {
+        final Transaction transaction = server.beginTransaction();
+        configureTransDefault(transaction);
+        return processTransactionError(transaction, new TxCallable<O>() {
             @Override
-            public O call() throws Exception {
+            public O call(Transaction t) throws Exception {
+                Object o = null;
                 try {
-                    return c.call();
-                } catch (Error e) {
-                    throw scopeTrans.caughtError(e);
-                } catch (Exception e) {
-                    throw scopeTrans.caughtThrowable(e);
+                    o = c.call(t);
+                    t.commit();
+                } catch (Throwable e) {
+                    transaction.rollback(e);
+                    throw e;
                 } finally {
-                    scopeTrans.onFinally();
+                    transaction.end();
                 }
+                return (O) o;
             }
         }, errorHandler);
     }
 
-    protected void configureTransDefault() {
+    protected void configureTransDefault(Transaction transaction) {
 
-    }
-
-    /**
-     * <p>processTransactionError.</p>
-     *
-     * @param callable a {@link ModelResourceStructure.TxCallable} object.
-     * @throws java.lang.Exception if any.
-     */
-    protected <T> T processTransactionError(TxCallable<T> callable) throws Exception {
-        return processTransactionError(callable, null);
     }
 
     /**
@@ -865,10 +838,10 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     }
 
     protected interface TxRunnable {
-        void run() throws Exception;
+        void run(Transaction transaction) throws Exception;
     }
 
     protected interface TxCallable<O> {
-        O call() throws Exception;
+        O call(Transaction transaction) throws Exception;
     }
 }
