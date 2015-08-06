@@ -811,7 +811,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     }
 
     protected void configureTransDefault(Transaction transaction) {
-
+        transaction.setUpdateAllLoadedProperties(false);
     }
 
     /**
