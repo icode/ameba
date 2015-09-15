@@ -6,6 +6,7 @@ import org.glassfish.hk2.api.Factory;
 import org.glassfish.jersey.server.internal.inject.ConfiguredValidator;
 import org.glassfish.jersey.server.model.Invocable;
 import org.glassfish.jersey.server.model.ResourceMethod;
+import org.glassfish.jersey.server.spi.internal.ParamValueFactoryWithSource;
 import org.glassfish.jersey.server.spi.internal.ParameterValueHelper;
 
 import javax.inject.Inject;
@@ -32,7 +33,7 @@ public class ResourceMethodEndpointDelegate extends EndpointDelegate {
     private Provider<ConfiguredValidator> validatorProvider;
     private ResourceMethod resourceMethod;
     private Invocable invocable;
-    private List<Factory<?>> onMessageValueProviders;
+    private List<? extends Factory<?>> onMessageValueProviders;
     private Object resourceInstance;
     private Method method;
 
@@ -160,7 +161,7 @@ public class ResourceMethodEndpointDelegate extends EndpointDelegate {
         final ConfiguredValidator validator = validatorProvider.get();
 
         if (onMessageValueProviders == null) onMessageValueProviders = invocable.getValueProviders(getServiceLocator());
-        final Object[] args = ParameterValueHelper.getParameterValues(onMessageValueProviders);
+        final Object[] args = ParameterValueHelper.getParameterValues((List<ParamValueFactoryWithSource<?>>) onMessageValueProviders);
 
         // Validate resource class & method input parameters.
         if (validator != null) {

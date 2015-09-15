@@ -174,14 +174,6 @@ public abstract class Finder<ID, T> {
     public abstract Query<T> setPersistenceContextScope(PersistenceContextScope scope);
 
     /**
-     * <p>setAutofetch.</p>
-     *
-     * @param autofetch a boolean.
-     * @return a {@link com.avaje.ebean.Query} object.
-     */
-    public abstract Query<T> setAutofetch(boolean autofetch);
-
-    /**
      * <p>setLazyLoadBatchSize.</p>
      *
      * @param size a int.
@@ -197,6 +189,7 @@ public abstract class Finder<ID, T> {
      */
     public abstract Query<T> select(String fetchProperties);
 
+    public abstract Query<T> setAutoTune(boolean autoTune);
     /**
      * <p>fetch.</p>
      *

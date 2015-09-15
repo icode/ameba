@@ -11,6 +11,7 @@ import org.glassfish.jersey.process.internal.RequestScope;
 import org.glassfish.jersey.server.model.Invocable;
 import org.glassfish.jersey.server.model.MethodHandler;
 import org.glassfish.jersey.server.model.Parameter;
+import org.glassfish.jersey.server.spi.internal.ParamValueFactoryWithSource;
 import org.glassfish.jersey.server.spi.internal.ParameterValueHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,7 +102,7 @@ public abstract class EndpointDelegate extends Endpoint {
      * @return a {@link org.glassfish.jersey.internal.util.collection.Ref} object.
      */
     protected Ref<MessageState> getMessageStateRef() {
-        return serviceLocator.<Ref<MessageState>>getService(MESSAGE_STATE_TYPE);
+        return serviceLocator.getService(MESSAGE_STATE_TYPE);
     }
 
     private void initMessageScope(MessageState messageState) {
@@ -318,7 +319,7 @@ public abstract class EndpointDelegate extends Endpoint {
 
     private static class EventInvocation {
         private Invocable invocable;
-        private List<Factory<?>> argsProviders;
+        private List<? extends Factory<?>> argsProviders;
         private ServiceLocator serviceLocator;
         private Object instance;
 
@@ -347,7 +348,7 @@ public abstract class EndpointDelegate extends Endpoint {
             return instance;
         }
 
-        public List<Factory<?>> getArgsProviders() {
+        public List<? extends Factory<?>> getArgsProviders() {
             if (argsProviders == null) {
                 argsProviders = invocable.getValueProviders(serviceLocator);
             }
@@ -355,7 +356,7 @@ public abstract class EndpointDelegate extends Endpoint {
         }
 
         public void invoke() throws InvocationTargetException, IllegalAccessException {
-            final Object[] args = ParameterValueHelper.getParameterValues(getArgsProviders());
+            final Object[] args = ParameterValueHelper.getParameterValues((List<ParamValueFactoryWithSource<?>>) getArgsProviders());
             final Method m = invocable.getHandlingMethod();
             new PrivilegedAction() {
                 @Override

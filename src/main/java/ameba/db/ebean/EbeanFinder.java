@@ -49,7 +49,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     @Override
     @SuppressWarnings("unchecked")
     public <M extends T> Finder<ID, M> on(String server) {
-        return new EbeanFinder(server, getIdType(), (Class<M>) getModelType());
+        return new EbeanFinder(server, getIdType(), getModelType());
     }
 
     private EbeanServer server() {
@@ -137,7 +137,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     public Query<T> setPersistenceContextScope(PersistenceContextScope persistenceContextScope) {
         return query().setPersistenceContextScope(persistenceContextScope);
     }
-
     /**
      * {@inheritDoc}
      * <p/>
@@ -436,11 +435,9 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     * <p/>
-     * Explicitly specifies whether to use 'Autofetch' for this query.
      */
-    public Query<T> setAutofetch(boolean autofetch) {
-        return query().setAutofetch(autofetch);
+    public Query<T> setAutoTune(boolean autoTune) {
+        return query().setAutoTune(autoTune);
     }
 
     /**

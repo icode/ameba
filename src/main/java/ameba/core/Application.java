@@ -749,8 +749,34 @@ public class Application {
                 event.accept(new ClassFoundEvent.ClassAccept() {
                     @Override
                     public boolean accept(ClassFoundEvent.ClassInfo info) {
-                        if (info.isPublic() && info.containsAnnotations(Path.class, Provider.class)) {
-                            resources.add(info);
+                        if (info.isPublic()) {
+                            boolean add = false;
+                            if (info.containsAnnotations(Path.class, Provider.class)) {
+                                add = true;
+                            } else {
+                                try {
+                                    CtClass ctClass = info.getCtClass().getSuperclass();
+                                    while (ctClass != null) {
+                                        Object[] anns = ctClass.getAvailableAnnotations();
+                                        for (Object anno : anns) {
+                                            Class clazz = ((Annotation) anno).annotationType();
+                                            if (clazz.equals(Path.class) || clazz.equals(Provider.class)) {
+                                                add = true;
+                                                break;
+                                            }
+                                        }
+                                        if (add) {
+                                            break;
+                                        }
+                                        ctClass = info.getCtClass().getSuperclass();
+                                    }
+                                } catch (Exception e) {
+                                    //no op
+                                }
+                            }
+                            if (add) {
+                                resources.add(info);
+                            }
                             return true;
                         }
                         return false;

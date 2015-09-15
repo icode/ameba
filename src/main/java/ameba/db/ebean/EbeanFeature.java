@@ -14,9 +14,8 @@ import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.config.*;
+import com.avaje.ebean.dbmigration.DdlGenerator;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
-import com.avaje.ebeaninternal.server.ddl.*;
-import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -101,7 +100,7 @@ public class EbeanFeature implements Feature {
      * @return ddl
      */
     public static String generateEvolutionScript(EbeanServer server, ServerConfig config, DdlGenerator ddl) {
-        ddl.setup((SpiEbeanServer) server, config.getDatabasePlatform(), config);
+        ddl.setup((SpiEbeanServer) server, config);
         String create = ddl.generateCreateDdl();
         String drop = ddl.generateDropDdl();
 
@@ -285,9 +284,9 @@ public class EbeanFeature implements Feature {
                         + (isDev ? "../generated-sources/ameba/" : "temp/")
                         + DatabaseMigrationFeature.EVOLUTIONS_SUB_PATH + server.getName() + "/";
 
-                DdlGenerator ddl = new AmebaGenerator(excludes, basePath, (SpiEbeanServer) server);
+                DdlGenerator ddl = new AmebaGenerator(excludes, basePath);
 
-                ddl.setup((SpiEbeanServer) server, config.getDatabasePlatform(), config);
+                ddl.setup((SpiEbeanServer) server, config);
                 try {
                     FileUtils.forceMkdir(new File(basePath));
                     ddl.generateDdl();
@@ -332,12 +331,10 @@ public class EbeanFeature implements Feature {
         private String dropContent;
         private String createContent;
         private String basePath;
-        private SpiEbeanServer server;
 
-        public AmebaGenerator(String[] excludes, String basePath, SpiEbeanServer server) {
+        public AmebaGenerator(String[] excludes, String basePath) {
             this.excludes = excludes;
             this.basePath = basePath;
-            this.server = server;
         }
 
         @Override
@@ -352,84 +349,12 @@ public class EbeanFeature implements Feature {
 
         @Override
         public String generateDropDdl() {
-
-            DdlGenContext ctx = createContext();
-
-            if (ctx.getDdlSyntax().isDropKeyConstraints()) {
-                // generate drop foreign key constraint statements (sql server joy)
-                AddForeignKeysVisitor fkeys = new AddForeignKeysVisitor(false, ctx);
-                visit(server, fkeys);
-                ctx.writeNewLine();
-            }
-
-            DropTableVisitor drop = new DropTableVisitor(ctx);
-            visit(server, drop);
-
-            DropSequenceVisitor dropSequence = new DropSequenceVisitor(ctx);
-            visit(server, dropSequence);
-
-            ctx.flush();
-            dropContent = ctx.getContent();
-            return "/* Generated Drop Table DDL By Ameba */\n\n" + dropContent;
-        }
-
-        public void visit(SpiEbeanServer server, BeanVisitor visitor) {
-            visit(server.getBeanDescriptors(), visitor);
-        }
-
-
-        /**
-         * Visit all the descriptors in the list.
-         */
-        public void visit(List<BeanDescriptor<?>> descriptors, BeanVisitor visitor) {
-
-            visitor.visitBegin();
-
-            for (BeanDescriptor<?> desc : descriptors) {
-
-                if (desc.getBaseTable() != null && !isExclude(desc)) {
-                    VisitorUtil.visitBean(desc, visitor);
-                }
-            }
-
-            visitor.visitEnd();
-        }
-
-        private boolean isExclude(BeanDescriptor<?> desc) {
-            for (String exclude : excludes) {
-                if (desc.getFullName().equals(exclude)
-                        || desc.getFullName().startsWith(exclude + ".")) {
-                    return true;
-                }
-            }
-            return false;
+            return "/* Generated Drop Table DDL By Ameba */\n\n" + super.generateDropDdl();
         }
 
         @Override
         public String generateCreateDdl() {
-
-            DdlGenContext ctx = createContext();
-            CreateTableVisitor create = new CreateTableVisitor(ctx);
-            visit(server, create);
-
-            CreateSequenceVisitor createSequence = new CreateSequenceVisitor(ctx);
-            visit(server, createSequence);
-
-            AddForeignKeysVisitor fkeys = new AddForeignKeysVisitor(true, ctx);
-            visit(server, fkeys);
-
-            CreateIndexVisitor indexes = new CreateIndexVisitor(ctx);
-            visit(server, indexes);
-
-            ctx.flush();
-            createContent = ctx.getContent();
-            return "/* Generated Create Table DDL By Ameba */\n\n" + createContent;
-        }
-
-        @Override
-        public void generateDdl() {
-            writeDrop(getDropFileName());
-            writeCreate(getCreateFileName());
+            return "/* Generated Create Table DDL By Ameba */\n\n" + super.generateCreateDdl();
         }
 
         @Override
