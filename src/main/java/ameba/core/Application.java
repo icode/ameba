@@ -768,7 +768,7 @@ public class Application {
                                         if (add) {
                                             break;
                                         }
-                                        ctClass = info.getCtClass().getSuperclass();
+                                        ctClass = ctClass.getSuperclass();
                                     }
                                 } catch (Exception e) {
                                     //no op
@@ -776,8 +776,8 @@ public class Application {
                             }
                             if (add) {
                                 resources.add(info);
+                                return true;
                             }
-                            return true;
                         }
                         return false;
                     }
@@ -895,7 +895,7 @@ public class Application {
                         .append(line);
             }
 
-            void appendVistUrl(Connector connector) {
+            void appendVisitUrl(Connector connector) {
                 String httpStart = "http" + (connector.isSecureEnabled() ? "s" : "") + "://";
                 if (connector.getHost().equals("0.0.0.0")) {
                     try {
@@ -977,7 +977,7 @@ public class Application {
                     List<Connector> connectors = getConnectors();
                     if (connectors != null && connectors.size() > 0) {
                         for (Connector connector : connectors) {
-                            appendVistUrl(connector);
+                            appendVisitUrl(connector);
                         }
                     } else {
                         builder.append(line)

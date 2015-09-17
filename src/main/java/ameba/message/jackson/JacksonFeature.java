@@ -15,6 +15,8 @@ import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
 
 import javax.inject.Inject;
+import javax.ws.rs.ConstrainedTo;
+import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
@@ -28,6 +30,7 @@ import java.util.Collections;
  * @author ICode
  * @since 13-8-11 上午6:00
  */
+@ConstrainedTo(RuntimeType.SERVER)
 public class JacksonFeature implements Feature {
 
     private final static String JSON_FEATURE = JacksonFeature.class.getSimpleName();

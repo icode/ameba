@@ -358,6 +358,12 @@ public class EbeanFeature implements Feature {
         }
 
         @Override
+        public void generateDdl() {
+            this.writeDrop(this.getDropFileName());
+            this.writeCreate(this.getCreateFileName());
+        }
+
+        @Override
         public void runDdl() {
             try {
                 if (dropContent == null) {
