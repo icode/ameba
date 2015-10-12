@@ -154,12 +154,13 @@ public class EbeanUtils {
         if (wordList.isEmpty()) {
             return null;
         }
+        String field = wordList.get(0);
         if (wordList.size() == 1) {
-            return new Property(wordList.get(0), true);
+            return new Property(field, !field.startsWith("-"));
         }
         if (wordList.size() == 2) {
             boolean asc = isOrderAscending(wordList.get(1));
-            return new Property(wordList.get(0), asc);
+            return new Property(field, asc);
         }
         String m = "Parse OrderBy error. Expecting a max of 2 words in [" + Arrays.toString(pairs)
                 + "] but got " + wordList.size();
