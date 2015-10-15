@@ -257,12 +257,12 @@ public class EbeanFeature implements Feature {
             final boolean runDdl = PropertiesHelper.getValue(appConfig.getProperties(),
                     "db." + name + ".ddl.run", false, Boolean.class, null);
 
-            String[] excludes = new String[0];
+            String[] ddlExcludes = new String[0];
 
-            String excludeStr = (String) appConfig.getProperty("db." + name + EXCLUDE_DDL_PKG_KEY_SUFFIX);
+            String ddlExcludeStr = (String) appConfig.getProperty("db." + name + EXCLUDE_DDL_PKG_KEY_SUFFIX);
 
-            if (StringUtils.isNotBlank(excludeStr)) {
-                excludes = excludeStr.split(",");
+            if (StringUtils.isNotBlank(ddlExcludeStr)) {
+                ddlExcludes = ddlExcludeStr.split(",");
             }
 
             logger.debug(Messages.get("info.db.connect", name));
@@ -284,7 +284,7 @@ public class EbeanFeature implements Feature {
                         + (isDev ? "../generated-sources/ameba/" : "temp/")
                         + DatabaseMigrationFeature.EVOLUTIONS_SUB_PATH + server.getName() + "/";
 
-                DdlGenerator ddl = new AmebaGenerator(excludes, basePath);
+                DdlGenerator ddl = new AmebaGenerator(ddlExcludes, basePath);
 
                 ddl.setup((SpiEbeanServer) server, config);
                 try {

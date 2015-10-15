@@ -156,23 +156,11 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>com.mattbertolini</groupId>
-            <artifactId>liquibase-slf4j</artifactId>
-            <version>1.2.1</version>
-        </dependency>
-
         <!-- druid -->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
             <version>${druid.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-core</artifactId>
-            <version>${liquibase.version}</version>
         </dependency>
 
         <!-- MVC -->
@@ -445,7 +433,6 @@
         <druid.version>1.0.15</druid.version>
         <groovy.version>2.4.4</groovy.version>
         <httl.version>1.0.12</httl.version>
-        <liquibase.version>3.4.0</liquibase.version>
         <!--<rxjava.version>[1.0.7,2.0.0)</rxjava.version>-->
         <javax.websocket.version>1.1</javax.websocket.version>
         <json-patch.version>1.9</json-patch.version>
