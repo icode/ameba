@@ -424,7 +424,6 @@
         <ameba.utils.version>0.1.7.Final</ameba.utils.version>
         <osgi.version>4.2.0</osgi.version>
         <akka.logger>2.3.11</akka.logger>
-        <json-patch.version>1.7</json-patch.version>
         <paranamer.version>2.7</paranamer.version>
         <jersey.version>2.22.1</jersey.version>
         <slf4j.version>1.7.12</slf4j.version>
