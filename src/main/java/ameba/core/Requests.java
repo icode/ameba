@@ -37,25 +37,6 @@ public class Requests {
     }
 
     /**
-     * <p>getRealAddress.</p>
-     *
-     * @param realIpHeader a {@link java.lang.String} object.
-     * @return a {@link java.lang.String} object.
-     */
-    public static String getRealAddress(String realIpHeader) {
-        return getRequest().getRemoteRealAddr(realIpHeader);
-    }
-
-    /**
-     * <p>getRealAddress.</p>
-     *
-     * @return a {@link java.lang.String} object.
-     */
-    public static String getRealAddress() {
-        return getRequest().getRemoteRealAddr();
-    }
-
-    /**
      * <p>getRemoteAddr.</p>
      *
      * @return a {@link java.lang.String} object.
