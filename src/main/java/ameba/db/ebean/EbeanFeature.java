@@ -6,7 +6,6 @@ import ameba.db.PersistenceExceptionMapper;
 import ameba.db.ebean.internal.EbeanModelInterceptor;
 import ameba.db.ebean.jackson.JacksonEbeanModule;
 import ameba.db.ebean.jackson.JsonIOExceptionMapper;
-import ameba.db.migration.DatabaseMigrationFeature;
 import ameba.db.model.ModelManager;
 import ameba.i18n.Messages;
 import ameba.util.IOUtils;
@@ -282,7 +281,7 @@ public class EbeanFeature implements Feature {
             if (genDdl) {// todo: db migration 可能总是需要输出的ddl
                 final String basePath = IOUtils.getResource("/").getPath()
                         + (isDev ? "../generated-sources/ameba/" : "temp/")
-                        + DatabaseMigrationFeature.EVOLUTIONS_SUB_PATH + server.getName() + "/";
+                        + "conf/evolutions/" + server.getName() + "/";
 
                 DdlGenerator ddl = new AmebaGenerator(ddlExcludes, basePath);
 
