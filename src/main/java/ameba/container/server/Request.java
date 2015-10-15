@@ -50,15 +50,21 @@ public abstract class Request extends ContainerRequest {
             ip = getHeaderString(realIpHeader);
         }
         if (StringUtils.isBlank(ip)) {
-            ip = getHeaderString("x-forwarded-for");
+            ip = getHeaderString("X-Real-IP");
+            if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+                ip = getHeaderString("X-Forwarded-For");
+                if (StringUtils.isNotBlank(ip) && !"unknown".equalsIgnoreCase(ip)) {
+                    ip = ip.split(",")[0];
+                }
+            }
             if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
                 ip = getHeaderString("Proxy-Client-IP");
             }
             if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
                 ip = getHeaderString("WL-Proxy-Client-IP");
             }
-            if ("unknown".equalsIgnoreCase(ip)) {
-                ip = "unknown";
+            if (StringUtils.isNotBlank(ip)) {
+                ip = ip.toLowerCase();
             }
         }
         return ip;
