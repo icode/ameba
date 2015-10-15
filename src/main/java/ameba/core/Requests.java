@@ -665,12 +665,12 @@ public class Requests {
     }
 
     /**
-     * <p>getRemoteRealAddr.</p>
+     * <p>getProxyRemoteAddr.</p>
      *
      * @return a {@link java.lang.String} object.
      */
-    public static String getRemoteRealAddr() {
-        return getRequest().getRemoteRealAddr();
+    public static String getProxyRemoteAddr() {
+        return getRequest().getProxyRemoteAddr();
     }
 
     /**
@@ -753,13 +753,13 @@ public class Requests {
     }
 
     /**
-     * <p>getRemoteRealAddr.</p>
+     * <p>getProxyRemoteAddr.</p>
      *
      * @param realIpHeader a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
      */
-    public static String getRemoteRealAddr(String realIpHeader) {
-        return getRequest().getRemoteRealAddr(realIpHeader);
+    public static String getProxyRemoteAddr(String realIpHeader) {
+        return getRequest().getProxyRemoteAddr(realIpHeader);
     }
 
     /**
@@ -816,6 +816,14 @@ public class Requests {
      */
     public static ContainerResponseWriter getResponseWriter() {
         return getRequest().getResponseWriter();
+    }
+
+    public String getRemoteRealAddr(String realIpHeader) {
+        return getRequest().getRemoteRealAddr(realIpHeader);
+    }
+
+    public String getRemoteRealAddr() {
+        return getRequest().getRemoteRealAddr();
     }
 
     static class BindRequest implements Feature {

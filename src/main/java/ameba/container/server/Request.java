@@ -39,12 +39,12 @@ public abstract class Request extends ContainerRequest {
 
 
     /**
-     * <p>getRemoteRealAddr.</p>
+     * <p>getProxyRemoteAddr.</p>
      *
      * @param realIpHeader a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
      */
-    public String getRemoteRealAddr(String realIpHeader) {
+    public String getProxyRemoteAddr(String realIpHeader) {
         String ip = null;
         if (realIpHeader != null && realIpHeader.length() != 0) {
             ip = getHeaderString(realIpHeader);
@@ -69,6 +69,19 @@ public abstract class Request extends ContainerRequest {
      *
      * @return a {@link java.lang.String} object.
      */
+    public String getProxyRemoteAddr() {
+        return getProxyRemoteAddr(null);
+    }
+
+    public String getRemoteRealAddr(String realIpHeader) {
+        String host = getProxyRemoteAddr(realIpHeader);
+        if (host == null || host.equals("unknown")) {
+            host = getRemoteAddr();
+        }
+
+        return host;
+    }
+
     public String getRemoteRealAddr() {
         return getRemoteRealAddr(null);
     }
