@@ -818,11 +818,11 @@ public class Requests {
         return getRequest().getResponseWriter();
     }
 
-    public String getRemoteRealAddr(String realIpHeader) {
+    public static String getRemoteRealAddr(String realIpHeader) {
         return getRequest().getRemoteRealAddr(realIpHeader);
     }
 
-    public String getRemoteRealAddr() {
+    public static String getRemoteRealAddr() {
         return getRequest().getRemoteRealAddr();
     }
 
