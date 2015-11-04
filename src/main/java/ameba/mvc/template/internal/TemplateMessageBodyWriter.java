@@ -51,7 +51,7 @@ final class TemplateMessageBodyWriter implements MessageBodyWriter<Viewable> {
     @Override
     public boolean isWriteable(final Class<?> type, final Type genericType, final Annotation[] annotations,
                                final MediaType mediaType) {
-        return Viewable.class.isAssignableFrom(type) && resourceInfoProvider.get().getResourceMethod() != null;
+        return Viewable.class.isAssignableFrom(type);
     }
 
     @Override

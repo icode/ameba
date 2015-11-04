@@ -91,7 +91,7 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
     @Override
     public boolean isWriteable(final Class<?> type, final Type genericType, final Annotation[] annotations,
                                final MediaType mediaType) {
-        return isSupport(type, genericType, annotations) && resourceInfoProvider.get().getResourceMethod() != null;
+        return isSupport(type, genericType, annotations);
     }
 
     @Override
