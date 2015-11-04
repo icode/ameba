@@ -4,9 +4,12 @@ import org.glassfish.jersey.server.mvc.Template;
 import org.glassfish.jersey.server.mvc.Viewable;
 
 import javax.annotation.Priority;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import java.io.IOException;
@@ -23,12 +26,14 @@ import java.io.IOException;
 @Singleton
 @Priority(Priorities.ENTITY_CODER)
 class TemplateMethodInterceptor implements WriterInterceptor {
+    @Context
+    private Provider<ResourceInfo> resourceInfoProvider;
 
     @Override
     public void aroundWriteTo(final WriterInterceptorContext context) throws IOException, WebApplicationException {
         final Object entity = context.getEntity();
 
-        if (!(entity instanceof Viewable)) {
+        if (!(entity instanceof Viewable) && resourceInfoProvider.get().getResourceMethod() != null) {
             final Template template = TemplateHelper.getTemplateAnnotation(context.getAnnotations());
             if (template != null) {
                 context.setType(Viewable.class);
