@@ -6,6 +6,7 @@ import ameba.message.filtering.EntityFieldsUtils;
 import ameba.message.internal.PathProperties.Each;
 import ameba.message.internal.PathProperties.Props;
 import com.avaje.ebean.OrderBy;
+import com.avaje.ebean.Query;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.common.BeanMap;
@@ -13,15 +14,15 @@ import com.avaje.ebean.text.PathProperties;
 import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.server.properties.BeanPropertiesReader;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.BadRequestException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 
 import static com.avaje.ebean.OrderBy.Property;
 
@@ -37,6 +38,8 @@ public class EbeanUtils {
     private static final String[] UNSAFE_SQL_STRING = {
             "'", "/", "*", "%", ";", "+", "(", ")", ",", "--", "%", "#"
     };
+
+    private static final Map<Class, String[]> BEAN_PROPS_CACHE = new WeakHashMap<>();
 
 
     private EbeanUtils() {
@@ -134,16 +137,41 @@ public class EbeanUtils {
             return;
         }
 
-        checkSqlSafe(orderByClause, PARSE_ORDER_ERR_MSG);
+        Query query = orderBy.getQuery();
+
+        String[] properties = null;
+        if (query == null) {
+            checkSqlSafe(orderByClause, PARSE_ORDER_ERR_MSG);
+        } else {
+            Class beanType = query.getBeanType();
+            if (beanType != null) {
+                properties = getBeanProperties(beanType);
+            }
+        }
         String[] chunks = orderByClause.split(",");
         for (String chunk : chunks) {
-
             String[] pairs = chunk.split(" ");
             Property p = parseOrderProperty(pairs);
             if (p != null) {
+                if (properties != null) {
+                    String f = p.getProperty();
+                    if (!ArrayUtils.contains(properties, f)) {
+                        throw new BadRequestException(PARSE_ORDER_ERR_MSG + " can not found [" + f + "] field.");
+                    }
+                }
                 orderBy.add(p);
             }
         }
+    }
+
+    public static String[] getBeanProperties(Class beanType) {
+        String[] props = BEAN_PROPS_CACHE.get(beanType);
+        if (props == null) {
+            BeanPropertiesReader reader = new BeanPropertiesReader(beanType);
+            props = reader.getProperties();
+            BEAN_PROPS_CACHE.put(beanType, props);
+        }
+        return props;
     }
 
     public static void checkSqlSafe(String clause, String errorMsg) {
