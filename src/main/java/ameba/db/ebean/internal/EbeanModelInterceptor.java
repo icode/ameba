@@ -218,7 +218,7 @@ public class EbeanModelInterceptor implements WriterInterceptor {
                 }
             }
             if (selectBuilder.length() > 0) {
-                query.select(StringUtils.deleteWhitespace(selectBuilder.toString()));
+                query.select(selectBuilder.toString());
             }
         }
     }
