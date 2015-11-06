@@ -33,7 +33,11 @@ import static com.avaje.ebean.OrderBy.Property;
  */
 public class EbeanUtils {
     public static final String PATH_PROPS_PARSED = EbeanUtils.class + ".PathProperties";
-    private static final String PARSE_ORDER_ERR_MSG = "Parse OrderBy error. OrderBy can not contains ";
+    private static final String PARSE_ORDER_ERR_MSG = "Parse OrderBy error. OrderBy";
+    private static final String[] UNSAFE_SQL_STRING = {
+            "'", "/", "*", "%", ";", "+", "(", ")", ",", "--", "%", "#"
+    };
+
 
     private EbeanUtils() {
     }
@@ -130,13 +134,7 @@ public class EbeanUtils {
             return;
         }
 
-        //sql中注释和小括号将会代替空格
-        if (orderByClause.contains("/*") || orderByClause.contains("*/")) {
-            throw new BadRequestException(PARSE_ORDER_ERR_MSG + "`/*` or `*/` in [" + orderByClause + "].");
-        }
-        if (orderByClause.contains("(") || orderByClause.contains(")")) {
-            throw new BadRequestException(PARSE_ORDER_ERR_MSG + "`(` or `) in [" + orderByClause + "].");
-        }
+        checkSqlSafe(orderByClause, PARSE_ORDER_ERR_MSG);
         String[] chunks = orderByClause.split(",");
         for (String chunk : chunks) {
 
@@ -144,6 +142,14 @@ public class EbeanUtils {
             Property p = parseOrderProperty(pairs);
             if (p != null) {
                 orderBy.add(p);
+            }
+        }
+    }
+
+    public static void checkSqlSafe(String clause, String errorMsg) {
+        for (String tag : UNSAFE_SQL_STRING) {
+            if (clause.contains(tag)) {
+                throw new BadRequestException(errorMsg + " can not contains `" + tag + "` in [" + clause + "].");
             }
         }
     }
