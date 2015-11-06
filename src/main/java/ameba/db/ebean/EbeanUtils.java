@@ -198,7 +198,11 @@ public class EbeanUtils {
         }
         String field = wordList.get(0);
         if (wordList.size() == 1) {
-            return new Property(field, !field.startsWith("-"));
+            if (field.startsWith("-")) {
+                return new Property(field.substring(1), false);
+            } else {
+                return new Property(field, true);
+            }
         }
         if (wordList.size() == 2) {
             boolean asc = isOrderAscending(wordList.get(1));
