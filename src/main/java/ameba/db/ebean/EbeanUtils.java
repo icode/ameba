@@ -22,6 +22,7 @@ import javax.ws.rs.BadRequestException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.regex.Pattern;
 
 import static com.avaje.ebean.OrderBy.Property;
 
@@ -33,6 +34,8 @@ import static com.avaje.ebean.OrderBy.Property;
  */
 public class EbeanUtils {
     public static final String PATH_PROPS_PARSED = EbeanUtils.class + ".PathProperties";
+
+    public static final Pattern COMMENTS_PARRERN = Pattern.compile("/\\*(\\s|.)*?\\*/");
 
     private EbeanUtils() {
     }
@@ -130,7 +133,7 @@ public class EbeanUtils {
         }
 
         //sql中注释将会代替空格
-        String[] chunks = orderByClause.replace("/*", "").split(",");
+        String[] chunks = COMMENTS_PARRERN.matcher(orderByClause).replaceAll(" ").split(",");
         for (String chunk : chunks) {
 
             String[] pairs = chunk.split(" ");
