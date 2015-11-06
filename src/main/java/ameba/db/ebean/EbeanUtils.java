@@ -1,5 +1,6 @@
 package ameba.db.ebean;
 
+import ameba.Ameba;
 import ameba.core.Requests;
 import ameba.db.ebean.jackson.CommonBeanSerializer;
 import ameba.message.filtering.EntityFieldsUtils;
@@ -140,23 +141,36 @@ public class EbeanUtils {
         Query query = orderBy.getQuery();
 
         String[] properties = null;
-        if (query == null) {
-            checkSqlSafe(orderByClause, PARSE_ORDER_ERR_MSG);
-        } else {
+        if (query != null) {
             Class beanType = query.getBeanType();
             if (beanType != null) {
                 properties = getBeanProperties(beanType);
             }
         }
+        boolean isDev = Ameba.getApp().getMode().isDev();
         String[] chunks = orderByClause.split(",");
         for (String chunk : chunks) {
             String[] pairs = chunk.split(" ");
             Property p = parseOrderProperty(pairs);
             if (p != null) {
+                String f = p.getProperty();
                 if (properties != null) {
-                    String f = p.getProperty();
                     if (!ArrayUtils.contains(properties, f)) {
-                        throw new BadRequestException(PARSE_ORDER_ERR_MSG + " can not found [" + f + "] field.");
+                        if (isDev) {
+                            throw new BadRequestException(PARSE_ORDER_ERR_MSG + " can not found [" + f + "] field.");
+                        } else {
+                            continue;
+                        }
+                    }
+                } else {
+                    try {
+                        checkSqlSafe(f, PARSE_ORDER_ERR_MSG);
+                    } catch (BadRequestException e) {
+                        if (isDev) {
+                            throw e;
+                        } else {
+                            continue;
+                        }
                     }
                 }
                 orderBy.add(p);
