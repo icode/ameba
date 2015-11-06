@@ -281,7 +281,7 @@ public class EbeanModelInterceptor implements WriterInterceptor {
     }
 
     /**
-     * /path;p1.eq:2;id.in:1,2,3;or:p2.eq:2,p2.start_with:3,..;
+     * /path?filter=p.in(1,2)c.eq(ddd)d.start_with(a)or(f.eq(a)g.start_with(2))
      * <p/>
      * todo
      *
