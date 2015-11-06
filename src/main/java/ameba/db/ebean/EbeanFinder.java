@@ -4,6 +4,7 @@ import ameba.db.model.Finder;
 import com.avaje.ebean.*;
 import com.avaje.ebean.text.PathProperties;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -137,6 +138,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     public Query<T> setPersistenceContextScope(PersistenceContextScope persistenceContextScope) {
         return query().setPersistenceContextScope(persistenceContextScope);
     }
+
     /**
      * {@inheritDoc}
      * <p/>
@@ -309,7 +311,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         query().findEachWhile(consumer);
     }
 
-
     /**
      * <p>findIterate.</p>
      *
@@ -319,6 +320,22 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().findIterate();
     }
 
+
+    @Override
+    public List<Version<T>> findVersions() {
+        return query().findVersions();
+    }
+
+    @Override
+    public List<Version<T>> findVersionsBetween(Timestamp start, Timestamp end) {
+        return query().findVersionsBetween(start, end);
+    }
+
+    @Override
+    public int delete() {
+        return query().delete();
+    }
+
     /**
      * Returns the <code>ExpressionFactory</code> used by this query.
      *
@@ -326,6 +343,11 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     public ExpressionFactory getExpressionFactory() {
         return query().getExpressionFactory();
+    }
+
+    @Override
+    public boolean isAutoTuned() {
+        return query().isAutoTuned();
     }
 
     /**
@@ -452,6 +474,11 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().setLazyLoadBatchSize(lazyLoadBatchSize);
     }
 
+    @Override
+    public Query<T> setDisableReadAuditing() {
+        return query().setDisableReadAuditing();
+    }
+
     /**
      * {@inheritDoc}
      * <p/>
@@ -486,6 +513,10 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     public Query<T> setId(Object id) {
         return query().setId(id);
+    }
+
+    public Object getId() {
+        return query().getId();
     }
 
     /**
@@ -564,6 +595,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return (query = server().createQuery(getModelType(), oql));
     }
 
+
     /**
      * {@inheritDoc}
      * <p/>
@@ -571,6 +603,26 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     public Query<T> setRawSql(RawSql rawSql) {
         return query().setRawSql(rawSql);
+    }
+
+    @Override
+    public RawSql getRawSql() {
+        return query().getRawSql();
+    }
+
+    @Override
+    public Query<T> asOf(Timestamp asOf) {
+        return query().asOf(asOf);
+    }
+
+    @Override
+    public void cancel() {
+        query().cancel();
+    }
+
+    @Override
+    public Query<T> copyQuery() {
+        return query().copy();
     }
 
     /**
@@ -644,5 +696,25 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     public Query<T> setForUpdate(boolean forUpdate) {
         return query().setForUpdate(forUpdate);
+    }
+
+    @Override
+    public boolean isForUpdate() {
+        return query().isForUpdate();
+    }
+
+    @Override
+    public Query<T> alias(String alias) {
+        return query().alias(alias);
+    }
+
+    @Override
+    public Class<T> getBeanType() {
+        return query.getBeanType();
+    }
+
+    @Override
+    public Query<T> setDisableLazyLoading(boolean disableLazyLoading) {
+        return query().setDisableLazyLoading(disableLazyLoading);
     }
 }

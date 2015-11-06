@@ -4,6 +4,7 @@ import com.avaje.ebean.*;
 import com.avaje.ebean.text.PathProperties;
 import org.apache.commons.lang3.StringUtils;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -181,6 +182,8 @@ public abstract class Finder<ID, T> {
      */
     public abstract Query<T> setLazyLoadBatchSize(int size);
 
+    public abstract Query setDisableReadAuditing();
+
     /**
      * <p>select.</p>
      *
@@ -190,6 +193,7 @@ public abstract class Finder<ID, T> {
     public abstract Query<T> select(String fetchProperties);
 
     public abstract Query<T> setAutoTune(boolean autoTune);
+
     /**
      * <p>fetch.</p>
      *
@@ -248,6 +252,11 @@ public abstract class Finder<ID, T> {
      */
     public abstract QueryIterator<T> findIterate();
 
+    public abstract List<Version<T>> findVersions();
+
+    public abstract List<Version<T>> findVersionsBetween(Timestamp start, Timestamp end);
+
+    public abstract int delete();
     /**
      * <p>findEach.</p>
      *
@@ -368,6 +377,8 @@ public abstract class Finder<ID, T> {
      */
     public abstract Query<T> setId(Object id);
 
+    public abstract Object getId();
+
     /**
      * <p>where.</p>
      *
@@ -483,6 +494,8 @@ public abstract class Finder<ID, T> {
      */
     public abstract ExpressionFactory getExpressionFactory();
 
+    public abstract boolean isAutoTuned();
+
     /**
      * <p>getFirstRow.</p>
      *
@@ -584,4 +597,19 @@ public abstract class Finder<ID, T> {
      */
     public abstract Query<T> setForUpdate(boolean forUpdate);
 
+    public abstract boolean isForUpdate();
+
+    public abstract Query<T> alias(String alias);
+
+    public abstract Class<T> getBeanType();
+
+    public abstract Query<T> setDisableLazyLoading(boolean disableLazyLoading);
+
+    public abstract RawSql getRawSql();
+
+    public abstract Query<T> asOf(Timestamp asOf);
+
+    public abstract void cancel();
+
+    public abstract Query<T> copyQuery();
 }
