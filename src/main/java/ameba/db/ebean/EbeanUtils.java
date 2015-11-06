@@ -33,6 +33,7 @@ import static com.avaje.ebean.OrderBy.Property;
  */
 public class EbeanUtils {
     public static final String PATH_PROPS_PARSED = EbeanUtils.class + ".PathProperties";
+    private static final String PARSE_ORDER_ERR_MSG = "Parse OrderBy error. OrderBy can not contains ";
 
     private EbeanUtils() {
     }
@@ -131,10 +132,10 @@ public class EbeanUtils {
 
         //sql中注释和小括号将会代替空格
         if (orderByClause.contains("/*") || orderByClause.contains("*/")) {
-            throw new BadRequestException("Parse OrderBy error. OrderBy can not contains `/*` or `*/`");
+            throw new BadRequestException(PARSE_ORDER_ERR_MSG + "`/*` or `*/` in [" + orderByClause + "].");
         }
         if (orderByClause.contains("(") || orderByClause.contains(")")) {
-            throw new BadRequestException("Parse OrderBy error. OrderBy can not contains `(` or `)");
+            throw new BadRequestException(PARSE_ORDER_ERR_MSG + "`(` or `) in [" + orderByClause + "].");
         }
         String[] chunks = orderByClause.split(",");
         for (String chunk : chunks) {
