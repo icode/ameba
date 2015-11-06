@@ -22,7 +22,6 @@ import javax.ws.rs.BadRequestException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.regex.Pattern;
 
 import static com.avaje.ebean.OrderBy.Property;
 
@@ -34,8 +33,6 @@ import static com.avaje.ebean.OrderBy.Property;
  */
 public class EbeanUtils {
     public static final String PATH_PROPS_PARSED = EbeanUtils.class + ".PathProperties";
-
-    public static final Pattern COMMENTS_PATTERN = Pattern.compile("/\\*(\\s|.)*?\\*/");
 
     private EbeanUtils() {
     }
@@ -132,8 +129,14 @@ public class EbeanUtils {
             return;
         }
 
-        //sql中注释将会代替空格
-        String[] chunks = COMMENTS_PATTERN.matcher(orderByClause).replaceAll(" ").split(",");
+        //sql中注释和小括号将会代替空格
+        if (orderByClause.contains("/*") || orderByClause.contains("*/")) {
+            throw new BadRequestException("Parse OrderBy error. OrderBy can not contains `/*` or `*/`");
+        }
+        if (orderByClause.contains("(") || orderByClause.contains(")")) {
+            throw new BadRequestException("Parse OrderBy error. OrderBy can not contains `(` or `)");
+        }
+        String[] chunks = orderByClause.split(",");
         for (String chunk : chunks) {
 
             String[] pairs = chunk.split(" ");
