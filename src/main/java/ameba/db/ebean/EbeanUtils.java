@@ -129,7 +129,8 @@ public class EbeanUtils {
             return;
         }
 
-        String[] chunks = orderByClause.split(",");
+        //sql中注释将会代替空格
+        String[] chunks = orderByClause.replace("/*", "").split(",");
         for (String chunk : chunks) {
 
             String[] pairs = chunk.split(" ");
