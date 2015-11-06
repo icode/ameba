@@ -35,7 +35,7 @@ import static com.avaje.ebean.OrderBy.Property;
 public class EbeanUtils {
     public static final String PATH_PROPS_PARSED = EbeanUtils.class + ".PathProperties";
 
-    public static final Pattern COMMENTS_PARRERN = Pattern.compile("/\\*(\\s|.)*?\\*/");
+    public static final Pattern COMMENTS_PATTERN = Pattern.compile("/\\*(\\s|.)*?\\*/");
 
     private EbeanUtils() {
     }
@@ -133,7 +133,7 @@ public class EbeanUtils {
         }
 
         //sql中注释将会代替空格
-        String[] chunks = COMMENTS_PARRERN.matcher(orderByClause).replaceAll(" ").split(",");
+        String[] chunks = COMMENTS_PATTERN.matcher(orderByClause).replaceAll(" ").split(",");
         for (String chunk : chunks) {
 
             String[] pairs = chunk.split(" ");
