@@ -54,11 +54,6 @@
                             <execution>
                                 <id>sign-artifacts</id>
                                 <phase>verify</phase>
-                                <configuration>
-                                    <gpgArguments>
-                                        <argument>--no-tty</argument>
-                                    </gpgArguments>
-                                </configuration>
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
