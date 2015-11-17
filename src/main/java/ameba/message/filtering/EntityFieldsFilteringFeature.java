@@ -8,8 +8,10 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
 /**
+ * <p>
  * {@link Feature} used to add support for custom query parameter filtering for
- * Entity Data Filtering feature. </p> Note: This feature also registers the
+ * Entity Data Filtering feature. </p>
+ * Note: This feature also registers the
  * {@link EntityFilteringFeature}.
  *
  * @author Andy Pemberton (pembertona at gmail.com)

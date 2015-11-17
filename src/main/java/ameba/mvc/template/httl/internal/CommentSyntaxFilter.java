@@ -18,6 +18,7 @@ public class CommentSyntaxFilter extends AbstractFilter {
 
     /**
      * httl.properties: comment.left=&lt;!--
+     * @param commentLeft comment left
      */
     @Reqiured
     public void setCommentLeft(String commentLeft) {
@@ -26,6 +27,7 @@ public class CommentSyntaxFilter extends AbstractFilter {
 
     /**
      * httl.properties: comment.right=--&gt;
+     * @param commentRight comment right
      */
     @Reqiured
     public void setCommentRight(String commentRight) {
@@ -38,6 +40,7 @@ public class CommentSyntaxFilter extends AbstractFilter {
 
     /**
      * httl.properties: remove.directive.blank.line=true
+     * @param removeDirectiveBlankLine is remove directive
      */
     public void setRemoveDirectiveBlankLine(boolean removeDirectiveBlankLine) {
         this.removeDirectiveBlankLine = removeDirectiveBlankLine;

@@ -46,6 +46,9 @@ public class PathProperties {
      * Parse and return a PathProperties from nested string format like
      * (a,b,c(d,e),f(g)) where "c" is a path containing "d" and "e" and "f" is a
      * path containing "g" and the root path contains "a","b","c" and "f".
+     *
+     * @param source source path
+     * @return path properties
      */
     public static PathProperties parse(String source) {
         return PathPropertiesParser.parse(source);
@@ -60,6 +63,8 @@ public class PathProperties {
      * create a copy, add some extra properties and then use that copy to define
      * an ORM query.
      * </p>
+     *
+     * @return path properties
      */
     public PathProperties copy() {
         return new PathProperties(this);
@@ -67,6 +72,8 @@ public class PathProperties {
 
     /**
      * Return true if there are no paths defined.
+     *
+     * @return true is empty
      */
     public boolean isEmpty() {
         return pathMap.isEmpty();
@@ -78,6 +85,9 @@ public class PathProperties {
 
     /**
      * Return true if the path is defined and has properties.
+     *
+     * @param path path
+     * @return true is has path
      */
     public boolean hasPath(String path) {
         Props props = pathMap.get(path);
@@ -86,6 +96,9 @@ public class PathProperties {
 
     /**
      * Get the properties for a given path.
+     *
+     * @param path path
+     * @return properties
      */
     public Set<String> get(String path) {
         Props props = pathMap.get(path);
@@ -103,6 +116,9 @@ public class PathProperties {
 
     /**
      * Set the properties for a given path.
+     *
+     * @param path       path
+     * @param properties properties set
      */
     public void put(String path, Set<String> properties) {
         pathMap.put(path, new Props(this, null, path, properties));
@@ -110,6 +126,9 @@ public class PathProperties {
 
     /**
      * Remove a path returning the properties set for that path.
+     *
+     * @param path path
+     * @return properties set
      */
     public Set<String> remove(String path) {
         Props props = pathMap.remove(path);
@@ -118,6 +137,8 @@ public class PathProperties {
 
     /**
      * Return a shallow copy of the paths.
+     *
+     * @return path set
      */
     public Set<String> getPaths() {
         return Sets.newLinkedHashSet(pathMap.keySet());
@@ -129,6 +150,8 @@ public class PathProperties {
 
     /**
      * Each these path properties as fetch paths to the query.
+     *
+     * @param each each process
      */
     public void each(Each<String, Props> each) {
 
@@ -176,6 +199,9 @@ public class PathProperties {
 
         /**
          * Create a shallow copy of this Props instance.
+         *
+         * @param newOwner new owner
+         * @return properties
          */
         public Props copy(PathProperties newOwner) {
             return new Props(newOwner, parentPath, path, Sets.newLinkedHashSet(propSet));
@@ -195,6 +221,8 @@ public class PathProperties {
 
         /**
          * Return the properties for this property set.
+         *
+         * @return property set
          */
         public Set<String> getProperties() {
             return propSet;
@@ -202,6 +230,8 @@ public class PathProperties {
 
         /**
          * Return the properties as a comma delimited string.
+         *
+         * @return properties string
          */
         public String getPropertiesAsString() {
 
@@ -221,6 +251,8 @@ public class PathProperties {
 
         /**
          * Return the parent path
+         *
+         * @return parent props
          */
         protected Props getParent() {
             return owner.pathMap.get(parentPath);
@@ -228,6 +260,9 @@ public class PathProperties {
 
         /**
          * Add a child Property set.
+         *
+         * @param subpath subpath
+         * @return prop
          */
         protected Props addChild(String subpath) {
 
@@ -243,6 +278,7 @@ public class PathProperties {
 
         /**
          * Add a properties to include for this path.
+         * @param property property
          */
         protected void addProperty(String property) {
             propSet.add(property.trim());

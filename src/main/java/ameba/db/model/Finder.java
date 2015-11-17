@@ -22,7 +22,7 @@ public abstract class Finder<ID, T> {
 
 
     /**
-     * Creates a finder for entity of modelType <code>T</code> with <I extends ID> I of modelType <code>ID</code>, using a specific Ebean server.
+     * Creates a finder for entity of modelType <code>T</code> with <code>ID</code> I of modelType <code>ID</code>, using a specific Ebean server.
      *
      * @param serverName a {@link java.lang.String} object.
      * @param idType     a {@link java.lang.Class} object.
@@ -77,6 +77,7 @@ public abstract class Finder<ID, T> {
      * Changes the model server.
      *
      * @param server a {@link java.lang.String} object.
+     * @param <M>    model
      * @return a {@link ameba.db.model.Finder} object.
      */
     @SuppressWarnings("unchecked")
@@ -85,7 +86,8 @@ public abstract class Finder<ID, T> {
     /**
      * Retrieves an entity by ID.
      *
-     * @param id a ID object.
+     * @param id  a ID object.
+     * @param <M> model
      * @return a M object.
      */
     public abstract <M extends T> M byId(ID id);
@@ -93,7 +95,8 @@ public abstract class Finder<ID, T> {
     /**
      * Retrieves an entity reference for this ID.
      *
-     * @param id a ID object.
+     * @param id  a ID object.
+     * @param <M> model
      * @return a M object.
      */
     public abstract <M extends T> M ref(ID id);
@@ -101,7 +104,7 @@ public abstract class Finder<ID, T> {
     /**
      * Creates a filter for sorting and filtering lists of entities locally without going back to the database.
      *
-     * @return Filter<T>
+     * @return Filter
      */
     public abstract Filter<T> filter();
 
@@ -115,7 +118,7 @@ public abstract class Finder<ID, T> {
     /**
      * Creates a query.
      *
-     * @return Query<T>
+     * @return Query
      */
     public abstract Query<T> createQuery();
 
@@ -146,6 +149,7 @@ public abstract class Finder<ID, T> {
     /**
      * Returns the next identity value.
      *
+     *  @param <I> model id
      * @return a I object.
      */
     public abstract <I extends ID> I nextId();
@@ -257,6 +261,7 @@ public abstract class Finder<ID, T> {
     public abstract List<Version<T>> findVersionsBetween(Timestamp start, Timestamp end);
 
     public abstract int delete();
+
     /**
      * <p>findEach.</p>
      *

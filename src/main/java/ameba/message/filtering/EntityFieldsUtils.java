@@ -20,6 +20,9 @@ public class EntityFieldsUtils {
 
     /**
      * Parse and return a PathProperties format from UriInfo
+     *
+     * @param uriInfo uri info
+     * @return query fields
      */
     public static String parseQueryFields(UriInfo uriInfo) {
         List<String> selectables = uriInfo.getQueryParameters()
@@ -47,6 +50,8 @@ public class EntityFieldsUtils {
 
     /**
      * Parse and return a PathProperties format from UriInfo
+     *
+     * @return query fields
      */
     public static String parseQueryFields() {
         return parseQueryFields(Requests.getUriInfo());
@@ -56,6 +61,9 @@ public class EntityFieldsUtils {
      * Parse and return a PathProperties from nested string format like
      * (a,b,c(d,e),f(g)) where "c" is a path containing "d" and "e" and "f" is a
      * path containing "g" and the root path contains "a","b","c" and "f".
+     *
+     * @param uriInfo uri info
+     * @return path properties
      */
     public static PathProperties parsePathProperties(UriInfo uriInfo) {
         return PathProperties.parse(parseQueryFields(uriInfo));
@@ -65,6 +73,8 @@ public class EntityFieldsUtils {
      * Parse and return a PathProperties from nested string format like
      * (a,b,c(d,e),f(g)) where "c" is a path containing "d" and "e" and "f" is a
      * path containing "g" and the root path contains "a","b","c" and "f".
+     *
+     * @return pah properties
      */
     public static PathProperties parsePathProperties() {
         PathProperties pathProperties = (PathProperties) Requests.getProperty(PATH_PROPS_PARSED);

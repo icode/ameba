@@ -10,7 +10,6 @@ import java.util.List;
  *
  * @author Michal Gajdos (michal.gajdos at oracle.com)
  * @author icode
- * @see org.glassfish.jersey.server.mvc.internal.TemplateModelProcessor
  * @see org.glassfish.jersey.server.mvc.Template
  */
 public class ImplicitViewable extends Viewable {

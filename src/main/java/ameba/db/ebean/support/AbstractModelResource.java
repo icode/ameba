@@ -39,7 +39,7 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
 
     /**
      * Insert a model.
-     * <p/>
+     * <p>
      * success status 201
      *
      * @param model the model to insert
@@ -53,9 +53,9 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
 
     /**
      * replace or insert a model.
-     * <p/>
+     * <p>
      * success replace status 204
-     * <br/>
+     * <br>
      * fail replace but inserted status 201
      *
      * @param id    the unique id of the model
@@ -71,9 +71,9 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
 
     /**
      * Update a model items.
-     * <p/>
+     * <p>
      * success status 204
-     * <br/>
+     * <br>
      * fail status 422
      *
      * @param id    the unique id of the model
@@ -89,13 +89,13 @@ public abstract class AbstractModelResource<ID, M extends Model> extends ModelRe
 
     /**
      * {@inheritDoc}
-     * <p/>
+     * <p>
      * Delete multiple model using Id's from the Matrix.
-     * <p/>
+     * <p>
      * success status 200
-     * <br/>
+     * <br>
      * fail status 404
-     * <br/>
+     * <br>
      * logical delete status 202
      */
     @DELETE

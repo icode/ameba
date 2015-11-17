@@ -6,7 +6,7 @@ import java.lang.annotation.*;
 
 /**
  * HTTP PATCH Method
- * <p/>
+ * <p>
  * jsonPatch must be have @GET resource/{id} method and none arguments
  *
  * @author icode

@@ -139,8 +139,9 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
 
     /**
      * Insert a model.
-     * <p/>
+     * <p>
      * success status 201
+     * </p>
      *
      * @param model the model to insert
      * @return a {@link javax.ws.rs.core.Response} object.
@@ -204,9 +205,9 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
 
     /**
      * replace or insert a model.
-     * <p/>
+     * <br>
      * success replace status 204
-     * <br/>
+     * <br>
      * fail replace but inserted status 201
      *
      * @param id    the unique id of the model
@@ -280,9 +281,9 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
 
     /**
      * Update a model items.
-     * <p/>
+     * <br>
      * success status 204
-     * <br/>
+     * <br>
      * fail status 422
      *
      * @param id    the unique id of the model
@@ -351,11 +352,11 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
 
     /**
      * Delete multiple model using Id's from the Matrix.
-     * <p/>
+     * <br>
      * success status 200
-     * <br/>
+     * <br>
      * fail status 404
-     * <br/>
+     * <br>
      * logical delete status 202
      *
      * @param id  The id use for path matching type
@@ -708,8 +709,11 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     /**
      * <p>processTransactionError.</p>
      *
+     * @param t        Transaction
      * @param callable a {@link ModelResourceStructure.TxCallable} object.
      * @param process  a {@link ModelResourceStructure.TxCallable} object.
+     * @param <T>      model
+     * @return model
      * @throws java.lang.Exception if any.
      */
     protected <T> T processTransactionError(Transaction t, TxCallable<T> callable, TxCallable<T> process) throws Exception {
@@ -720,6 +724,18 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         }
     }
 
+
+    /**
+     * <p>processCheckRowCountError.</p>
+     *
+     * @param t       Transaction
+     * @param root    root exception
+     * @param e       exception
+     * @param process process method
+     * @param <T>     model
+     * @return model
+     * @throws java.lang.Exception if any.
+     */
     protected <T> T processCheckRowCountError(Transaction t, Exception root, Throwable e, TxCallable<T> process) throws Exception {
         if (e == null) {
             throw root;
@@ -736,7 +752,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     /**
      * <p>executeTx.</p>
      *
-     * @param r a {@link ModelResourceStructure.TxRunnable} object.
+     * @param r            a {@link ModelResourceStructure.TxRunnable} object.
+     * @param errorHandler error handler
      * @throws java.lang.Exception if any.
      */
     protected void executeTx(final TxRunnable r, final TxRunnable errorHandler) throws Exception {

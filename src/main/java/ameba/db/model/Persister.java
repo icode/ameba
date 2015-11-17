@@ -51,6 +51,7 @@ public abstract class Persister<M extends Model> {
      * Changes the model server.
      *
      * @param server server name
+     * @param <E>    model
      * @return a {@link ameba.db.model.Persister} object.
      */
     public abstract <E extends M> Persister<E> on(String server);
@@ -138,22 +139,20 @@ public abstract class Persister<M extends Model> {
 
     /**
      * Marks the entity bean as dirty.
-     * <p/>
+     * <p>
      * This is used so that when a bean that is otherwise unmodified is updated the version
      * property is updated.
-     * <p/>
+     * </p>
+     * <p>
      * An unmodified bean that is saved or updated is normally skipped and this marks the bean as
      * dirty so that it is not skipped.
-     * <p/>
+     * </p>
      * <pre class="code">
-     * <p/>
      * Customer customer = Customer.find.byId(id);
-     * <p/>
      * // mark the bean as dirty so that a save() or update() will
      * // increment the version property
      * customer.markAsDirty();
      * customer.save();
-     * <p/>
      * </pre>
      */
     public abstract void markAsDirty();

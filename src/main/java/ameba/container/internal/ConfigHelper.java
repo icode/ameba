@@ -81,6 +81,7 @@ public class ConfigHelper {
      * {@link ResourceConfig#getApplication()} except if provided application was created by wrapping multiple
      * {@link ResourceConfig} instances this method returns the original application and not a resource config wrapper.
      *
+     * @param app jax-rs application
      * @return the original {@link Application} subclass.
      */
     public static Application getWrappedApplication(Application app) {
@@ -144,13 +145,13 @@ public class ConfigHelper {
     public static abstract class LifecycleListener implements ContainerLifecycleListener {
         /**
          * use for reload Container.
-         * <p/>
+         * <p>
          * the tryScope must run success then shutdown ServiceLocator
-         * <p/>
+         * <p>
          * otherwise not shut down ServiceLocator
          *
          * @param container {@link Container}
-         * @param tryScope
+         * @param tryScope try scope
          */
         public abstract void onReloadShutdown(final Container container, Runnable tryScope);
     }

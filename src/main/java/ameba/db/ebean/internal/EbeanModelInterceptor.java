@@ -157,9 +157,9 @@ public class EbeanModelInterceptor implements WriterInterceptor {
 
     /**
      * apply query parameters to select/fetch
-     * <p/>
+     * <p>
      * ?fields=id,name,filed1(p1,p2,p3)
-     * <p/>
+     * <p>
      * ?fields=(id,name,filed1(p1,p2,p3))
      *
      * @param query       query
@@ -282,7 +282,6 @@ public class EbeanModelInterceptor implements WriterInterceptor {
 
     /**
      * /path?filter=p.in(1,2)c.eq(ddd)d.start_with(a)or(f.eq(a)g.start_with(2))
-     * <p/>
      * todo
      *
      * @param queryParams uri query params

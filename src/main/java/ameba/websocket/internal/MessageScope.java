@@ -384,7 +384,7 @@ public class MessageScope implements Context<MessageScoped> {
 
         /**
          * Release a single reference to the current request scope instance.
-         * <p/>
+         * <br>
          * Once all instance references are released, the instance will be recycled.
          */
         public void release() {

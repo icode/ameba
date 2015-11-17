@@ -64,6 +64,7 @@ public abstract class Updater<M extends Model> {
      * Changes the model server.
      *
      * @param server a {@link java.lang.String} object.
+     * @param <E>    model
      * @return a {@link ameba.db.model.Updater} object.
      */
     public abstract <E extends M> Updater<E> on(String server);

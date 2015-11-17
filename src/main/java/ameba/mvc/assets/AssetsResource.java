@@ -62,8 +62,11 @@ public class AssetsResource {
      * <p>getResource.</p>
      *
      * @param fileName a {@link java.lang.String} object.
+     * @param request  request
      * @param uriInfo  a {@link javax.ws.rs.core.UriInfo} object.
      * @return a {@link javax.ws.rs.core.Response} object.
+     * @throws URISyntaxException uri error
+     * @throws IOException io error
      */
     @GET
     @Path("{file:.*}")

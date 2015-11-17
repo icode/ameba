@@ -115,11 +115,11 @@ public class JacksonUtils {
 
     /**
      * get naming query param for PropertyNamingStrategy
-     * <p/>
+     * <br>
      * u : change set {@link PropertyNamingStrategy#CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES}
-     * <p/>
+     * <br>
      * l : change set {@link PropertyNamingStrategy#LOWER_CASE}
-     * <p/>
+     * <br>
      * p : change set {@link PropertyNamingStrategy#PASCAL_CASE_TO_CAMEL_CASE}
      *
      * @param uriInfo    UriInfo

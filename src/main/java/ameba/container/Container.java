@@ -169,6 +169,7 @@ public abstract class Container {
     /**
      * <p>reload.</p>
      *
+     * @throws Exception if any
      * @since 0.1.6e
      */
     public void reload() throws Exception {
@@ -180,6 +181,9 @@ public abstract class Container {
 
     /**
      * <p>doReload.</p>
+     *
+     * @param odlConfig old config
+     * @throws Exception if any
      */
     protected abstract void doReload(ResourceConfig odlConfig) throws Exception;
 
