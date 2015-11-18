@@ -33,7 +33,7 @@ public @interface WebSocket {
      *
      * @return the subprotocols.
      */
-    public String[] subprotocols() default {};
+    String[] subprotocols() default {};
 
     /**
      * The ordered array of decoder classes this endpoint will use. For example,
@@ -43,7 +43,7 @@ public @interface WebSocket {
      *
      * @return the decoders.
      */
-    public Class<? extends Decoder>[] decoders() default {};
+    Class<? extends Decoder>[] decoders() default {};
 
     /**
      * The ordered array of encoder classes this endpoint will use. For example,
@@ -53,7 +53,7 @@ public @interface WebSocket {
      *
      * @return the encoders.
      */
-    public Class<? extends Encoder>[] encoders() default {};
+    Class<? extends Encoder>[] encoders() default {};
 
 
     /**
@@ -65,27 +65,27 @@ public @interface WebSocket {
      * @return the custom configuration class, or ServerEndpointConfig.Configurator.class
      * if none was set in the annotation.
      */
-    public Class<? extends DefaultServerEndpointConfig.Configurator> configurator() default DefaultServerEndpointConfig.Configurator.class;
+    Class<? extends DefaultServerEndpointConfig.Configurator> configurator() default DefaultServerEndpointConfig.Configurator.class;
 
     /**
      * <p>extensions.</p>
      *
      * @return an array of {@link java.lang.Class} objects.
      */
-    public Class<? extends Extension>[] extensions() default {};
+    Class<? extends Extension>[] extensions() default {};
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD})
-    public static @interface On {
+    @interface On {
         /**
-         * 映射的action/event名称，如果为空则通方法名
+         * 映射的action/event名称，如果为空则同方法名
          *
          * @return mapping name
          */
         String value() default "";
 
-        public Class<? extends Encoder>[] encoders() default {};
+        Class<? extends Encoder>[] encoders() default {};
 
-        public Class<? extends Decoder>[] decoders() default {};
+        Class<? extends Decoder>[] decoders() default {};
     }
 }
