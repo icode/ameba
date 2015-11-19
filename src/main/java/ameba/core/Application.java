@@ -1748,6 +1748,7 @@ public class Application {
                 return annotations;
             }
 
+            @SuppressWarnings("unchecked")
             public boolean containsAnnotations(Class<? extends Annotation>... annotationClass) {
                 if (ArrayUtils.isEmpty(annotationClass)) {
                     return false;
