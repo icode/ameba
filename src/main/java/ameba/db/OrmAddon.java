@@ -1,6 +1,6 @@
 package ameba.db;
 
-import ameba.core.AddOn;
+import ameba.core.Addon;
 import ameba.core.Application;
 import ameba.db.model.Finder;
 import ameba.db.model.Model;
@@ -14,11 +14,11 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 
 /**
- * <p>Abstract OrmAddOn class.</p>
+ * <p>Abstract OrmAddon class.</p>
  *
  * @author icode
  */
-public class OrmAddOn extends AddOn {
+public class OrmAddon extends Addon {
     private static Class<? extends Finder> finderClass = null;
     private static Class<? extends Persister> persisterClass = null;
     private static Class<? extends Updater> updaterClass = null;
@@ -43,11 +43,11 @@ public class OrmAddOn extends AddOn {
      * @since 0.1.6e
      */
     private static void setFinderClass(Class<? extends Finder> finderClass) {
-        if (OrmAddOn.finderClass != null) return;
+        if (OrmAddon.finderClass != null) return;
         if (finderClass == null || Modifier.isAbstract(finderClass.getModifiers())) {
             throw new IllegalArgumentException("finder must instance of ameba.db.model.Finder");
         }
-        OrmAddOn.finderClass = finderClass;
+        OrmAddon.finderClass = finderClass;
     }
 
     /**
@@ -66,11 +66,11 @@ public class OrmAddOn extends AddOn {
      * @since 0.1.6e
      */
     private static void setPersisterClass(Class<? extends Persister> persisterClass) {
-        if (OrmAddOn.persisterClass != null) return;
+        if (OrmAddon.persisterClass != null) return;
         if (persisterClass == null || Modifier.isAbstract(persisterClass.getModifiers())) {
             throw new IllegalArgumentException("persister must instance of ameba.db.model.Persister");
         }
-        OrmAddOn.persisterClass = persisterClass;
+        OrmAddon.persisterClass = persisterClass;
     }
 
     /**
@@ -90,11 +90,11 @@ public class OrmAddOn extends AddOn {
      * @since 0.1.6e
      */
     private static void setUpdaterClass(Class<? extends Updater> updaterClass) {
-        if (OrmAddOn.updaterClass != null) return;
+        if (OrmAddon.updaterClass != null) return;
         if (updaterClass == null || Modifier.isAbstract(updaterClass.getModifiers())) {
             throw new IllegalArgumentException("updater must instance of ameba.db.model.Updater");
         }
-        OrmAddOn.updaterClass = updaterClass;
+        OrmAddon.updaterClass = updaterClass;
     }
 
     /**

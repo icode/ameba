@@ -7,12 +7,12 @@ import ameba.event.Listener;
 import ameba.event.SystemEventBus;
 
 /**
- * <p>Abstract AddOn class.</p>
+ * <p>Abstract Addon class.</p>
  *
  * @author icode
  * @since 0.1.6e
  */
-public abstract class AddOn {
+public abstract class Addon {
     private static EventBus EVENT_BUS = init();
     protected String version = "1.0.0";
 

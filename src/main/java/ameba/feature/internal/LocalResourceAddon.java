@@ -1,6 +1,6 @@
 package ameba.feature.internal;
 
-import ameba.core.AddOn;
+import ameba.core.Addon;
 import ameba.core.Application;
 import ameba.event.Listener;
 import com.google.common.collect.Sets;
@@ -14,12 +14,12 @@ import javax.ws.rs.core.FeatureContext;
 import java.util.Set;
 
 /**
- * <p>LocalResourceAddOn class.</p>
+ * <p>LocalResourceAddon class.</p>
  *
  * @author icode
  * @since 0.1.6e
  */
-public class LocalResourceAddOn extends AddOn {
+public class LocalResourceAddon extends Addon {
     /**
      * {@inheritDoc}
      */

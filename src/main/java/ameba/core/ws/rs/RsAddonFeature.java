@@ -8,12 +8,12 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
 /**
- * <p>RsAddOnFeature class.</p>
+ * <p>RsAddonFeature class.</p>
  *
  * @author icode
  * @since 0.1.6e
  */
-public class RsAddOnFeature implements Feature {
+public class RsAddonFeature implements Feature {
     /**
      * {@inheritDoc}
      */
@@ -24,11 +24,11 @@ public class RsAddOnFeature implements Feature {
 //            context.register(JsonPatchInterceptor.class);
 //        }
 
-        context.register(new AddOnBinder());
+        context.register(new AddonBinder());
         return false;
     }
 
-    private static class AddOnBinder extends AbstractBinder {
+    private static class AddonBinder extends AbstractBinder {
 
         @Override
         protected void configure() {
