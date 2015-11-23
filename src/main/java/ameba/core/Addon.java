@@ -123,4 +123,8 @@ public abstract class Addon {
     public void done(Application application) {
     }
 
+    public boolean isEnabled(Application application) {
+        return true;
+    }
+
 }
