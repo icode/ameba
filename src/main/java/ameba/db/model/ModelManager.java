@@ -1,6 +1,6 @@
 package ameba.db.model;
 
-import ameba.core.AddOn;
+import ameba.core.Addon;
 import ameba.core.Application;
 import ameba.db.DataSourceManager;
 import ameba.event.Listener;
@@ -22,7 +22,7 @@ import java.util.Set;
  * @author icode
  * @since 0.1.6e
  */
-public class ModelManager extends AddOn {
+public class ModelManager extends Addon {
 
     /**
      * Constant <code>MODULE_MODELS_KEY_PREFIX="db.default.models."</code>

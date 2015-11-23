@@ -1,6 +1,6 @@
 package ameba.event;
 
-import ameba.core.AddOn;
+import ameba.core.Addon;
 import ameba.core.Application;
 import ameba.lib.Akka;
 import org.junit.Test;
@@ -17,8 +17,8 @@ public class EventTest {
     @Test
     public void publish() {
 
-        AddOn addOn = new Akka.AddOn();
-        addOn.setup(new TestApp());
+        Addon addon = new Akka.Addon();
+        addon.setup(new TestApp());
 
         EventBus eventBus = EventBus.createMix();
 

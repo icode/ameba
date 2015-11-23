@@ -97,7 +97,7 @@ public class Application {
     private File sourceRoot;
     private File packageRoot;
     private Container container;
-    private Set<AddOn> addOns = Sets.newLinkedHashSet();
+    private Set<Addon> addons = Sets.newLinkedHashSet();
     private Set<String> excludes = Sets.newLinkedHashSet();
     private ResourceConfig config = new ExcludeResourceConfig(excludes);
     private Set<String> scanPkgs;
@@ -590,11 +590,11 @@ public class Application {
             logger.debug(Messages.get("info.addon.register.item", entry.key, entry.className));
             try {
                 Class addOnClass = ClassUtils.getClass(entry.className);
-                if (AddOn.class.isAssignableFrom(addOnClass)) {
-                    AddOn addOn = (AddOn) addOnClass.newInstance();
-                    boolean f = addOns.add(addOn);
-                    if (f)
-                        addOn.setup(this);
+                if (Addon.class.isAssignableFrom(addOnClass)) {
+                    Addon addon = (Addon) addOnClass.newInstance();
+                    if (addon.isEnabled(this) && addons.add(addon)) {
+                        addon.setup(this);
+                    }
                 } else {
                     throw new ConfigErrorException(Messages.get("info.addon.register.error.interface", entry.name, entry.key));
                 }
@@ -609,11 +609,11 @@ public class Application {
     }
 
     protected void addOnDone() {
-        for (AddOn addOn : addOns) {
+        for (Addon addon : addons) {
             try {
-                addOn.done(this);
+                addon.done(this);
             } catch (Exception e) {
-                logger.error(Messages.get("info.addon.error", addOn.getClass().getName()), e);
+                logger.error(Messages.get("info.addon.error", addon.getClass().getName()), e);
             }
         }
     }
@@ -785,7 +785,7 @@ public class Application {
             }
         });
 
-        addOns.add(new AddOn() {
+        addons.add(new Addon() {
             @Override
             public void done(Application application) {
                 for (ClassFoundEvent.ClassInfo info : resources) {
@@ -1538,12 +1538,12 @@ public class Application {
     }
 
     /**
-     * <p>Getter for the field <code>addOns</code>.</p>
+     * <p>Getter for the field <code>addons</code>.</p>
      *
      * @return a {@link java.util.Set} object.
      */
-    public Set<AddOn> getAddOns() {
-        return addOns;
+    public Set<Addon> getAddons() {
+        return addons;
     }
 
     public enum Mode {

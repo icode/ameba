@@ -1,6 +1,6 @@
 package ameba.db;
 
-import ameba.core.AddOn;
+import ameba.core.Addon;
 import ameba.core.Application;
 import ameba.db.model.ModelManager;
 import com.alibaba.druid.pool.DruidDataSource;
@@ -22,7 +22,7 @@ import java.util.Set;
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-07
  */
-public class DataSourceManager extends AddOn {
+public class DataSourceManager extends Addon {
 
     private static final Map<String, javax.sql.DataSource> dataSourceMap = Maps.newHashMap();
     private static final Logger logger = LoggerFactory.getLogger(DataSourceManager.class);

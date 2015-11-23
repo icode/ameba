@@ -34,7 +34,7 @@ public class Akka {
         return system;
     }
 
-    public static class AddOn extends ameba.core.AddOn {
+    public static class Addon extends ameba.core.Addon {
         @Override
         public void setup(Application application) {
             String name = StringUtils.defaultString(application.getApplicationName(), "ameba");
