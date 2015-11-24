@@ -191,20 +191,26 @@ public class Application {
                 } catch (IOException e) {
                     logger.error(Messages.get("info.load.error", toExternalForm(url)));
                 }
-                if (in != null) {
-                    try {
-                        properties.load(in);
-                    } catch (Exception e) {
-                        logger.error(Messages.get("info.load.error", toExternalForm(url)));
-                    }
-                } else {
-                    logger.error(Messages.get("info.load.error", toExternalForm(url)));
-                }
-                closeQuietly(in);
+                loadProperties(in, properties, url);
             }
         } else {
             logger.info(Messages.get("info.module.none"));
         }
+    }
+
+
+    private static void loadProperties(InputStream in, Properties properties, URL url) {
+        if (in != null) {
+            try {
+                properties.load(in);
+            } catch (Exception e) {
+                logger.error(Messages.get("info.load.error", toExternalForm(url)));
+            }
+        } else {
+            logger.error(Messages.get("info.load.error", toExternalForm(url)));
+        }
+
+        closeQuietly(in);
     }
 
     @SuppressWarnings("unchecked")
@@ -265,16 +271,7 @@ public class Application {
             } catch (IOException e) {
                 logger.error(Messages.get("info.load.error", toExternalForm(url)));
             }
-            if (in != null) {
-                try {
-                    properties.load(in);
-                } catch (Exception e) {
-                    logger.error(Messages.get("info.load.error", toExternalForm(url)));
-                }
-            } else {
-                logger.error(Messages.get("info.load.error", toExternalForm(url)));
-            }
-            closeQuietly(in);
+            loadProperties(in, properties, url);
         } else {
             logger.warn(Messages.get("info.load.error.not.found", confFile));
         }
@@ -860,6 +857,9 @@ public class Application {
         }
 
         map.put(ServerProperties.PROCESSING_RESPONSE_ERRORS_ENABLED, "true");
+        map.put(ServerProperties.MOXY_JSON_FEATURE_DISABLE, "true");
+        map.put(ServerProperties.JSON_PROCESSING_FEATURE_DISABLE, "true");
+        //map.put(ServerProperties.FEATURE_AUTO_DISCOVERY_DISABLE, "true");
 
         //移除转化需要的临时属性
         for (String key : removeKeys) {
