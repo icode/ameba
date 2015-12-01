@@ -34,6 +34,7 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -80,7 +81,6 @@ public class EbeanFeature implements Feature {
     public static final String FILTER_PARAM_NAME = "model.query.param.where";
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
     private static final List<EbeanServer> SERVERS = Lists.newArrayList();
-
     @Inject
     private ServiceLocator locator;
     @Inject
@@ -89,6 +89,10 @@ public class EbeanFeature implements Feature {
     private XmlMapper xmlMapper;
     @Inject
     private Application application;
+
+    public static List<EbeanServer> getServers() {
+        return Collections.unmodifiableList(SERVERS);
+    }
 
     /**
      * Helper method that generates the required evolution to properly run Ebean.

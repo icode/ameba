@@ -1,6 +1,5 @@
 package ameba.db.ebean;
 
-import ameba.Ameba;
 import ameba.core.Requests;
 import ameba.db.ebean.jackson.CommonBeanSerializer;
 import ameba.message.filtering.EntityFieldsUtils;
@@ -15,15 +14,17 @@ import com.avaje.ebean.text.PathProperties;
 import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
-import com.avaje.ebeaninternal.server.properties.BeanPropertiesReader;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.ArrayUtils;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.BadRequestException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
 
 import static com.avaje.ebean.OrderBy.Property;
 
@@ -35,12 +36,6 @@ import static com.avaje.ebean.OrderBy.Property;
  */
 public class EbeanUtils {
     public static final String PATH_PROPS_PARSED = EbeanUtils.class + ".PathProperties";
-    private static final String PARSE_ORDER_ERR_MSG = "Parse OrderBy error. OrderBy";
-    private static final String[] UNSAFE_SQL_STRING = {
-            "'", "/", "*", "%", ";", "+", "(", ")", ",", "--", "%", "#"
-    };
-
-    private static final Map<Class, String[]> BEAN_PROPS_CACHE = new WeakHashMap<>();
 
 
     private EbeanUtils() {
@@ -138,60 +133,29 @@ public class EbeanUtils {
             return;
         }
 
-        Query query = orderBy.getQuery();
-
-        String[] properties = null;
-        if (query != null) {
-            Class beanType = query.getBeanType();
-            if (beanType != null) {
-                properties = getBeanProperties(beanType);
-            }
-        }
-        boolean isDev = Ameba.getApp().getMode().isDev();
         String[] chunks = orderByClause.split(",");
         for (String chunk : chunks) {
             String[] pairs = chunk.split(" ");
             Property p = parseOrderProperty(pairs);
             if (p != null) {
-                String f = p.getProperty();
-                if (properties != null) {
-                    if (!ArrayUtils.contains(properties, f)) {
-                        if (isDev) {
-                            throw new BadRequestException(PARSE_ORDER_ERR_MSG + " can not found [" + f + "] field.");
-                        } else {
-                            continue;
-                        }
-                    }
-                } else {
-                    try {
-                        checkSqlSafe(f, PARSE_ORDER_ERR_MSG);
-                    } catch (BadRequestException e) {
-                        if (isDev) {
-                            throw e;
-                        } else {
-                            continue;
-                        }
-                    }
-                }
                 orderBy.add(p);
             }
         }
     }
 
-    public static String[] getBeanProperties(Class beanType) {
-        String[] props = BEAN_PROPS_CACHE.get(beanType);
-        if (props == null) {
-            BeanPropertiesReader reader = new BeanPropertiesReader(beanType);
-            props = reader.getProperties();
-            BEAN_PROPS_CACHE.put(beanType, props);
-        }
-        return props;
+    public static void checkQuery(Query query) {
+        checkQuery(query, null);
     }
 
-    public static void checkSqlSafe(String clause, String errorMsg) {
-        for (String tag : UNSAFE_SQL_STRING) {
-            if (clause.contains(tag)) {
-                throw new BadRequestException(errorMsg + " can not contains `" + tag + "` in [" + clause + "].");
+    @SuppressWarnings("unchecked")
+    public static void checkQuery(Query query, Set<String> ignore) {
+        if (query != null) {
+            Set<String> invalid = query.validate();
+            if (ignore != null) {
+                invalid = Sets.difference(invalid, ignore);
+            }
+            if (invalid != null && !invalid.isEmpty()) {
+                throw new BadRequestException("Validate query error, can not found " + invalid + " field.");
             }
         }
     }

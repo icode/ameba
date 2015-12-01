@@ -27,6 +27,7 @@ import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -307,11 +308,14 @@ public class EbeanModelInterceptor implements WriterInterceptor {
      * @see #applyOrderBy
      * @see #applyPageList
      */
+    @SuppressWarnings("unchecked")
     public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams,
                                                Query query, boolean needPageList) {
+        Set<String> inv = query.validate();
         applyFetchProperties(queryParams, query);
         applyFilter(queryParams, query);
         applyOrderBy(queryParams, query);
+        EbeanUtils.checkQuery(query, inv);
         if (needPageList)
             return applyPageList(queryParams, query);
         return null;
