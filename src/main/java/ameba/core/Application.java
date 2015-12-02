@@ -859,7 +859,7 @@ public class Application {
         map.put(ServerProperties.PROCESSING_RESPONSE_ERRORS_ENABLED, "true");
         map.put(ServerProperties.MOXY_JSON_FEATURE_DISABLE, "true");
         map.put(ServerProperties.JSON_PROCESSING_FEATURE_DISABLE, "true");
-        map.put(ServerProperties.FEATURE_AUTO_DISCOVERY_DISABLE, "true");
+//        map.put(ServerProperties.FEATURE_AUTO_DISCOVERY_DISABLE, "true");
 
         //移除转化需要的临时属性
         for (String key : removeKeys) {
