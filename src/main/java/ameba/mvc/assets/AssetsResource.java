@@ -3,6 +3,8 @@ package ameba.mvc.assets;
 import ameba.core.Application;
 import ameba.message.internal.MediaType;
 import ameba.util.MimeType;
+import org.glassfish.jersey.server.ContainerRequest;
+import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.glassfish.jersey.spi.ExceptionMappers;
 
 import javax.inject.Inject;
@@ -12,13 +14,17 @@ import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
 import java.util.Date;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -63,18 +69,31 @@ public class AssetsResource {
      *
      * @param fileName a {@link java.lang.String} object.
      * @param request  request
-     * @param uriInfo  a {@link javax.ws.rs.core.UriInfo} object.
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws URISyntaxException uri error
-     * @throws IOException io error
+     * @throws IOException        io error
      */
     @GET
     @Path("{file:.*}")
     public Response getResource(@PathParam("file") String fileName,
-                                @Context Request request,
-                                @Context UriInfo uriInfo) throws URISyntaxException, IOException {
+                                @Context ContainerRequest request,
+                                @Context ExtendedUriInfo uriInfo) throws URISyntaxException, IOException {
 
-        String mapName = uriInfo.getPath().replace(fileName, "");
+        if (fileName.lastIndexOf("/") > fileName.indexOf(".")) {
+            List<javax.ws.rs.core.MediaType> mediaTypes = request.getAcceptableMediaTypes();
+            if (!mediaTypes.isEmpty()) {
+                for (javax.ws.rs.core.MediaType type : mediaTypes) {
+                    Response response = getResource(fileName + "." + type.getSubtype().split("\\+")[0], request, uriInfo);
+                    if (response.getStatus() != 404) {
+                        return response;
+                    }
+                }
+                return notFound();
+            }
+        }
+
+        List<String> uris = uriInfo.getMatchedURIs(true);
+        String mapName = uris.get(uris.size() - 1);
 
         URL url = AssetsFeature.lookupAsset(mapName, fileName);
 
