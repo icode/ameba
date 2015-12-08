@@ -112,16 +112,16 @@ public class AssetsFeature implements Feature {
                 if (!dir.endsWith("/") && !file.startsWith("/")) {
                     dir = dir + "/";
                 }
-                url = IOUtils.getResource(dir + file);
-                if (url == null) {
-                    File f = FileUtils.getFile(dir, file);
-                    if (f.exists() && f.isFile()) {
-                        try {
-                            url = f.getAbsoluteFile().toURI().toURL();
-                        } catch (MalformedURLException e) {
-                            //
-                        }
+                File f = FileUtils.getFile(dir, file);
+                if (f.exists() && f.isFile()) {
+                    try {
+                        url = f.getAbsoluteFile().toURI().toURL();
+                    } catch (MalformedURLException e) {
+                        //
                     }
+                }
+                if (url == null) {
+                    url = IOUtils.getResource(dir + file);
                 }
                 if (url != null) {
                     break;
