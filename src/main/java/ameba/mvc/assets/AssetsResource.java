@@ -79,7 +79,7 @@ public class AssetsResource {
                                 @Context ContainerRequest request,
                                 @Context ExtendedUriInfo uriInfo) throws URISyntaxException, IOException {
 
-        if (fileName.lastIndexOf("/") > fileName.indexOf(".")) {
+        if (fileName.lastIndexOf("/") > fileName.lastIndexOf(".")) {
             List<javax.ws.rs.core.MediaType> mediaTypes = request.getAcceptableMediaTypes();
             if (!mediaTypes.isEmpty()) {
                 for (javax.ws.rs.core.MediaType type : mediaTypes) {
