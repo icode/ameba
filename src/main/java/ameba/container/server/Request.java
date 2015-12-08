@@ -38,6 +38,9 @@ public abstract class Request extends ContainerRequest {
     public abstract String getRemoteAddr();
 
 
+    public abstract URI getRawReqeustUri();
+
+
     /**
      * <p>getProxyRemoteAddr.</p>
      *

@@ -1,5 +1,6 @@
 package ameba.mvc.assets;
 
+import ameba.container.server.Request;
 import ameba.core.Application;
 import ameba.message.internal.MediaType;
 import ameba.util.MimeType;
@@ -79,16 +80,21 @@ public class AssetsResource {
                                 @Context ContainerRequest request,
                                 @Context ExtendedUriInfo uriInfo) throws URISyntaxException, IOException {
 
-        if (fileName.lastIndexOf("/") > fileName.lastIndexOf(".")) {
-            List<javax.ws.rs.core.MediaType> mediaTypes = request.getAcceptableMediaTypes();
-            if (!mediaTypes.isEmpty()) {
-                for (javax.ws.rs.core.MediaType type : mediaTypes) {
-                    Response response = getResource(fileName + "." + type.getSubtype().split("\\+")[0], request, uriInfo);
-                    if (response.getStatus() != 404) {
-                        return response;
-                    }
-                }
-                return notFound();
+        if (!fileName.startsWith("/")) {
+            fileName = "/" + fileName;
+        }
+        URI rawUri = ((Request) request).getRawReqeustUri();
+        String reqPath = rawUri.getPath();
+        int pathFileIndex = reqPath.lastIndexOf("/");
+        String reqFileName = reqPath;
+        if (pathFileIndex != -1) {
+            reqFileName = reqPath.substring(pathFileIndex);
+        }
+        if (!fileName.endsWith(reqFileName)) {
+            if (pathFileIndex != -1) {
+                fileName = fileName.substring(0, fileName.lastIndexOf("/")) + reqFileName;
+            } else {
+                fileName = reqFileName;
             }
         }
 

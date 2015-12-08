@@ -3,6 +3,7 @@ package ameba.mvc.assets;
 import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.model.ModelProcessor;
@@ -14,6 +15,8 @@ import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
+import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -110,6 +113,16 @@ public class AssetsFeature implements Feature {
                     dir = dir + "/";
                 }
                 url = IOUtils.getResource(dir + file);
+                if (url == null) {
+                    File f = FileUtils.getFile(dir, file);
+                    if (f.exists() && f.isFile()) {
+                        try {
+                            url = f.getAbsoluteFile().toURI().toURL();
+                        } catch (MalformedURLException e) {
+                            //
+                        }
+                    }
+                }
                 if (url != null) {
                     break;
                 }

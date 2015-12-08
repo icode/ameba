@@ -826,6 +826,10 @@ public class Requests {
         return getRequest().getRemoteRealAddr();
     }
 
+    public static URI getRawReqeustUri() {
+        return getRequest().getRawReqeustUri();
+    }
+
     static class BindRequest implements Feature {
 
         @Inject
