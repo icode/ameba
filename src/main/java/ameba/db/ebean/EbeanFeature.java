@@ -236,8 +236,6 @@ public class EbeanFeature implements Feature {
             config.setDdlRun(false);
             config.setJsonFactory(jsonFactory);
             config.setContainerConfig(containerConfig);
-            config.setPackages(null);
-            config.setJars(null);
             config.setResourceDirectory(null);
             config.setDisableClasspathSearch(true);
 
