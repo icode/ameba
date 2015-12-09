@@ -70,6 +70,7 @@ public class AssetsResource {
      *
      * @param fileName a {@link java.lang.String} object.
      * @param request  request
+     * @param uriInfo  uriInfo
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws URISyntaxException uri error
      * @throws IOException        io error

@@ -160,9 +160,9 @@ public class EbeanModelInterceptor implements WriterInterceptor {
 
     /**
      * apply query parameters to select/fetch
-     * <p/>
+     * <br>
      * ?fields=id,name,filed1(p1,p2,p3)
-     * <p/>
+     * <br>
      * ?fields=(id,name,filed1(p1,p2,p3))
      *
      * @param query       query
