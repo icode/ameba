@@ -40,6 +40,7 @@ import java.util.concurrent.ExecutionException;
 @Priority(Priorities.ENTITY_CODER)
 public class EbeanModelInterceptor implements WriterInterceptor {
 
+    final static Integer SYS_DEFAULT_PER_PAGE = 20;
     static String FIELDS_PARAM_NAME = "fields";
     static String SORT_PARAM_NAME = "sort";
     static String PAGE_PARAM_NAME = "page";
@@ -47,7 +48,8 @@ public class EbeanModelInterceptor implements WriterInterceptor {
     static String REQ_TOTAL_COUNT_PARAM_NAME = "req_count";
     static String REQ_TOTAL_COUNT_HEADER_NAME = "X-Total-Count";
     static String FILTER_PARAM_NAME = "filter";
-    static Integer DEFAULT_PER_PAGE = 20;
+    static Integer DEFAULT_PER_PAGE = SYS_DEFAULT_PER_PAGE;
+    static int MAX_PER_PAGE = 1000;
     @Context
     private Provider<Configuration> configurationProvider;
     @Context
@@ -158,9 +160,9 @@ public class EbeanModelInterceptor implements WriterInterceptor {
 
     /**
      * apply query parameters to select/fetch
-     * <p>
+     * <p/>
      * ?fields=id,name,filed1(p1,p2,p3)
-     * <p>
+     * <p/>
      * ?fields=(id,name,filed1(p1,p2,p3))
      *
      * @param query       query
@@ -263,7 +265,10 @@ public class EbeanModelInterceptor implements WriterInterceptor {
 
         if (maxRows != null) {
             if (maxRows <= 0) {
-                maxRows = 20;
+                maxRows = SYS_DEFAULT_PER_PAGE;
+            }
+            if (MAX_PER_PAGE != -1 && maxRows > MAX_PER_PAGE) {
+                maxRows = MAX_PER_PAGE;
             }
             query.setMaxRows(maxRows);
         }
@@ -379,6 +384,15 @@ public class EbeanModelInterceptor implements WriterInterceptor {
                 DEFAULT_PER_PAGE = Integer.parseInt(defaultPerPage);
             } catch (Exception e) {
                 DEFAULT_PER_PAGE = null;
+            }
+        }
+
+        final String maxPerPage = (String) configuration.getProperty(EbeanFeature.MAX_PER_PAGE_PARAM_NAME);
+        if (StringUtils.isNotBlank(maxPerPage)) {
+            try {
+                MAX_PER_PAGE = Integer.parseInt(maxPerPage);
+            } catch (Exception e) {
+                MAX_PER_PAGE = -1;
             }
         }
     }
