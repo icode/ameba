@@ -109,9 +109,6 @@ public class AssetsFeature implements Feature {
         String[] dirs = assetsMap.get(name);
         if (dirs != null) {
             for (String dir : dirs) {
-                if (!dir.endsWith("/") && !file.startsWith("/")) {
-                    dir = dir + "/";
-                }
                 File f = FileUtils.getFile(dir, file);
                 if (f.exists() && f.isFile()) {
                     try {
@@ -121,7 +118,7 @@ public class AssetsFeature implements Feature {
                     }
                 }
                 if (url == null) {
-                    url = IOUtils.getResource(dir + file);
+                    url = IOUtils.getResource(f.getPath());
                 }
                 if (url != null) {
                     break;
