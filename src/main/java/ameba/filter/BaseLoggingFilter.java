@@ -26,6 +26,7 @@ public class BaseLoggingFilter {
     private static final String NOTIFICATION_PREFIX = "* ";
     private static final String REQUEST_PREFIX = "> ";
     private static final String RESPONSE_PREFIX = "< ";
+    private static final String REQ_ATTR_ID = BaseLoggingFilter.class.getName() + "__req_id";
     private static final String ENTITY_LOGGER_PROPERTY = BaseLoggingFilter.class.getName() + ".entityLogger";
 
     private static final Comparator<Map.Entry<String, List<String>>> COMPARATOR =
@@ -140,7 +141,7 @@ public class BaseLoggingFilter {
     }
 
     private Set<Map.Entry<String, List<String>>> getSortedHeaders(final Set<Map.Entry<String, List<String>>> headers) {
-        final TreeSet<Map.Entry<String, List<String>>> sortedHeaders = new TreeSet<Map.Entry<String, List<String>>>(COMPARATOR);
+        final TreeSet<Map.Entry<String, List<String>>> sortedHeaders = new TreeSet<>(COMPARATOR);
         sortedHeaders.addAll(headers);
         return sortedHeaders;
     }
@@ -163,6 +164,7 @@ public class BaseLoggingFilter {
 
     public void filter(final ContainerRequestContext context) throws IOException {
         final long id = this._id.incrementAndGet();
+        context.setProperty(REQ_ATTR_ID, id);
         final StringBuilder b = new StringBuilder();
 
         printRequestLine(b, "Server has received a request", id, context.getMethod(), context.getUriInfo().getRequestUri());
@@ -188,7 +190,7 @@ public class BaseLoggingFilter {
 
     public void filter(final ContainerRequestContext requestContext, final ContainerResponseContext responseContext)
             throws IOException {
-        final long id = this._id.incrementAndGet();
+        Long id = (Long) requestContext.getProperty(REQ_ATTR_ID);
         final StringBuilder b = new StringBuilder();
 
         printResponseLine(b, "Server responded with a response", id, responseContext.getStatus());

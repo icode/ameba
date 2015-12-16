@@ -2,6 +2,7 @@ package ameba.db.ebean;
 
 import ameba.core.Requests;
 import ameba.db.ebean.jackson.CommonBeanSerializer;
+import ameba.exception.UnprocessableEntityException;
 import ameba.message.filtering.EntityFieldsUtils;
 import ameba.message.internal.PathProperties.Each;
 import ameba.message.internal.PathProperties.Props;
@@ -20,7 +21,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.ws.rs.BadRequestException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -155,7 +155,7 @@ public class EbeanUtils {
                 invalid = Sets.difference(invalid, ignore);
             }
             if (invalid != null && !invalid.isEmpty()) {
-                throw new BadRequestException("Validate query error, can not found " + invalid + " field.");
+                throw new UnprocessableEntityException("Validate query error, can not found " + invalid + " field.");
             }
         }
     }
@@ -188,7 +188,7 @@ public class EbeanUtils {
         }
         String m = "Parse OrderBy error. Expecting a max of 2 words in [" + Arrays.toString(pairs)
                 + "] but got " + wordList.size();
-        throw new BadRequestException(m);
+        throw new UnprocessableEntityException(m);
     }
 
     private static boolean isOrderAscending(String s) {
@@ -199,6 +199,6 @@ public class EbeanUtils {
         if (s.startsWith("desc")) {
             return false;
         }
-        throw new BadRequestException("Parse OrderBy error. Expecting [" + s + "] to be asc or desc?");
+        throw new UnprocessableEntityException("Parse OrderBy error. Expecting [" + s + "] to be asc or desc?");
     }
 }

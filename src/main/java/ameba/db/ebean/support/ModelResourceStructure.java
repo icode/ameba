@@ -3,6 +3,7 @@ package ameba.db.ebean.support;
 import ameba.db.ebean.EbeanUtils;
 import ameba.db.ebean.internal.EbeanModelInterceptor;
 import ameba.db.model.Model;
+import ameba.exception.UnprocessableEntityException;
 import ameba.lib.LoggerOwner;
 import com.avaje.ebean.*;
 import com.avaje.ebean.bean.EntityBean;
@@ -22,7 +23,6 @@ import javax.annotation.Nullable;
 import javax.persistence.OptimisticLockException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.*;
@@ -94,13 +94,13 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      *
      * @param id string id
      * @return ID
-     * @throws BadRequestException response status 400
+     * @throws UnprocessableEntityException response status 422
      */
     protected final ID tryConvertId(Object id) {
         try {
             return stringToId(id.toString());
         } catch (Exception e) {
-            throw new BadRequestException("Id syntax error", e);
+            throw new UnprocessableEntityException("Id syntax error", e);
         }
     }
 

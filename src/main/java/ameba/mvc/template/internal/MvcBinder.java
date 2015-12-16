@@ -25,6 +25,6 @@ public class MvcBinder extends AbstractBinder {
 
         bind(TemplateModelProcessor.class).to(ModelProcessor.class).in(Singleton.class);
         bindAsContract(ResolvingViewableContext.class).in(Singleton.class);
-        bind(ResolvingViewableContext.class).to(ViewableContext.class).in(Singleton.class).ranked(Integer.MIN_VALUE);
+        bind(ResolvingViewableContext.class).to(ViewableContext.class).in(Singleton.class).ranked(1);
     }
 }

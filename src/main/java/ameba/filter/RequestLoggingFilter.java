@@ -13,7 +13,7 @@ import javax.ws.rs.container.PreMatching;
  */
 @PreMatching
 @Singleton
-@Priority(Integer.MIN_VALUE)
+@Priority(1)
 public class RequestLoggingFilter extends BaseLoggingFilter implements ContainerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(RequestLoggingFilter.class);
 
