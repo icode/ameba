@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ser.PropertyFilter;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import org.glassfish.jersey.message.filtering.spi.AbstractObjectProvider;
 import org.glassfish.jersey.message.filtering.spi.ObjectGraph;
 
@@ -26,9 +25,6 @@ import java.util.Stack;
  */
 final class JacksonObjectProvider extends AbstractObjectProvider<FilterProvider> {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public FilterProvider transform(final ObjectGraph graph) {
         // Root entity.
@@ -41,14 +37,10 @@ final class JacksonObjectProvider extends AbstractObjectProvider<FilterProvider>
 
     private Map<String, FilteringPropertyFilter> createSubfilters(final Class<?> entityClass,
                                                                   final Map<String, ObjectGraph> entitySubgraphs) {
-        final Set<String> processed = Sets.newHashSet();
         final Map<String, FilteringPropertyFilter> subfilters = Maps.newHashMap();
 
         for (final Map.Entry<String, ObjectGraph> entry : entitySubgraphs.entrySet()) {
             final String fieldName = entry.getKey();
-
-            if (fieldName.startsWith("_")) continue;
-
             final ObjectGraph graph = entry.getValue();
 
             // Subgraph Fields.
@@ -57,8 +49,8 @@ final class JacksonObjectProvider extends AbstractObjectProvider<FilterProvider>
             Map<String, FilteringPropertyFilter> subSubfilters = Maps.newHashMap();
             if (!subgraphs.isEmpty()) {
                 final Class<?> subEntityClass = graph.getEntityClass();
+                final Set<String> processed = Collections.singleton(subgraphIdentifier(entityClass, fieldName, subEntityClass));
 
-                processed.add(getProcessedSubgraph(entityClass, fieldName, subEntityClass));
                 subSubfilters = createSubfilters(fieldName, subEntityClass, subgraphs, processed);
             }
 
@@ -78,9 +70,6 @@ final class JacksonObjectProvider extends AbstractObjectProvider<FilterProvider>
 
         for (final Map.Entry<String, ObjectGraph> entry : entitySubgraphs.entrySet()) {
             final String fieldName = entry.getKey();
-
-            if (fieldName.startsWith("_")) continue;
-
             final ObjectGraph graph = entry.getValue();
 
             final String path = parent + "." + fieldName;
@@ -89,12 +78,14 @@ final class JacksonObjectProvider extends AbstractObjectProvider<FilterProvider>
             final Map<String, ObjectGraph> subgraphs = graph.getSubgraphs(path);
 
             final Class<?> subEntityClass = graph.getEntityClass();
-            final String processedSubgraph = getProcessedSubgraph(entityClass, fieldName, subEntityClass);
+            final String processedSubgraph = subgraphIdentifier(entityClass, fieldName, subEntityClass);
 
             Map<String, FilteringPropertyFilter> subSubfilters = Maps.newHashMap();
             if (!subgraphs.isEmpty() && !processed.contains(processedSubgraph)) {
-                processed.add(processedSubgraph);
-                subSubfilters = createSubfilters(path, subEntityClass, subgraphs, processed);
+                // duplicate processed set so that elements in different subtrees aren't skipped (JERSEY-2892)
+                final Set<String> subProcessed = immutableSetOf(processed, processedSubgraph);
+
+                subSubfilters = createSubfilters(path, subEntityClass, subgraphs, subProcessed);
             }
 
             subfilters.put(fieldName, new FilteringPropertyFilter(graph.getEntityClass(), graph.getFields(path), subSubfilters));
@@ -103,14 +94,10 @@ final class JacksonObjectProvider extends AbstractObjectProvider<FilterProvider>
         return subfilters;
     }
 
-    private String getProcessedSubgraph(final Class<?> parent, final String field, final Class<?> fieldClass) {
-        return parent.getName() + "_" + field + "_" + fieldClass.getName();
-    }
-
     private static class FilteringFilterProvider extends FilterProvider {
 
         private final FilteringPropertyFilter root;
-        private final Stack<FilteringPropertyFilter> stack = new Stack<FilteringPropertyFilter>();
+        private final Stack<FilteringPropertyFilter> stack = new Stack<>();
 
         public FilteringFilterProvider(final FilteringPropertyFilter root) {
             this.root = root;
