@@ -67,7 +67,7 @@ public class DownloadEntityMessageBodyWriter implements MessageBodyWriter<Downlo
 
             String download = "attachment;";
             String fileName = downloadEntity.getFileName();
-            if (StringUtils.isNotBlank(fileName) && entity instanceof File) {
+            if (StringUtils.isBlank(fileName) && entity instanceof File) {
                 fileName = ((File) entity).getName();
             }
             if (StringUtils.isNotBlank(fileName)) {
