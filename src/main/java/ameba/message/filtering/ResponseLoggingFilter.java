@@ -1,4 +1,4 @@
-package ameba.filter;
+package ameba.message.filtering;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

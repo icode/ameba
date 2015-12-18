@@ -1,4 +1,4 @@
-package ameba.message.internal;
+package ameba.message.writer;
 
 import com.google.common.base.Charsets;
 

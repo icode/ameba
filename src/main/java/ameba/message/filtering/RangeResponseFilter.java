@@ -1,4 +1,4 @@
-package ameba.filter;
+package ameba.message.filtering;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -6,10 +6,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * @author icode
@@ -55,9 +52,9 @@ public class RangeResponseFilter implements ContainerResponseFilter {
         Object entity = responseContext.getEntity();
         return entity != null &&
                 (entity instanceof File
-                        || entity instanceof OutputStream
                         || entity instanceof InputStream
                         || entity instanceof StreamingOutput
+                        || entity instanceof Reader
                         || entity.getClass() == byte[].class
                 );
     }

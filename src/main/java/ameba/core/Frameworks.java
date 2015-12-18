@@ -34,7 +34,7 @@ public class Frameworks {
      * @return a {@link javax.ws.rs.ext.MessageBodyWriter} object.
      */
     public static MessageBodyWriter<Viewable> getViewableMessageBodyWriter(MessageBodyWorkers workers) {
-        return workers.getMessageBodyWriter(Viewable.class, Viewable.class,
+        return workers.getMessageBodyWriter(Viewable.class, null,
                 new Annotation[]{}, null);
     }
 

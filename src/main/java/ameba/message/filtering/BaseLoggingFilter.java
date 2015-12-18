@@ -1,4 +1,4 @@
-package ameba.filter;
+package ameba.message.filtering;
 
 import ameba.core.Application;
 import com.google.common.base.Charsets;

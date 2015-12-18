@@ -1,4 +1,4 @@
-package ameba.filter;
+package ameba.message.filtering;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
