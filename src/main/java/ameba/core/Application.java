@@ -1749,7 +1749,8 @@ public class Application {
             }
 
             @SuppressWarnings("unchecked")
-            public boolean containsAnnotations(Class<? extends Annotation>... annotationClass) {
+            @SafeVarargs
+            public final boolean containsAnnotations(Class<? extends Annotation>... annotationClass) {
                 if (ArrayUtils.isEmpty(annotationClass)) {
                     return false;
                 }
