@@ -7,9 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
-import javax.annotation.Priority;
 import javax.inject.Inject;
-import javax.ws.rs.Priorities;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
@@ -21,7 +19,6 @@ import java.io.OutputStream;
  * @author icode
  * @since 0.1.6e
  */
-@Priority(Priorities.ENTITY_CODER)
 public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
 
     @Context
