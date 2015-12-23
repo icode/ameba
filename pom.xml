@@ -186,6 +186,10 @@
                     <artifactId>hk2-locator</artifactId>
                     <groupId>org.glassfish.hk2</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>jersey-media-jaxb</artifactId>
+                    <groupId>org.glassfish.jersey.media</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!-- bean validation -->
