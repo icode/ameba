@@ -55,8 +55,10 @@ public class TemplateException extends AmebaExceptionWithJavaSource {
     public List<String> getSource() {
         InputStream in = null;
         try {
-            in = sourceUrl.openStream();
-            return IOUtils.readLines(in);
+            if (sourceUrl != null) {
+                in = sourceUrl.openStream();
+                return IOUtils.readLines(in);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

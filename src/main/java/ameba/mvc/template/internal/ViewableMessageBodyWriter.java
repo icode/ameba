@@ -13,7 +13,6 @@ import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.glassfish.jersey.uri.UriTemplate;
 
-import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
@@ -44,8 +43,7 @@ import java.util.Map;
  */
 @Singleton
 @ConstrainedTo(RuntimeType.SERVER)
-@Produces({"text/html", "application/xhtml+xml", "application/x-ms-application", "*/*"})
-@Priority(Integer.MAX_VALUE)
+@Produces({"text/html", "application/xhtml+xml"})
 final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
     public static final String DISABLE_DATA_VIEW = "data.view.disabled";
     public static final String DISABLE_DEFAULT_DATA_VIEW = "data.view.default.disabled";

@@ -115,19 +115,21 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
                 int line = -1;
                 int lineIndex = -1;
                 String fileName = e.getMessage().replace("Not found template ", "");
-                fileName = fileName.substring(fileName.lastIndexOf("/") + 1, fileName.lastIndexOf(" in"));
-                for (String s : sources) {
-                    line++;
-                    lineIndex = s.indexOf(fileName);
-                    if (lineIndex > -1 && s.contains("${") && s.contains("}")) {
-                        lineIndex++;
-                        break;
+                int tplNameIndex = fileName.lastIndexOf("/");
+                if (tplNameIndex != -1) {
+                    fileName = fileName.substring(tplNameIndex + 1, fileName.lastIndexOf(" in"));
+                    for (String s : sources) {
+                        line++;
+                        lineIndex = s.indexOf(fileName);
+                        if (lineIndex > -1 && s.contains("${") && s.contains("}")) {
+                            lineIndex++;
+                            break;
+                        }
+                    }
+                    if (lineIndex == -1) {
+                        line = -1;
                     }
                 }
-                if (lineIndex == -1) {
-                    line = -1;
-                }
-
                 ecx = new TemplateNotFoundException(e.getMessage(),
                         e, line, lineIndex, templateURL, sources);
             } else {

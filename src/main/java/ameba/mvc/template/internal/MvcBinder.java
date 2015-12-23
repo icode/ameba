@@ -21,7 +21,8 @@ public class MvcBinder extends AbstractBinder {
         bind(TemplateMethodInterceptor.class).to(WriterInterceptor.class).in(Singleton.class);
         //noinspection unchecked
         bind(TemplateMessageBodyWriter.class).to(MessageBodyWriter.class).in(Singleton.class);
-        bind(ViewableMessageBodyWriter.class).to(MessageBodyWriter.class).in(Singleton.class);
+        bind(ViewableMessageBodyWriter.class).to(MessageBodyWriter.class).in(Singleton.class)
+                .ranked(10);
 
         bind(TemplateModelProcessor.class).to(ModelProcessor.class).in(Singleton.class);
         bindAsContract(ResolvingViewableContext.class).in(Singleton.class);
