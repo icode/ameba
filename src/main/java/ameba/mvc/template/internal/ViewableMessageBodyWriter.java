@@ -43,7 +43,7 @@ import java.util.Map;
  */
 @Singleton
 @ConstrainedTo(RuntimeType.SERVER)
-@Produces({"text/html", "application/xhtml+xml"})
+@Produces({"text/html", "application/xhtml+xml", "application/x-ms-application"})
 final class ViewableMessageBodyWriter implements MessageBodyWriter<Object> {
     public static final String DISABLE_DATA_VIEW = "data.view.disabled";
     public static final String DISABLE_DEFAULT_DATA_VIEW = "data.view.default.disabled";
