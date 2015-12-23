@@ -23,6 +23,8 @@ import java.util.List;
 @PreMatching
 @Priority(Priorities.HEADER_DECORATOR)
 public class MediaTypeFilter implements ContainerRequestFilter {
+    private static final MediaType LOW_IE_DEFAULT_REQ_TYPE = new MediaType("application", "x-ms-application");
+
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String acceptHeader = requestContext.getHeaderString(HttpHeaders.ACCEPT);
@@ -33,7 +35,9 @@ public class MediaTypeFilter implements ContainerRequestFilter {
                 List<AcceptableMediaType> acceptableMediaTypes = HttpHeaderReader.readAcceptMediaType(acceptHeader);
                 if (acceptableMediaTypes.size() > 0) {
                     AcceptableMediaType type = acceptableMediaTypes.get(0);
-                    if (type.isWildcardType() && type.isWildcardSubtype()) {
+                    if ((type.isWildcardType() && type.isWildcardSubtype())
+                            || (LOW_IE_DEFAULT_REQ_TYPE.getType().equals(type.getType())
+                            && LOW_IE_DEFAULT_REQ_TYPE.getSubtype().equals(type.getSubtype()))) {
                         applyHeader(requestContext);
                     }
                 } else {
