@@ -744,11 +744,21 @@ public class Application {
             @Override
             public void onReceive(ClassFoundEvent event) {
                 event.accept(new ClassFoundEvent.ClassAccept() {
+
+                    private boolean isResource(CtClass ctClass) {
+                        int modifiers = ctClass.getModifiers();
+                        return !javassist.Modifier.isAbstract(modifiers)
+                                && !javassist.Modifier.isInterface(modifiers)
+                                && !javassist.Modifier.isAnnotation(modifiers)
+                                && !javassist.Modifier.isEnum(modifiers);
+                    }
+
                     @Override
                     public boolean accept(ClassFoundEvent.ClassInfo info) {
                         if (info.isPublic()) {
                             boolean add = false;
-                            if (info.containsAnnotations(Path.class, Provider.class)) {
+                            if (info.containsAnnotations(Path.class, Provider.class)
+                                    && isResource(info.getCtClass())) {
                                 add = true;
                             } else {
                                 try {
@@ -758,8 +768,10 @@ public class Application {
                                         for (Object anno : anns) {
                                             Class clazz = ((Annotation) anno).annotationType();
                                             if (clazz.equals(Path.class) || clazz.equals(Provider.class)) {
-                                                add = true;
-                                                break;
+                                                if (isResource(ctClass)) {
+                                                    add = true;
+                                                    break;
+                                                }
                                             }
                                         }
                                         if (add) {
