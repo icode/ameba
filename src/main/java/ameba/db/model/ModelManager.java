@@ -4,6 +4,9 @@ import ameba.core.Addon;
 import ameba.core.Application;
 import ameba.db.DataSourceManager;
 import ameba.event.Listener;
+import ameba.scanner.Acceptable;
+import ameba.scanner.ClassFoundEvent;
+import ameba.scanner.ClassInfo;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
@@ -76,13 +79,13 @@ public class ModelManager extends Addon {
 
                 final Set<Class> classes = Sets.newHashSet();
 
-                subscribeSystemEvent(Application.ClassFoundEvent.class, new Listener<Application.ClassFoundEvent>() {
+                subscribeSystemEvent(ClassFoundEvent.class, new Listener<ClassFoundEvent>() {
                     @Override
-                    public void onReceive(Application.ClassFoundEvent event) {
-                        event.accept(new Application.ClassFoundEvent.ClassAccept() {
+                    public void onReceive(ClassFoundEvent event) {
+                        event.accept(new Acceptable<ClassInfo>() {
                             @Override
                             @SuppressWarnings("unchecked")
-                            public boolean accept(Application.ClassFoundEvent.ClassInfo info) {
+                            public boolean accept(ClassInfo info) {
                                 if (info.startsWithPackage(startsPackages)) {
                                     logger.trace("load class : {}", info.getClassName());
                                     Class clazz = info.toClass();

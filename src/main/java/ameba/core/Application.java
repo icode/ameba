@@ -10,6 +10,10 @@ import ameba.exception.ConfigErrorException;
 import ameba.feature.AmebaFeature;
 import ameba.i18n.Messages;
 import ameba.lib.InitializationLogger;
+import ameba.scanner.Acceptable;
+import ameba.scanner.ClassFoundEvent;
+import ameba.scanner.ClassInfo;
+import ameba.scanner.PackageScanner;
 import ameba.util.ClassUtils;
 import ameba.util.IOUtils;
 import ameba.util.LinkedProperties;
@@ -20,18 +24,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
-import javassist.ClassPool;
 import javassist.CtClass;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.internal.OsgiRegistry;
-import org.glassfish.jersey.internal.util.ReflectionHelper;
 import org.glassfish.jersey.model.ContractProvider;
 import org.glassfish.jersey.server.*;
-import org.glassfish.jersey.server.internal.LocalizationMessages;
-import org.glassfish.jersey.server.internal.scanning.PackageNamesScanner;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceModel;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
@@ -49,13 +48,10 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.io.*;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.*;
 import java.nio.charset.Charset;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
 import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -397,44 +393,8 @@ public class Application {
         URL cacheList = IOUtils.getResource(SCAN_CLASSES_CACHE_FILE);
         if (cacheList == null || getMode().isDev()) {
             logger.debug(Messages.get("info.scan.classes"));
-            final PackageNamesScanner scanner = new PackageNamesScanner(
-                    scanPkgs.toArray(new String[scanPkgs.size()]), true);
-            Set<String> foundClasses = Sets.newHashSet();
-            List<String> acceptClasses = Lists.newArrayList();
-            while (scanner.hasNext()) {
-                String fileName = scanner.next();
-                if (!fileName.endsWith(".class")) continue;
-                ClassFoundEvent.ClassInfo info = new ClassFoundEvent.ClassInfo() {
-
-                    InputStream in;
-
-                    @Override
-                    public InputStream getFileStream() {
-                        if (in == null) {
-                            in = scanner.open();
-                        }
-                        return in;
-                    }
-
-                    @Override
-                    public void closeFileStream() {
-                        closeQuietly(in);
-                    }
-                };
-                info.fileName = fileName;
-                String className = info.getCtClass().getName();
-                if (!foundClasses.contains(className)) {
-                    ClassFoundEvent event = new ClassFoundEvent(info);
-                    SystemEventBus.publish(event);
-                    info.closeFileStream();
-
-                    if (event.accept) {
-                        acceptClasses.add(className);
-                    }
-                }
-                foundClasses.add(className);
-            }
-            foundClasses.clear();
+            PackageScanner scanner = new PackageScanner(scanPkgs);
+            scanner.scan();
 
             if (getMode().isDev()) return;
 
@@ -448,13 +408,13 @@ public class Application {
 
                 out = FileUtils.openOutputStream(cacheFile);
 
-                IOUtils.writeLines(acceptClasses, null, out);
+                IOUtils.writeLines(scanner.getAcceptClasses(), null, out);
             } catch (IOException e) {
                 logger.error(Messages.get("info.write.class.cache.error"), e);
             } finally {
-                acceptClasses.clear();
                 closeQuietly(out);
             }
+            scanner.clear();
         } else {
             logger.debug(Messages.get("info.read.class.cache.error"));
             InputStream in = null;
@@ -467,7 +427,7 @@ public class Application {
                         if (StringUtils.isBlank(className)) continue;
                         String fileName = className.replace(".", "/").concat(".class");
                         final InputStream fin = IOUtils.getResourceAsStream(fileName);
-                        ClassFoundEvent.ClassInfo info = new ClassFoundEvent.ClassInfo() {
+                        ClassInfo info = new ClassInfo(className.substring(className.lastIndexOf(".") + 1).concat(".class")) {
                             @Override
                             public InputStream getFileStream() {
                                 return fin;
@@ -478,7 +438,6 @@ public class Application {
                                 closeQuietly(fin);
                             }
                         };
-                        info.fileName = className.substring(className.lastIndexOf(".") + 1).concat(".class");
                         SystemEventBus.publish(new ClassFoundEvent(info, true));
                         info.closeFileStream();
                         className = reader.readLine();
@@ -738,12 +697,12 @@ public class Application {
 
     private void subscribeResourceEvent() {
 
-        final Set<ClassFoundEvent.ClassInfo> resources = Sets.newLinkedHashSet();
+        final Set<ClassInfo> resources = Sets.newLinkedHashSet();
 
         SystemEventBus.subscribe(ClassFoundEvent.class, new Listener<ClassFoundEvent>() {
             @Override
             public void onReceive(ClassFoundEvent event) {
-                event.accept(new ClassFoundEvent.ClassAccept() {
+                event.accept(new Acceptable<ClassInfo>() {
 
                     private boolean isResource(CtClass ctClass) {
                         int modifiers = ctClass.getModifiers();
@@ -754,35 +713,17 @@ public class Application {
                     }
 
                     @Override
-                    public boolean accept(ClassFoundEvent.ClassInfo info) {
+                    public boolean accept(ClassInfo info) {
                         if (info.isPublic()) {
                             CtClass thisClass = info.getCtClass();
                             if (isResource(thisClass)) {
-                                boolean add = false;
-                                if (info.containsAnnotations(Path.class, Provider.class)) {
-                                    add = true;
-                                } else {
-                                    try {
-                                        CtClass superClass = thisClass.getSuperclass();
-                                        while (superClass != null) {
-                                            Object[] anns = superClass.getAvailableAnnotations();
-                                            for (Object anno : anns) {
-                                                Class clazz = ((Annotation) anno).annotationType();
-                                                if (clazz.equals(Path.class) || clazz.equals(Provider.class)) {
-                                                    add = true;
-                                                    break;
-                                                }
-                                            }
-                                            if (add) {
-                                                break;
-                                            }
-                                            superClass = superClass.getSuperclass();
-                                        }
-                                    } catch (Exception e) {
-                                        //no op
+                                if (info.accpet(new Acceptable<CtClass>() {
+                                    @Override
+                                    public boolean accept(CtClass ctClass) {
+                                        return ctClass.hasAnnotation(Path.class)
+                                                || ctClass.hasAnnotation(Provider.class);
                                     }
-                                }
-                                if (add) {
+                                })) {
                                     resources.add(info);
                                     return true;
                                 }
@@ -797,7 +738,7 @@ public class Application {
         addons.add(new Addon() {
             @Override
             public void done(Application application) {
-                for (ClassFoundEvent.ClassInfo info : resources) {
+                for (ClassInfo info : resources) {
                     Class clazz = info.toClass();
                     if (!isRegistered(clazz))
                         register(clazz);
@@ -1680,148 +1621,6 @@ public class Application {
 
         public ContainerResponse getContainerResponse() {
             return event.getContainerResponse();
-        }
-    }
-
-    public static class ClassFoundEvent implements ameba.event.Event {
-        private boolean accept;
-        private boolean cacheMode = false;
-        private ClassInfo classInfo;
-
-        public ClassFoundEvent(ClassInfo classInfo, boolean cacheMode) {
-            this.cacheMode = cacheMode;
-            this.classInfo = classInfo;
-        }
-
-        public ClassFoundEvent(ClassInfo classInfo) {
-            this.classInfo = classInfo;
-        }
-
-        public InputStream getFileStream() {
-            return classInfo.getFileStream();
-        }
-
-        public void accept(ClassAccept accept) {
-            try {
-                boolean re = accept.accept(classInfo);
-                if (!this.accept && re)
-                    this.accept = true;
-            } catch (Exception e) {
-                logger.error("class accept error", e);
-            }
-        }
-
-        public boolean isCacheMode() {
-            return cacheMode;
-        }
-
-        public interface ClassAccept {
-            /**
-             * 如果是需要的class则返回true
-             *
-             * @param info class info
-             * @return 是否需要该class
-             */
-            boolean accept(ClassInfo info);
-        }
-
-        public static abstract class ClassInfo {
-            private CtClass ctClass;
-            private String fileName;
-            private Object[] annotations;
-
-            public String getFileName() {
-                return fileName;
-            }
-
-            public CtClass getCtClass() {
-                if (ctClass == null && fileName.endsWith(".class")) {
-                    try {
-                        ctClass = ClassPool.getDefault().makeClass(getFileStream());
-                    } catch (IOException e) {
-                        logger.error("make class error", e);
-                    }
-                }
-                return ctClass;
-            }
-
-            public String getClassName() {
-                return getCtClass().getName();
-            }
-
-            public Object[] getAnnotations() {
-                if (annotations == null) {
-                    try {
-                        annotations = getCtClass().getAvailableAnnotations();
-                    } catch (Exception | Error e) {
-                        return new Object[0];
-                    }
-                }
-                return annotations;
-            }
-
-            @SuppressWarnings("unchecked")
-            @SafeVarargs
-            public final boolean containsAnnotations(Class<? extends Annotation>... annotationClass) {
-                if (ArrayUtils.isEmpty(annotationClass)) {
-                    return false;
-                }
-
-                for (Object anno : getAnnotations()) {
-                    for (Class cls : annotationClass) {
-                        if (((Annotation) anno).annotationType().equals(cls)) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-
-            public boolean isPublic() {
-                return javassist.Modifier.isPublic(getCtClass().getModifiers());
-            }
-
-            public Class toClass() {
-                return getClassForName(getCtClass().getName());
-            }
-
-            public Class getClassForName(final String className) {
-                try {
-                    final OsgiRegistry osgiRegistry = ReflectionHelper.getOsgiRegistryInstance();
-
-                    if (osgiRegistry != null) {
-                        return osgiRegistry.classForNameWithException(className);
-                    } else {
-                        return AccessController.doPrivileged(ReflectionHelper.classForNameWithExceptionPEA(className));
-                    }
-                } catch (final ClassNotFoundException ex) {
-                    throw new RuntimeException(LocalizationMessages.ERROR_SCANNING_CLASS_NOT_FOUND(className), ex);
-                } catch (final PrivilegedActionException pae) {
-                    final Throwable cause = pae.getCause();
-                    if (cause instanceof ClassNotFoundException) {
-                        throw new RuntimeException(LocalizationMessages.ERROR_SCANNING_CLASS_NOT_FOUND(className), cause);
-                    } else if (cause instanceof RuntimeException) {
-                        throw (RuntimeException) cause;
-                    } else {
-                        throw new RuntimeException(cause);
-                    }
-                }
-            }
-
-            public boolean startsWithPackage(String... pkgs) {
-                for (String st : pkgs) {
-                    if (!st.endsWith(".")) st += ".";
-                    String className = getClassName();
-                    if (className.startsWith(st)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            public abstract InputStream getFileStream();
-
-            public abstract void closeFileStream();
         }
     }
 

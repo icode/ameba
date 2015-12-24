@@ -3,6 +3,9 @@ package ameba.feature.internal;
 import ameba.core.Addon;
 import ameba.core.Application;
 import ameba.event.Listener;
+import ameba.scanner.Acceptable;
+import ameba.scanner.ClassFoundEvent;
+import ameba.scanner.ClassInfo;
 import com.google.common.collect.Sets;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
@@ -26,14 +29,14 @@ public class LocalResourceAddon extends Addon {
     @Override
     public void setup(final Application application) {
 
-        final Set<Application.ClassFoundEvent.ClassInfo> classInfoSet = Sets.newLinkedHashSet();
-        subscribeSystemEvent(Application.ClassFoundEvent.class, new Listener<Application.ClassFoundEvent>() {
+        final Set<ClassInfo> classInfoSet = Sets.newLinkedHashSet();
+        subscribeSystemEvent(ClassFoundEvent.class, new Listener<ClassFoundEvent>() {
             @Override
-            public void onReceive(Application.ClassFoundEvent event) {
-                event.accept(new Application.ClassFoundEvent.ClassAccept() {
+            public void onReceive(ClassFoundEvent event) {
+                event.accept(new Acceptable<ClassInfo>() {
                     @Override
                     @SuppressWarnings("unchecked")
-                    public final boolean accept(Application.ClassFoundEvent.ClassInfo info) {
+                    public final boolean accept(ClassInfo info) {
                         if (info.containsAnnotations(Service.class)) {
                             classInfoSet.add(info);
                             return true;
@@ -51,7 +54,7 @@ public class LocalResourceAddon extends Addon {
 
             @Override
             public boolean configure(FeatureContext context) {
-                for (Application.ClassFoundEvent.ClassInfo classInfo : classInfoSet) {
+                for (ClassInfo classInfo : classInfoSet) {
                     ServiceLocatorUtilities.addClasses(locator, classInfo.toClass());
                 }
                 classInfoSet.clear();
