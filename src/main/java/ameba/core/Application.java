@@ -756,36 +756,36 @@ public class Application {
                     @Override
                     public boolean accept(ClassFoundEvent.ClassInfo info) {
                         if (info.isPublic()) {
-                            boolean add = false;
-                            if (info.containsAnnotations(Path.class, Provider.class)
-                                    && isResource(info.getCtClass())) {
-                                add = true;
-                            } else {
-                                try {
-                                    CtClass ctClass = info.getCtClass().getSuperclass();
-                                    while (ctClass != null) {
-                                        Object[] anns = ctClass.getAvailableAnnotations();
-                                        for (Object anno : anns) {
-                                            Class clazz = ((Annotation) anno).annotationType();
-                                            if (clazz.equals(Path.class) || clazz.equals(Provider.class)) {
-                                                if (isResource(ctClass)) {
+                            CtClass thisClass = info.getCtClass();
+                            if (isResource(thisClass)) {
+                                boolean add = false;
+                                if (info.containsAnnotations(Path.class, Provider.class)) {
+                                    add = true;
+                                } else {
+                                    try {
+                                        CtClass superClass = thisClass.getSuperclass();
+                                        while (superClass != null) {
+                                            Object[] anns = superClass.getAvailableAnnotations();
+                                            for (Object anno : anns) {
+                                                Class clazz = ((Annotation) anno).annotationType();
+                                                if (clazz.equals(Path.class) || clazz.equals(Provider.class)) {
                                                     add = true;
                                                     break;
                                                 }
                                             }
+                                            if (add) {
+                                                break;
+                                            }
+                                            superClass = superClass.getSuperclass();
                                         }
-                                        if (add) {
-                                            break;
-                                        }
-                                        ctClass = ctClass.getSuperclass();
+                                    } catch (Exception e) {
+                                        //no op
                                     }
-                                } catch (Exception e) {
-                                    //no op
                                 }
-                            }
-                            if (add) {
-                                resources.add(info);
-                                return true;
+                                if (add) {
+                                    resources.add(info);
+                                    return true;
+                                }
                             }
                         }
                         return false;
