@@ -18,6 +18,7 @@ boolean isTrace = "true".equalsIgnoreCase(trace);
 String appPackage = properties.getProperty("app.package");
 
 logger("org.glassfish", isTrace ? TRACE : WARN)
+logger("org.glassfish.jersey.filter", INFO)
 logger("org.glassfish.jersey.message.internal", isTrace ? TRACE : OFF)
 logger("org.glassfish.jersey.server.ServerRuntime\$Responder", isTrace ? TRACE : OFF)
 

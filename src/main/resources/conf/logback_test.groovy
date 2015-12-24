@@ -42,6 +42,7 @@ if (appPackage != null)
     logger(appPackage, DEBUG)
 
 logger("org.glassfish", WARN)
+logger("org.glassfish.jersey.filter", INFO)
 logger("org.glassfish.jersey.message.internal", OFF)
 logger("org.glassfish.jersey.server.ServerRuntime\$Responder", OFF)
 logger("org.avaje.ebean", WARN)
