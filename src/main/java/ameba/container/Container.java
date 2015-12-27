@@ -176,6 +176,7 @@ public abstract class Container {
         SystemEventBus.publish(new BeginReloadEvent(this, application));
         ResourceConfig config = application.getConfig();
         application.reconfigure();
+        registerBinder(application.getConfig());
         doReload(config);
     }
 
