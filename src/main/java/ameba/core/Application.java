@@ -96,9 +96,9 @@ public class Application {
     private Set<Addon> addons = Sets.newLinkedHashSet();
     private Set<String> excludes = Sets.newLinkedHashSet();
     private ResourceConfig config = new ExcludeResourceConfig(excludes);
+    private Map<String, Object> srcProperties = Maps.newLinkedHashMap();
     private Set<String> scanPkgs;
     private String[] ids;
-    private Map<String, Object> srcProperties = Maps.newLinkedHashMap();
 
     protected Application() {
         logger = new InitializationLogger(Application.class, this);
@@ -275,6 +275,10 @@ public class Application {
     }
 
     public void reconfigure() {
+        addons = Sets.newLinkedHashSet();
+        excludes = Sets.newLinkedHashSet();
+        config = new ExcludeResourceConfig(excludes);
+        srcProperties = Maps.newLinkedHashMap();
         configure();
     }
 
@@ -356,6 +360,9 @@ public class Application {
         scanClasses();
 
         addOnDone();
+
+        addons = Collections.unmodifiableSet(addons);
+        excludes = Collections.unmodifiableSet(excludes);
 
         logger.info(Messages.get("info.feature.load"));
     }
