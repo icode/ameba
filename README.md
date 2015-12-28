@@ -1,3 +1,5 @@
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.amebastack/ameba/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.amebastack/ameba)
+
 <pre>
     _                   _           
    / \   _ __ ___   ___| |__   __ _ 
