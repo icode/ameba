@@ -27,7 +27,6 @@ import java.net.URLEncoder;
 @Produces({"application/octet-stream", "*/*"})
 public class DownloadEntityMessageBodyWriter implements MessageBodyWriter<DownloadEntity> {
 
-    private static final String CONTENT_DISPOSITION = "Content-Disposition";
     @Inject
     private Provider<MessageBodyWorkers> workers;
     private MessageBodyWriter writer;
@@ -83,11 +82,12 @@ public class DownloadEntityMessageBodyWriter implements MessageBodyWriter<Downlo
                 download += fileName;
             }
 
-            httpHeaders.add(CONTENT_DISPOSITION, download);
+            httpHeaders.add(HttpHeaders.CONTENT_DISPOSITION, download);
         }
 
         if (downloadEntity.getMediaType() != null) {
             mediaType = downloadEntity.getMediaType();
+            httpHeaders.putSingle(HttpHeaders.CONTENT_TYPE, mediaType);
         }
 
         getWriter(entityClass, annotations, mediaType)
