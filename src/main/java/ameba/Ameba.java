@@ -162,11 +162,15 @@ public class Ameba {
         }
 
         app = application;
-        container = Container.create(app);
+        try {
+            container = Container.create(app);
 
-        // run
-        logger.info(Messages.get("info.service.start"));
-        container.start();
+            // run
+            logger.info(Messages.get("info.service.start"));
+            container.start();
+        } catch (Exception e) {
+            logger.error(Messages.get("info.service.error.startup"), e);
+        }
     }
 
     /**

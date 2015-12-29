@@ -8,7 +8,6 @@ import org.glassfish.jersey.message.internal.MessageBodyProviderNotFoundExceptio
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.HttpHeaders;
@@ -26,7 +25,6 @@ import java.net.URLEncoder;
  * @author icode
  */
 @Produces({"application/octet-stream", "*/*"})
-@Consumes({"application/octet-stream", "*/*"})
 public class DownloadEntityMessageBodyWriter implements MessageBodyWriter<DownloadEntity> {
 
     private static final String CONTENT_DISPOSITION = "Content-Disposition";
@@ -87,6 +85,11 @@ public class DownloadEntityMessageBodyWriter implements MessageBodyWriter<Downlo
 
             httpHeaders.add(CONTENT_DISPOSITION, download);
         }
+
+        if (downloadEntity.getMediaType() != null) {
+            mediaType = downloadEntity.getMediaType();
+        }
+
         getWriter(entityClass, annotations, mediaType)
                 .writeTo(entity, entityClass, null, annotations, mediaType, httpHeaders, entityStream);
     }
