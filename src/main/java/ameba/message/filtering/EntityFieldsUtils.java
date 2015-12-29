@@ -36,7 +36,7 @@ public class EntityFieldsUtils {
                         builder.append("(");
                     }
                     builder.append(s);
-                    if (!s.startsWith(")")) {
+                    if (!s.endsWith(")")) {
                         builder.append(")");
                     }
                     if (i < selectables.size() - 1) {
