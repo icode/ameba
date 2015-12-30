@@ -6,7 +6,7 @@
     <groupId>org.amebastack</groupId>
     <artifactId>ameba</artifactId>
     <packaging>jar</packaging>
-    <version>0.1.7-SNAPSHOT</version>
+    <version>0.1.8-SNAPSHOT</version>
     <name>Ameba-Framework</name>
     <description>A useful Java framework!</description>
 
@@ -343,15 +343,16 @@
             <version>${httl.version}</version>
         </dependency>
 
-        <!--<dependency>
-            <groupId>io.reactivex</groupId>
-            <artifactId>rxjava</artifactId>
-            <version>${rxjava.version}</version>
-        </dependency>-->
         <dependency>
             <groupId>com.github.fge</groupId>
             <artifactId>json-patch</artifactId>
             <version>${json-patch.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.thoughtworks.paranamer</groupId>
@@ -455,8 +456,23 @@
         </pluginManagement>
     </build>
 
+    <repositories>
+        <repository>
+            <id>oss</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>interval:5</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <properties>
-        <ameba.utils.version>0.1.7.Final</ameba.utils.version>
+        <ameba.utils.version>0.1.8-SNAPSHOT</ameba.utils.version>
         <osgi.version>4.2.0</osgi.version>
         <akka.logger>2.3.11</akka.logger>
         <paranamer.version>2.8</paranamer.version>

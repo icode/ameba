@@ -13,9 +13,14 @@ public class ExtendedMessageFeature implements Feature {
             context.register(TextMessageBodyWriter.class);
         }
 
-        if (!context.getConfiguration().isRegistered(DownloadEntityMessageBodyWriter.class)) {
-            context.register(DownloadEntityMessageBodyWriter.class);
+        if (!context.getConfiguration().isRegistered(DownloadEntityWriterInterceptor.class)) {
+            context.register(DownloadEntityWriterInterceptor.class);
         }
+
+        if (!context.getConfiguration().isRegistered(CaptchaWriterInterceptor.class)) {
+            context.register(CaptchaWriterInterceptor.class);
+        }
+
         return false;
     }
 }
