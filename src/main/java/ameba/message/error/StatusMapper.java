@@ -6,6 +6,7 @@ import org.glassfish.jersey.server.ContainerResponse;
 import javax.annotation.Priority;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -19,7 +20,7 @@ import java.util.List;
  * @author icode
  */
 @Singleton
-@Priority(Integer.MAX_VALUE)
+@Priority(Priorities.HEADER_DECORATOR + 1)
 public class StatusMapper implements ContainerResponseFilter {
 
     @Context
@@ -35,16 +36,31 @@ public class StatusMapper implements ContainerResponseFilter {
             throw new WebApplicationException(responseContext.getStatus());
         }
 
-        if (responseContext.getStatus() == 406
-                || responseContext.getStatus() == 415) {
-            List<MediaType> types = workersProvider.get().getMessageBodyWriterMediaTypesByType(Object.class);
-            MediaType mediaType;
-            if (types.size() > 0) {
-                mediaType = types.get(0);
-            } else {
-                mediaType = MediaType.WILDCARD_TYPE;
-            }
-            ((ContainerResponse) responseContext).setMediaType(mediaType);
+        List<MediaType> types = null;
+        // 找不到 writer/reader, 提供系统有的 writer/reader 输出错误
+        if (responseContext.getStatus() == 406) {
+            types = workersProvider.get()
+                    .getMessageBodyWriterMediaTypes(
+                            responseContext.getEntityClass(),
+                            responseContext.getEntityType(),
+                            responseContext.getEntityAnnotations());
+        } else if (responseContext.getStatus() == 415) {
+            types = workersProvider.get()
+                    .getMessageBodyReaderMediaTypes(
+                            responseContext.getEntityClass(),
+                            responseContext.getEntityType(),
+                            responseContext.getEntityAnnotations());
+        }
+        if (types != null) {
+            ((ContainerResponse) responseContext).setMediaType(parseMediaType(types));
+        }
+    }
+
+    private MediaType parseMediaType(List<MediaType> types) {
+        if (types != null && types.size() > 0) {
+            return types.get(0);
+        } else {
+            return MediaType.TEXT_HTML_TYPE;
         }
     }
 }
