@@ -20,7 +20,7 @@ import java.util.List;
  * @author icode
  */
 @Singleton
-@Priority(Priorities.HEADER_DECORATOR + 1)
+@Priority(Priorities.HEADER_DECORATOR - 1)
 public class StatusMapper implements ContainerResponseFilter {
 
     @Context
