@@ -1,20 +1,17 @@
 package ameba.message.filtering;
 
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.message.internal.AcceptableMediaType;
-import org.glassfish.jersey.message.internal.HttpHeaderReader;
+import org.glassfish.jersey.message.internal.MediaTypes;
 
 import javax.annotation.Priority;
-import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.Produces;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.container.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.text.ParseException;
+import java.lang.annotation.Annotation;
 import java.util.List;
 
 /**
@@ -22,64 +19,53 @@ import java.util.List;
  *
  * @author icode
  */
+@PreMatching
+@Singleton
 @Priority(Priorities.HEADER_DECORATOR)
-public class MediaTypeFilter implements ContainerRequestFilter {
-    private static final MediaType LOW_IE_DEFAULT_REQ_TYPE = new MediaType("application", "x-ms-application");
+public class MediaTypeFilter implements ContainerRequestFilter, ContainerResponseFilter {
+    private static final String LOW_IE_MEDIA = MediaTypeFilter.class + ".LOW_IE";
+    private static final MediaType LOW_IE_REQ_TYPE = new MediaType("application", "x-ms-application");
 
-    @Inject
-    private ResourceInfo resourceInfo;
+    private void applyMediaType(ContainerRequestContext requestContext) {
+        if (requestContext != null)
+            requestContext.getHeaders().putSingle(HttpHeaders.ACCEPT, MediaType.TEXT_HTML);
+    }
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        String acceptHeader = requestContext.getHeaderString(HttpHeaders.ACCEPT);
+        List<MediaType> types = requestContext.getAcceptableMediaTypes();
+        if (types.size() > 0) {
+            MediaType type = types.get(0);
+            if (LOW_IE_REQ_TYPE.getType().equals(type.getType())
+                    && LOW_IE_REQ_TYPE.getSubtype().equals(type.getSubtype())) {
+                applyMediaType(requestContext);
+                requestContext.setProperty(LOW_IE_MEDIA, true);
+            }
+        }
+    }
 
-        if (StringUtils.isBlank(acceptHeader)) {
-            applyHeader(requestContext);
-        } else {
-            try {
-                List<AcceptableMediaType> acceptableMediaTypes = HttpHeaderReader.readAcceptMediaType(acceptHeader);
-                if (acceptableMediaTypes.size() > 0) {
-                    AcceptableMediaType type = acceptableMediaTypes.get(0);
-                    if (LOW_IE_DEFAULT_REQ_TYPE.getType().equals(type.getType())
-                            && LOW_IE_DEFAULT_REQ_TYPE.getSubtype().equals(type.getSubtype())) {
-                        applyHeader(requestContext, false);
-                    } else if (type.isWildcardType() && type.isWildcardSubtype()) {
-                        applyHeader(requestContext);
+    @Override
+    public void filter(ContainerRequestContext requestContext,
+                       ContainerResponseContext responseContext) throws IOException {
+        Boolean lowIe = (Boolean) requestContext.getProperty(LOW_IE_MEDIA);
+        if (lowIe == null) {
+            List<MediaType> types = requestContext.getAcceptableMediaTypes();
+            if (types == null || (types.size() > 0 && MediaTypes.isWildcard(types.get(0)))) {
+                Annotation[] annotations = responseContext.getEntityAnnotations();
+                for (Annotation annotation : annotations) {
+                    if (annotation instanceof Produces) {
+                        Produces produces = (Produces) annotation;
+                        for (String produce : produces.value()) {
+                            if (StringUtils.isNotBlank(produce)
+                                    && !MediaTypes.isWildcard(MediaType.valueOf(produce))) {
+                                return;
+                            }
+                        }
                     }
-                } else {
-                    applyHeader(requestContext);
                 }
-            } catch (ParseException e) {
-                applyHeader(requestContext);
+                applyMediaType(requestContext);
+                responseContext.getHeaders().putSingle(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML);
             }
         }
-    }
-
-    private void applyHeader(ContainerRequestContext requestContext) {
-        applyHeader(requestContext, true);
-    }
-
-    private void applyHeader(ContainerRequestContext requestContext, boolean checkResource) {
-        if (checkResource) {
-            Produces methodProduces = resourceInfo.getResourceMethod().getAnnotation(Produces.class);
-            if (hasProduces(methodProduces)) {
-                return;
-            }
-            Produces classProduces = resourceInfo.getResourceClass().getAnnotation(Produces.class);
-            if (hasProduces(classProduces)) {
-                return;
-            }
-        }
-        requestContext.getHeaders().putSingle(HttpHeaders.ACCEPT, MediaType.TEXT_HTML);
-    }
-
-    private boolean hasProduces(Produces produces) {
-        if (produces != null && produces.value().length > 0) {
-            String firstType = produces.value()[0];
-            if (StringUtils.isNotBlank(firstType) && !"*/*".equals(firstType)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
