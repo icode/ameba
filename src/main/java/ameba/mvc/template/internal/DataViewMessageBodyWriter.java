@@ -8,6 +8,7 @@ import org.apache.commons.collections4.Predicate;
 import org.apache.commons.lang3.ArrayUtils;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
 import org.glassfish.jersey.message.MessageBodyWorkers;
+import org.glassfish.jersey.message.internal.MediaTypes;
 import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.glassfish.jersey.uri.UriTemplate;
 
@@ -43,7 +44,8 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
     public static final List<MediaType> TEMPLATE_PRODUCES = Lists.newArrayList(
             MediaType.TEXT_HTML_TYPE,
             MediaType.APPLICATION_XHTML_XML_TYPE,
-            LOW_IE_DEFAULT_REQ_TYPE
+            LOW_IE_DEFAULT_REQ_TYPE,
+            MediaType.WILDCARD_TYPE
     );
     private static final String DATA_VIEW_DEFAULT_KEY_PRE = "data.view.default.";
     public static final String DATA_VIEW_LIST_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "list";
@@ -81,7 +83,26 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
     @Override
     public boolean isWriteable(final Class<?> type, final Type genericType, final Annotation[] annotations,
                                final MediaType mediaType) {
-        return isSupport(type, genericType, annotations);
+        String[] p;
+        return !dataViewDisabled
+                && -1 != ListUtils.indexOf(requestProvider.get().getAcceptableMediaTypes(),
+                new Predicate<MediaType>() {
+                    @Override
+                    public boolean evaluate(MediaType mediaType) {
+                        return isSupportMediaType(mediaType);
+                    }
+                })
+                && ((p = TemplateHelper.getProduces(annotations)) == null
+                || -1 != ArrayUtils.indexOf(p,
+                new Predicate<String>() {
+                    @Override
+                    public boolean evaluate(String stringType) {
+                        if (stringType.equals(MediaType.WILDCARD)) return true;
+
+                        MediaType mediaType = MediaType.valueOf(stringType);
+                        return isSupportMediaType(mediaType);
+                    }
+                }));
     }
 
     @Override
@@ -99,7 +120,8 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
                         final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException, WebApplicationException {
         if (mediaType.getType().equals(LOW_IE_DEFAULT_REQ_TYPE.getType()) &&
-                mediaType.getSubtype().equals(LOW_IE_DEFAULT_REQ_TYPE.getSubtype())) {
+                mediaType.getSubtype().equals(LOW_IE_DEFAULT_REQ_TYPE.getSubtype())
+                || MediaTypes.isWildcard(mediaType)) {
             mediaType = MediaType.TEXT_HTML_TYPE;
         }
 
@@ -171,29 +193,6 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
         }
 
         return builder.toString().toLowerCase();
-    }
-
-    private boolean isSupport(Class entity, Type genericType, Annotation[] annotations) {
-        String[] p;
-        return !dataViewDisabled
-
-                && ((p = TemplateHelper.getProduces(annotations)) == null
-                || -1 != ArrayUtils.indexOf(p,
-                new Predicate<String>() {
-                    @Override
-                    public boolean evaluate(String stringType) {
-                        if (stringType.equals(MediaType.WILDCARD)) return true;
-
-                        MediaType mediaType = MediaType.valueOf(stringType);
-                        return isSupportMediaType(mediaType);
-                    }
-                })) && -1 != ListUtils.indexOf(requestProvider.get().getAcceptableMediaTypes(),
-                new Predicate<MediaType>() {
-                    @Override
-                    public boolean evaluate(MediaType mediaType) {
-                        return isSupportMediaType(mediaType);
-                    }
-                });
     }
 
     private boolean isSupportMediaType(MediaType mediaType) {
