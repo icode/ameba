@@ -20,10 +20,6 @@ public class SysFilteringFeature implements Feature {
         if (!configuration.isRegistered(RangeResponseFilter.class)) {
             context.register(RangeResponseFilter.class);
         }
-
-        if (!configuration.isRegistered(MediaTypeFilter.class)) {
-            context.register(MediaTypeFilter.class);
-        }
         return true;
     }
 }
