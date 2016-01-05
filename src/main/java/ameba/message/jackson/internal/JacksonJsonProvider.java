@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import javax.inject.Inject;
+import javax.ws.rs.ConstrainedTo;
+import javax.ws.rs.Produces;
+import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
@@ -19,6 +22,8 @@ import java.io.OutputStream;
  * @author icode
  * @since 0.1.6e
  */
+@ConstrainedTo(RuntimeType.SERVER)
+@Produces({"application/json", "text/json"})
 public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
 
     @Context
