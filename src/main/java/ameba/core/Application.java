@@ -395,7 +395,8 @@ public class Application {
 
     private void scanClasses() {
         if (SCAN_CLASSES_CACHE_FILE == null) {
-            SCAN_CLASSES_CACHE_FILE = IOUtils.getResource("/").getPath() + "conf/classes.list";
+            SCAN_CLASSES_CACHE_FILE = IOUtils.getResource("/").getPath()
+                    + "conf/classes_" + getApplicationVersion() + ".list";
         }
         URL cacheList = IOUtils.getResource(SCAN_CLASSES_CACHE_FILE);
         if (cacheList == null || getMode().isDev()) {
@@ -423,7 +424,7 @@ public class Application {
             }
             scanner.clear();
         } else {
-            logger.debug(Messages.get("info.read.class.cache.error"));
+            logger.debug(Messages.get("info.read.class.cache"));
             InputStream in = null;
             try {
                 in = cacheList.openStream();
