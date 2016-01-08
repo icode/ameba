@@ -119,9 +119,10 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
                         MediaType mediaType,
                         final MultivaluedMap<String, Object> httpHeaders,
                         final OutputStream entityStream) throws IOException, WebApplicationException {
-        if (mediaType.getType().equals(LOW_IE_DEFAULT_REQ_TYPE.getType()) &&
-                mediaType.getSubtype().equals(LOW_IE_DEFAULT_REQ_TYPE.getSubtype())
-                || MediaTypes.isWildcard(mediaType)) {
+        if (mediaType == null
+                || MediaTypes.isWildcard(mediaType)
+                || (mediaType.getType().equals(LOW_IE_DEFAULT_REQ_TYPE.getType()) &&
+                mediaType.getSubtype().equals(LOW_IE_DEFAULT_REQ_TYPE.getSubtype()))) {
             mediaType = MediaType.TEXT_HTML_TYPE;
         }
 
