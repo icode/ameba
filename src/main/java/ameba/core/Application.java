@@ -52,6 +52,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.*;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -157,12 +158,14 @@ public class Application {
         logger.info(Messages.get("info.module.load.conf"));
         //读取模块配置
         Enumeration<URL> moduleUrls = IOUtils.getResources("conf/module.conf");
+        List<String> readedModule = Lists.newArrayList();
         if (moduleUrls.hasMoreElements()) {
             while (moduleUrls.hasMoreElements()) {
                 InputStream in = null;
                 URL url = moduleUrls.nextElement();
                 try {
-                    String modelName = url.getFile();
+                    String fileName = url.getFile();
+                    String modelName = fileName;
                     int jarFileIndex = modelName.lastIndexOf("!");
                     if (jarFileIndex != -1) {
                         modelName = modelName.substring(0, jarFileIndex);
@@ -175,6 +178,19 @@ public class Application {
 
                     int fileIndex = modelName.lastIndexOf("/");
                     modelName = modelName.substring(fileIndex + 1);
+
+                    if (url.getProtocol().equals("file") && "module".equals(modelName)) {
+                        //projectName/target/classes/conf/module
+                        //projectName/src/main/resources/conf/module
+                        if (fileName.endsWith("/target/classes/conf/module.conf")) {
+                            modelName = Paths.get(fileName, "../../../../").normalize().getFileName().toString();
+                        } else if (fileName.endsWith("/src/main/resources/conf/module.conf")) {
+                            modelName = Paths.get(fileName, "../../../../../").normalize().getFileName().toString();
+                        }
+                    }
+
+                    if (readedModule.contains(modelName)) continue;
+                    readedModule.add(modelName);
 
                     logger.info(Messages.get("info.module.load", modelName));
                     logger.debug(Messages.get("info.module.load.item.conf", toExternalForm(url)));
