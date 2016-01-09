@@ -1,6 +1,5 @@
 package ameba.exception;
 
-import ameba.Ameba;
 import com.google.common.collect.Lists;
 
 import java.io.File;
@@ -56,13 +55,13 @@ public class AmebaException extends RuntimeException {
      * @param cause a {@link java.lang.Throwable} object.
      * @return a {@link ameba.exception.AmebaException.InterestingSomething} object.
      */
-    public static InterestingSomething getInterestingSomething(Throwable cause) {
+    public static InterestingSomething getInterestingSomething(Throwable cause, File sourceDir) {
         InterestingSomething something = null;
         for (StackTraceElement stackTraceElement : cause.getStackTrace()) {
             if (stackTraceElement.getLineNumber() > 0) {
                 String path = stackTraceElement.getClassName().replace(".", "/");
                 path = path.substring(0, path.lastIndexOf("/"));
-                File source = new File(Ameba.getApp().getPackageRoot(), path);
+                File source = new File(sourceDir, path);
                 if (source.exists() && source.isDirectory()) {
                     String fN = stackTraceElement.getFileName();
                     int index = fN.indexOf("$");
@@ -86,6 +85,10 @@ public class AmebaException extends RuntimeException {
             }
         }
         return something;
+    }
+
+    public static InterestingSomething getInterestingSomething(Throwable cause) {
+        return getInterestingSomething(cause, new File("src/main/java"));
     }
 
     /**
