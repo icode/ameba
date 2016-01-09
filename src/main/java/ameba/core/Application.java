@@ -63,7 +63,7 @@ import static ameba.util.IOUtils.*;
 /**
  * 应用程序启动配置
  *
- * @author ICode
+ * @author icode
  * @since 13-8-6 下午8:42
  */
 @Singleton
@@ -84,21 +84,19 @@ public class Application {
     private static final String EXCLUDES_KEY_PREFIX = EXCLUDES_KEY + ".";
     private static String SCAN_CLASSES_CACHE_FILE;
     private static InitializationLogger logger = new InitializationLogger(Application.class, null);
-    private static String INFO_SPLITER = "---------------------------------------------------";
+    private static String INFO_SPLITTER = "---------------------------------------------------";
     protected boolean jmxEnabled;
     private String[] configFiles;
     private long timestamp = System.currentTimeMillis();
     private boolean initialized = false;
     private Mode mode;
     private CharSequence applicationVersion;
-    private File sourceRoot;
-    private File packageRoot;
     private Container container;
     private Set<Addon> addons = Sets.newLinkedHashSet();
     private Set<String> excludes = Sets.newLinkedHashSet();
     private ResourceConfig config = new ExcludeResourceConfig(excludes);
     private Map<String, Object> srcProperties = Maps.newLinkedHashMap();
-    private Set<String> scanPkgs;
+    private Set<String> scanPackages;
     private String[] ids;
 
     protected Application() {
@@ -417,7 +415,7 @@ public class Application {
         URL cacheList = IOUtils.getResource(SCAN_CLASSES_CACHE_FILE);
         if (cacheList == null || getMode().isDev()) {
             logger.debug(Messages.get("info.scan.classes"));
-            PackageScanner scanner = new PackageScanner(scanPkgs);
+            PackageScanner scanner = new PackageScanner(scanPackages);
             scanner.scan();
 
             if (getMode().isDev()) return;
@@ -934,7 +932,7 @@ public class Application {
 
                     final String startUsedTime = Times.toDuration(System.currentTimeMillis() - timestamp);
                     builder.append(line)
-                            .append(INFO_SPLITER)
+                            .append(INFO_SPLITTER)
                             .append(line);
                     appendInfo("info.ameba.version", Ameba.getVersion());
                     appendInfo("info.http.container", StringUtils.defaultString(container.getType(), "Unknown"));
@@ -964,7 +962,7 @@ public class Application {
                         logger.warn(Messages.get("info.connector.none"));
                     }
                     builder.append(line)
-                            .append(INFO_SPLITER);
+                            .append(INFO_SPLITTER);
                     logger.info(Messages.get("info.started"));
                     logger.getSource().info(builder.toString());
                 }
@@ -1067,10 +1065,10 @@ public class Application {
      * @return a {@link ameba.core.Application} object.
      */
     public Application packages(String... packages) {
-        if (scanPkgs == null) {
-            scanPkgs = Sets.newHashSet();
+        if (scanPackages == null) {
+            scanPackages = Sets.newHashSet();
         }
-        Collections.addAll(scanPkgs, packages);
+        Collections.addAll(scanPackages, packages);
         return this;
     }
 
@@ -1080,7 +1078,7 @@ public class Application {
      * @return a {@link java.util.Set} object.
      */
     public Set<String> getPackages() {
-        return scanPkgs;
+        return scanPackages;
     }
 
     /**
@@ -1370,48 +1368,12 @@ public class Application {
     }
 
     /**
-     * <p>Getter for the field <code>packageRoot</code>.</p>
-     *
-     * @return a {@link java.io.File} object.
-     */
-    public File getPackageRoot() {
-        return packageRoot;
-    }
-
-    /**
-     * <p>Setter for the field <code>packageRoot</code>.</p>
-     *
-     * @param packageRoot a {@link java.io.File} object.
-     */
-    public void setPackageRoot(File packageRoot) {
-        this.packageRoot = packageRoot;
-    }
-
-    /**
      * <p>Getter for the field <code>configFiles</code>.</p>
      *
      * @return an array of {@link java.lang.String} objects.
      */
     public String[] getConfigFiles() {
         return configFiles;
-    }
-
-    /**
-     * <p>Getter for the field <code>sourceRoot</code>.</p>
-     *
-     * @return a {@link java.io.File} object.
-     */
-    public File getSourceRoot() {
-        return sourceRoot;
-    }
-
-    /**
-     * <p>Setter for the field <code>sourceRoot</code>.</p>
-     *
-     * @param sourceRoot a {@link java.io.File} object.
-     */
-    public void setSourceRoot(File sourceRoot) {
-        this.sourceRoot = sourceRoot;
     }
 
     /**
