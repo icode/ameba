@@ -24,7 +24,7 @@ import java.util.Set;
  */
 public class DataSourceManager extends Addon {
 
-    private static final Map<String, javax.sql.DataSource> dataSourceMap = Maps.newHashMap();
+    private static final Map<String, DruidDataSource> dataSourceMap = Maps.newHashMap();
     private static final Logger logger = LoggerFactory.getLogger(DataSourceManager.class);
     private static String DEFAULT_DS_NAME = "default";
 
@@ -107,8 +107,8 @@ public class DataSourceManager extends Addon {
         app.register(new AbstractBinder() {
             @Override
             protected void configure() {
-                for (Map.Entry<String, DataSource> entry : dataSourceMap.entrySet()) {
-                    DataSource ds = entry.getValue();
+                for (Map.Entry<String, DruidDataSource> entry : dataSourceMap.entrySet()) {
+                    DruidDataSource ds = entry.getValue();
                     String name = entry.getKey();
                     createBuilder(ds).named(name);
 
@@ -118,8 +118,8 @@ public class DataSourceManager extends Addon {
                 }
             }
 
-            private ScopedBindingBuilder<DruidDataSource> createBuilder(DataSource dataSource) {
-                return bind((DruidDataSource) dataSource)
+            private ScopedBindingBuilder<DruidDataSource> createBuilder(DruidDataSource dataSource) {
+                return bind(dataSource)
                         .to(DruidDataSource.class)
                         .to(DataSource.class)
                         .proxy(false);
