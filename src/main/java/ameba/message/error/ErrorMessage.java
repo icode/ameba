@@ -6,6 +6,7 @@ import ameba.util.ClassUtils;
 import ameba.util.Result;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import org.glassfish.jersey.message.internal.MessageBodyProviderNotFoundException;
 
 import javax.ws.rs.InternalServerErrorException;
@@ -44,7 +45,7 @@ public class ErrorMessage extends Result {
         super(success, message);
     }
 
-    public ErrorMessage(boolean success, Integer code, String message) {
+    public ErrorMessage(boolean success, Long code, String message) {
         super(success, code, message);
     }
 
@@ -112,7 +113,7 @@ public class ErrorMessage extends Result {
                 StackTraceElement[] stackTraceElements = cause.getStackTrace();
                 if (stackTraceElements != null && stackTraceElements.length > 0) {
                     Result.Error error = new Result.Error(
-                            cause.getClass().getCanonicalName().hashCode(),
+                            Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).asLong(),
                             cause.getMessage());
 
                     if (status == 500) {

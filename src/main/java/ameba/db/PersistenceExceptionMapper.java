@@ -5,6 +5,7 @@ import ameba.message.error.ErrorMessage;
 import ameba.message.error.ExceptionMapperUtils;
 import ameba.util.Result;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +36,7 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
 
         ErrorMessage errorMessage = ErrorMessage.fromStatus(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         errorMessage.setThrowable(exception);
-        errorMessage.setCode(exception.getClass().getCanonicalName().hashCode());
+        errorMessage.setCode(Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).asLong());
 
         boolean isDev = application.getMode().isDev();
         List<ErrorMessage.Error> errors = Lists.newArrayList();

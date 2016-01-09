@@ -5,6 +5,7 @@ import ameba.core.Requests;
 import ameba.util.ClassUtils;
 import ameba.util.Result;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import org.glassfish.jersey.server.internal.process.MappableException;
 import org.glassfish.jersey.server.spi.ResponseErrorMapper;
 import org.slf4j.Logger;
@@ -57,7 +58,7 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
             Class clazz = resourceInfo.getResourceClass();
             if (clazz != null) {
                 errors.add(new Result.Error(
-                        exception.getClass().getCanonicalName().hashCode(),
+                        Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).asLong(),
                         exception.getMessage(),
                         null,
                         isDev ? ClassUtils.toString(clazz, resourceInfo.getResourceMethod()) : null
@@ -86,7 +87,7 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
             exception = exception.getCause();
         }
 
-        message.setCode(exception.getClass().getCanonicalName().hashCode());
+        message.setCode(Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).asLong());
         message.setStatus(status);
         message.setThrowable(exception);
         message.setMessage(parseMessage(exception, status));

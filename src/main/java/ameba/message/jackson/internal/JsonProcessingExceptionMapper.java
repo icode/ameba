@@ -7,6 +7,7 @@ import ameba.util.IOUtils;
 import ameba.util.Result;
 import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.hash.Hashing;
 import org.glassfish.jersey.spi.ExceptionMappers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +64,7 @@ public class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProces
 
         ErrorMessage errorMessage = ErrorMessage.fromStatus(Response.Status.BAD_REQUEST.getStatusCode());
         errorMessage.setThrowable(exception);
-        errorMessage.setCode(exception.getClass().getCanonicalName().hashCode());
+        errorMessage.setCode(Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).asLong());
 
         errorMessage.addError(new Result.Error(
                 errorMessage.getCode(),

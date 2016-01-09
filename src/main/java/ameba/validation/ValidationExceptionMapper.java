@@ -3,6 +3,7 @@ package ameba.validation;
 import ameba.message.error.ErrorMessage;
 import ameba.message.error.ExceptionMapperUtils;
 import ameba.util.Result;
+import com.google.common.hash.Hashing;
 import org.glassfish.jersey.server.validation.internal.LocalizationMessages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ public class ValidationExceptionMapper implements ExceptionMapper<ConstraintViol
         Response.Status status = ValidationHelper.getResponseStatus(exception);
         ErrorMessage errorMessage = ErrorMessage.fromStatus(status.getStatusCode());
         errorMessage.setThrowable(exception);
-        errorMessage.setCode(exception.getClass().getCanonicalName().hashCode());
+        errorMessage.setCode(Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).asLong());
 
         List<Result.Error> errors = ValidationHelper.constraintViolationToValidationErrors(exception);
 

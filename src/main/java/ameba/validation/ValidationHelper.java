@@ -3,6 +3,7 @@ package ameba.validation;
 import ameba.message.error.ErrorMessage;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import org.glassfish.jersey.server.validation.ValidationError;
 
 import javax.validation.ConstraintViolation;
@@ -40,7 +41,7 @@ public final class ValidationHelper {
                     @Override
                     public ErrorMessage.Error apply(final ConstraintViolation<?> violation) {
                         return new ErrorMessage.Error(
-                                violation.getMessageTemplate().hashCode(),
+                                Hashing.murmur3_32().hashUnencodedChars(violation.getMessageTemplate()).asLong(),
                                 violation.getMessage(),
                                 null,
                                 getViolationPath(violation)
