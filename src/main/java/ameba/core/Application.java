@@ -3,13 +3,13 @@ package ameba.core;
 import ameba.Ameba;
 import ameba.container.Container;
 import ameba.container.server.Connector;
+import ameba.core.event.RequestEvent;
 import ameba.event.Listener;
 import ameba.event.SystemEventBus;
 import ameba.exception.AmebaException;
 import ameba.exception.ConfigErrorException;
 import ameba.feature.AmebaFeature;
 import ameba.i18n.Messages;
-import ameba.lib.InitializationLogger;
 import ameba.scanner.Acceptable;
 import ameba.scanner.ClassFoundEvent;
 import ameba.scanner.ClassInfo;
@@ -30,22 +30,22 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.model.ContractProvider;
-import org.glassfish.jersey.server.*;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ResourceFinder;
+import org.glassfish.jersey.server.ServerConfig;
+import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.model.Resource;
-import org.glassfish.jersey.server.model.ResourceModel;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.monitoring.RequestEventListener;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.inject.Singleton;
 import javax.ws.rs.Path;
 import javax.ws.rs.RuntimeType;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Feature;
-import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.io.*;
 import java.lang.reflect.Field;
@@ -82,8 +82,8 @@ public class Application {
     private static final String DEFAULT_LOGBACK_CONF = "log.groovy";
     private static final String EXCLUDES_KEY = "exclude.classes";
     private static final String EXCLUDES_KEY_PREFIX = EXCLUDES_KEY + ".";
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static String SCAN_CLASSES_CACHE_FILE;
-    private static InitializationLogger logger = new InitializationLogger(Application.class, null);
     private static String INFO_SPLITTER = "---------------------------------------------------";
     protected boolean jmxEnabled;
     private String[] configFiles;
@@ -100,7 +100,6 @@ public class Application {
     private String[] ids;
 
     protected Application() {
-        logger = new InitializationLogger(Application.class, this);
     }
 
     /**
@@ -115,7 +114,6 @@ public class Application {
         }
 
         this.ids = ids;
-        logger = new InitializationLogger(Application.class, this);
 
         Set<String> configFiles = parseIds2ConfigFile(ids);
         this.configFiles = configFiles.toArray(new String[configFiles.size()]);
@@ -478,17 +476,17 @@ public class Application {
         register(new ApplicationEventListener() {
             @Override
             public void onEvent(ApplicationEvent event) {
-                SystemEventBus.publish(new Event(event));
+                SystemEventBus.publish(new ameba.core.event.ApplicationEvent(event));
             }
 
             @Override
             public RequestEventListener onRequest(org.glassfish.jersey.server.monitoring.RequestEvent requestEvent) {
-                logger.getSource().trace(Messages.get("info.on.request", requestEvent.getType().name()));
+                logger.trace(Messages.get("info.on.request", requestEvent.getType().name()));
                 AmebaFeature.publishEvent(new RequestEvent(requestEvent));
                 return new RequestEventListener() {
                     @Override
                     public void onEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
-                        logger.getSource().trace(Messages.get("info.on.request", event.getType().name()));
+                        logger.trace(Messages.get("info.on.request", event.getType().name()));
                         AmebaFeature.publishEvent(new RequestEvent(event));
                     }
                 };
@@ -964,7 +962,7 @@ public class Application {
                     builder.append(line)
                             .append(INFO_SPLITTER);
                     logger.info(Messages.get("info.started"));
-                    logger.getSource().info(builder.toString());
+                    logger.info(builder.toString());
                 }
 
                 initialized = true;
@@ -979,7 +977,6 @@ public class Application {
      * @return a {@link ameba.core.Application} object.
      */
     public Application register(Class<?> componentClass) {
-
         config.register(componentClass);
         return this;
     }
@@ -1518,95 +1515,6 @@ public class Application {
                 }
             }
             return super.put(key, value);
-        }
-    }
-
-    public static class Event implements ameba.event.Event {
-
-        ApplicationEvent event;
-
-        public Event(ApplicationEvent event) {
-            this.event = event;
-        }
-
-        public ApplicationEvent.Type getType() {
-            return event.getType();
-        }
-
-        public ResourceConfig getResourceConfig() {
-            return event.getResourceConfig();
-        }
-
-        public ResourceModel getResourceModel() {
-            return event.getResourceModel();
-        }
-
-        public Set<Class<?>> getProviders() {
-            return event.getProviders();
-        }
-
-        public Set<Object> getRegisteredInstances() {
-            return event.getRegisteredInstances();
-        }
-
-        public Set<Class<?>> getRegisteredClasses() {
-            return event.getRegisteredClasses();
-        }
-    }
-
-    public static class RequestEvent implements ameba.event.Event {
-        org.glassfish.jersey.server.monitoring.RequestEvent event;
-
-        public RequestEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
-            this.event = event;
-        }
-
-        public org.glassfish.jersey.server.monitoring.RequestEvent.Type getType() {
-            return event.getType();
-        }
-
-        public org.glassfish.jersey.server.monitoring.RequestEvent.ExceptionCause getExceptionCause() {
-            return event.getExceptionCause();
-        }
-
-        public Iterable<ContainerResponseFilter> getContainerResponseFilters() {
-            return event.getContainerResponseFilters();
-        }
-
-        public ContainerRequest getContainerRequest() {
-            return event.getContainerRequest();
-        }
-
-        public boolean isResponseSuccessfullyMapped() {
-            return event.isResponseSuccessfullyMapped();
-        }
-
-        public Iterable<ContainerRequestFilter> getContainerRequestFilters() {
-            return event.getContainerRequestFilters();
-        }
-
-        public boolean isResponseWritten() {
-            return event.isResponseWritten();
-        }
-
-        public boolean isSuccess() {
-            return event.isSuccess();
-        }
-
-        public Throwable getException() {
-            return event.getException();
-        }
-
-        public ExceptionMapper<?> getExceptionMapper() {
-            return event.getExceptionMapper();
-        }
-
-        public ExtendedUriInfo getUriInfo() {
-            return event.getUriInfo();
-        }
-
-        public ContainerResponse getContainerResponse() {
-            return event.getContainerResponse();
         }
     }
 
