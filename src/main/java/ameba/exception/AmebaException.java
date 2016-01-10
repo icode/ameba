@@ -52,7 +52,8 @@ public class AmebaException extends RuntimeException {
     /**
      * <p>getInterestingSomething.</p>
      *
-     * @param cause a {@link java.lang.Throwable} object.
+     * @param cause     a {@link java.lang.Throwable} object.
+     * @param sourceDir source dir
      * @return a {@link ameba.exception.AmebaException.InterestingSomething} object.
      */
     public static InterestingSomething getInterestingSomething(Throwable cause, File sourceDir) {
