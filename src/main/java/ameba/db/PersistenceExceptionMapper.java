@@ -36,7 +36,7 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
 
         ErrorMessage errorMessage = ErrorMessage.fromStatus(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         errorMessage.setThrowable(exception);
-        errorMessage.setCode(Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).asLong());
+        errorMessage.setCode(Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).toString());
 
         boolean isDev = application.getMode().isDev();
         List<ErrorMessage.Error> errors = Lists.newArrayList();

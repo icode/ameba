@@ -64,7 +64,7 @@ public class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProces
 
         ErrorMessage errorMessage = ErrorMessage.fromStatus(Response.Status.BAD_REQUEST.getStatusCode());
         errorMessage.setThrowable(exception);
-        errorMessage.setCode(Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).asLong());
+        errorMessage.setCode(Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).toString());
 
         errorMessage.addError(new Result.Error(
                 errorMessage.getCode(),

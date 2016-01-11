@@ -58,7 +58,7 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
             Class clazz = resourceInfo.getResourceClass();
             if (clazz != null) {
                 errors.add(new Result.Error(
-                        Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).asLong(),
+                        Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).toString(),
                         exception.getMessage(),
                         null,
                         isDev ? ClassUtils.toString(clazz, resourceInfo.getResourceMethod()) : null
@@ -87,7 +87,7 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
             exception = exception.getCause();
         }
 
-        message.setCode(Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).asLong());
+        message.setCode(Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).toString());
         message.setStatus(status);
         message.setThrowable(exception);
         message.setMessage(parseMessage(exception, status));

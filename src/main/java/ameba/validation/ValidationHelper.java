@@ -41,7 +41,7 @@ public final class ValidationHelper {
                     @Override
                     public ErrorMessage.Error apply(final ConstraintViolation<?> violation) {
                         return new ErrorMessage.Error(
-                                Hashing.murmur3_32().hashUnencodedChars(violation.getMessageTemplate()).asLong(),
+                                Hashing.murmur3_32().hashUnencodedChars(violation.getMessageTemplate()).toString(),
                                 violation.getMessage(),
                                 null,
                                 getViolationPath(violation)

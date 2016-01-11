@@ -31,7 +31,7 @@ public class ValidationExceptionMapper implements ExceptionMapper<ConstraintViol
         Response.Status status = ValidationHelper.getResponseStatus(exception);
         ErrorMessage errorMessage = ErrorMessage.fromStatus(status.getStatusCode());
         errorMessage.setThrowable(exception);
-        errorMessage.setCode(Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).asLong());
+        errorMessage.setCode(Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).toString());
 
         List<Result.Error> errors = ValidationHelper.constraintViolationToValidationErrors(exception);
 

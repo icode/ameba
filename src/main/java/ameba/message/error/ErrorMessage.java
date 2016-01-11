@@ -33,11 +33,7 @@ public class ErrorMessage extends Result {
         super(message, errors);
     }
 
-    public ErrorMessage(Integer code, String message, List<Error> errors) {
-        super(code, message, errors);
-    }
-
-    public ErrorMessage(Integer code, String message, String description, List<Error> errors) {
+    public ErrorMessage(String code, String message, String description, List<Error> errors) {
         super(code, message, description, errors);
     }
 
@@ -45,7 +41,7 @@ public class ErrorMessage extends Result {
         super(success, message);
     }
 
-    public ErrorMessage(boolean success, Long code, String message) {
+    public ErrorMessage(boolean success, String code, String message) {
         super(success, code, message);
     }
 
@@ -113,7 +109,7 @@ public class ErrorMessage extends Result {
                 StackTraceElement[] stackTraceElements = cause.getStackTrace();
                 if (stackTraceElements != null && stackTraceElements.length > 0) {
                     Result.Error error = new Result.Error(
-                            Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).asLong(),
+                            Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).toString(),
                             cause.getMessage());
 
                     if (status == 500) {
