@@ -1455,7 +1455,6 @@ public class Application {
             }
         }
 
-
         //java.util.logging.Logger proxy
         java.util.logging.Logger rootLogger = LogManager.getLogManager().getLogger("");
         Handler[] handlers = rootLogger.getHandlers();
@@ -1464,6 +1463,11 @@ public class Application {
         }
         SLF4JBridgeHandler.install();
         rootLogger.setLevel(Level.ALL);
+
+        String appPackage = properties.getProperty("app.package");
+        if (StringUtils.isBlank(appPackage)) {
+            logger.warn(Messages.get("app.package.not.config.warn"));
+        }
     }
 
     public Map<String, Object> getSrcProperties() {

@@ -38,8 +38,12 @@ appender("FILE", RollingFileAppender) {
     }
 }
 
-if (appPackage != null)
-    logger(appPackage, DEBUG)
+if (appPackage != null) {
+    for (String pkg : appPackage.split(",")) {
+        if (StringUtils.isNotBlank(pkg))
+            logger(pkg, TRACE)
+    }
+}
 
 logger("org.glassfish", WARN)
 logger("org.glassfish.jersey.filter", INFO)

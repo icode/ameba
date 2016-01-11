@@ -2,6 +2,7 @@ package conf
 
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.core.ConsoleAppender
+import org.apache.commons.lang3.StringUtils
 
 import static ch.qos.logback.classic.Level.*
 
@@ -38,6 +39,12 @@ logger("com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager", WARN)
 
 logger("httl", WARN)
 logger("ameba", isTrace ? TRACE : DEBUG)
-if (appPackage != null)
-    logger(appPackage, TRACE)
+
+if (appPackage != null) {
+    for (String pkg : appPackage.split(",")) {
+        if (StringUtils.isNotBlank(pkg))
+            logger(pkg, TRACE)
+    }
+}
+
 root(WARN, ["CONSOLE"])

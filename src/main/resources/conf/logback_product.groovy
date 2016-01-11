@@ -36,8 +36,13 @@ appender("FILE", RollingFileAppender) {
     }
 }
 
-if (appPackage != null)
-    logger(appPackage, INFO)
+if (appPackage != null) {
+    for (String pkg : appPackage.split(",")) {
+        if (StringUtils.isNotBlank(pkg))
+            logger(pkg, INFO)
+    }
+}
+
 logger("ameba", INFO)
 logger("org.glassfish.jersey.filter", INFO)
 logger("org.glassfish.jersey.message.internal", OFF)
