@@ -82,6 +82,7 @@ public class Application {
     private static final String DEFAULT_LOGBACK_CONF = "log.groovy";
     private static final String EXCLUDES_KEY = "exclude.classes";
     private static final String EXCLUDES_KEY_PREFIX = EXCLUDES_KEY + ".";
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator", "/n");
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static String SCAN_CLASSES_CACHE_FILE;
     private static String INFO_SPLITTER = "---------------------------------------------------";
@@ -270,7 +271,7 @@ public class Application {
                 while (urls.hasMoreElements()) {
                     urlList.add(urls.nextElement().toExternalForm());
                 }
-                String errorMsg = Messages.get("info.load.config.multi.error", StringUtils.join(urlList, "\n"));
+                String errorMsg = Messages.get("info.load.config.multi.error", StringUtils.join(urlList, LINE_SEPARATOR));
                 logger.error(errorMsg);
                 throw new ConfigErrorException(errorMsg);
             }
@@ -791,7 +792,8 @@ public class Application {
         }
         packages = ArrayUtils.removeElement(packages, "");
         if (packages.length > 0) {
-            logger.info(Messages.get("info.configure.resource.package", StringUtils.join(packages, ",")));
+            logger.info(Messages.get("info.configure.resource.package",
+                    LINE_SEPARATOR + StringUtils.join(packages, "," + LINE_SEPARATOR) + LINE_SEPARATOR));
         } else {
             logger.warn(Messages.get("info.configure.resource.package.none"));
         }
@@ -858,8 +860,6 @@ public class Application {
 
     private void subscribeServerEvent() {
         SystemEventBus.subscribe(Container.StartupEvent.class, new Listener<Container.StartupEvent>() {
-
-            final String line = System.getProperty("line.separator", "/n");
             final String lineStart = "- ";
             final String lineChild = " >";
             final StringBuilder builder = new StringBuilder();
@@ -867,7 +867,7 @@ public class Application {
             void appendInfo(String key, Object... value) {
                 builder.append(lineStart)
                         .append(Messages.get(key, value))
-                        .append(line);
+                        .append(LINE_SEPARATOR);
             }
 
             void appendVisitUrl(Connector connector) {
@@ -884,7 +884,7 @@ public class Application {
                                 if (ip instanceof Inet4Address) {
                                     String ipAddr = ip.getHostAddress();
                                     if (ipAddr != null && !ipAddr.equals("127.0.0.1")) {
-                                        builder.append(line)
+                                        builder.append(LINE_SEPARATOR)
                                                 .append(lineStart)
                                                 .append(lineChild)
                                                 .append(httpStart)
@@ -899,14 +899,14 @@ public class Application {
                     } catch (SocketException e) {
                         // noop
                     }
-                    builder.append(line)
+                    builder.append(LINE_SEPARATOR)
                             .append(lineStart)
                             .append(lineChild)
                             .append(httpStart)
                             .append("localhost:")
                             .append(connector.getPort())
                             .append("/")
-                            .append(line)
+                            .append(LINE_SEPARATOR)
                             .append(lineStart)
                             .append(lineChild)
                             .append(httpStart)
@@ -914,7 +914,7 @@ public class Application {
                             .append(connector.getPort())
                             .append("/");
                 } else {
-                    builder.append(line)
+                    builder.append(LINE_SEPARATOR)
                             .append(lineStart)
                             .append(lineChild)
                             .append(connector.getHttpServerBaseUri());
@@ -931,9 +931,9 @@ public class Application {
                     r.gc();
 
                     final String startUsedTime = Times.toDuration(System.currentTimeMillis() - timestamp);
-                    builder.append(line)
+                    builder.append(LINE_SEPARATOR)
                             .append(INFO_SPLITTER)
-                            .append(line);
+                            .append(LINE_SEPARATOR);
                     appendInfo("info.ameba.version", Ameba.getVersion());
                     appendInfo("info.http.container", StringUtils.defaultString(container.getType(), "Unknown"));
                     appendInfo("info.start.time", startUsedTime);
@@ -955,13 +955,13 @@ public class Application {
                             appendVisitUrl(connector);
                         }
                     } else {
-                        builder.append(line)
+                        builder.append(LINE_SEPARATOR)
                                 .append(lineStart)
                                 .append(lineChild)
                                 .append(Messages.get("info.locations.none"));
                         logger.warn(Messages.get("info.connector.none"));
                     }
-                    builder.append(line)
+                    builder.append(LINE_SEPARATOR)
                             .append(INFO_SPLITTER);
                     logger.info(Messages.get("info.started"));
                     logger.info(builder.toString());
