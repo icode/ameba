@@ -180,11 +180,19 @@ public class Application {
                         //projectName/target/classes/conf/module
                         //projectName/src/main/resources/conf/module
                         if (fileName.endsWith("/target/classes/conf/module.conf")) {
-                            modelName = Paths.get(fileName)
-                                    .resolveSibling("../../../").normalize().getFileName().toString();
+                            try {
+                                modelName = Paths.get(url.toURI())
+                                        .resolveSibling("../../../").normalize().getFileName().toString();
+                            } catch (URISyntaxException e) {
+                                // no op
+                            }
                         } else if (fileName.endsWith("/src/main/resources/conf/module.conf")) {
-                            modelName = Paths.get(fileName).resolveSibling("../../../../")
-                                    .normalize().getFileName().toString();
+                            try {
+                                modelName = Paths.get(url.toURI()).resolveSibling("../../../../")
+                                        .normalize().getFileName().toString();
+                            } catch (URISyntaxException e) {
+                                // no op
+                            }
                         }
                     }
 
