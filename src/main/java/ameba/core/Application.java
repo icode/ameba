@@ -82,7 +82,7 @@ public class Application {
     private static final String DEFAULT_LOGBACK_CONF = "log.groovy";
     private static final String EXCLUDES_KEY = "exclude.classes";
     private static final String EXCLUDES_KEY_PREFIX = EXCLUDES_KEY + ".";
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator", "/n");
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static String SCAN_CLASSES_CACHE_FILE;
     private static String INFO_SPLITTER = "---------------------------------------------------";
