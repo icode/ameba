@@ -793,7 +793,7 @@ public class Application {
         packages = ArrayUtils.removeElement(packages, "");
         if (packages.length > 0) {
             logger.info(Messages.get("info.configure.resource.package",
-                    LINE_SEPARATOR + StringUtils.join(packages, "," + LINE_SEPARATOR) + LINE_SEPARATOR));
+                    StringUtils.join(packages, "," + LINE_SEPARATOR)));
         } else {
             logger.warn(Messages.get("info.configure.resource.package.none"));
         }
