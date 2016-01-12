@@ -35,13 +35,8 @@ public class DownloadEntityWriterInterceptor implements WriterInterceptor {
                 }
                 if (StringUtils.isNotBlank(fileName)) {
                     String userAgent = Requests.getHeaders().getFirst(HttpHeaders.USER_AGENT);
-                    if (userAgent != null) {
-                        userAgent = userAgent.toLowerCase();
-                    } else {
-                        userAgent = "";
-                    }
                     fileName = URLEncoder.encode(fileName, Charsets.UTF_8.name());
-                    if (userAgent.contains("msie"))
+                    if (StringUtils.isBlank(userAgent) || userAgent.contains("MSIE") || userAgent.contains("Android"))
                         fileName = "filename=" + fileName;
                     else
                         fileName = "filename*=UTF-8''" + fileName;
