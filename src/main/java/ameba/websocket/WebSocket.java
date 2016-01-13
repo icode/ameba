@@ -1,10 +1,9 @@
 package ameba.websocket;
 
-import ameba.websocket.internal.DefaultServerEndpointConfig;
-
 import javax.websocket.Decoder;
 import javax.websocket.Encoder;
 import javax.websocket.Extension;
+import javax.websocket.server.ServerEndpointConfig;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,13 +16,20 @@ import java.lang.annotation.Target;
  * @since 0.1.6e
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
+@Target({ElementType.TYPE})
 public @interface WebSocket {
 
     /**
-     * Enable Engine.io support
+     * websocket path
      *
-     * @return Engine.io enabled
+     * @return path
+     */
+    String path();
+
+    /**
+     * Enable SockJS support
+     *
+     * @return SockJS enabled
      */
     boolean withSockJS() default false;
 
@@ -65,7 +71,7 @@ public @interface WebSocket {
      * @return the custom configuration class, or ServerEndpointConfig.Configurator.class
      * if none was set in the annotation.
      */
-    Class<? extends DefaultServerEndpointConfig.Configurator> configurator() default DefaultServerEndpointConfig.Configurator.class;
+    Class<? extends ServerEndpointConfig.Configurator> configurator() default ServerEndpointConfig.Configurator.class;
 
     /**
      * <p>extensions.</p>

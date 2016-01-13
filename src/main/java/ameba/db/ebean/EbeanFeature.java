@@ -8,23 +8,20 @@ import ameba.db.ebean.jackson.JacksonEbeanModule;
 import ameba.db.ebean.jackson.JsonIOExceptionMapper;
 import ameba.db.model.ModelManager;
 import ameba.i18n.Messages;
-import ameba.util.IOUtils;
-import com.avaje.ebean.Ebean;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.config.*;
-import com.avaje.ebean.dbmigration.DdlGenerator;
+import com.avaje.ebean.dbmigration.DbMigration;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.Lists;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder;
 import org.glassfish.jersey.internal.util.PropertiesHelper;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +29,6 @@ import javax.inject.Inject;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -80,7 +76,7 @@ public class EbeanFeature implements Feature {
      */
     public static final String EXCLUDE_DDL_PKG_KEY_SUFFIX = ".ddl.generate.excludes";
     /**
-     * Constant <code>FILTER_PARAM_NAME="model.query.param.where"</code>
+     * Constant <code>FILTER_PARAM_NAME="model.query.param.filter"</code>
      */
     public static final String FILTER_PARAM_NAME = "model.query.param.filter";
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
@@ -96,58 +92,6 @@ public class EbeanFeature implements Feature {
 
     public static List<EbeanServer> getServers() {
         return Collections.unmodifiableList(SERVERS);
-    }
-
-    /**
-     * Helper method that generates the required evolution to properly run Ebean.
-     *
-     * @param server ebean server
-     * @param config server config
-     * @param ddl    ddl generator
-     * @return ddl
-     */
-    public static String generateEvolutionScript(EbeanServer server, ServerConfig config, DdlGenerator ddl) {
-        ddl.setup((SpiEbeanServer) server, config);
-        String create = ddl.generateCreateDdl();
-        String drop = ddl.generateDropDdl();
-
-        if (create == null || create.trim().isEmpty()) {
-            return null;
-        }
-
-        return (
-                "/* Created by Ameba DDL */\n" +
-                        "\n" +
-                        "/*--- !Drop */\n" +
-                        "\n" +
-                        drop +
-                        "\n" +
-                        "/*--- !Create */\n" +
-                        "\n" +
-                        create
-        );
-    }
-
-    /**
-     * 生成sql语句
-     *
-     * @param server ebean server
-     * @param config server config
-     * @return ddl
-     */
-    public static String generateEvolutionScript(EbeanServer server, ServerConfig config) {
-        return generateEvolutionScript(server, config, new DdlGenerator());
-    }
-
-    /**
-     * 生成sql语句
-     *
-     * @param serverName ebean server name
-     * @param config     server config
-     * @return ddl
-     */
-    public static String generateEvolutionScript(String serverName, ServerConfig config) {
-        return generateEvolutionScript(Ebean.getServer(serverName), config);
     }
 
     /**
@@ -168,9 +112,9 @@ public class EbeanFeature implements Feature {
 
         for (EbeanServer server : SERVERS) {
             try {
-                server.shutdown(false, false);
+                server.shutdown(true, true);
             } catch (Exception e) {
-                logger.warn("shut old ebean server has a error", e);
+                logger.warn("shutdown old Ebean server has a error", e);
             }
         }
         SERVERS.clear();
@@ -204,30 +148,6 @@ public class EbeanFeature implements Feature {
             };
             config.setJsonInclude(JsonConfig.Include.NON_EMPTY);
             config.setPersistBatch(PersistBatch.ALL);
-            config.setNamingConvention(new UnderscoreNamingConvention() {
-
-                String tableNamePrefix = null;
-
-                @Override
-                public void loadFromProperties(PropertiesWrapper properties) {
-                    super.loadFromProperties(properties);
-                    tableNamePrefix = properties.get("namingConvention.table.name.prefix", tableNamePrefix);
-                }
-
-                public TableName getTableNameByConvention(Class<?> beanClass) {
-
-                    String tableName = beanClass.getSimpleName();
-
-                    if (StringUtils.isNotBlank(tableNamePrefix)) {
-                        tableName = tableNamePrefix + tableName;
-                    }
-
-                    return new TableName(
-                            getCatalog(),
-                            getSchema(),
-                            toUnderscoreFromCamel(tableName));
-                }
-            });
             config.loadFromProperties(eBeanConfig);
             config.setUpdateAllPropertiesInBatch(false);
             config.setPackages(null);
@@ -236,8 +156,6 @@ public class EbeanFeature implements Feature {
             config.setName(name);
             config.setDataSourceJndiName(null);
             config.setDataSource(DataSourceManager.getDataSource(name));//设置为druid数据源
-            config.setDdlGenerate(false);
-            config.setDdlRun(false);
             config.setJsonFactory(jsonFactory);
             config.setContainerConfig(containerConfig);
             config.setResourceDirectory(null);
@@ -256,20 +174,6 @@ public class EbeanFeature implements Feature {
 
             final boolean isDev = application.getMode().isDev();
 
-            final boolean genDdl = PropertiesHelper.getValue(appConfig.getProperties(),
-                    "db." + name + ".ddl.generate", isDev, Boolean.class, null);
-
-            final boolean runDdl = PropertiesHelper.getValue(appConfig.getProperties(),
-                    "db." + name + ".ddl.run", false, Boolean.class, null);
-
-            String[] ddlExcludes = new String[0];
-
-            String ddlExcludeStr = (String) appConfig.getProperty("db." + name + EXCLUDE_DDL_PKG_KEY_SUFFIX);
-
-            if (StringUtils.isNotBlank(ddlExcludeStr)) {
-                ddlExcludes = ddlExcludeStr.split(",");
-            }
-
             logger.debug(Messages.get("info.db.connect", name));
 
             final EbeanServer server = EbeanServerFactory.create(config);
@@ -283,27 +187,40 @@ public class EbeanFeature implements Feature {
 
             SERVERS.add(server);
 
-            // DDL
-            if (genDdl) {// todo: db migration 可能总是需要输出的ddl
-                final String basePath = IOUtils.getResource("/").getPath()
-                        + (isDev ? "../generated-sources/ameba/" : "temp/")
-                        + "conf/evolutions/" + server.getName() + "/";
+            final boolean ddlMigration = PropertiesHelper.getValue(appConfig.getProperties(),
+                    "db." + name + ".ddl.migration", true, Boolean.class, null);
 
-                DdlGenerator ddl = new AmebaGenerator(ddlExcludes, basePath);
+            if (ddlMigration) {
+                // todo  输出到这里不合适
+                final String _basePath = (isDev ? "src/main" : "temp") + "/";
 
-                ddl.setup((SpiEbeanServer) server, config);
-                try {
-                    FileUtils.forceMkdir(new File(basePath));
-                    ddl.generateDdl();
-                } catch (Exception e) {
-                    logger.error("Create ddl error", e);
+                DbMigrationConfig migrationConfig = new DbMigrationConfig();
+                //todo 这里应该是特性名称或着简单的描述,在dev模式直接设置
+                //todo 发布和测试模式应该让用户输入
+                if (isDev) {
+                    migrationConfig.setName(config.getName());
                 }
-                if (runDdl) {
-                    try {
-                        ddl.runDdl();
-                    } catch (Exception e) {
-                        logger.error("Run ddl error", e);
-                    }
+                CharSequence ver = application.getApplicationVersion();
+                String version;
+                String verIndex = DateTime.now().toString("yyyyMMddHHmmss");
+                if (ver instanceof Application.UnknownVersion) {
+                    version = verIndex;
+                } else {
+                    version = String.valueOf(ver) + "_" + verIndex;
+                }
+
+                migrationConfig.setVersion(version);
+                migrationConfig.setMigrationPath("db/migration/" + server.getName());
+                config.setMigrationConfig(migrationConfig);
+
+                DbMigration dbMigration = new DbMigration();
+                dbMigration.setPlatform(((SpiEbeanServer) server).getDatabasePlatform());
+                dbMigration.setServer(server);
+                dbMigration.setPathToResources(_basePath);
+                try {
+                    dbMigration.generateMigration();
+                } catch (IOException e) {
+                    logger.error("Generate db migration error", e);
                 }
             }
         }
@@ -329,61 +246,5 @@ public class EbeanFeature implements Feature {
             }
         });
         return true;
-    }
-
-    private static class AmebaGenerator extends DdlGenerator {
-        private String[] excludes;
-        private String dropContent;
-        private String createContent;
-        private String basePath;
-
-        public AmebaGenerator(String[] excludes, String basePath) {
-            this.excludes = excludes;
-            this.basePath = basePath;
-        }
-
-        @Override
-        protected String getDropFileName() {
-            return basePath + "drop.sql";
-        }
-
-        @Override
-        protected String getCreateFileName() {
-            return basePath + "create.sql";
-        }
-
-        @Override
-        public String generateDropDdl() {
-            return "/* Generated Drop Table DDL By Ameba */\n\n" + super.generateDropDdl();
-        }
-
-        @Override
-        public String generateCreateDdl() {
-            return "/* Generated Create Table DDL By Ameba */\n\n" + super.generateCreateDdl();
-        }
-
-        @Override
-        public void generateDdl() {
-            this.writeDrop(this.getDropFileName());
-            this.writeCreate(this.getCreateFileName());
-        }
-
-        @Override
-        public void runDdl() {
-            try {
-                if (dropContent == null) {
-                    dropContent = readFile(getDropFileName());
-                }
-                if (createContent == null) {
-                    createContent = readFile(getCreateFileName());
-                }
-                runScript(true, dropContent);
-                runScript(false, createContent);
-
-            } catch (IOException e) {
-                String msg = "Error reading drop/create script from file system";
-                throw new RuntimeException(msg, e);
-            }
-        }
     }
 }

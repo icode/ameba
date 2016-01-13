@@ -1,6 +1,6 @@
 package ameba.websocket.internal;
 
-import ameba.websocket.WebSocketFeature;
+import ameba.websocket.WebSocketAddon;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.internal.inject.ReferencingFactory;
 import org.glassfish.jersey.internal.util.collection.Ref;
@@ -21,7 +21,7 @@ public class WebSocketBinder extends AbstractBinder {
      */
     @Override
     protected void configure() {
-        if (WebSocketFeature.isEnabled()) {
+        if (WebSocketAddon.isEnabled()) {
             bindFactory(MessageStateReferencingFactory.class).to(MessageState.class)
                     .proxy(false).in(MessageScoped.class);
             bindFactory(ReferencingFactory.<MessageState>referenceFactory())

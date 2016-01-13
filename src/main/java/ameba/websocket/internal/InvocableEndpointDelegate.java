@@ -5,7 +5,6 @@ import ameba.websocket.WebSocketException;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.jersey.server.internal.inject.ConfiguredValidator;
 import org.glassfish.jersey.server.model.Invocable;
-import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.spi.internal.ParamValueFactoryWithSource;
 import org.glassfish.jersey.server.spi.internal.ParameterValueHelper;
 
@@ -23,28 +22,18 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * <p>ResourceMethodEndpointDelegate class.</p>
+ * <p>InvocableEndpointDelegate class.</p>
  *
  * @author icode
  * @since 0.1.6e
  */
-public class ResourceMethodEndpointDelegate extends EndpointDelegate {
+public class InvocableEndpointDelegate extends EndpointDelegate {
     @Inject
     private Provider<ConfiguredValidator> validatorProvider;
-    private ResourceMethod resourceMethod;
     private Invocable invocable;
     private List<? extends Factory<?>> onMessageValueProviders;
     private Object resourceInstance;
     private Method method;
-
-    /**
-     * <p>Setter for the field <code>resourceMethod</code>.</p>
-     *
-     * @param resourceMethod a {@link org.glassfish.jersey.server.model.ResourceMethod} object.
-     */
-    protected void setResourceMethod(ResourceMethod resourceMethod) {
-        this.resourceMethod = resourceMethod;
-    }
 
     /**
      * {@inheritDoc}
@@ -52,7 +41,6 @@ public class ResourceMethodEndpointDelegate extends EndpointDelegate {
     @Override
     protected void onOpen() {
         try {
-            invocable = resourceMethod.getInvocable();
             method = invocable.getHandlingMethod();
             final Class resourceClass = invocable.getHandler().getHandlerClass();
             resourceInstance = getServiceLocator().getService(resourceClass);
@@ -115,9 +103,7 @@ public class ResourceMethodEndpointDelegate extends EndpointDelegate {
                             try {
                                 getMessageState().getSession().getBasicRemote()
                                         .sendObject(processHandler());
-                            } catch (IOException e) {
-                                throw new WebSocketException(e);
-                            } catch (EncodeException e) {
+                            } catch (IOException | EncodeException e) {
                                 throw new WebSocketException(e);
                             }
                         }
