@@ -162,6 +162,9 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
                 clazz = res.get(0).getClass();
             }
         }
+        if (clazz == null) {
+            clazz = DataViewMessageBodyWriter.class;
+        }
         workersProvider.get().getMessageBodyWriter(
                 ImplicitViewable.class,
                 ImplicitViewable.class,
