@@ -1,6 +1,6 @@
 package ameba.feature;
 
-import ameba.container.Container;
+import ameba.container.event.ShutdownEvent;
 import ameba.event.Event;
 import ameba.event.EventBus;
 import ameba.event.Listener;
@@ -18,10 +18,37 @@ import javax.ws.rs.core.Feature;
  */
 public abstract class AmebaFeature extends LoggerOwner implements Feature {
 
-    private static EventBus EVENT_BUS = init();
+    private static EventBus EVENT_BUS;
+
+    static {
+        init();
+    }
 
     @Inject
     private ServiceLocator locator;
+
+    private static void init() {
+        EVENT_BUS = EventBus.createMix();
+        SystemEventBus.subscribe(ShutdownEvent.class, new Listener<ShutdownEvent>() {
+            @Override
+            public void onReceive(ShutdownEvent event) {
+                synchronized (AmebaFeature.class) {
+                    EVENT_BUS = null;
+                }
+            }
+        });
+    }
+
+    private static EventBus getEventBus() {
+        if (EVENT_BUS == null) {
+            synchronized (AmebaFeature.class) {
+                if (EVENT_BUS == null) {
+                    init();
+                }
+            }
+        }
+        return EVENT_BUS;
+    }
 
     /**
      * <p>publishEvent.</p>
@@ -29,23 +56,11 @@ public abstract class AmebaFeature extends LoggerOwner implements Feature {
      * @param event a {@link ameba.event.Event} object.
      */
     public static void publishEvent(Event event) {
-        EVENT_BUS.publish(event);
-    }
-
-    private static EventBus init() {
-        EventBus eventBus = EventBus.createMix();
-        SystemEventBus.subscribe(Container.BeginReloadEvent.class,
-                new Listener<Container.BeginReloadEvent>() {
-                    @Override
-                    public void onReceive(Container.BeginReloadEvent event) {
-                        EVENT_BUS = EventBus.createMix();
-                    }
-                });
-        return eventBus;
+        getEventBus().publish(event);
     }
 
     private <E extends Event> void subscribe(Class<E> eventClass, final Listener<E> listener) {
-        EVENT_BUS.subscribe(eventClass, listener);
+        getEventBus().subscribe(eventClass, listener);
     }
 
     /**
@@ -61,7 +76,7 @@ public abstract class AmebaFeature extends LoggerOwner implements Feature {
             locator.inject(object);
             locator.postConstruct(object);
         }
-        EVENT_BUS.subscribe(object);
+        getEventBus().subscribe(object);
     }
 
     /**
@@ -101,7 +116,7 @@ public abstract class AmebaFeature extends LoggerOwner implements Feature {
      */
     protected <E extends Event> void unsubscribeEvent(Class<E> eventClass, final Listener<E> listener) {
         locator.preDestroy(listener);
-        EVENT_BUS.unsubscribe(eventClass, listener);
+        getEventBus().unsubscribe(eventClass, listener);
     }
 
     /**

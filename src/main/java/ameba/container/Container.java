@@ -1,8 +1,8 @@
 package ameba.container;
 
+import ameba.container.event.*;
 import ameba.container.server.Connector;
 import ameba.core.Application;
-import ameba.event.Event;
 import ameba.event.SystemEventBus;
 import ameba.util.ClassUtils;
 import org.glassfish.hk2.api.Factory;
@@ -174,19 +174,15 @@ public abstract class Container {
      */
     public void reload() throws Exception {
         SystemEventBus.publish(new BeginReloadEvent(this, application));
-        ResourceConfig config = application.getConfig();
-        application.reconfigure();
-        registerBinder(application.getConfig());
-        doReload(config);
+        doReload();
     }
 
     /**
      * <p>doReload.</p>
      *
-     * @param odlConfig old config
      * @throws Exception if any
      */
-    protected abstract void doReload(ResourceConfig odlConfig) throws Exception;
+    protected abstract void doReload() throws Exception;
 
     /**
      * <p>doStart.</p>
@@ -220,62 +216,6 @@ public abstract class Container {
      * @return a {@link java.lang.String} object.
      */
     public abstract String getType();
-
-    public static class StartEvent extends ContainerEvent {
-
-        public StartEvent(Container container, Application app) {
-            super(container, app);
-        }
-    }
-
-    private static class ContainerEvent implements Event {
-        private Container container;
-        private Application app;
-
-        public ContainerEvent(Container container, Application app) {
-            this.container = container;
-            this.app = app;
-        }
-
-        public Container getContainer() {
-            return container;
-        }
-
-        public Application getApp() {
-            return app;
-        }
-    }
-
-    public static class StartupEvent extends ContainerEvent {
-        public StartupEvent(Container container, Application app) {
-            super(container, app);
-        }
-    }
-
-    public static class ReloadedEvent extends ContainerEvent {
-        public ReloadedEvent(Container container, Application app) {
-            super(container, app);
-        }
-    }
-
-    public static class BeginReloadEvent extends ContainerEvent {
-
-        public BeginReloadEvent(Container container, Application app) {
-            super(container, app);
-        }
-    }
-
-    public static class ShutdownEvent extends ContainerEvent {
-        public ShutdownEvent(Container container, Application app) {
-            super(container, app);
-        }
-    }
-
-    public static class BeginShutdownEvent extends ContainerEvent {
-        public BeginShutdownEvent(Container container, Application app) {
-            super(container, app);
-        }
-    }
 
     public abstract class WebSocketContainerProvider implements Factory<ServerContainer> {
 

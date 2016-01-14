@@ -2,6 +2,7 @@ package ameba.core;
 
 import ameba.Ameba;
 import ameba.container.Container;
+import ameba.container.event.StartupEvent;
 import ameba.container.server.Connector;
 import ameba.core.event.RequestEvent;
 import ameba.event.Listener;
@@ -866,7 +867,7 @@ public class Application {
     }
 
     private void subscribeServerEvent() {
-        SystemEventBus.subscribe(Container.StartupEvent.class, new Listener<Container.StartupEvent>() {
+        SystemEventBus.subscribe(StartupEvent.class, new Listener<StartupEvent>() {
             final String lineStart = "- ";
             final String lineChild = " >";
             final StringBuilder builder = new StringBuilder();
@@ -929,7 +930,7 @@ public class Application {
             }
 
             @Override
-            public void onReceive(Container.StartupEvent event) {
+            public void onReceive(StartupEvent event) {
 
                 Application.this.container = event.getContainer();
 

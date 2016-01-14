@@ -1,7 +1,7 @@
 package ameba.lib;
 
 import akka.actor.ActorSystem;
-import ameba.container.Container;
+import ameba.container.event.ShutdownEvent;
 import ameba.core.Application;
 import ameba.event.Listener;
 import ameba.event.SystemEventBus;
@@ -48,9 +48,9 @@ public class Akka {
 
             Config config = ConfigFactory.parseProperties(properties).withFallback(ConfigFactory.load());
             system = ActorSystem.create(name, config, application.getClassLoader());
-            SystemEventBus.subscribe(Container.ShutdownEvent.class, new Listener<Container.ShutdownEvent>() {
+            SystemEventBus.subscribe(ShutdownEvent.class, new Listener<ShutdownEvent>() {
                 @Override
-                public void onReceive(Container.ShutdownEvent event) {
+                public void onReceive(ShutdownEvent event) {
                     system.shutdown();
                 }
             });

@@ -1,6 +1,6 @@
 package ameba.event;
 
-import ameba.container.Container;
+import ameba.container.event.ShutdownEvent;
 
 /**
  * <p>SystemEventBus class.</p>
@@ -9,20 +9,36 @@ import ameba.container.Container;
  */
 public class SystemEventBus {
 
-    private static EventBus EVENT_BUS = init();
+    private static EventBus EVENT_BUS;
+
+    static {
+        init();
+    }
 
     private SystemEventBus() {
     }
 
-    private static EventBus init() {
-        EventBus eventBus = EventBus.createMix();
-        eventBus.subscribe(Container.BeginReloadEvent.class, new Listener<Container.BeginReloadEvent>() {
+    private static void init() {
+        EVENT_BUS = EventBus.createMix();
+        EVENT_BUS.subscribe(ShutdownEvent.class, new Listener<ShutdownEvent>() {
             @Override
-            public void onReceive(Container.BeginReloadEvent event) {
-                EVENT_BUS = init();
+            public void onReceive(ShutdownEvent event) {
+                synchronized (SystemEventBus.class) {
+                    EVENT_BUS = null;
+                }
             }
         });
-        return eventBus;
+    }
+
+    private static EventBus getEventBus() {
+        if (EVENT_BUS == null) {
+            synchronized (SystemEventBus.class) {
+                if (EVENT_BUS == null) {
+                    init();
+                }
+            }
+        }
+        return EVENT_BUS;
     }
 
     /**
@@ -33,7 +49,7 @@ public class SystemEventBus {
      * @param <E>      a E object.
      */
     public static <E extends Event> void subscribe(Class<E> event, final Listener<E> listener) {
-        EVENT_BUS.subscribe(event, listener);
+        getEventBus().subscribe(event, listener);
     }
 
     /**
@@ -43,7 +59,7 @@ public class SystemEventBus {
      * @since 0.1.6e
      */
     public static void subscribe(Object object) {
-        EVENT_BUS.subscribe(object);
+        getEventBus().subscribe(object);
     }
 
     /**
@@ -54,7 +70,7 @@ public class SystemEventBus {
      * @param <E>      a E object.
      */
     public static <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener) {
-        EVENT_BUS.unsubscribe(event, listener);
+        getEventBus().unsubscribe(event, listener);
     }
 
     /**
@@ -63,6 +79,6 @@ public class SystemEventBus {
      * @param event a {@link ameba.event.Event} object.
      */
     public static void publish(Event event) {
-        EVENT_BUS.publish(event);
+        getEventBus().publish(event);
     }
 }
