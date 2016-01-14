@@ -151,7 +151,7 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
             }
         }
 
-        Class clazz = Ameba.class;
+        Class clazz = null;
 
         if (resourceInfo != null) {
             clazz = resourceInfo.getResourceClass();
@@ -163,7 +163,7 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
             }
         }
         if (clazz == null) {
-            clazz = DataViewMessageBodyWriter.class;
+            clazz = Ameba.class;
         }
         workersProvider.get().getMessageBodyWriter(
                 ImplicitViewable.class,
