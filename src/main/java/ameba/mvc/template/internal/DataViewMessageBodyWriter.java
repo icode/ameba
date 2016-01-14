@@ -27,6 +27,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
@@ -141,7 +142,7 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
                     || (entity instanceof Collection
                     && ((Collection) entity).size() == 0)
                     || (entity.getClass().isArray()
-                    && ((Object[]) entity).length == 0)) {
+                    && Array.getLength(entity) == 0)) {
                 templates.add(dataViewNull);
             } else if (isItem(entity)) {
                 templates.add(dataViewItem);
@@ -154,7 +155,8 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
 
         if (resourceInfo != null) {
             clazz = resourceInfo.getResourceClass();
-        } else {
+        }
+        if (clazz == null) {
             List<Object> res = uriInfoProvider.get().getMatchedResources();
             if (res != null && res.size() > 0) {
                 clazz = res.get(0).getClass();
