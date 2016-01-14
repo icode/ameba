@@ -9,6 +9,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 import httl.Engine;
+import httl.util.BeanFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
@@ -27,7 +28,6 @@ import java.util.*;
  */
 @ConstrainedTo(RuntimeType.SERVER)
 public class HttlMvcFeature implements Feature {
-
     public static final String CONFIG_SUFFIX = "httl";
     private static final Properties templateProperties = new Properties();
 
@@ -100,7 +100,8 @@ public class HttlMvcFeature implements Feature {
         templateProperties.put("output.stream", "true");
         templateProperties.put("import.methods-", "httl.spi.methods.MessageMethod");
 
-        final Engine engine = Engine.getEngine(templateProperties);
+        final Engine engine = BeanFactory.createBean(Engine.class,
+                HttlUtil.initProperties("default", templateProperties));
 
         context.register(new AbstractBinder() {
             @Override
