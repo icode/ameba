@@ -196,7 +196,7 @@ final class JacksonObjectProvider extends AbstractObjectProvider<FilterProvider>
                                           final JsonObjectFormatVisitor objectVisitor,
                                           final SerializerProvider provider) throws JsonMappingException {
             if (include(writer.getName())) {
-                writer.depositSchemaProperty(objectVisitor);
+                writer.depositSchemaProperty(objectVisitor, provider);
             }
         }
 
