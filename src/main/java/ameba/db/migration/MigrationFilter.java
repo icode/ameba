@@ -7,6 +7,7 @@ import ameba.i18n.Messages;
 import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.flywaydb.core.Flyway;
 
@@ -20,6 +21,7 @@ import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -52,6 +54,7 @@ public class MigrationFilter implements ContainerRequestFilter {
     private Application.Mode mode;
     private boolean ran = false;
     private boolean rewriteMethod = false;
+    private List<Migration> migrations;
 
     @Override
     public void filter(ContainerRequestContext req) throws IOException {
@@ -60,10 +63,12 @@ public class MigrationFilter implements ContainerRequestFilter {
             if (path.equals(FAVICON_ICO) || path.endsWith("/" + FAVICON_ICO)) {
                 return;
             }
-            if (path.equals(uri) && req.getMethod().equalsIgnoreCase(HttpMethod.POST)) {
+            if (path.equals(uri)
+                    && req.getMethod().equalsIgnoreCase(HttpMethod.POST)
+                    && migrations.size() > 0) {
                 migrate(req);
             } else {
-                List<Migration> migrations = Lists.newArrayList();
+                migrations = Lists.newArrayList();
                 for (Migration migration : migrationMap.values()) {
                     if (migration.hasChanged()) {
                         migrations.add(migration);
@@ -125,22 +130,28 @@ public class MigrationFilter implements ContainerRequestFilter {
         //todo 发布和测试模式应该让用户输入
         //todo {dbName} {generatedName} from web ui
         //todo 判断flyway.getTable()是否存在，不存在则不更新数据库表结构，创建migrationInfo表，增加migrationInfo信息，调用flyway.baseline()
-        String dbName = "default";
 
-        if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
-            Migration migration = migrationMap.get(dbName);
-            String generatedName = (mode.isDev() ? "dev " : "") + "migrate";
-            MigrationInfo info = migration.generate().get(0);
-            info.setName(generatedName);
-            Flyway flyway = MigrationFeature.getMigration(dbName);
-            flyway.setBaselineDescription(info.getName());
-            flyway.setBaselineVersionAsString(info.getRevision());
+        for (String dbName : migrationMap.keySet()) {
+            if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
+                Migration migration = migrationMap.get(dbName);
+                String generatedName = (mode.isDev() ? "dev " : "") + "migrate";
+                MigrationInfo info = migration.generate().get(0);
+                info.setName(generatedName);
+                Flyway flyway = MigrationFeature.getMigration(dbName);
+                flyway.setBaselineDescription(info.getName());
+                flyway.setBaselineVersionAsString(info.getRevision());
 
-            flyway.migrate();
-            migration.persist();
-            migration.reset();
-            ran = true;
-            rewriteMethod = true;
+                flyway.migrate();
+                migration.persist();
+                migration.reset();
+                ran = true;
+                rewriteMethod = true;
+            }
         }
+        String referer = req.getHeaders().getFirst("Referer");
+        if (StringUtils.isBlank(referer)) {
+            referer = "/";
+        }
+        req.abortWith(Response.temporaryRedirect(URI.create(referer)).build());
     }
 }
