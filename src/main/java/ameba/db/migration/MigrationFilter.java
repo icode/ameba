@@ -127,7 +127,7 @@ public class MigrationFilter implements ContainerRequestFilter {
     private void migrate(ContainerRequestContext req) {
         //todo 这里应该是特性名称或着简单的描述,在dev模式直接设置
         //todo 发布和测试模式应该让用户输入
-        //todo {dbName} {generatedName} from web ui
+        //todo {generatedName} from web ui
 
         for (String dbName : migrations.keySet()) {
             Migration migration = migrations.get(dbName);
