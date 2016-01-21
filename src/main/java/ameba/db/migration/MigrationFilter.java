@@ -75,18 +75,18 @@ public class MigrationFilter implements ContainerRequestFilter {
                     }
                 }
                 if (migrations.size() > 0) {
-                    // todo 需要多个选项卡展示内容
-                    Migration migration = migrations.get(0);
-                    MigrationInfo info = migration.generate().get(0);
-                    String dbName = info.getDatabaseName();
-                    Flyway flyway = MigrationFeature.getMigration(dbName);
-                    boolean hasTable;
-                    try (Connection connection = flyway.getDataSource().getConnection()) {
-                        hasTable = connection.getMetaData().getTables(null, null, flyway.getTable(), null).next();
-                    } catch (SQLException e) {
-                        throw new AmebaException(e);
-                    }
                     if (mode.isDev() || path.equals(uri) && req.getMethod().equals(HttpMethod.GET)) {
+                        // todo 需要多个选项卡展示内容
+                        Migration migration = migrations.get(0);
+                        MigrationInfo info = migration.generate().get(0);
+                        String dbName = info.getDatabaseName();
+                        Flyway flyway = MigrationFeature.getMigration(dbName);
+                        boolean hasTable;
+                        try (Connection connection = flyway.getDataSource().getConnection()) {
+                            hasTable = connection.getMetaData().getTables(null, null, flyway.getTable(), null).next();
+                        } catch (SQLException e) {
+                            throw new AmebaException(e);
+                        }
                         Map<String, String> valuesMap = Maps.newHashMap();
 
                         valuesMap.put("migrationUri", "/" + uri);
