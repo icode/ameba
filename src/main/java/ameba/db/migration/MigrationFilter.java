@@ -82,7 +82,7 @@ public class MigrationFilter implements ContainerRequestFilter {
                     } catch (SQLException e) {
                         throw new AmebaException(e);
                     }
-                    if (mode.isDev()) {
+                    if (mode.isDev() || path.equals(uri) && req.getMethod().equals(HttpMethod.GET)) {
                         Map<String, String> valuesMap = Maps.newHashMap();
 
                         valuesMap.put("migrationUri", "/" + uri);
@@ -106,9 +106,9 @@ public class MigrationFilter implements ContainerRequestFilter {
                                         .type(MediaType.TEXT_HTML_TYPE)
                                         .build()
                         );
-                    } else {
-
                     }
+                } else if (!mode.isDev()) {
+                    ran = true;
                 }
             }
         } else if (rewriteMethod) {
@@ -129,7 +129,7 @@ public class MigrationFilter implements ContainerRequestFilter {
 
         if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
             Migration migration = migrationMap.get(dbName);
-            String generatedName = "dev migrate";
+            String generatedName = (mode.isDev() ? "dev auto " : "") + "migrate";
             MigrationInfo info = migration.generate().get(0);
             info.setName(generatedName);
             Flyway flyway = MigrationFeature.getMigration(dbName);
