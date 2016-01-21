@@ -129,7 +129,7 @@ public class MigrationFilter implements ContainerRequestFilter {
 
         if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
             Migration migration = migrationMap.get(dbName);
-            String generatedName = (mode.isDev() ? "dev auto " : "") + "migrate";
+            String generatedName = (mode.isDev() ? "dev " : "") + "migrate";
             MigrationInfo info = migration.generate().get(0);
             info.setName(generatedName);
             Flyway flyway = MigrationFeature.getMigration(dbName);
