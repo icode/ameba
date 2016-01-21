@@ -363,9 +363,7 @@ public class Application {
 
         srcProperties = Collections.unmodifiableMap(srcProperties);
 
-        registerInstance();
-
-        register(Requests.BindRequest.class);
+        registerBinder();
 
         configureExclude(srcProperties);
 
@@ -484,7 +482,8 @@ public class Application {
         }
     }
 
-    private void registerInstance() {
+    private void registerBinder() {
+        register(Requests.BindRequest.class);
         register(new ApplicationEventListener() {
             @Override
             public void onEvent(ApplicationEvent event) {
@@ -508,6 +507,7 @@ public class Application {
             @Override
             protected void configure() {
                 bind(Application.this).to(Application.class).proxy(false);
+                bind(mode).to(Mode.class).proxy(false);
             }
         });
     }
@@ -1475,7 +1475,7 @@ public class Application {
 
         String appPackage = properties.getProperty("app.package");
         if (StringUtils.isBlank(appPackage)) {
-            logger.warn(Messages.get("app.package.not.config.warn"));
+            logger.warn(Messages.get("warn.app.package.not.config"));
         }
     }
 

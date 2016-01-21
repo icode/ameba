@@ -6,22 +6,23 @@ import ameba.db.PersistenceExceptionMapper;
 import ameba.db.ebean.internal.EbeanModelInterceptor;
 import ameba.db.ebean.jackson.JacksonEbeanModule;
 import ameba.db.ebean.jackson.JsonIOExceptionMapper;
+import ameba.db.ebean.migration.EbeanMigration;
+import ameba.db.migration.Migration;
+import ameba.db.migration.models.MigrationInfo;
 import ameba.db.model.ModelManager;
 import ameba.i18n.Messages;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.config.*;
-import com.avaje.ebean.dbmigration.DbMigration;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.Lists;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder;
-import org.glassfish.jersey.internal.util.PropertiesHelper;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,6 @@ import javax.inject.Inject;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -71,10 +71,6 @@ public class EbeanFeature implements Feature {
      * Constant <code>DEFAULT_PER_PAGE_PARAM_NAME="model.query.param.perPage.max"</code>
      */
     public static final String MAX_PER_PAGE_PARAM_NAME = "model.query.param.perPage.max";
-    /**
-     * Constant <code>EXCLUDE_DDL_PKG_KEY_SUFFIX=".ddl.generate.excludes"</code>
-     */
-    public static final String EXCLUDE_DDL_PKG_KEY_SUFFIX = ".ddl.generate.excludes";
     /**
      * Constant <code>FILTER_PARAM_NAME="model.query.param.filter"</code>
      */
@@ -171,8 +167,7 @@ public class EbeanFeature implements Feature {
                     config.addClass(clazz);
                 }
             }
-
-            final boolean isDev = application.getMode().isDev();
+            config.addClass(MigrationInfo.class);
 
             logger.debug(Messages.get("info.db.connect", name));
 
@@ -186,46 +181,9 @@ public class EbeanFeature implements Feature {
             xmlMapper.registerModules(module);
 
             SERVERS.add(server);
-
-            final boolean ddlMigration = PropertiesHelper.getValue(appConfig.getProperties(),
-                    "db." + name + ".ddl.migration", true, Boolean.class, null);
-
-            if (ddlMigration) {
-                // todo  输出到这里不合适
-                final String _basePath = (isDev ? "src/main" : "temp") + "/";
-
-                DbMigrationConfig migrationConfig = new DbMigrationConfig();
-                //todo 这里应该是特性名称或着简单的描述,在dev模式直接设置
-                //todo 发布和测试模式应该让用户输入
-                if (isDev) {
-                    migrationConfig.setName(config.getName());
-                }
-                CharSequence ver = application.getApplicationVersion();
-                String version;
-                String verIndex = DateTime.now().toString("yyyyMMddHHmmss");
-                if (ver instanceof Application.UnknownVersion) {
-                    version = verIndex;
-                } else {
-                    version = String.valueOf(ver) + "_" + verIndex;
-                }
-
-                migrationConfig.setVersion(version);
-                migrationConfig.setMigrationPath("db/migration/" + server.getName());
-                config.setMigrationConfig(migrationConfig);
-
-                DbMigration dbMigration = new DbMigration();
-                dbMigration.setPlatform(((SpiEbeanServer) server).getDatabasePlatform());
-                dbMigration.setServer(server);
-                dbMigration.setPathToResources(_basePath);
-                try {
-                    dbMigration.generateMigration();
-                } catch (IOException e) {
-                    logger.error("Generate db migration error", e);
-                }
-            }
         }
 
-        context.register(new AbstractBinder() {
+        ServiceLocatorUtilities.bind(locator, new AbstractBinder() {
             @Override
             protected void configure() {
                 for (EbeanServer server : SERVERS) {
@@ -235,6 +193,11 @@ public class EbeanFeature implements Feature {
                     if (name.equals(DataSourceManager.getDefaultDataSourceName())) {
                         createBuilder(server);
                     }
+
+                    bind(new EbeanMigration(application, (SpiEbeanServer) server))
+                            .to(Migration.class)
+                            .named(name)
+                            .proxy(false);
                 }
             }
 

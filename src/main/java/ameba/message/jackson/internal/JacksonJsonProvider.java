@@ -29,7 +29,7 @@ public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
     @Context
     private UriInfo uriInfo;
     @Inject
-    private Application app;
+    private Application.Mode mode;
 
     /**
      * <p>Constructor for JacksonJsonProvider.</p>
@@ -44,7 +44,7 @@ public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
     @Override
     protected JsonGenerator _createGenerator(ObjectWriter writer, OutputStream rawStream, JsonEncoding enc) throws IOException {
         JsonGenerator generator = super._createGenerator(writer, rawStream, enc);
-        JacksonUtils.configureGenerator(uriInfo, generator, app.getMode().isDev());
+        JacksonUtils.configureGenerator(uriInfo, generator, mode.isDev());
         return generator;
     }
 }

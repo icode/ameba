@@ -30,7 +30,7 @@ public class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProces
     @Context
     private Provider<ExceptionMappers> exceptionMappers;
     @Inject
-    private Application application;
+    private Application.Mode mode;
 
     @Override
     public Response toResponse(JsonProcessingException exception) {
@@ -51,7 +51,7 @@ public class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProces
         String message = exception.getOriginalMessage();
         String desc = null;
         String source = null;
-        if (application.getMode().isDev()) {
+        if (mode.isDev()) {
             desc = IOUtils.getStackTrace(exception);
             JsonLocation location = exception.getLocation();
             if (location != null) {

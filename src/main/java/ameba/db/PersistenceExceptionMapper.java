@@ -28,7 +28,7 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
     @Context
     private ResourceInfo resourceInfo;
     @Inject
-    private Application application;
+    private Application.Mode mode;
 
     @Override
     public Response toResponse(PersistenceException exception) {
@@ -38,7 +38,7 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
         errorMessage.setThrowable(exception);
         errorMessage.setCode(Hashing.murmur3_32().hashUnencodedChars(exception.getClass().getName()).toString());
 
-        boolean isDev = application.getMode().isDev();
+        boolean isDev = mode.isDev();
         List<ErrorMessage.Error> errors = Lists.newArrayList();
 
         errors.add(new Result.Error(

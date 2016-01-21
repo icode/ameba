@@ -37,9 +37,8 @@ public final class ValidationFeature implements Feature {
     }
 
     public static class ValidationConfigurationContextResolver implements ContextResolver<ValidationConfig> {
-
         @Inject
-        private Application application;
+        private Application.Mode mode;
         @Context
         private ResourceContext resourceContext;
 
@@ -52,7 +51,7 @@ public final class ValidationFeature implements Feature {
                             new ResourceBundleMessageInterpolator(
                                     buildBundleLocator(VALIDATION_MESSAGE_BUNDLE_NAME),
                                     buildBundleLocator(Messages.BUNDLE_NAME),
-                                    application.getMode().isProd()
+                                    mode.isProd()
                             )
                     );
         }

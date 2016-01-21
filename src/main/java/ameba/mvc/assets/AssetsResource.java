@@ -40,7 +40,7 @@ import java.util.jar.JarFile;
 public class AssetsResource {
 
     @Inject
-    private Application application;
+    private Application.Mode mode;
 
     @Inject
     private Provider<ExceptionMappers> mappers;
@@ -240,7 +240,7 @@ public class AssetsResource {
     }
 
     private boolean isFileCacheEnabled() {
-        return application.getMode().isProd();
+        return mode.isProd();
     }
 
     private File getJarFile(final String path) throws MalformedURLException, FileNotFoundException {

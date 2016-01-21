@@ -35,7 +35,7 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
     public static final String BEFORE_EXCEPTION_KEY = DefaultExceptionMapper.class.getName() + ".BEFORE_EXCEPTION";
     private static final Logger logger = LoggerFactory.getLogger(DefaultExceptionMapper.class);
     @Inject
-    private Application application;
+    private Application.Mode mode;
     @Context
     private ResourceInfo resourceInfo;
 
@@ -53,7 +53,7 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
 
     protected List<Result.Error> parseErrors(Throwable exception, int status) {
         List<Result.Error> errors = Lists.newArrayList();
-        boolean isDev = application.getMode().isDev();
+        boolean isDev = mode.isDev();
         if (resourceInfo != null && (status == 500 || status == 400)) {
             Class clazz = resourceInfo.getResourceClass();
             if (clazz != null) {
