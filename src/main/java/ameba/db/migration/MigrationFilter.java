@@ -74,7 +74,6 @@ public class MigrationFilter implements ContainerRequestFilter {
                         migrations.add(migration);
                     }
                 }
-                //todo 需要进一步判断
                 if (migrations.size() > 0) {
                     // todo 需要多个选项卡展示内容
                     Migration migration = migrations.get(0);
