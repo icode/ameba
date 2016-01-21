@@ -128,7 +128,6 @@ public class MigrationFilter implements ContainerRequestFilter {
         //todo 这里应该是特性名称或着简单的描述,在dev模式直接设置
         //todo 发布和测试模式应该让用户输入
         //todo {dbName} {generatedName} from web ui
-        //todo 判断flyway.getTable()是否存在，不存在则不更新数据库表结构，创建migrationInfo表，增加migrationInfo信息，调用flyway.baseline()
 
         for (String dbName : migrations.keySet()) {
             Migration migration = migrations.get(dbName);
