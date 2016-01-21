@@ -98,9 +98,9 @@ public class MigrationFilter implements ContainerRequestFilter {
                                 valuesMap.put("description", Messages.get("view.app.database.migration.description"));
                                 valuesMap.put("applyButtonText", Messages.get("view.app.database.migration.apply.button"));
                             } else {
-                                valuesMap.put("applyButtonText", Messages.get("view.app.database.migration.baseline.button"));
                                 valuesMap.put("subTitle", Messages.get("view.app.database.migration.baseline.subTitle"));
                                 valuesMap.put("description", Messages.get("view.app.database.migration.baseline.description"));
+                                valuesMap.put("applyButtonText", Messages.get("view.app.database.migration.baseline.button"));
                             }
                             valuesMap.put("applyDdl", info.getDiffDdl());
                         }
