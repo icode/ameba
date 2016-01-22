@@ -65,8 +65,6 @@ public class MigrationModel {
             migrationTableExist = resultSet.next();
             if (migrationTableExist) {
                 server.find(MigrationInfo.class)
-                        .where()
-                        .eq("databaseName", server.getName())
                         .findEach(new QueryEachConsumer<MigrationInfo>() {
                             @Override
                             public void accept(MigrationInfo bean) {

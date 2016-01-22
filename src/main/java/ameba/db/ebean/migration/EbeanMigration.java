@@ -7,11 +7,9 @@ import ameba.exception.AmebaException;
 import com.avaje.ebean.config.DbMigrationConfig;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
-import com.google.common.collect.Lists;
 import org.joda.time.DateTime;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * @author icode
@@ -51,13 +49,13 @@ public class EbeanMigration implements Migration {
     }
 
     @Override
-    public List<MigrationInfo> generate() {
+    public MigrationInfo generate() {
         try {
             dbMigration.generateMigration();
         } catch (IOException e) {
             throw new AmebaException(e);
         }
-        return Lists.newArrayList(dbMigration.getMigrationInfo());
+        return dbMigration.getMigrationInfo();
     }
 
     @Override

@@ -19,6 +19,11 @@
             text-shadow: 1px 1px 1px rgba(0, 0, 0, .3);
             border-bottom: 1px solid #690000;
             font-size: 28px;
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            z-index: 1;
         }
 
         h2 {
@@ -50,18 +55,27 @@
             top: -1px;
         }
 
+        input {
+            border: 1px solid #790000;
+            border-radius: 3px;
+            outline: none;
+            height: 19px;
+            padding: 2px 5px;
+            top: -1px;
+            position: relative;
+            margin-left: 20px;
+        }
+
         pre {
             padding: 5px 0 0 55px;
             border-bottom: 1px solid #DDD;
             text-shadow: 1px 1px 1px rgba(255, 255, 255, .5);
             color: #8B8B8B;
-            position: absolute;
             font-size: 12px;
-            left: 0;
-            right: 0;
+            bottom: 0;
         }
 
-        form div {
+        .header {
             margin: 0;
             padding: 15px 45px;
             background: #F5A0A0;
@@ -70,19 +84,81 @@
             text-shadow: 1px 1px 1px rgba(255, 255, 255, .3);
             font-size: 14px;
             border-bottom: 1px solid #BA7A7A;
+            position: fixed;
+            top: 77px;
+            left: 0;
+            right: 0;
+            z-index: 1;
+        }
+
+        #db-names {
+            cursor: default;
+            list-style: none;
+            margin-bottom: 0;
+            padding-top: 130px;
+        }
+
+        .db-name {
+            border: 1px solid #8B8B8B;
+            border-bottom: 0;
+            padding: 10px 20px;
+            border-radius: 3px 3px 0 0;
+            display: inline-block;
+            margin-left: 3px;
+            cursor: pointer;
+        }
+
+        .db-name.select {
+            background: #8B8B8B;
+            color: #fff;
+            text-shadow: 1px 1px 1px rgba(255, 255, 255, .3);
+        }
+
+        .diff {
+            display: none;
+        }
+
+        .diff.select {
+            display: block;
         }
     </style>
 </head>
 <body>
 <h1>${title}</h1>
 <form action="${migrationUri}" method="POST">
-    <div>
-        ${description} &nbsp;-&nbsp;
+    <div class="header">
+        <label>${description}&nbsp; - &nbsp;<input name="name" placeholder="${namePlaceholder}"></label>
         <button type="submit">${applyButtonText}</button>
     </div>
-    <h2>${subTitle}</h2>
+    <ul id="db-names">${dbNames}</ul>
 
-    <pre>${applyDdl}</pre>
+    <div id="diffs">${diffs}</div>
 </form>
+<script>
+    var dbNames = document.getElementById("db-names"),
+            diffs = document.getElementById("diffs"),
+            dnc = 'db-name select',
+            dfc = 'diff select',
+            dfs = diffs.childNodes,
+            df = dfs[0],
+            dn = dbNames.childNodes[0];
+    function getTarget(e) {
+        return e.srcElement ? e.srcElement : e.target;
+    }
+    dbNames.onclick = function (e) {
+        var t = getTarget(e);
+        if (t.className == 'db-name') {
+            dn.className = 'db-name';
+            df.className = 'diff';
+
+            df = dfs[t.getAttribute('i')];
+            dn = t;
+            t.className = dnc;
+            df.className = dfc;
+        }
+    };
+    dn.className = dnc;
+    df.className = dfc;
+</script>
 </body>
 </html>

@@ -139,7 +139,6 @@ public class ModelMigration extends DbMigration {
         }
         migrationInfo = new MigrationInfo();
         migrationInfo.setRevision(version);
-        migrationInfo.setDatabaseName(server.getName());
         try (StringWriter writer = new StringWriter()) {
             JAXBContext jaxbContext = JAXBContext.newInstance(Migration.class);
             Marshaller marshaller = jaxbContext.createMarshaller();

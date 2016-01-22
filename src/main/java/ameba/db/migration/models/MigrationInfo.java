@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.Transient;
 
 /**
  * @author icode
@@ -13,8 +14,8 @@ import javax.persistence.Lob;
 public class MigrationInfo {
     @Id
     private String revision;
+    @Transient
     private String name;
-    private String databaseName;
     @Lob
     private String modelDiff;
     @Lob
@@ -46,14 +47,6 @@ public class MigrationInfo {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getDatabaseName() {
-        return databaseName;
-    }
-
-    public void setDatabaseName(String databaseName) {
-        this.databaseName = databaseName;
     }
 
     public String getRollbackDdl() {

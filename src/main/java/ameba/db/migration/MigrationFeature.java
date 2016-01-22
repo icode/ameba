@@ -38,17 +38,22 @@ public class MigrationFeature implements Feature {
 
     @Override
     public boolean configure(FeatureContext context) {
+        Map<String, Object> properties = context.getConfiguration().getProperties();
         for (String dbName : DataSourceManager.getDataSourceNames()) {
-            Flyway flyway = new Flyway();
-            flyway.setDataSource(DataSourceManager.getDataSource(dbName));
-            flyway.setBaselineOnMigrate(true);
-            FLYWAYS.put(dbName, flyway);
-            Migration migration = locator.getService(Migration.class, dbName);
-            migrationMap.put(dbName, migration);
-            flyway.setResolvers(new DatabaseMigrationResolver(migration));
+            if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
+                Flyway flyway = new Flyway();
+                flyway.setDataSource(DataSourceManager.getDataSource(dbName));
+                flyway.setBaselineOnMigrate(true);
+                FLYWAYS.put(dbName, flyway);
+                Migration migration = locator.getService(Migration.class, dbName);
+                migrationMap.put(dbName, migration);
+                flyway.setResolvers(new DatabaseMigrationResolver(migration));
+            }
         }
 
-        context.register(MigrationFilter.class);
+        if (!migrationMap.isEmpty()) {
+            context.register(MigrationFilter.class);
+        }
 
         if (!mode.isDev()) {
             for (Migration migration : migrationMap.values()) {
