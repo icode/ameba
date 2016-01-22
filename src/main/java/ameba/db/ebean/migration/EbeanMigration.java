@@ -16,14 +16,13 @@ import java.io.IOException;
  */
 public class EbeanMigration implements Migration {
     private final ModelMigration dbMigration;
-    private final DbMigrationConfig migrationConfig;
     private final SpiEbeanServer server;
 
     public EbeanMigration(Application application, SpiEbeanServer server) {
         boolean isDev = application.getMode().isDev();
         this.server = server;
         String _basePath = (isDev ? "src/main" : "temp") + "/";
-        migrationConfig = new DbMigrationConfig();
+        DbMigrationConfig migrationConfig = new DbMigrationConfig();
         ServerConfig config = server.getServerConfig();
         CharSequence ver = application.getApplicationVersion();
         String version;
