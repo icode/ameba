@@ -81,7 +81,8 @@ public class MigrationFilter implements ContainerRequestFilter {
                         valuesMap.put("migrationUri", "/" + uri);
                         valuesMap.put("description", Messages.get("view.app.database.migration.description"));
                         valuesMap.put("applyButtonText", Messages.get("view.app.database.migration.apply.button"));
-                        valuesMap.put("namePlaceholder", Messages.get("view.app.database.migration.name.placeholder"));
+                        valuesMap.put("descriptionPlaceholder",
+                                Messages.get("view.app.database.migration.description.placeholder"));
                         StringBuilder tabs = new StringBuilder();
                         StringBuilder diffs = new StringBuilder();
 
@@ -134,17 +135,17 @@ public class MigrationFilter implements ContainerRequestFilter {
     private void migrate(ContainerRequest req) {
         MultivaluedMap<String, String> params = req.readEntity(Form.class).asMap();
 
-        String generatedName = (mode.isDev() ? "dev " : "") + "migrate";
-        String name = params.getFirst("name");
-        if (StringUtils.isNotBlank(name)) {
-            generatedName = name;
+        String generatedDesc = (mode.isDev() ? "dev " : "") + "migrate";
+        String desc = params.getFirst("description");
+        if (StringUtils.isNotBlank(desc)) {
+            generatedDesc = desc;
         }
         for (String dbName : migrations.keySet()) {
             Migration migration = migrations.get(dbName);
             MigrationInfo info = migration.generate();
-            info.setName(generatedName);
+            info.setDescription(generatedDesc);
             Flyway flyway = MigrationFeature.getMigration(dbName);
-            flyway.setBaselineDescription(info.getName());
+            flyway.setBaselineDescription(info.getDescription());
             flyway.setBaselineVersionAsString(info.getRevision());
 
             flyway.migrate();

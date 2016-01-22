@@ -15,7 +15,7 @@ public class MigrationInfo {
     @Id
     private String revision;
     @Transient
-    private String name;
+    private String description;
     @Lob
     private String modelDiff;
     @Lob
@@ -41,12 +41,12 @@ public class MigrationInfo {
         this.modelDiff = modelDiff;
     }
 
-    public String getName() {
-        return name;
+    public String getDescription() {
+        return description;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setDescription(String name) {
+        this.description = name;
     }
 
     public String getRollbackDdl() {
