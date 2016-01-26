@@ -152,7 +152,6 @@
         return e.srcElement ? e.srcElement : e.target;
     }
     ifr.onload = function () {
-        var body = ifr.contentWindow.document ? ifr.contentWindow.document.body : ifr.ownerDocument.body;
         location.reload(true);
     };
     dbNames.onclick = function (e) {
