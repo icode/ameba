@@ -1,14 +1,9 @@
 package ameba.db.migration;
 
 import ameba.core.Application;
-import ameba.db.migration.models.MigrationInfo;
-import ameba.exception.AmebaException;
-import ameba.i18n.Messages;
-import ameba.util.IOUtils;
-import com.google.common.collect.Maps;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
-import org.flywaydb.core.Flyway;
+import ameba.db.DataSourceManager;
+import ameba.db.migration.resources.MigrationResource;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.server.ContainerRequest;
 
 import javax.annotation.Priority;
@@ -20,15 +15,10 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.net.URI;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Map;
-
-import static ameba.db.migration.MigrationFeature.uri;
 
 /**
  * @author icode
@@ -37,127 +27,67 @@ import static ameba.db.migration.MigrationFeature.uri;
 @Priority(Integer.MIN_VALUE)
 @Singleton
 public class MigrationFilter implements ContainerRequestFilter {
-    private static final String MIGRATION_HTML;
     private static final String FAVICON_ICO = "favicon.ico";
-
-    static {
-        try {
-            MIGRATION_HTML = IOUtils.readFromResource("db/migration/migration.html");
-        } catch (IOException e) {
-            throw new AmebaException(e);
-        }
-    }
-
+    private static final String MIGRATION_BASE_URI = "/" + MigrationResource.MIGRATION_BASE_URI + "/";
+    private boolean ran = false;
     @Inject
     private Application.Mode mode;
-    private boolean ran = false;
-    private boolean rewriteMethod = false;
-    private Map<String, Migration> migrations;
+    @Inject
+    private Application application;
+    @Inject
+    private ServiceLocator locator;
+    @Inject
+    private MigrationResource resource;
 
     @Override
     public void filter(ContainerRequestContext req) throws IOException {
         if (!ran) {
-            String path = req.getUriInfo().getPath();
+            UriInfo uriInfo = req.getUriInfo();
+            String path = uriInfo.getPath();
             if (path.equals(FAVICON_ICO) || path.endsWith("/" + FAVICON_ICO)) {
                 return;
             }
-            if (path.equals(uri)
-                    && req.getMethod().equalsIgnoreCase(HttpMethod.POST)
-                    && migrations.size() > 0) {
-                migrate((ContainerRequest) req);
-            } else {
-                migrations = Maps.newHashMap();
-                for (String dbName : MigrationFeature.migrationMap.keySet()) {
-                    Migration migration = MigrationFeature.migrationMap.get(dbName);
+            path = "/" + path;
+            String migrationUri = MIGRATION_BASE_URI + MigrationFeature.getMigrationId();
+            String repairUri = migrationUri + "/repair";
+            if ((path.equals(migrationUri) || path.equals(repairUri)) && HttpMethod.GET.equals(req.getMethod())) {
+                return;
+            } else if (path.equals(migrationUri) && HttpMethod.POST.equals(req.getMethod())) {
+                String desc = ((ContainerRequest) req).readEntity(Form.class).asMap().getFirst("description");
+                req.abortWith(
+                        Response.ok().entity(resource.migrate(desc, MigrationFeature.getMigrationId())).build()
+                );
+                return;
+            } else if (path.equals(repairUri) && HttpMethod.POST.equals(req.getMethod())) {
+                req.abortWith(
+                        Response.ok().entity(resource.repair(MigrationFeature.getMigrationId())).build()
+                );
+                return;
+            }
+
+            Map<String, Object> properties = application.getProperties();
+            Map failMigrations = resource.getFailMigrations();
+            if (failMigrations != null && !failMigrations.isEmpty()) {
+                req.abortWith(Response.serverError().entity(
+                        resource.repairView(MigrationFeature.getMigrationId())
+                ).type(MediaType.TEXT_HTML_TYPE).build());
+                return;
+            }
+            for (String dbName : DataSourceManager.getDataSourceNames()) {
+                if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
+                    Migration migration = locator.getService(Migration.class, dbName);
                     if (migration.hasChanged()) {
-                        migrations.put(dbName, migration);
+                        req.abortWith(Response.fromResponse(
+                                resource.migrateView(MigrationFeature.getMigrationId())
+                        ).status(500).build());
+                        return;
                     }
                 }
-                if (migrations.size() > 0) {
-                    if (mode.isDev() || path.equals(uri) && req.getMethod().equals(HttpMethod.GET)) {
-                        Map<String, String> valuesMap = Maps.newHashMap();
-                        valuesMap.put("pageTitle", Messages.get("view.app.database.migration.page.title"));
-                        valuesMap.put("title", Messages.get("view.app.database.migration.title"));
-                        valuesMap.put("migrationUri", "/" + uri);
-                        valuesMap.put("description", Messages.get("view.app.database.migration.description"));
-                        valuesMap.put("applyButtonText", Messages.get("view.app.database.migration.apply.button"));
-                        valuesMap.put("descriptionPlaceholder",
-                                Messages.get("view.app.database.migration.description.placeholder"));
-                        StringBuilder tabs = new StringBuilder();
-                        StringBuilder diffs = new StringBuilder();
-
-                        StrSubstitutor sub = new StrSubstitutor(valuesMap);
-                        int i = 0;
-                        for (String dbName : migrations.keySet()) {
-                            Migration migration = migrations.get(dbName);
-                            MigrationInfo info = migration.generate();
-                            Flyway flyway = MigrationFeature.getMigration(dbName);
-                            boolean hasTable;
-                            try (Connection connection = flyway.getDataSource().getConnection()) {
-                                hasTable = connection.getMetaData().getTables(null, null, flyway.getTable(), null).next();
-                            } catch (SQLException e) {
-                                throw new AmebaException(e);
-                            }
-
-                            tabs.append("<li i=\"").append(i).append("\" class=\"db-name\">").append(dbName).append("</li>");
-                            diffs.append("<div class=\"diff\"><h2>");
-                            if (hasTable) {
-                                diffs.append(Messages.get("view.app.database.migration.subTitle"));
-                            } else {
-                                diffs.append(Messages.get("view.app.database.migration.baseline.subTitle"));
-                            }
-                            diffs.append("</h2><pre>")
-                                    .append(info.getDiffDdl())
-                                    .append("</pre></div>");
-                            i++;
-                        }
-                        valuesMap.put("dbNames", tabs.toString());
-                        valuesMap.put("diffs", diffs.toString());
-                        req.abortWith(
-                                Response.serverError()
-                                        .entity(sub.replace(MIGRATION_HTML))
-                                        .type(MediaType.TEXT_HTML_TYPE)
-                                        .build()
-                        );
-                    }
-                } else if (!mode.isDev()) {
-                    ran = true;
-                }
             }
-        } else if (rewriteMethod) {
-            if (HttpMethod.POST.equals(req.getMethod())) {
-                req.setMethod(HttpMethod.GET);
-                rewriteMethod = false;
+
+            if (!mode.isDev()) {
+                ran = true;
             }
         }
-    }
-
-    private void migrate(ContainerRequest req) {
-        MultivaluedMap<String, String> params = req.readEntity(Form.class).asMap();
-
-        String generatedDesc = (mode.isDev() ? "dev " : "") + "migrate";
-        String desc = params.getFirst("description");
-        if (StringUtils.isNotBlank(desc)) {
-            generatedDesc = desc;
-        }
-        for (String dbName : migrations.keySet()) {
-            Migration migration = migrations.get(dbName);
-            MigrationInfo info = migration.generate();
-            info.setDescription(generatedDesc);
-            Flyway flyway = MigrationFeature.getMigration(dbName);
-            flyway.setBaselineDescription(info.getDescription());
-            flyway.setBaselineVersionAsString(info.getRevision());
-
-            flyway.migrate();
-            migration.persist();
-            migration.reset();
-            ran = true;
-            rewriteMethod = true;
-        }
-        String referer = req.getHeaders().getFirst("Referer");
-        if (StringUtils.isBlank(referer)) {
-            referer = "/";
-        }
-        req.abortWith(Response.temporaryRedirect(URI.create(referer)).build());
     }
 }

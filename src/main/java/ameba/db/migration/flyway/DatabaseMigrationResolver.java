@@ -1,7 +1,7 @@
 package ameba.db.migration.flyway;
 
 import ameba.db.migration.Migration;
-import ameba.db.migration.models.MigrationInfo;
+import ameba.db.migration.models.ScriptInfo;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hasher;
@@ -49,7 +49,7 @@ public class DatabaseMigrationResolver implements MigrationResolver {
 
     @Override
     public Collection<ResolvedMigration> resolveMigrations() {
-        MigrationInfo info = migration.generate();
+        ScriptInfo info = migration.generate();
         List<ResolvedMigration> resolvedMigrations = Lists.newArrayList();
         ResolvedMigrationImpl migration = new ResolvedMigrationImpl();
         migration.setVersion(MigrationVersion.fromVersion(info.getRevision()));

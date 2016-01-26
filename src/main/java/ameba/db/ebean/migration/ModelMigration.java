@@ -1,6 +1,6 @@
 package ameba.db.ebean.migration;
 
-import ameba.db.migration.models.MigrationInfo;
+import ameba.db.migration.models.ScriptInfo;
 import ameba.exception.AmebaException;
 import com.avaje.ebean.config.dbplatform.DbPlatformName;
 import com.avaje.ebean.dbmigration.DbMigration;
@@ -31,7 +31,7 @@ public class ModelMigration extends DbMigration {
     private ModelDiff diff;
     private MigrationModel migrationModel;
     private CurrentModel currentModel;
-    private MigrationInfo migrationInfo;
+    private ScriptInfo scriptInfo;
 
     public ModelDiff diff() {
         if (diff != null) return diff;
@@ -55,7 +55,7 @@ public class ModelMigration extends DbMigration {
             if (!migrationModel.isMigrationTableExist()) {
                 DdlRunner runner = new DdlRunner(false, "create_migration_info_table.ddl");
                 DdlHandler handler = server.getDatabasePlatform().createDdlHandler(server.getServerConfig());
-                BeanDescriptor<MigrationInfo> beanDescriptor = server.getBeanDescriptor(MigrationInfo.class);
+                BeanDescriptor<ScriptInfo> beanDescriptor = server.getBeanDescriptor(ScriptInfo.class);
                 DdlWrite write = new DdlWrite(new MConfiguration(), currentModel.read());
                 handler.generate(write, current.getTable(beanDescriptor.getBaseTable()).createTable());
                 String ddl = write.apply().getBuffer() +
@@ -80,7 +80,7 @@ public class ModelMigration extends DbMigration {
             DbOffline.setRunningMigration();
         }
         try {
-            if (migrationInfo != null) {
+            if (scriptInfo != null) {
                 return;
             }
             if (diff == null) {
@@ -132,20 +132,20 @@ public class ModelMigration extends DbMigration {
 
     protected boolean writeMigrationXml(Migration dbMigration, String version) {
         if (migrationModel.isMigrationTableExist()) {
-            migrationInfo = server.find(MigrationInfo.class, version);
-            if (migrationInfo != null) {
+            scriptInfo = server.find(ScriptInfo.class, version);
+            if (scriptInfo != null) {
                 return false;
             }
         }
-        migrationInfo = new MigrationInfo();
-        migrationInfo.setRevision(version);
+        scriptInfo = new ScriptInfo();
+        scriptInfo.setRevision(version);
         try (StringWriter writer = new StringWriter()) {
             JAXBContext jaxbContext = JAXBContext.newInstance(Migration.class);
             Marshaller marshaller = jaxbContext.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             marshaller.marshal(dbMigration, writer);
             writer.flush();
-            migrationInfo.setModelDiff(writer.toString());
+            scriptInfo.setModelDiff(writer.toString());
         } catch (JAXBException | IOException e) {
             throw new RuntimeException(e);
         }
@@ -153,7 +153,7 @@ public class ModelMigration extends DbMigration {
     }
 
     protected PlatformDdlWriter createDdlWriter() {
-        return new PlatformDdlWriter(migrationInfo, migrationConfig, (SpiServer) server);
+        return new PlatformDdlWriter(scriptInfo, migrationConfig, (SpiServer) server);
     }
 
     /**
@@ -174,11 +174,11 @@ public class ModelMigration extends DbMigration {
         diff = null;
         migrationModel = null;
         currentModel = null;
-        migrationInfo = null;
+        scriptInfo = null;
         return old;
     }
 
-    public MigrationInfo getMigrationInfo() {
-        return migrationInfo;
+    public ScriptInfo getScriptInfo() {
+        return scriptInfo;
     }
 }

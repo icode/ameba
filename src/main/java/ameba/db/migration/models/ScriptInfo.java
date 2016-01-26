@@ -11,7 +11,7 @@ import javax.persistence.Transient;
  * @author icode
  */
 @Entity
-public class MigrationInfo {
+public class ScriptInfo {
     @Id
     private String revision;
     @Transient

@@ -1,6 +1,6 @@
 package ameba.db.ebean.migration;
 
-import ameba.db.migration.models.MigrationInfo;
+import ameba.db.migration.models.ScriptInfo;
 import com.avaje.ebean.QueryEachConsumer;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxIsolation;
@@ -56,7 +56,7 @@ public class MigrationModel {
 
     protected List<MigrationResource> findMigrationResource() {
         final List<MigrationResource> resources = Lists.newArrayList();
-        BeanDescriptor<MigrationInfo> beanDescriptor = server.getBeanDescriptor(MigrationInfo.class);
+        BeanDescriptor<ScriptInfo> beanDescriptor = server.getBeanDescriptor(ScriptInfo.class);
         Transaction transaction = server.createTransaction(TxIsolation.READ_COMMITED);
         try (Connection connection = transaction.getConnection()) {
             ResultSet resultSet = connection.getMetaData().getTables(
@@ -64,10 +64,10 @@ public class MigrationModel {
             );
             migrationTableExist = resultSet.next();
             if (migrationTableExist) {
-                server.find(MigrationInfo.class)
-                        .findEach(new QueryEachConsumer<MigrationInfo>() {
+                server.find(ScriptInfo.class)
+                        .findEach(new QueryEachConsumer<ScriptInfo>() {
                             @Override
-                            public void accept(MigrationInfo bean) {
+                            public void accept(ScriptInfo bean) {
                                 resources.add(new MigrationResource(bean));
                             }
                         });

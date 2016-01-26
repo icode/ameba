@@ -1,6 +1,6 @@
 package ameba.db.migration.flyway;
 
-import ameba.db.migration.models.MigrationInfo;
+import ameba.db.migration.models.ScriptInfo;
 import org.flywaydb.core.api.resolver.MigrationExecutor;
 import org.flywaydb.core.internal.dbsupport.DbSupportFactory;
 import org.flywaydb.core.internal.dbsupport.JdbcTemplate;
@@ -12,9 +12,9 @@ import java.sql.Connection;
  * @author icode
  */
 public class SqlMigrationExecutor implements MigrationExecutor {
-    private final MigrationInfo info;
+    private final ScriptInfo info;
 
-    public SqlMigrationExecutor(MigrationInfo info) {
+    public SqlMigrationExecutor(ScriptInfo info) {
         this.info = info;
     }
 

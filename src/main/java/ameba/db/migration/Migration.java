@@ -1,7 +1,9 @@
 package ameba.db.migration;
 
-import ameba.db.migration.models.MigrationInfo;
+import ameba.db.migration.models.ScriptInfo;
 import org.jvnet.hk2.annotations.Contract;
+
+import java.util.List;
 
 /**
  * @author icode
@@ -10,7 +12,11 @@ import org.jvnet.hk2.annotations.Contract;
 public interface Migration {
     boolean hasChanged();
 
-    MigrationInfo generate();
+    ScriptInfo generate();
+
+    List<ScriptInfo> allScript();
+
+    ScriptInfo getScript(String revision);
 
     void persist();
 

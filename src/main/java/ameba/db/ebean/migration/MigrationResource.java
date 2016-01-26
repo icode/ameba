@@ -1,6 +1,6 @@
 package ameba.db.ebean.migration;
 
-import ameba.db.migration.models.MigrationInfo;
+import ameba.db.migration.models.ScriptInfo;
 import com.avaje.ebean.dbmigration.migration.Migration;
 import com.avaje.ebean.dbmigration.model.MigrationVersion;
 
@@ -14,13 +14,13 @@ import java.io.StringReader;
  */
 public class MigrationResource implements Comparable<MigrationResource> {
 
-    private MigrationInfo info;
+    private ScriptInfo info;
     private MigrationVersion version;
 
     /**
      * Construct with a migration xml file.
      */
-    public MigrationResource(MigrationInfo info) {
+    public MigrationResource(ScriptInfo info) {
         this.info = info;
         this.version = MigrationVersion.parse(info.getRevision());
     }
@@ -49,7 +49,7 @@ public class MigrationResource implements Comparable<MigrationResource> {
         }
     }
 
-    public MigrationInfo getInfo() {
+    public ScriptInfo getInfo() {
         return info;
     }
 

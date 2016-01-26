@@ -1,6 +1,6 @@
 package ameba.db.ebean.migration;
 
-import ameba.db.migration.models.MigrationInfo;
+import ameba.db.migration.models.ScriptInfo;
 import com.avaje.ebean.config.DbMigrationConfig;
 import com.avaje.ebean.dbmigration.ddlgeneration.DdlHandler;
 import com.avaje.ebean.dbmigration.ddlgeneration.DdlWrite;
@@ -16,12 +16,12 @@ import java.util.List;
  */
 public class PlatformDdlWriter {
 
-    private final MigrationInfo migrationInfo;
+    private final ScriptInfo scriptInfo;
     private final SpiServer server;
     private final DbMigrationConfig config;
 
-    public PlatformDdlWriter(MigrationInfo migrationInfo, DbMigrationConfig config, SpiServer server) {
-        this.migrationInfo = migrationInfo;
+    public PlatformDdlWriter(ScriptInfo scriptInfo, DbMigrationConfig config, SpiServer server) {
+        this.scriptInfo = scriptInfo;
         this.server = server;
         this.config = config;
     }
@@ -59,7 +59,7 @@ public class PlatformDdlWriter {
      * Write the 'Apply' DDL buffers to the writer.
      */
     protected void writeApplyDdl(DdlWrite write) throws IOException {
-        migrationInfo.setApplyDdl(
+        scriptInfo.setApplyDdl(
                 write.apply().getBuffer() +
                         write.applyForeignKeys().getBuffer() +
                         write.applyHistory().getBuffer()
@@ -70,7 +70,7 @@ public class PlatformDdlWriter {
      * Write the 'Rollback' DDL buffers to the writer.
      */
     protected void writeApplyRollbackDdl(DdlWrite write) throws IOException {
-        migrationInfo.setRollbackDdl(
+        scriptInfo.setRollbackDdl(
                 write.rollbackForeignKeys().getBuffer() +
                         write.rollback().getBuffer()
         );
@@ -80,7 +80,7 @@ public class PlatformDdlWriter {
      * Write the 'Drop' DDL buffers to the writer.
      */
     protected void writeDropDdl(DdlWrite write) throws IOException {
-        migrationInfo.setDropDdl(
+        scriptInfo.setDropDdl(
                 write.dropHistory().getBuffer() +
                         write.drop().getBuffer()
         );

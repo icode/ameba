@@ -8,7 +8,7 @@ import ameba.db.ebean.jackson.JacksonEbeanModule;
 import ameba.db.ebean.jackson.JsonIOExceptionMapper;
 import ameba.db.ebean.migration.EbeanMigration;
 import ameba.db.migration.Migration;
-import ameba.db.migration.models.MigrationInfo;
+import ameba.db.migration.models.ScriptInfo;
 import ameba.db.model.ModelManager;
 import ameba.i18n.Messages;
 import com.avaje.ebean.EbeanServer;
@@ -30,7 +30,6 @@ import javax.inject.Inject;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -85,10 +84,6 @@ public class EbeanFeature implements Feature {
     private XmlMapper xmlMapper;
     @Inject
     private Application application;
-
-    public static List<EbeanServer> getServers() {
-        return Collections.unmodifiableList(SERVERS);
-    }
 
     /**
      * {@inheritDoc}
@@ -167,7 +162,7 @@ public class EbeanFeature implements Feature {
                     config.addClass(clazz);
                 }
             }
-            config.addClass(MigrationInfo.class);
+            config.addClass(ScriptInfo.class);
 
             logger.debug(Messages.get("info.db.connect", name));
 

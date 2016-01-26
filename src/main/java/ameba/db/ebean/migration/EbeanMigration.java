@@ -2,14 +2,17 @@ package ameba.db.ebean.migration;
 
 import ameba.core.Application;
 import ameba.db.migration.Migration;
-import ameba.db.migration.models.MigrationInfo;
+import ameba.db.migration.models.ScriptInfo;
 import ameba.exception.AmebaException;
+import com.avaje.ebean.QueryEachConsumer;
 import com.avaje.ebean.config.DbMigrationConfig;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import com.google.common.collect.Lists;
 import org.joda.time.DateTime;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author icode
@@ -48,18 +51,35 @@ public class EbeanMigration implements Migration {
     }
 
     @Override
-    public MigrationInfo generate() {
+    public ScriptInfo generate() {
         try {
             dbMigration.generateMigration();
         } catch (IOException e) {
             throw new AmebaException(e);
         }
-        return dbMigration.getMigrationInfo();
+        return dbMigration.getScriptInfo();
+    }
+
+    @Override
+    public List<ScriptInfo> allScript() {
+        final List<ScriptInfo> scriptInfoList = Lists.newArrayList();
+        server.find(ScriptInfo.class).findEach(new QueryEachConsumer<ScriptInfo>() {
+            @Override
+            public void accept(ScriptInfo bean) {
+                scriptInfoList.add(bean);
+            }
+        });
+        return scriptInfoList;
+    }
+
+    @Override
+    public ScriptInfo getScript(String revision) {
+        return server.find(ScriptInfo.class, revision);
     }
 
     @Override
     public void persist() {
-        server.save(dbMigration.getMigrationInfo());
+        server.save(dbMigration.getScriptInfo());
     }
 
     @Override

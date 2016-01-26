@@ -121,21 +121,27 @@
         .diff.select {
             display: block;
         }
+
+        .hide {
+            display: none;
+        }
     </style>
 </head>
 <body>
 <h1>${title}</h1>
-<form action="${migrationUri}" method="POST">
+<form action="${migrationUri}" method="POST" target="target">
     <div class="header">
-        <label>${description}&nbsp; - &nbsp;<input name="description" placeholder="${descriptionPlaceholder}"></label>
+        <label>${description}</label>
         <button type="submit">${applyButtonText}</button>
     </div>
     <ul id="db-names">${dbNames}</ul>
 
     <div id="diffs">${diffs}</div>
 </form>
+<iframe name="target" src="about:blank" class="hide"></iframe>
 <script>
     var dbNames = document.getElementById("db-names"),
+            ifr = document.getElementsByName("target")[0],
             diffs = document.getElementById("diffs"),
             dnc = 'db-name select',
             dfc = 'diff select',
@@ -145,6 +151,10 @@
     function getTarget(e) {
         return e.srcElement ? e.srcElement : e.target;
     }
+    ifr.onload = function () {
+        var body = ifr.contentWindow.document ? ifr.contentWindow.document.body : ifr.ownerDocument.body;
+        location.reload(true);
+    };
     dbNames.onclick = function (e) {
         var t = getTarget(e);
         if (t.className == 'db-name') {

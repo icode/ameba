@@ -1,4 +1,4 @@
-package ameba.feature.ds;
+package ameba.feature.datasource;
 
 import com.alibaba.druid.stat.DruidStatService;
 import com.alibaba.druid.util.Utils;
@@ -35,33 +35,33 @@ import java.util.UUID;
  */
 public class StatViewFeature implements Feature {
     /**
-     * Constant <code>PARAM_NAME_RESET_ENABLE="ds.resetEnable"</code>
+     * Constant <code>PARAM_NAME_RESET_ENABLE="datasource.resetEnable"</code>
      */
-    public static final String PARAM_NAME_RESET_ENABLE = "ds.resetEnable";
+    public static final String PARAM_NAME_RESET_ENABLE = "datasource.resetEnable";
     /**
-     * Constant <code>PARAM_NAME_USERNAME="ds.loginUsername"</code>
+     * Constant <code>PARAM_NAME_USERNAME="datasource.loginUsername"</code>
      */
-    public static final String PARAM_NAME_USERNAME = "ds.loginUsername";
+    public static final String PARAM_NAME_USERNAME = "datasource.loginUsername";
     /**
-     * Constant <code>PARAM_NAME_PASSWORD="ds.loginPassword"</code>
+     * Constant <code>PARAM_NAME_PASSWORD="datasource.loginPassword"</code>
      */
-    public static final String PARAM_NAME_PASSWORD = "ds.loginPassword";
+    public static final String PARAM_NAME_PASSWORD = "datasource.loginPassword";
     /**
      * Constant <code>SESSION_USER_KEY="SVST"</code>
      */
     public static final String SESSION_USER_KEY = "SVST";//stat view session token
     /**
-     * Constant <code>PARAM_NAME_JMX_URL="ds.jmxUrl"</code>
+     * Constant <code>PARAM_NAME_JMX_URL="datasource.jmxUrl"</code>
      */
-    public static final String PARAM_NAME_JMX_URL = "ds.jmxUrl";
+    public static final String PARAM_NAME_JMX_URL = "datasource.jmxUrl";
     /**
-     * Constant <code>PARAM_NAME_JMX_USERNAME="ds.jmxUsername"</code>
+     * Constant <code>PARAM_NAME_JMX_USERNAME="datasource.jmxUsername"</code>
      */
-    public static final String PARAM_NAME_JMX_USERNAME = "ds.jmxUsername";
+    public static final String PARAM_NAME_JMX_USERNAME = "datasource.jmxUsername";
     /**
-     * Constant <code>PARAM_NAME_JMX_PASSWORD="ds.jmxPassword"</code>
+     * Constant <code>PARAM_NAME_JMX_PASSWORD="datasource.jmxPassword"</code>
      */
-    public static final String PARAM_NAME_JMX_PASSWORD = "ds.jmxPassword";
+    public static final String PARAM_NAME_JMX_PASSWORD = "datasource.jmxPassword";
     private static final Logger logger = LoggerFactory.getLogger(StatViewFeature.class);
     private final static String RESOURCE_PATH = "support/http/resources";
     private static String username = null;
@@ -232,7 +232,7 @@ public class StatViewFeature implements Feature {
 
         init(configuration);
 
-        String path = (String) configuration.getProperty("ds.resource.path");
+        String path = (String) configuration.getProperty("datasource.resource.path");
 
         if (StringUtils.isNotBlank(path)) {
             dsPath = path.startsWith("/") ? path : "/" + path;
@@ -268,7 +268,7 @@ public class StatViewFeature implements Feature {
 
     @NameBinding
     @Retention(RetentionPolicy.RUNTIME)
-    static @interface DsAuthorization {
+    @interface DsAuthorization {
     }
 
     @DsAuthorization
@@ -291,7 +291,7 @@ public class StatViewFeature implements Feature {
         }
     }
 
-    @Path("ds")
+    @Path("datasource")
     @Singleton
     @DsAuthorization
     public static class DsStatViewResource {

@@ -1,4 +1,4 @@
-package ameba.feature.ds;
+package ameba.feature.datasource;
 
 import com.alibaba.druid.filter.stat.StatFilterContext;
 import com.alibaba.druid.filter.stat.StatFilterContextListenerAdapter;
@@ -11,6 +11,7 @@ import com.alibaba.druid.support.profile.ProfileEntryReqStat;
 import com.alibaba.druid.support.profile.Profiler;
 import com.alibaba.druid.util.PatternMatcher;
 import com.alibaba.druid.util.ServletPathMatcher;
+import com.google.common.collect.Sets;
 import groovy.lang.Singleton;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.ContainerRequest;
@@ -23,8 +24,6 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,25 +36,25 @@ import java.util.Set;
 class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     /**
-     * Constant <code>PARAM_NAME_PORFILE_ENABLE="ds.profileEnable"</code>
+     * Constant <code>PARAM_NAME_PORFILE_ENABLE="datasource.profileEnable"</code>
      */
-    public final static String PARAM_NAME_PORFILE_ENABLE = "ds.profileEnable";
+    public final static String PARAM_NAME_PORFILE_ENABLE = "datasource.profileEnable";
     /**
-     * Constant <code>PARAM_NAME_SESSION_STAT_MAX_COUNT="ds.sessionStatMaxCount"</code>
+     * Constant <code>PARAM_NAME_SESSION_STAT_MAX_COUNT="datasource.sessionStatMaxCount"</code>
      */
-    public final static String PARAM_NAME_SESSION_STAT_MAX_COUNT = "ds.sessionStatMaxCount";
+    public final static String PARAM_NAME_SESSION_STAT_MAX_COUNT = "datasource.sessionStatMaxCount";
     /**
-     * Constant <code>PARAM_NAME_EXCLUSIONS="ds.exclusions"</code>
+     * Constant <code>PARAM_NAME_EXCLUSIONS="datasource.exclusions"</code>
      */
-    public static final String PARAM_NAME_EXCLUSIONS = "ds.exclusions";
+    public static final String PARAM_NAME_EXCLUSIONS = "datasource.exclusions";
     /**
-     * Constant <code>PARAM_NAME_PRINCIPAL_COOKIE_NAME="ds.principalCookieName"</code>
+     * Constant <code>PARAM_NAME_PRINCIPAL_COOKIE_NAME="datasource.principalCookieName"</code>
      */
-    public static final String PARAM_NAME_PRINCIPAL_COOKIE_NAME = "ds.principalCookieName";
+    public static final String PARAM_NAME_PRINCIPAL_COOKIE_NAME = "datasource.principalCookieName";
     /**
-     * Constant <code>PARAM_NAME_REAL_IP_HEADER="ds.realIpHeader"</code>
+     * Constant <code>PARAM_NAME_REAL_IP_HEADER="datasource.realIpHeader"</code>
      */
-    public static final String PARAM_NAME_REAL_IP_HEADER = "ds.realIpHeader";
+    public static final String PARAM_NAME_REAL_IP_HEADER = "datasource.realIpHeader";
     /**
      * Constant <code>DEFAULT_MAX_STAT_SESSION_COUNT=1000 * 100</code>
      */
@@ -91,7 +90,7 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
         {
             String exclusions = (String) configuration.getProperty(PARAM_NAME_EXCLUSIONS);
             if (exclusions != null && exclusions.trim().length() != 0) {
-                excludesPattern = new HashSet<String>(Arrays.asList(exclusions.split("\\s*,\\s*")));
+                excludesPattern = Sets.newHashSet(exclusions.split("\\s*,\\s*"));
             }
         }
 
@@ -411,7 +410,7 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
     /**
      * <p>Getter for the field <code>statFilterContextListener</code>.</p>
      *
-     * @return a {@link ameba.feature.ds.WebStatFilter.WebStatFilterContextListener} object.
+     * @return a {@link ameba.feature.datasource.WebStatFilter.WebStatFilterContextListener} object.
      */
     public WebStatFilterContextListener getStatFilterContextListener() {
         return statFilterContextListener;

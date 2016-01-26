@@ -24,7 +24,7 @@ import java.util.Set;
  */
 public class DataSourceManager extends Addon {
 
-    private static final Map<String, DruidDataSource> dataSourceMap = Maps.newHashMap();
+    private static final Map<String, DruidDataSource> dataSourceMap = Maps.newLinkedHashMap();
     private static final Logger logger = LoggerFactory.getLogger(DataSourceManager.class);
     private static String DEFAULT_DS_NAME = "default";
 
