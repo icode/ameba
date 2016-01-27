@@ -63,6 +63,21 @@ public class MigrationFilter implements ContainerRequestFilter {
                         Response.ok().entity(resource.repair(MigrationFeature.getMigrationId())).build()
                 );
                 return;
+            } else if (!mode.isDev() && path.equals(migrationUri) && HttpMethod.GET.equals(req.getMethod())) {
+                req.abortWith(
+                        Response.ok()
+                                .entity(resource.migrateView(MigrationFeature.getMigrationId()))
+                                .build()
+                );
+                return;
+            } else if (!mode.isDev() && path.equals(repairUri) && HttpMethod.GET.equals(req.getMethod())) {
+                req.abortWith(
+                        Response.ok()
+                                .entity(resource.repairView(MigrationFeature.getMigrationId()))
+                                .type(MediaType.TEXT_HTML_TYPE)
+                                .build()
+                );
+                return;
             }
 
             Map<String, Object> properties = application.getProperties();
@@ -73,14 +88,16 @@ public class MigrationFilter implements ContainerRequestFilter {
                 ).type(MediaType.TEXT_HTML_TYPE).build());
                 return;
             }
-            for (String dbName : DataSourceManager.getDataSourceNames()) {
-                if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
-                    Migration migration = locator.getService(Migration.class, dbName);
-                    if (migration.hasChanged()) {
-                        req.abortWith(Response.fromResponse(
-                                resource.migrateView(MigrationFeature.getMigrationId())
-                        ).status(500).build());
-                        return;
+            if (mode.isDev()) {
+                for (String dbName : DataSourceManager.getDataSourceNames()) {
+                    if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
+                        Migration migration = locator.getService(Migration.class, dbName);
+                        if (migration.hasChanged()) {
+                            req.abortWith(Response.fromResponse(
+                                    resource.migrateView(MigrationFeature.getMigrationId())
+                            ).status(500).build());
+                            return;
+                        }
                     }
                 }
             }
