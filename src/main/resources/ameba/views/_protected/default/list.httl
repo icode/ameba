@@ -1,6 +1,3 @@
-#set(String append='
-<link rel="stylesheet" href="/assets/ameba/base/css/tables-min.css">
-')
 <!--${include("header.httl", ["title":model.class.simpleName, "append":append])}-->
 <!--#macro(renderTale(List data))-->
 <table class="pure-table pure-table-horizontal">
