@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Map;
 
 /**
@@ -83,9 +84,7 @@ public class MigrationFilter implements ContainerRequestFilter {
             Map<String, Object> properties = application.getProperties();
             Map failMigrations = resource.getFailMigrations();
             if (failMigrations != null && !failMigrations.isEmpty()) {
-                req.abortWith(Response.serverError().entity(
-                        resource.repairView(MigrationFeature.getMigrationId())
-                ).type(MediaType.TEXT_HTML_TYPE).build());
+                req.abortWith(Response.temporaryRedirect(URI.create(repairUri)).build());
                 return;
             }
             if (mode.isDev()) {
