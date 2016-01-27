@@ -18,7 +18,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 
 /**
@@ -50,7 +49,15 @@ public class MigrationFilter implements ContainerRequestFilter {
             path = "/" + path;
             String migrationUri = MigrationResource.MIGRATION_BASE_URI + MigrationFeature.getMigrationId();
             String repairUri = migrationUri + "/repair";
-            if (path.equals(migrationUri) && HttpMethod.POST.equals(req.getMethod())) {
+
+            Map<String, Object> properties = application.getProperties();
+            Map failMigrations = resource.getFailMigrations();
+
+            if (!mode.isDev() && HttpMethod.GET.equals(req.getMethod())
+                    && failMigrations != null && !failMigrations.isEmpty()) {
+                repairView(req);
+                return;
+            } else if (path.equals(migrationUri) && HttpMethod.POST.equals(req.getMethod())) {
                 String desc = ((ContainerRequest) req).readEntity(Form.class).asMap().getFirst("description");
                 req.abortWith(
                         Response.ok().entity(resource.migrate(desc, MigrationFeature.getMigrationId())).build()
@@ -69,13 +76,7 @@ public class MigrationFilter implements ContainerRequestFilter {
                 return;
             }
 
-            Map<String, Object> properties = application.getProperties();
-            Map failMigrations = resource.getFailMigrations();
             if (mode.isDev()) {
-                if (failMigrations != null && !failMigrations.isEmpty()) {
-                    repairView(req);
-                    return;
-                }
                 for (String dbName : DataSourceManager.getDataSourceNames()) {
                     if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
                         Migration migration = locator.getService(Migration.class, dbName);
@@ -86,10 +87,6 @@ public class MigrationFilter implements ContainerRequestFilter {
                     }
                 }
             } else {
-                if (failMigrations != null && !failMigrations.isEmpty()) {
-                    req.abortWith(Response.temporaryRedirect(URI.create(repairUri)).build());
-                    return;
-                }
                 boolean change = false;
                 for (String dbName : DataSourceManager.getDataSourceNames()) {
                     if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
@@ -100,7 +97,11 @@ public class MigrationFilter implements ContainerRequestFilter {
                         }
                     }
                 }
-
+                if (!change) {
+                    if (failMigrations != null && !failMigrations.isEmpty()) {
+                        change = true;
+                    }
+                }
                 if (!change) {
                     ran = true;
                 }
