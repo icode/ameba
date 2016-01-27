@@ -29,7 +29,6 @@ import java.util.Map;
 @Singleton
 public class MigrationFilter implements ContainerRequestFilter {
     private static final String FAVICON_ICO = "favicon.ico";
-    private static final String MIGRATION_BASE_URI = "/" + MigrationResource.MIGRATION_BASE_URI + "/";
     private boolean ran = false;
     @Inject
     private Application.Mode mode;
@@ -49,11 +48,9 @@ public class MigrationFilter implements ContainerRequestFilter {
                 return;
             }
             path = "/" + path;
-            String migrationUri = MIGRATION_BASE_URI + MigrationFeature.getMigrationId();
+            String migrationUri = MigrationResource.MIGRATION_BASE_URI + MigrationFeature.getMigrationId();
             String repairUri = migrationUri + "/repair";
-            if ((path.equals(migrationUri) || path.equals(repairUri)) && HttpMethod.GET.equals(req.getMethod())) {
-                return;
-            } else if (path.equals(migrationUri) && HttpMethod.POST.equals(req.getMethod())) {
+            if (path.equals(migrationUri) && HttpMethod.POST.equals(req.getMethod())) {
                 String desc = ((ContainerRequest) req).readEntity(Form.class).asMap().getFirst("description");
                 req.abortWith(
                         Response.ok().entity(resource.migrate(desc, MigrationFeature.getMigrationId())).build()
@@ -65,45 +62,64 @@ public class MigrationFilter implements ContainerRequestFilter {
                 );
                 return;
             } else if (!mode.isDev() && path.equals(migrationUri) && HttpMethod.GET.equals(req.getMethod())) {
-                req.abortWith(
-                        Response.ok()
-                                .entity(resource.migrateView(MigrationFeature.getMigrationId()))
-                                .build()
-                );
+                migrateView(req);
                 return;
             } else if (!mode.isDev() && path.equals(repairUri) && HttpMethod.GET.equals(req.getMethod())) {
-                req.abortWith(
-                        Response.ok()
-                                .entity(resource.repairView(MigrationFeature.getMigrationId()))
-                                .type(MediaType.TEXT_HTML_TYPE)
-                                .build()
-                );
+                repairView(req);
                 return;
             }
 
             Map<String, Object> properties = application.getProperties();
             Map failMigrations = resource.getFailMigrations();
-            if (failMigrations != null && !failMigrations.isEmpty()) {
-                req.abortWith(Response.temporaryRedirect(URI.create(repairUri)).build());
-                return;
-            }
             if (mode.isDev()) {
+                if (failMigrations != null && !failMigrations.isEmpty()) {
+                    repairView(req);
+                    return;
+                }
                 for (String dbName : DataSourceManager.getDataSourceNames()) {
                     if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
                         Migration migration = locator.getService(Migration.class, dbName);
                         if (migration.hasChanged()) {
-                            req.abortWith(Response.fromResponse(
-                                    resource.migrateView(MigrationFeature.getMigrationId())
-                            ).status(500).build());
+                            migrateView(req);
                             return;
                         }
                     }
                 }
-            }
+            } else {
+                if (failMigrations != null && !failMigrations.isEmpty()) {
+                    req.abortWith(Response.temporaryRedirect(URI.create(repairUri)).build());
+                    return;
+                }
+                boolean change = false;
+                for (String dbName : DataSourceManager.getDataSourceNames()) {
+                    if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
+                        Migration migration = locator.getService(Migration.class, dbName);
+                        if (migration.hasChanged()) {
+                            change = true;
+                            break;
+                        }
+                    }
+                }
 
-            if (!mode.isDev()) {
-                ran = true;
+                if (!change) {
+                    ran = true;
+                }
             }
         }
+    }
+
+    private void repairView(ContainerRequestContext req) {
+        req.abortWith(
+                Response.serverError()
+                        .entity(resource.repairView(MigrationFeature.getMigrationId()))
+                        .type(MediaType.TEXT_HTML_TYPE)
+                        .build()
+        );
+    }
+
+    private void migrateView(ContainerRequestContext req) {
+        req.abortWith(Response.fromResponse(
+                resource.migrateView(MigrationFeature.getMigrationId())
+        ).status(500).build());
     }
 }

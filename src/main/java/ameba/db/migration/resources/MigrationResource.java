@@ -35,7 +35,7 @@ import java.util.Map;
 @Path(MigrationResource.MIGRATION_BASE_URI)
 @Singleton
 public class MigrationResource {
-    public static final String MIGRATION_BASE_URI = "@migration";
+    public static final String MIGRATION_BASE_URI = "/@db/migration/";
     private static final String MIGRATION_HTML;
 
     static {
@@ -312,7 +312,7 @@ public class MigrationResource {
         String key = type.key();
         valuesMap.put("pageTitle", Messages.get("view.app.database." + key + ".page.title"));
         valuesMap.put("title", Messages.get("view.app.database." + key + ".title"));
-        valuesMap.put("migrationUri", "/@migration/" + uuid);
+        valuesMap.put("migrationUri", MIGRATION_BASE_URI + uuid);
         valuesMap.put("description", Messages.get("view.app.database." + key + ".description"));
         valuesMap.put("applyButtonText", Messages.get("view.app.database." + key + ".apply.button"));
         return valuesMap;
