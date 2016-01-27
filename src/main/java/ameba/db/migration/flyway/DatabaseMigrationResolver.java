@@ -49,16 +49,18 @@ public class DatabaseMigrationResolver implements MigrationResolver {
 
     @Override
     public Collection<ResolvedMigration> resolveMigrations() {
-        ScriptInfo info = migration.generate();
         List<ResolvedMigration> resolvedMigrations = Lists.newArrayList();
-        ResolvedMigrationImpl migration = new ResolvedMigrationImpl();
-        migration.setVersion(MigrationVersion.fromVersion(info.getRevision()));
-        migration.setDescription(info.getDescription());
-        migration.setScript(info.getRevision() + "__" + toUnderScore(info.getDescription()) + ".sql");
-        migration.setChecksum(calculateChecksum("-- " + info.getRevision() + "\r\n" + info.getDiffDdl()));
-        migration.setType(MigrationType.SQL);
-        migration.setExecutor(new SqlMigrationExecutor(info));
-        resolvedMigrations.add(migration);
+        ScriptInfo info = migration.generate();
+        if (info != null) {
+            ResolvedMigrationImpl migration = new ResolvedMigrationImpl();
+            migration.setVersion(MigrationVersion.fromVersion(info.getRevision()));
+            migration.setDescription(info.getDescription());
+            migration.setScript(info.getRevision() + "__" + toUnderScore(info.getDescription()) + ".sql");
+            migration.setChecksum(calculateChecksum("-- " + info.getRevision() + "\r\n" + info.getDiffDdl()));
+            migration.setType(MigrationType.SQL);
+            migration.setExecutor(new SqlMigrationExecutor(info));
+            resolvedMigrations.add(migration);
+        }
         return resolvedMigrations;
     }
 
