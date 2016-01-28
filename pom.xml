@@ -515,7 +515,7 @@
         <jackson.core.version>2.7.0</jackson.core.version>
         <flyway.version>3.2.1</flyway.version>
         <jackson.provider.version>${jackson.core.version}</jackson.provider.version>
-        <bean.validator.version>5.2.2.Final</bean.validator.version>
+        <bean.validator.version>5.2.3.Final</bean.validator.version>
         <ebean.support.dir>ameba/db/ebean/support</ebean.support.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
