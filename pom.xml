@@ -509,7 +509,6 @@
         <groovy.version>2.4.5</groovy.version>
         <httl.version>1.0.12</httl.version>
         <hk2.version>2.4.0-b34</hk2.version>
-        <!--<rxjava.version>[1.0.7,2.0.0)</rxjava.version>-->
         <javax.websocket.version>1.1</javax.websocket.version>
         <json-patch.version>1.9</json-patch.version>
         <jackson.core.version>2.7.0</jackson.core.version>
