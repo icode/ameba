@@ -53,7 +53,8 @@ public class MigrationFilter implements ContainerRequestFilter {
             Map<String, Object> properties = application.getProperties();
             Map failMigrations = resource.getFailMigrations();
 
-            if (!mode.isDev() && HttpMethod.GET.equals(req.getMethod())
+            if (!mode.isDev() && (path.equals(migrationUri) || path.equals(repairUri))
+                    && HttpMethod.GET.equals(req.getMethod())
                     && failMigrations != null && !failMigrations.isEmpty()) {
                 repairView(req);
                 return;
@@ -77,6 +78,11 @@ public class MigrationFilter implements ContainerRequestFilter {
             }
 
             if (mode.isDev()) {
+                if (HttpMethod.GET.equals(req.getMethod())
+                        && failMigrations != null && !failMigrations.isEmpty()) {
+                    repairView(req);
+                    return;
+                }
                 for (String dbName : DataSourceManager.getDataSourceNames()) {
                     if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
                         Migration migration = locator.getService(Migration.class, dbName);
