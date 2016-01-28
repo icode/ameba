@@ -1,5 +1,6 @@
 package ameba.message.filtering;
 
+import ameba.Ameba;
 import ameba.core.Requests;
 import org.glassfish.jersey.message.MessageUtils;
 import org.glassfish.jersey.message.internal.HeaderUtils;
@@ -11,6 +12,7 @@ import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.ClientResponseContext;
 import javax.ws.rs.client.ClientResponseFilter;
 import javax.ws.rs.container.*;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
@@ -61,6 +63,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
     private final AtomicLong _id = new AtomicLong(0);
     private final boolean printEntity;
     private final int maxEntitySize;
+    private Boolean printMoreType;
 
     /**
      * Create a logging filter logging the request and response to a default JDK
@@ -176,6 +179,20 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
         return stream;
     }
 
+    private boolean getPrintMoreType() {
+        if (printMoreType == null) {
+            this.printMoreType = "true".equalsIgnoreCase((String) Ameba.getApp().getProperty("ameba.trace.enabled"));
+        }
+        return printMoreType;
+    }
+
+    private boolean isSupportPrintType(MediaType mediaType) {
+        return mediaType != null && ((getPrintMoreType() && (mediaType.getType().equals("text")
+                || mediaType.getSubtype().equals("javascript")))
+                || mediaType.getSubtype().equals("json")
+                || mediaType.getSubtype().equals("xml"));
+    }
+
     @Override
     public void filter(final ClientRequestContext context) throws IOException {
         final long id = _id.incrementAndGet();
@@ -186,7 +203,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
         printRequestLine(b, "Sending client request", id, context.getMethod(), context.getUri());
         printPrefixedHeaders(b, id, REQUEST_PREFIX, context.getStringHeaders());
 
-        if (printEntity && context.hasEntity()) {
+        if (printEntity && context.hasEntity() && isSupportPrintType(context.getMediaType())) {
             final OutputStream stream = new LoggingStream(b, context.getEntityStream());
             context.setEntityStream(stream);
             context.setProperty(ENTITY_LOGGER_PROPERTY, stream);
@@ -207,7 +224,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
         printResponseLine(b, "Client response received", id, responseContext.getStatus());
         printPrefixedHeaders(b, id, RESPONSE_PREFIX, responseContext.getHeaders());
 
-        if (printEntity && responseContext.hasEntity()) {
+        if (printEntity && responseContext.hasEntity() && isSupportPrintType(responseContext.getMediaType())) {
             responseContext.setEntityStream(logInboundEntity(b, responseContext.getEntityStream(),
                     MessageUtils.getCharset(responseContext.getMediaType())));
         }
@@ -225,7 +242,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
         printRequestLine(b, "Server has received a request", id, context.getMethod(), context.getUriInfo().getRequestUri());
         printPrefixedHeaders(b, id, REQUEST_PREFIX, context.getHeaders());
 
-        if (printEntity && context.hasEntity()) {
+        if (printEntity && context.hasEntity() && isSupportPrintType(context.getMediaType())) {
             context.setEntityStream(
                     logInboundEntity(b, context.getEntityStream(), MessageUtils.getCharset(context.getMediaType())));
         }
@@ -244,7 +261,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
         requestContext.setProperty(LOGGER_BUFFER_PROPERTY, b);
 
         printResponseLine(b, "Server responded with a response", id, responseContext.getStatus());
-        if (printEntity && responseContext.hasEntity()) {
+        if (printEntity && isSupportPrintType(responseContext.getMediaType()) && responseContext.hasEntity()) {
             final OutputStream stream = new LoggingStream(b, responseContext.getEntityStream());
             responseContext.setEntityStream(stream);
             requestContext.setProperty(ENTITY_LOGGER_PROPERTY, stream);
