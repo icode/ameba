@@ -3,7 +3,7 @@ package ameba.db.ebean;
 import ameba.core.Application;
 import ameba.db.DataSourceManager;
 import ameba.db.PersistenceExceptionMapper;
-import ameba.db.ebean.internal.EbeanModelInterceptor;
+import ameba.db.ebean.internal.ModelInterceptor;
 import ameba.db.ebean.jackson.JacksonEbeanModule;
 import ameba.db.ebean.jackson.JsonIOExceptionMapper;
 import ameba.db.ebean.migration.EbeanMigration;
@@ -94,11 +94,11 @@ public class EbeanFeature implements Feature {
             context.register(PersistenceExceptionMapper.class);
         }
 
-        if (context.getConfiguration().isRegistered(EbeanModelInterceptor.class)) {
+        if (context.getConfiguration().isRegistered(ModelInterceptor.class)) {
             return false;
         }
 
-        context.register(EbeanModelInterceptor.class)
+        context.register(ModelInterceptor.class)
                 .register(JsonIOExceptionMapper.class);
 
         for (EbeanServer server : SERVERS) {

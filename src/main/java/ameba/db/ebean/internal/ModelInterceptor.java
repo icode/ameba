@@ -31,14 +31,14 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 /**
- * <p>EbeanModelInterceptor class.</p>
+ * <p>ModelInterceptor class.</p>
  *
  * @author icode
  * @since 0.1.6e
  */
 @Singleton
 @Priority(Priorities.ENTITY_CODER)
-public class EbeanModelInterceptor implements WriterInterceptor {
+public class ModelInterceptor implements WriterInterceptor {
 
     final static Integer SYS_DEFAULT_PER_PAGE = 20;
     static String FIELDS_PARAM_NAME = "fields";
@@ -233,7 +233,7 @@ public class EbeanModelInterceptor implements WriterInterceptor {
      * @param query       a {@link com.avaje.ebean.Query} object.
      */
     public static void applyOrderBy(MultivaluedMap<String, String> queryParams, Query query) {
-        List<String> orders = queryParams.get(EbeanModelInterceptor.SORT_PARAM_NAME);
+        List<String> orders = queryParams.get(SORT_PARAM_NAME);
         if (orders != null && orders.size() > 0) {
             OrderBy orderBy = query.orderBy();
             for (String order : orders) {
@@ -294,7 +294,7 @@ public class EbeanModelInterceptor implements WriterInterceptor {
      * @param query       query
      */
     public static void applyFilter(MultivaluedMap<String, String> queryParams, Query query) {
-        List<String> wheres = queryParams.get(EbeanModelInterceptor.FILTER_PARAM_NAME);
+        List<String> wheres = queryParams.get(FILTER_PARAM_NAME);
         if (wheres != null)
             for (String w : wheres) {
                 query.where(w);

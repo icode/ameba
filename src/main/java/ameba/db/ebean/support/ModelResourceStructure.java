@@ -1,7 +1,7 @@
 package ameba.db.ebean.support;
 
 import ameba.db.ebean.EbeanUtils;
-import ameba.db.ebean.internal.EbeanModelInterceptor;
+import ameba.db.ebean.internal.ModelInterceptor;
 import ameba.db.model.Model;
 import ameba.exception.UnprocessableEntityException;
 import ameba.lib.LoggerOwner;
@@ -679,10 +679,10 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param query        Query
      * @param needPageList need page list
      * @return page list count or null
-     * @see EbeanModelInterceptor#applyUriQuery(MultivaluedMap, Query, boolean)
+     * @see ModelInterceptor#applyUriQuery(MultivaluedMap, Query, boolean)
      */
     protected FutureRowCount applyUriQuery(final Query<M> query, boolean needPageList) {
-        return EbeanModelInterceptor.applyUriQuery(uriInfo.getQueryParameters(), query, needPageList);
+        return ModelInterceptor.applyUriQuery(uriInfo.getQueryParameters(), query, needPageList);
     }
 
     /**
@@ -703,7 +703,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param rowCount     a {@link com.avaje.ebean.FutureRowCount} object.
      */
     protected void applyRowCountHeader(MultivaluedMap<String, Object> headerParams, Query query, FutureRowCount rowCount) {
-        EbeanModelInterceptor.applyRowCountHeader(headerParams, query, rowCount);
+        ModelInterceptor.applyRowCountHeader(headerParams, query, rowCount);
     }
 
     /**
