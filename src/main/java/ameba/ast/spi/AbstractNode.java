@@ -1,5 +1,7 @@
 package ameba.ast.spi;
 
+import com.google.common.collect.Lists;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -10,7 +12,7 @@ import java.util.List;
 public abstract class AbstractNode implements Node {
 
     private final int offset;
-
+    protected List<Node> children = Lists.newArrayList();
     private Node parent;
 
     public AbstractNode(int offset) {
@@ -36,7 +38,11 @@ public abstract class AbstractNode implements Node {
     }
 
     public List<Node> getChildren() {
-        return null;
+        return children;
     }
 
+    @Override
+    public void addChild(Node node) {
+        children.add(node);
+    }
 }

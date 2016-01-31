@@ -1,7 +1,5 @@
 package ameba.ast.spi;
 
-import httl.Visitor;
-
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -39,4 +37,9 @@ public interface Node {
      * @return children nodes
      */
     List<Node> getChildren();
+
+    /**
+     * add the template children node.
+     */
+    void addChild(Node node);
 }
