@@ -20,6 +20,10 @@ public class SysFilteringFeature implements Feature {
         if (!configuration.isRegistered(RangeResponseFilter.class)) {
             context.register(RangeResponseFilter.class);
         }
+
+        if (!configuration.isRegistered(LoadBalancerRequestFilter.class)) {
+            context.register(LoadBalancerRequestFilter.class);
+        }
         return true;
     }
 }
