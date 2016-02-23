@@ -45,7 +45,7 @@ public class MigrationModel {
 
         for (MigrationResource migrationResource : resources) {
             logger.debug("read {}", migrationResource);
-            model.apply(migrationResource.read());
+            model.apply(migrationResource.read(), migrationResource.getVersion());
         }
 
         // remember the last version

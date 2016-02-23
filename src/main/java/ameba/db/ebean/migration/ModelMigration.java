@@ -153,7 +153,7 @@ public class ModelMigration extends DbMigration {
     }
 
     protected PlatformDdlWriter createDdlWriter() {
-        return new PlatformDdlWriter(scriptInfo, migrationConfig, (SpiServer) server);
+        return new PlatformDdlWriter(scriptInfo, (SpiServer) server);
     }
 
     /**

@@ -195,7 +195,7 @@ public class MigrationResource {
                 diffs.append(Messages.get("view.app.database.migrate.baseline.subTitle"));
             }
             diffs.append("</h2><pre>")
-                    .append(info.getDiffDdl())
+                    .append(info.getApplyDdl())
                     .append("</pre></div>");
             i++;
         }
@@ -276,7 +276,7 @@ public class MigrationResource {
             diffs.append("<div class=\"diff\"><h2>");
             diffs.append(Messages.get("view.app.database.repair.subTitle", fail.throwable.getLocalizedMessage()));
             diffs.append("</h2><pre>")
-                    .append(info.getDiffDdl())
+                    .append(info.getApplyDdl())
                     .append("</pre></div>");
             i++;
         }

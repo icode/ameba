@@ -19,7 +19,7 @@ public class SqlMigrationExecutor implements MigrationExecutor {
     }
 
     public void execute(Connection connection) {
-        SqlScript sqlScript = new SqlScript(info.getDiffDdl(), DbSupportFactory.createDbSupport(connection, true));
+        SqlScript sqlScript = new SqlScript(info.getApplyDdl(), DbSupportFactory.createDbSupport(connection, true));
         sqlScript.execute(new JdbcTemplate(connection, 0));
     }
 

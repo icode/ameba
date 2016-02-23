@@ -21,10 +21,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 import static com.avaje.ebean.OrderBy.Property;
 
@@ -114,12 +111,12 @@ public class EbeanUtils {
             pathProperties.each(new Each<String, Props>() {
                 @Override
                 public void execute(Props props) {
-                    finalProperties.put(null, props.getProperties());
+                    finalProperties.put(null, (LinkedHashSet<String>) props.getProperties());
                 }
 
                 @Override
                 public void execute(String s, Props props) {
-                    finalProperties.put(s, props.getProperties());
+                    finalProperties.put(s, (LinkedHashSet<String>) props.getProperties());
                 }
             });
             Requests.setProperty(PATH_PROPS_PARSED, properties);

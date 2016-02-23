@@ -26,7 +26,7 @@ public class MigrationResource implements Comparable<MigrationResource> {
     }
 
     public String toString() {
-        return this.info.toString();
+        return version.asString() + "->" + this.info.toString();
     }
 
     /**

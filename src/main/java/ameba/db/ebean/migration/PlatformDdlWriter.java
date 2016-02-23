@@ -1,10 +1,10 @@
 package ameba.db.ebean.migration;
 
 import ameba.db.migration.models.ScriptInfo;
-import com.avaje.ebean.config.DbMigrationConfig;
 import com.avaje.ebean.dbmigration.ddlgeneration.DdlHandler;
 import com.avaje.ebean.dbmigration.ddlgeneration.DdlWrite;
 import com.avaje.ebean.dbmigration.migration.ChangeSet;
+import com.avaje.ebean.dbmigration.migration.ChangeSetType;
 import com.avaje.ebean.dbmigration.migration.Migration;
 import com.avaje.ebean.plugin.SpiServer;
 
@@ -18,12 +18,10 @@ public class PlatformDdlWriter {
 
     private final ScriptInfo scriptInfo;
     private final SpiServer server;
-    private final DbMigrationConfig config;
 
-    public PlatformDdlWriter(ScriptInfo scriptInfo, DbMigrationConfig config, SpiServer server) {
+    public PlatformDdlWriter(ScriptInfo scriptInfo, SpiServer server) {
         this.scriptInfo = scriptInfo;
         this.server = server;
-        this.config = config;
     }
 
     public void processMigration(Migration dbMigration, DdlWrite write) throws IOException {
@@ -31,7 +29,7 @@ public class PlatformDdlWriter {
 
         List<ChangeSet> changeSets = dbMigration.getChangeSet();
         for (ChangeSet changeSet : changeSets) {
-            if (!changeSet.getChangeSetChildren().isEmpty()) {
+            if (isApply(changeSet)) {
                 handler.generate(write, changeSet);
             }
         }
@@ -40,18 +38,17 @@ public class PlatformDdlWriter {
         writePlatformDdl(write);
     }
 
-    protected void writePlatformDdl(DdlWrite write) throws IOException {
+    /**
+     * Return true if the changeSet is APPLY and not empty.
+     */
+    private boolean isApply(ChangeSet changeSet) {
+        // 必须包含　PENDING_DROPS　不然无法在只删除列时产生变更脚本
+        return (changeSet.getType() == ChangeSetType.APPLY || changeSet.getType() == ChangeSetType.PENDING_DROPS) && !changeSet.getChangeSetChildren().isEmpty();
+    }
 
+    protected void writePlatformDdl(DdlWrite write) throws IOException {
         if (!write.isApplyEmpty()) {
             writeApplyDdl(write);
-
-            if (!config.isSuppressRollback() && !write.isApplyRollbackEmpty()) {
-                writeApplyRollbackDdl(write);
-            }
-        }
-
-        if (!write.isDropEmpty()) {
-            writeDropDdl(write);
         }
     }
 
@@ -60,29 +57,12 @@ public class PlatformDdlWriter {
      */
     protected void writeApplyDdl(DdlWrite write) throws IOException {
         scriptInfo.setApplyDdl(
-                write.apply().getBuffer() +
-                        write.applyForeignKeys().getBuffer() +
-                        write.applyHistory().getBuffer()
-        );
-    }
-
-    /**
-     * Write the 'Rollback' DDL buffers to the writer.
-     */
-    protected void writeApplyRollbackDdl(DdlWrite write) throws IOException {
-        scriptInfo.setRollbackDdl(
-                write.rollbackForeignKeys().getBuffer() +
-                        write.rollback().getBuffer()
-        );
-    }
-
-    /**
-     * Write the 'Drop' DDL buffers to the writer.
-     */
-    protected void writeDropDdl(DdlWrite write) throws IOException {
-        scriptInfo.setDropDdl(
-                write.dropHistory().getBuffer() +
-                        write.drop().getBuffer()
+                "-- drop dependencies\n"
+                        + write.applyDropDependencies().getBuffer() + "\n"
+                        + "-- apply changes\n"
+                        + write.apply().getBuffer()
+                        + write.applyForeignKeys().getBuffer()
+                        + write.applyHistory().getBuffer()
         );
     }
 
