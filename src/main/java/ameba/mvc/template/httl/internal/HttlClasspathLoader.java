@@ -1,6 +1,7 @@
 package ameba.mvc.template.httl.internal;
 
 import ameba.util.IOUtils;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import httl.Resource;
@@ -13,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
@@ -32,9 +34,10 @@ public class HttlClasspathLoader extends AbstractLoader {
         Enumeration<URL> urls = IOUtils.getResources(cleanPath(directory));
         while (urls.hasMoreElements()) {
             URL url = urls.nextElement();
+            String path = URLDecoder.decode(cleanPath(url.toExternalForm()), Charsets.UTF_8.name());
             List<String> res = UrlUtils.listUrl(url, suffix);
             for (String s : res) {
-                String tpl = cleanPath(url.toExternalForm()) + UrlUtils.cleanName(s);
+                String tpl = path + UrlUtils.cleanName(s);
                 set.add(tpl);
             }
         }

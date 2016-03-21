@@ -1,5 +1,6 @@
 package ameba.mvc.template;
 
+import ameba.exception.AmebaException;
 import ameba.exception.AmebaExceptionWithJavaSource;
 import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
@@ -60,7 +61,7 @@ public class TemplateException extends AmebaExceptionWithJavaSource {
                 return IOUtils.readLines(in);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new AmebaException(e);
         } finally {
             IOUtils.closeQuietly(in);
         }

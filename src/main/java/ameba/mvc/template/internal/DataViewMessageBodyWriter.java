@@ -2,6 +2,7 @@ package ameba.mvc.template.internal;
 
 import ameba.Ameba;
 import ameba.core.Application;
+import com.google.common.base.CaseFormat;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.Predicate;
@@ -34,28 +35,46 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * default template body writer
+ * <br><br>
+ * sort template find
+ * <br>
+ * 1. resource method name
+ * <br>
+ * 2. _protected/ + req path LOWER_UNDERSCORE
+ * <br>
+ * 3. _protected/ + req raw path
+ * <br>
+ * 4. req path LOWER_UNDERSCORE
+ * <br>
+ * 5. req raw path
+ * <br>
+ * 6. index
+ * <br>
+ * 7. default view
+ *
  * @author icode
  */
 @ConstrainedTo(RuntimeType.SERVER)
 @Produces({"text/html", "application/xhtml+xml", "application/x-ms-application"})
 final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
-    public static final String DISABLE_DATA_VIEW = "data.view.disabled";
-    public static final String DISABLE_DEFAULT_DATA_VIEW = "data.view.default.disabled";
+    private static final String DISABLE_DATA_VIEW = "data.view.disabled";
+    private static final String DISABLE_DEFAULT_DATA_VIEW = "data.view.default.disabled";
     private static final MediaType LOW_IE_DEFAULT_REQ_TYPE = new MediaType("application", "x-ms-application");
-    public static final List<MediaType> TEMPLATE_PRODUCES = Lists.newArrayList(
+    private static final List<MediaType> TEMPLATE_PRODUCES = Lists.newArrayList(
             MediaType.TEXT_HTML_TYPE,
             MediaType.APPLICATION_XHTML_XML_TYPE,
             LOW_IE_DEFAULT_REQ_TYPE,
             MediaType.WILDCARD_TYPE
     );
     private static final String DATA_VIEW_DEFAULT_KEY_PRE = "data.view.default.";
-    public static final String DATA_VIEW_LIST_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "list";
-    public static final String DATA_VIEW_ITEM_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "item";
-    public static final String DATA_VIEW_NULL_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "empty";
+    private static final String DATA_VIEW_LIST_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "list";
+    private static final String DATA_VIEW_ITEM_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "item";
+    private static final String DATA_VIEW_NULL_KEY = DATA_VIEW_DEFAULT_KEY_PRE + "empty";
     private static final String DEFAULT_DATA_VIEW_PAGE_DIR = Viewables.PROTECTED_DIR_PATH + "/default/";
-    public static final String DEFAULT_DATA_LIST = DEFAULT_DATA_VIEW_PAGE_DIR + "list";
-    public static final String DEFAULT_DATA_ITEM = DEFAULT_DATA_VIEW_PAGE_DIR + "item";
-    public static final String DEFAULT_DATA_NULL = DEFAULT_DATA_VIEW_PAGE_DIR + "empty";
+    private static final String DEFAULT_DATA_LIST = DEFAULT_DATA_VIEW_PAGE_DIR + "list";
+    private static final String DEFAULT_DATA_ITEM = DEFAULT_DATA_VIEW_PAGE_DIR + "item";
+    private static final String DEFAULT_DATA_NULL = DEFAULT_DATA_VIEW_PAGE_DIR + "empty";
     private final boolean dataViewDisabled;
     private final boolean defaultDataViewDisabled;
     private final String dataViewList;
@@ -130,13 +149,29 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
         List<String> templates = Lists.newArrayList();
         ResourceInfo resourceInfo = resourceInfoProvider.get();
 
+        // 1. resource method name
+        // 2. _protected/ + req path LOWER_UNDERSCORE
+        // 3. _protected/ + req raw path
+        // 4. req path LOWER_UNDERSCORE
+        // 5. req raw path
+        // 6. index
+        // 7. default view
+
         if (resourceInfo != null && resourceInfo.getResourceMethod() != null) {
             templates.add(resourceInfo.getResourceMethod().getName());
         }
-        templates.add("index");
+        // xxx/{a_b}.httl == xxx/{aB}.httl
         String path = getTemplatePath(uriInfoProvider.get());
+        String _path = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, path);
+        if (!_path.equals(path)) {
+            templates.add(Viewables.PROTECTED_DIR_PATH + _path);
+        }
         templates.add(Viewables.PROTECTED_DIR_PATH + path);
+        if (!_path.equals(path)) {
+            templates.add(_path);
+        }
         templates.add(path);
+        templates.add("index");
         if (!defaultDataViewDisabled) {
             if (entity == null
                     || (entity instanceof Collection
@@ -198,7 +233,7 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
                 builder.insert(0, uri);
         }
 
-        return builder.toString().toLowerCase();
+        return builder.toString();
     }
 
     private boolean isSupportMediaType(MediaType mediaType) {

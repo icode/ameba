@@ -6,6 +6,7 @@ import ameba.mvc.template.httl.HttlMvcFeature;
 import ameba.mvc.template.internal.AbstractTemplateProcessor;
 import ameba.mvc.template.internal.TemplateHelper;
 import ameba.util.IOUtils;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import httl.Engine;
 import httl.Template;
@@ -23,6 +24,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.*;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -192,7 +194,10 @@ public class HttlViewProcessor extends AbstractTemplateProcessor<Template> {
     }
 
     private Template resolve(URL templateURL) throws Exception {
-        return engine.getTemplate(templateURL.toExternalForm(), getEncoding().name().toLowerCase());
+        return engine.getTemplate(
+                URLDecoder.decode(templateURL.toExternalForm(), Charsets.UTF_8.name()),
+                getEncoding().name().toLowerCase()
+        );
     }
 
     private Template resolve(Reader reader) throws Exception {

@@ -3,7 +3,6 @@ package ameba.message.internal;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -156,14 +155,9 @@ public class PathProperties {
     public void each(Each<String, Props> each) {
 
         for (Map.Entry<String, Props> entry : pathMap.entrySet()) {
-            String path = entry.getKey();
             Props props = entry.getValue();
 
-            if (StringUtils.isBlank(path)) {
-                each.execute(props);
-            } else {
-                each.execute(path, props);
-            }
+            each.execute(props);
         }
     }
 
@@ -173,8 +167,6 @@ public class PathProperties {
 
     public interface Each<PATH, PROPS> {
         void execute(PROPS props);
-
-        void execute(PATH path, PROPS props);
     }
 
     public static class Props {
@@ -278,6 +270,7 @@ public class PathProperties {
 
         /**
          * Add a properties to include for this path.
+         *
          * @param property property
          */
         protected void addProperty(String property) {

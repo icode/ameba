@@ -4,7 +4,6 @@ import ameba.util.IOUtils;
 import com.google.common.base.Charsets;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
@@ -75,17 +74,14 @@ public class MultiResourceBundleControl extends ResourceBundle.Control {
                                                 if (reloadFlag) {
                                                     connection.setUseCaches(false);
                                                 }
-                                                InputStream in = null;
                                                 InputStreamReader reader = null;
                                                 try {
-                                                    in = connection.getInputStream();
                                                     reader = new InputStreamReader(
-                                                            in,
+                                                            connection.getInputStream(),
                                                             Charsets.UTF_8);
                                                     properties.load(reader);
                                                 } finally {
                                                     IOUtils.closeQuietly(reader);
-                                                    IOUtils.closeQuietly(in);
                                                 }
                                             }
                                         }

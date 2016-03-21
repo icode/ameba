@@ -12,7 +12,6 @@ import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebean.common.BeanMap;
 import com.avaje.ebean.text.PathProperties;
-import com.avaje.ebean.text.json.JsonContext;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -21,7 +20,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
 
 import static com.avaje.ebean.OrderBy.Property;
 
@@ -100,7 +102,6 @@ public class EbeanUtils {
      * parse uri query param to PathProperties for Ebean.json().toJson()
      *
      * @return PathProperties
-     * @see JsonContext#toJson(Object, JsonGenerator, PathProperties)
      * @see CommonBeanSerializer#serialize(Object, JsonGenerator, SerializerProvider)
      */
     public static PathProperties getCurrentRequestPathProperties() {
@@ -111,12 +112,9 @@ public class EbeanUtils {
             pathProperties.each(new Each<String, Props>() {
                 @Override
                 public void execute(Props props) {
-                    finalProperties.put(null, (LinkedHashSet<String>) props.getProperties());
-                }
-
-                @Override
-                public void execute(String s, Props props) {
-                    finalProperties.put(s, (LinkedHashSet<String>) props.getProperties());
+                    for (String prop : props.getProperties()) {
+                        finalProperties.addToPath(props.getPath(), prop);
+                    }
                 }
             });
             Requests.setProperty(PATH_PROPS_PARSED, properties);

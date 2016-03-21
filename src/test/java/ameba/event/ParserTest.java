@@ -17,7 +17,7 @@ public class ParserTest {
     @Test
     public void testParser() throws ParseException {
         SyntaxParser parser = new SyntaxParser(new QueryLexer());
-        Node node = parser.parse("a.b.eq(abc)or(a.eq(1),b.eq(1))");
+        Node node = parser.parse("a.b.eq(abc)or(a.eq(1)b.or(b.eq(0)b.eq(1)))");
     }
 
     private class QueryLexer implements Lexer {

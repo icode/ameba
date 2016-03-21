@@ -103,7 +103,6 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
 
         for (String path : basePath) {
             paths.addAll(getTemplatePaths(name, path));
-            paths.addAll(getTemplatePaths(name, path));
         }
 
         return paths;
@@ -111,24 +110,20 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
 
     private Collection<String> getTemplatePaths(String name, String basePath) {
         String lowerName = name.toLowerCase();
-        String templatePath = basePath.endsWith("/") ? basePath + name.substring(1) : basePath + name;
-        Iterator iterator = this.supportedExtensions.iterator();
+        final String templatePath = basePath.endsWith("/") ? basePath + name.substring(1) : basePath + name;
 
-        String extension;
-        do {
-            if (!iterator.hasNext()) {
-                final String finalTemplatePath = templatePath;
-                return Collections2.transform(this.supportedExtensions, new Function<String, String>() {
-                    public String apply(String input) {
-                        return finalTemplatePath + input;
-                    }
-                });
+        // Check whether the given name ends with supported suffix.
+        for (final String extension : supportedExtensions) {
+            if (lowerName.endsWith(extension)) {
+                return Collections.singleton(templatePath);
             }
+        }
 
-            extension = (String) iterator.next();
-        } while (!lowerName.endsWith(extension));
-
-        return Collections.singleton(templatePath);
+        return Collections2.transform(this.supportedExtensions, new Function<String, String>() {
+            public String apply(String input) {
+                return templatePath + input;
+            }
+        });
     }
 
     /**
@@ -241,7 +236,6 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
         String jarFile = resolveJarFile();
         String template;
         InputStreamReader reader = null;
-        InputStream in = null;
         URL url = null;
         do {
             if (!iterator.hasNext()) {
@@ -251,15 +245,8 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
             template = (String) iterator.next();
 
             url = getNearTemplateURL(jarFile, template);
-            if (url != null) {
-                try {
-                    in = url.openStream();
-                    if (in != null)
-                        reader = new InputStreamReader(in, this.encoding);
-                } catch (IOException e) {
-                    // no op
-                }
-            }
+
+            reader = resolveReader(url);
         } while (reader == null);
 
         if (reader == null) {
@@ -273,15 +260,7 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
 
                 url = IOUtils.getResource(template);
 
-                if (url != null) {
-                    try {
-                        in = url.openStream();
-                        if (in != null)
-                            reader = new InputStreamReader(in, this.encoding);
-                    } catch (IOException e) {
-                        // no op
-                    }
-                }
+                reader = resolveReader(url);
             } while (reader == null);
         }
 
@@ -301,8 +280,21 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
             throw r;
         } finally {
             IOUtils.closeQuietly(reader);
-            IOUtils.closeQuietly(in);
         }
+    }
+
+    protected InputStreamReader resolveReader(URL url) {
+
+        if (url != null) {
+            try {
+                InputStream in = url.openStream();
+                if (in != null)
+                    return new InputStreamReader(in, this.encoding);
+            } catch (IOException e) {
+                logger.warn("resolve template error", e);
+            }
+        }
+        return null;
     }
 
     /**
