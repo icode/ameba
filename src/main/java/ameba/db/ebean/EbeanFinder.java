@@ -331,6 +331,11 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().delete();
     }
 
+    @Override
+    public ExpressionList<T> text() {
+        return query().text();
+    }
+
     /**
      * Returns the <code>ExpressionFactory</code> used by this query.
      *
@@ -604,6 +609,11 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     @Override
     public Query<T> copyQuery() {
         return query().copy();
+    }
+
+    @Override
+    public Query<T> setUseDocStore(boolean use) {
+        return query().setUseDocStore(use);
     }
 
     /**

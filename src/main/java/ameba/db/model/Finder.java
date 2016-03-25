@@ -262,6 +262,8 @@ public abstract class Finder<ID, T> {
 
     public abstract int delete();
 
+    public abstract ExpressionList<T> text();
+
     /**
      * <p>findEach.</p>
      *
@@ -617,4 +619,6 @@ public abstract class Finder<ID, T> {
     public abstract void cancel();
 
     public abstract Query<T> copyQuery();
+
+    public abstract Query<T> setUseDocStore(boolean use);
 }
