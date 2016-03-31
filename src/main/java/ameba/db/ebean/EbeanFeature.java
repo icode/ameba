@@ -126,10 +126,10 @@ public class EbeanFeature implements Feature {
             }
         }
 
-        //TODO ebean容器读取配置还未实现，实现后设置配置读取的转换，这个容器是全局的
         ContainerConfig containerConfig = new ContainerConfig();
-        containerConfig.loadFromProperties(eBeanConfig);
-
+        Properties cp = new Properties();
+        cp.putAll(appConfig.getProperties());
+        containerConfig.loadFromProperties(cp);
         for (final String name : DataSourceManager.getDataSourceNames()) {
             final ServerConfig config = new ServerConfig() {
                 @Override
