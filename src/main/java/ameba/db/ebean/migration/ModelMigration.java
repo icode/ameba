@@ -15,6 +15,7 @@ import com.avaje.ebean.dbmigration.model.ModelContainer;
 import com.avaje.ebean.dbmigration.model.ModelDiff;
 import com.avaje.ebean.plugin.SpiServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
+import com.avaje.ebeaninternal.util.JdbcClose;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -22,6 +23,7 @@ import javax.xml.bind.Marshaller;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.sql.Connection;
 
 /**
  * @author icode
@@ -61,7 +63,12 @@ public class ModelMigration extends DbMigration {
                 String ddl = write.apply().getBuffer() +
                         write.applyForeignKeys().getBuffer() +
                         write.applyHistory().getBuffer();
-                runner.runAll(ddl, server);
+                Connection connection = server.createTransaction().getConnection();
+                try {
+                    runner.runAll(ddl, connection);
+                } finally {
+                    JdbcClose.close(connection);
+                }
             }
         } catch (IOException e) {
             throw new AmebaException(e);
