@@ -505,7 +505,7 @@
     </repositories>
 
     <properties>
-        <ameba.utils.version>0.1.8</ameba.utils.version>
+        <ameba.utils.version>0.1.9-SNAPSHOT</ameba.utils.version>
         <osgi.version>4.2.0</osgi.version>
         <akka.logger>2.3.11</akka.logger>
         <paranamer.version>2.8</paranamer.version>

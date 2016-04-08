@@ -16,7 +16,7 @@ public class DownloadEntity implements Serializable {
     private Object entity;
     private boolean download;
     private String fileName;
-    private MediaType mediaType;
+    private MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM_TYPE;
 
     protected DownloadEntity() {
     }
