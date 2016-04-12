@@ -21,8 +21,8 @@ public class RangedOutputStream extends OutputStream {
     private static final String CONTENT_RANGE_FORMAT = "%s %d-%d/%d";
     private static final String CONTENT_RANGE_LINE_FORMAT = "Content-Range: " + CONTENT_RANGE_FORMAT;
     private static final String EMPTY_LINE = "\r\n";
-    List<Range> ranges;
-    MultivaluedMap<String, Object> headers;
+    private List<Range> ranges;
+    private MultivaluedMap<String, Object> headers;
     private OutputStream outputStream;
     private String boundary;
     private String accept;

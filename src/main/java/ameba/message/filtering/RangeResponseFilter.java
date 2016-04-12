@@ -1,5 +1,8 @@
 package ameba.message.filtering;
 
+import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.Priority;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -9,8 +12,11 @@ import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
 
 /**
+ * 范围下载，断点下载
+ *
  * @author icode
  */
+@Priority(Integer.MIN_VALUE)
 public class RangeResponseFilter implements ContainerResponseFilter {
 
     private static final String ACCEPT_RANGES = "Accept-Ranges";
@@ -24,12 +30,14 @@ public class RangeResponseFilter implements ContainerResponseFilter {
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
             throws IOException {
-        if (isWriteable(responseContext)) {
+        if (isWritable(responseContext)) {
             responseContext.getHeaders().add(ACCEPT_RANGES, BYTES_RANGE);
-
             if (requestContext.getHeaders().containsKey(RANGE)) {
                 if (requestContext.getHeaders().containsKey(IF_RANGE)) {
                     String ifRangeHeader = requestContext.getHeaderString(IF_RANGE);
+                    if (StringUtils.isBlank(ifRangeHeader)) {
+                        return;
+                    }
                     if (responseContext.getHeaders().containsKey(HttpHeaders.ETAG)) {
                         if (responseContext.getHeaderString(HttpHeaders.ETAG).equals(ifRangeHeader)) {
                             this.applyFilter(requestContext, responseContext);
@@ -48,7 +56,7 @@ public class RangeResponseFilter implements ContainerResponseFilter {
         }
     }
 
-    public boolean isWriteable(ContainerResponseContext responseContext) {
+    public boolean isWritable(ContainerResponseContext responseContext) {
         Object entity = responseContext.getEntity();
         return entity != null &&
                 (entity instanceof File

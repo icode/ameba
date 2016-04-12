@@ -398,12 +398,12 @@ public class ModelInterceptor implements WriterInterceptor {
     }
 
     /**
-     * <p>isWriteable.</p>
+     * <p>isWritable.</p>
      *
      * @param type a {@link java.lang.Class} object.
      * @return a boolean.
      */
-    public boolean isWriteable(Class<?> type) {
+    public boolean isWritable(Class<?> type) {
         return Finder.class.isAssignableFrom(type)
                 || Query.class.isAssignableFrom(type)
                 || ExpressionList.class.isAssignableFrom(type)
@@ -416,7 +416,7 @@ public class ModelInterceptor implements WriterInterceptor {
     @Override
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
         Object o = context.getEntity();
-        if (o != null && isWriteable(o.getClass())) {
+        if (o != null && isWritable(o.getClass())) {
 
             MultivaluedMap<String, String> queryParams = uriInfoProvider.get().getQueryParameters();
             Query query = null;
