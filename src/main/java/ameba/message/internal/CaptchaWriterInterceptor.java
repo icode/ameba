@@ -1,8 +1,9 @@
-package ameba.message.writer;
+package ameba.message.internal;
 
 import ameba.captcha.Captcha;
 import ameba.util.Images;
 
+import javax.inject.Singleton;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -14,6 +15,7 @@ import java.io.IOException;
 /**
  * @author icode
  */
+@Singleton
 public class CaptchaWriterInterceptor implements WriterInterceptor {
     private static final MediaType IMG_TYPE = MediaType.valueOf("image/png");
 

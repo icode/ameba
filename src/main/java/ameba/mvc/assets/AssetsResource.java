@@ -4,6 +4,7 @@ import ameba.container.server.Request;
 import ameba.core.Application;
 import ameba.message.internal.MediaType;
 import ameba.util.MimeType;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.glassfish.jersey.spi.ExceptionMappers;
@@ -62,7 +63,7 @@ public class AssetsResource {
                     append(lastModified);
             return new EntityTag(sb.toString());
         }
-        return null;
+        return new EntityTag(RandomStringUtils.random(10));
     }
 
     /**
@@ -104,7 +105,6 @@ public class AssetsResource {
 
         URL url = AssetsFeature.lookupAsset(mapName, fileName);
 
-        URLConnection urlConnection = null;
         File fileResource = null;
         String filePath = null;
         boolean found = false;
@@ -131,7 +131,7 @@ public class AssetsResource {
                 }
             } else {
                 if ("jar".equals(url.getProtocol())) {
-                    urlConnection = url.openConnection();
+                    URLConnection urlConnection = url.openConnection();
                     final JarURLConnection jarUrlConnection = (JarURLConnection) urlConnection;
                     JarEntry jarEntry = jarUrlConnection.getJarEntry();
                     final JarFile jarFile = jarUrlConnection.getJarFile();
@@ -205,12 +205,9 @@ public class AssetsResource {
             builder = Response.ok();
 
             if (fileResource != null) {
-                builder.entity(fileResource);
+                builder.entity(fileResource.toPath());
             } else {
-                builder.entity(
-                        urlInputStream != null ?
-                                urlInputStream :
-                                urlConnection.getInputStream());
+                builder.entity(urlInputStream);
             }
 
             if (isFileCacheEnabled()) {
@@ -258,7 +255,7 @@ public class AssetsResource {
         return file;
     }
 
-    static class JarURLInputStream extends java.io.FilterInputStream {
+    private static class JarURLInputStream extends java.io.FilterInputStream {
 
         private final JarURLConnection jarConnection;
         private final JarFile jarFile;

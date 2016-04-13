@@ -1,4 +1,4 @@
-package ameba.message.writer;
+package ameba.message.internal;
 
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
@@ -13,12 +13,16 @@ public class ExtendedMessageFeature implements Feature {
             context.register(TextMessageBodyWriter.class);
         }
 
-        if (!context.getConfiguration().isRegistered(DownloadEntityWriterInterceptor.class)) {
-            context.register(DownloadEntityWriterInterceptor.class);
-        }
-
         if (!context.getConfiguration().isRegistered(CaptchaWriterInterceptor.class)) {
             context.register(CaptchaWriterInterceptor.class);
+        }
+
+        if (!context.getConfiguration().isRegistered(PathMessageBodyWriter.class)) {
+            context.register(PathMessageBodyWriter.class);
+        }
+
+        if (!context.getConfiguration().isRegistered(ContentLengthWriterInterceptor.class)) {
+            context.register(ContentLengthWriterInterceptor.class);
         }
 
         return false;

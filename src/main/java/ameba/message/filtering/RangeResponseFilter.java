@@ -1,8 +1,10 @@
 package ameba.message.filtering;
 
+import ameba.message.Download;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Priority;
+import javax.inject.Singleton;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -10,12 +12,14 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
+import java.nio.file.Path;
 
 /**
  * 范围下载，断点下载
  *
  * @author icode
  */
+@Singleton
 @Priority(Integer.MIN_VALUE)
 public class RangeResponseFilter implements ContainerResponseFilter {
 
@@ -60,6 +64,8 @@ public class RangeResponseFilter implements ContainerResponseFilter {
         Object entity = responseContext.getEntity();
         return entity != null &&
                 (entity instanceof File
+                        || entity instanceof Path
+                        || entity instanceof Download
                         || entity instanceof InputStream
                         || entity instanceof StreamingOutput
                         || entity instanceof Reader

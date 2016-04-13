@@ -8,21 +8,26 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Serializable;
+import java.nio.file.Path;
 
 /**
  * @author icode
  */
-public class DownloadEntity implements Serializable {
+public class Download implements Serializable {
     private Object entity;
-    private boolean download;
+    private boolean attachment;
     private String fileName;
-    private MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM_TYPE;
+    private MediaType mediaType;
 
-    protected DownloadEntity() {
+    protected Download() {
     }
 
     public static Builder file(File file) {
         return new Builder().entity(file);
+    }
+
+    public static Builder path(Path path) {
+        return new Builder().entity(path);
     }
 
     public static Builder bytes(byte[] bytes) {
@@ -45,8 +50,8 @@ public class DownloadEntity implements Serializable {
         return entity;
     }
 
-    public boolean isDownload() {
-        return download;
+    public boolean isAttachment() {
+        return attachment;
     }
 
     public String getFileName() {
@@ -60,16 +65,16 @@ public class DownloadEntity implements Serializable {
     public static class Builder {
 
         private Object entity;
-        private boolean download = true;
+        private boolean attachment = true;
         private String fileName;
-        private MediaType mediaType;
+        private MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM_TYPE;
 
         public Object entity() {
             return entity;
         }
 
-        public boolean download() {
-            return download;
+        public boolean attachment() {
+            return attachment;
         }
 
         public String fileName() {
@@ -82,6 +87,17 @@ public class DownloadEntity implements Serializable {
 
         public Builder entity(File entity) {
             this.entity = entity;
+            if (fileName == null) {
+                fileName = entity.getName();
+            }
+            return this;
+        }
+
+        public Builder entity(Path entity) {
+            this.entity = entity;
+            if (fileName == null) {
+                fileName = entity.getFileName().toString();
+            }
             return this;
         }
 
@@ -105,8 +121,8 @@ public class DownloadEntity implements Serializable {
             return this;
         }
 
-        public Builder download(boolean download) {
-            this.download = download;
+        public Builder attachment(boolean attachment) {
+            this.attachment = attachment;
             return this;
         }
 
@@ -131,10 +147,10 @@ public class DownloadEntity implements Serializable {
             return this;
         }
 
-        public DownloadEntity build() {
-            DownloadEntity entity = new DownloadEntity();
+        public Download build() {
+            Download entity = new Download();
             entity.entity = this.entity;
-            entity.download = download;
+            entity.attachment = attachment;
             entity.fileName = fileName;
             entity.mediaType = mediaType;
             return entity;

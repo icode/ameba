@@ -1,15 +1,16 @@
-package ameba.message.writer;
+package ameba.message.filtering;
 
 import ameba.core.Requests;
-import ameba.message.DownloadEntity;
+import ameba.message.Download;
 import com.google.common.base.Charsets;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.ws.rs.WebApplicationException;
+import javax.inject.Singleton;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.WriterInterceptor;
-import javax.ws.rs.ext.WriterInterceptorContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -17,15 +18,16 @@ import java.net.URLEncoder;
 /**
  * @author icode
  */
-public class DownloadEntityWriterInterceptor implements WriterInterceptor {
+@Singleton
+public class DownloadEntityFilter implements ContainerResponseFilter {
 
     @Override
-    public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
-        Object entity = context.getEntity();
-        if (entity instanceof DownloadEntity) {
-            DownloadEntity downloadEntity = (DownloadEntity) entity;
+    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+        Object entity = responseContext.getEntity();
+        if (entity instanceof Download) {
+            Download downloadEntity = (Download) entity;
             entity = downloadEntity.getEntity();
-            if (downloadEntity.isDownload()) {
+            if (downloadEntity.isAttachment()) {
 
                 String download = "attachment;";
                 String fileName = downloadEntity.getFileName();
@@ -43,21 +45,14 @@ public class DownloadEntityWriterInterceptor implements WriterInterceptor {
                     download += fileName;
                 }
 
-                context.getHeaders().putSingle(HttpHeaders.CONTENT_DISPOSITION, download);
+                responseContext.getHeaders().putSingle(HttpHeaders.CONTENT_DISPOSITION, download);
             }
 
             if (downloadEntity.getMediaType() != null) {
                 MediaType mediaType = downloadEntity.getMediaType();
-                context.setMediaType(mediaType);
-                context.getHeaders().putSingle(HttpHeaders.CONTENT_TYPE, mediaType);
+                responseContext.getHeaders().putSingle(HttpHeaders.CONTENT_TYPE, mediaType);
             }
-            context.setEntity(entity);
-            if (entity != null) {
-                context.setType(entity.getClass());
-            } else {
-                context.setType(byte[].class);
-            }
+            responseContext.setEntity(entity);
         }
-        context.proceed();
     }
 }
