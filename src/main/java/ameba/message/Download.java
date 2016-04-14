@@ -4,10 +4,8 @@ import ameba.util.MimeType;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.StreamingOutput;
-import java.io.File;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.Serializable;
+import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -15,9 +13,11 @@ import java.nio.file.Path;
  */
 public class Download implements Serializable {
     private Object entity;
+    private String etag;
     private boolean attachment;
     private String fileName;
     private MediaType mediaType;
+    private Long lastModified;
 
     protected Download() {
     }
@@ -62,12 +62,40 @@ public class Download implements Serializable {
         return mediaType;
     }
 
+    public String getEtag() {
+        return etag;
+    }
+
+    public Long getLastModified() {
+        return lastModified;
+    }
+
     public static class Builder {
 
         private Object entity;
+        private String etag;
+        private Long lastModified;
         private boolean attachment = true;
         private String fileName;
         private MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM_TYPE;
+
+        private static String computeEntityTag(final Path path) {
+            final StringBuilder sb = new StringBuilder();
+            long fileLength;
+            long lastModified;
+            try {
+                fileLength = Files.size(path);
+                lastModified = Files.getLastModifiedTime(path).toMillis();
+            } catch (Exception e) {
+                return null;
+            }
+            if ((fileLength >= 0) || (lastModified >= 0)) {
+                sb.append(fileLength).append('-').
+                        append(lastModified);
+                return sb.toString();
+            }
+            return null;
+        }
 
         public Object entity() {
             return entity;
@@ -86,17 +114,23 @@ public class Download implements Serializable {
         }
 
         public Builder entity(File entity) {
-            this.entity = entity;
-            if (fileName == null) {
-                fileName = entity.getName();
-            }
-            return this;
+            return entity(entity.toPath());
         }
 
         public Builder entity(Path entity) {
             this.entity = entity;
             if (fileName == null) {
                 fileName = entity.getFileName().toString();
+            }
+            if (etag == null) {
+                etag = computeEntityTag(entity);
+            }
+            if (lastModified == null) {
+                try {
+                    lastModified = Files.getLastModifiedTime(entity).toMillis();
+                } catch (IOException e) {
+                    //
+                }
             }
             return this;
         }
@@ -136,6 +170,30 @@ public class Download implements Serializable {
             return this;
         }
 
+        public Builder etag(String etag) {
+            this.etag = etag;
+            return this;
+        }
+
+        public String etag() {
+            return etag;
+        }
+
+        public Builder lastModified(long lastModified) {
+            this.lastModified = lastModified;
+            return this;
+        }
+
+        public Long lastModified() {
+            return lastModified;
+        }
+
+        public Builder disableCache() {
+            etag = null;
+            lastModified = null;
+            return this;
+        }
+
         public Builder detectMediaType() {
             mediaType = MediaType.APPLICATION_OCTET_STREAM_TYPE;
             if (fileName != null) {
@@ -153,6 +211,8 @@ public class Download implements Serializable {
             entity.attachment = attachment;
             entity.fileName = fileName;
             entity.mediaType = mediaType;
+            entity.etag = etag;
+            entity.lastModified = lastModified;
             return entity;
         }
     }

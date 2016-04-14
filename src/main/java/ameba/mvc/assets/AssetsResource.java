@@ -108,7 +108,7 @@ public class AssetsResource {
         File fileResource = null;
         String filePath = null;
         boolean found = false;
-        InputStream urlInputStream = null;
+        JarURLInputStream jarURLInputStream = null;
 
         if (url != null) {
             // url may point to a folder or a file
@@ -153,7 +153,9 @@ public class AssetsResource {
                     }
 
                     if (is != null) {
-                        urlInputStream = new JarURLInputStream(jarUrlConnection,
+                        jarURLInputStream = new JarURLInputStream(
+                                jarUrlConnection,
+                                jarEntry,
                                 jarFile, is);
 
                         filePath = jarEntry.getName();
@@ -207,7 +209,8 @@ public class AssetsResource {
             if (fileResource != null) {
                 builder.entity(fileResource.toPath());
             } else {
-                builder.entity(urlInputStream);
+                builder.entity(jarURLInputStream)
+                        .header(HttpHeaders.CONTENT_LENGTH, jarURLInputStream.jarEntry.getSize());
             }
 
             if (isFileCacheEnabled()) {
@@ -259,13 +262,16 @@ public class AssetsResource {
 
         private final JarURLConnection jarConnection;
         private final JarFile jarFile;
+        private final JarEntry jarEntry;
 
         JarURLInputStream(final JarURLConnection jarConnection,
+                          final JarEntry jarEntry,
                           final JarFile jarFile,
                           final InputStream src) {
             super(src);
             this.jarConnection = jarConnection;
             this.jarFile = jarFile;
+            this.jarEntry = jarEntry;
         }
 
         @Override

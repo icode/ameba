@@ -23,10 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Configuration;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.*;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -340,6 +337,9 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
     @Override
     public void writeTo(T templateReference, Viewable viewable, MediaType mediaType,
                         MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException {
+        MediaType m = (MediaType) httpHeaders.getFirst(HttpHeaders.CONTENT_TYPE);
+        if (m == null) m = mediaType;
+        setContentType(m, httpHeaders);
         try {
             writeTemplate(templateReference, viewable, mediaType, httpHeaders, out);
         } catch (Exception e) {
