@@ -3,7 +3,6 @@ package ameba.message.internal;
 import org.glassfish.jersey.message.internal.ReaderWriter;
 
 import javax.inject.Singleton;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -21,7 +20,6 @@ import java.nio.file.Path;
  * @author icode
  */
 @Produces({"application/octet-stream", "*/*"})
-@Consumes({"application/octet-stream", "*/*"})
 @Singleton
 public class PathMessageBodyWriter implements MessageBodyWriter<Path> {
     @Override
