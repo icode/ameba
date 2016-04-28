@@ -28,7 +28,7 @@ public class MediaStreaming implements StreamingOutput {
     private static final Random RANDOM = new Random();
 
     private MultivaluedMap<String, Object> headers;
-    private javax.ws.rs.core.MediaType contentType;
+    private String contentType;
     private Object entity;
     private StreamingProcess<Object> streamingProcess;
 
@@ -38,7 +38,7 @@ public class MediaStreaming implements StreamingOutput {
                           MultivaluedMap<String, Object> headers) {
         this.entity = entity;
         this.streamingProcess = streamingProcess;
-        this.contentType = contentType;
+        this.contentType = contentType.toString();
         this.headers = headers;
     }
 
