@@ -3,6 +3,7 @@ package ameba.message.internal;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.RandomStringUtils;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
@@ -30,9 +31,11 @@ public class MediaStreaming implements StreamingOutput {
     private MultivaluedMap<String, Object> headers;
     private String contentType;
     private Object entity;
+    private String range;
     private StreamingProcess<Object> streamingProcess;
 
     public MediaStreaming(Object entity,
+                          String range,
                           StreamingProcess<Object> streamingProcess,
                           javax.ws.rs.core.MediaType contentType,
                           MultivaluedMap<String, Object> headers) {
@@ -40,12 +43,16 @@ public class MediaStreaming implements StreamingOutput {
         this.streamingProcess = streamingProcess;
         this.contentType = contentType.toString();
         this.headers = headers;
+        this.range = range;
     }
 
     @Override
     public void write(OutputStream output) throws IOException, WebApplicationException {
         List<Range> ranges = Lists.newArrayList();
-        String[] acceptRanges = MessageHelper.getHeaderString(headers, RANGE).split("=");
+        String[] acceptRanges = range.split("=");
+        if (acceptRanges.length != 2) {
+            throw new BadRequestException(RANGE + " header error");
+        }
         String accept = acceptRanges[0];
         for (String range : acceptRanges[1].split(",")) {
             String[] bounds = range.split("-");
@@ -69,6 +76,7 @@ public class MediaStreaming implements StreamingOutput {
         if (multipart) {
             int count = RANDOM.nextInt(11) + 20;
             String boundary = RandomStringUtils.randomAlphanumeric(count);
+            headers.remove(HttpHeaders.CONTENT_LENGTH);
             headers.putSingle(HttpHeaders.CONTENT_TYPE, String.format(MULTIPART_BYTERANGES, boundary));
             for (Range range : ranges) {
                 output.write(String.format(BOUNDARY_LINE_FORMAT, boundary).getBytes());

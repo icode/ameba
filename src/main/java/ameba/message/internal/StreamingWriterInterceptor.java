@@ -89,6 +89,7 @@ public class StreamingWriterInterceptor implements WriterInterceptor, ContainerR
             context.setType(StreamingOutput.class);
             context.setEntity(new MediaStreaming(
                             entity,
+                    requestContext.getHeaderString(MediaStreaming.RANGE),
                             process,
                             context.getMediaType(),
                             context.getHeaders()
