@@ -4,6 +4,8 @@ import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.mvc.internal.ErrorTemplateExceptionMapper;
 
+import javax.ws.rs.ConstrainedTo;
+import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
@@ -19,6 +21,7 @@ import static org.glassfish.jersey.server.mvc.MvcFeature.TEMPLATE_BASE_PATH;
  * @author icode
  * @since 2013-08-07
  */
+@ConstrainedTo(RuntimeType.SERVER)
 public class MvcFeature implements Feature {
 
     private static final String TPL_CACHE = "template.caching";

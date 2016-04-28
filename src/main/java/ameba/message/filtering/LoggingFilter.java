@@ -34,7 +34,6 @@ import java.util.logging.Logger;
  */
 @PreMatching
 @Priority(Integer.MIN_VALUE)
-@SuppressWarnings("ClassWithMultipleLoggers")
 public final class LoggingFilter implements ContainerRequestFilter, ClientRequestFilter, ContainerResponseFilter,
         ClientResponseFilter, WriterInterceptor {
 
@@ -158,7 +157,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
     }
 
     private Set<Map.Entry<String, List<String>>> getSortedHeaders(final Set<Map.Entry<String, List<String>>> headers) {
-        final TreeSet<Map.Entry<String, List<String>>> sortedHeaders = new TreeSet<Map.Entry<String, List<String>>>(COMPARATOR);
+        final TreeSet<Map.Entry<String, List<String>>> sortedHeaders = new TreeSet<>(COMPARATOR);
         sortedHeaders.addAll(headers);
         return sortedHeaders;
     }

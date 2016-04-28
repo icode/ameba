@@ -3,7 +3,10 @@ package ameba.message.internal;
 import com.google.common.base.Charsets;
 
 import javax.inject.Singleton;
-import javax.ws.rs.*;
+import javax.ws.rs.ConstrainedTo;
+import javax.ws.rs.Produces;
+import javax.ws.rs.RuntimeType;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -19,7 +22,6 @@ import java.nio.charset.Charset;
  * @author icode
  */
 @Produces({"application/octet-stream", "*/*"})
-@Consumes({"application/octet-stream", "*/*"})
 @Singleton
 @ConstrainedTo(RuntimeType.SERVER)
 final class TextMessageBodyWriter implements MessageBodyWriter<Object> {

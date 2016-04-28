@@ -1,5 +1,7 @@
 package ameba.message.internal;
 
+import ameba.message.internal.streaming.*;
+
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
@@ -23,6 +25,17 @@ public class ExtendedMessageFeature implements Feature {
 
         if (!context.getConfiguration().isRegistered(ContentLengthWriterInterceptor.class)) {
             context.register(ContentLengthWriterInterceptor.class);
+        }
+
+        if (!context.getConfiguration().isRegistered(StreamingWriterInterceptor.class)) {
+            context.register(StreamingWriterInterceptor.class);
+            // streaming process
+            context.register(BlobStreamingProcess.class);
+            context.register(BytesStreamingProcess.class);
+            context.register(ClobStreamingProcess.class);
+            context.register(FileStreamingProcess.class);
+            context.register(InputStreamingProcess.class);
+            context.register(PathStreamingProcess.class);
         }
 
         return false;

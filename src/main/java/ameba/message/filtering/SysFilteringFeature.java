@@ -17,10 +17,6 @@ public class SysFilteringFeature implements Feature {
             context.register(UriConnegFilter.class);
         }
 
-        if (!configuration.isRegistered(RangeResponseFilter.class)) {
-            context.register(RangeResponseFilter.class);
-        }
-
         if (!context.getConfiguration().isRegistered(DownloadEntityFilter.class)) {
             context.register(DownloadEntityFilter.class);
         }
