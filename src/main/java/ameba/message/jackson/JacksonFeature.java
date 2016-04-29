@@ -1,5 +1,6 @@
 package ameba.message.jackson;
 
+import ameba.core.Application;
 import ameba.core.ws.rs.HttpPatchProperties;
 import ameba.message.internal.MediaType;
 import ameba.message.jackson.internal.*;
@@ -37,6 +38,8 @@ public class JacksonFeature implements Feature {
 
     @Inject
     private ServiceLocator locator;
+    @Inject
+    private Application.Mode mode;
 
     /**
      * {@inheritDoc}
@@ -66,8 +69,8 @@ public class JacksonFeature implements Feature {
                     XmlMapper xmlMapper = new XmlMapper();
                     ObjectMapper objectMapper = new ObjectMapper();
 
-                    JacksonUtils.configureMapper(xmlMapper);
-                    JacksonUtils.configureMapper(objectMapper);
+                    JacksonUtils.configureMapper(xmlMapper, mode);
+                    JacksonUtils.configureMapper(objectMapper, mode);
 
                     bind(xmlMapper).to(XmlMapper.class).proxy(false);
                     bind(objectMapper).to(ObjectMapper.class).proxy(false);

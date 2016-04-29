@@ -1,5 +1,6 @@
 package ameba.message.jackson.internal;
 
+import ameba.core.Application;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
@@ -91,17 +92,26 @@ public class JacksonUtils {
      * <p>configureMapper.</p>
      *
      * @param mapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
+     * @param mode   App mode
      */
-    public static void configureMapper(ObjectMapper mapper) {
+    public static void configureMapper(ObjectMapper mapper, Application.Mode mode) {
         mapper.registerModule(new JodaModule())
                 .registerModule(new GuavaModule());
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
-                .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-                .disable(SerializationFeature.FAIL_ON_SELF_REFERENCES)
-                .disable(SerializationFeature.WRITE_NULL_MAP_VALUES)
-                .disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS);
+                .disable(
+                        SerializationFeature.WRITE_NULL_MAP_VALUES
+                        , SerializationFeature.WRITE_EMPTY_JSON_ARRAYS
+                );
+        if (!mode.isDev()) {
+            mapper
+                    .disable(
+                            DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
+                    )
+                    .disable(
+                            SerializationFeature.FAIL_ON_EMPTY_BEANS
+                            , SerializationFeature.FAIL_ON_SELF_REFERENCES
+                    );
+        }
     }
 
     public static void configureGenerator(UriInfo uriInfo, JsonGenerator generator, boolean isDev) {
