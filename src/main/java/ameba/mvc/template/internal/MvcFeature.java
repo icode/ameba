@@ -76,11 +76,11 @@ public class MvcFeature implements Feature {
         return true;
     }
 
-    void append(Configuration config,
-                String engine,
-                Map<String, String> tempConf,
-                String key, String confKey,
-                FeatureContext context) {
+    private void append(Configuration config,
+                        String engine,
+                        Map<String, String> tempConf,
+                        String key, String confKey,
+                        FeatureContext context) {
 
         String value = (String) config.getProperty(confKey);
         String append = (String) config.getProperty(key);
