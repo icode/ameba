@@ -37,7 +37,6 @@ logger("com.avaje.ebeaninternal.server.lib", DEBUG)
 logger("com.avaje.ebeaninternal.server.deploy.BeanDescriptor", isTrace ? TRACE : DEBUG)
 logger("com.avaje.ebeaninternal.server.deploy.BeanDescriptorManager", WARN)
 
-logger("httl", WARN)
 logger("ameba", isTrace ? TRACE : DEBUG)
 
 if (appPackage != null) {

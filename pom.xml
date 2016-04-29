@@ -345,13 +345,6 @@
             </exclusions>
         </dependency>
 
-        <!-- httl template -->
-        <dependency>
-            <groupId>org.amebastack.template</groupId>
-            <artifactId>httl</artifactId>
-            <version>${httl.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>com.github.fge</groupId>
             <artifactId>json-patch</artifactId>
@@ -516,7 +509,6 @@
         <ebean.version>7.8.1</ebean.version>
         <druid.version>1.0.18</druid.version>
         <groovy.version>2.4.6</groovy.version>
-        <httl.version>1.0.12</httl.version>
         <hk2.version>2.5.0-b03</hk2.version>
         <javax.websocket.version>1.1</javax.websocket.version>
         <json-patch.version>1.9</json-patch.version>
