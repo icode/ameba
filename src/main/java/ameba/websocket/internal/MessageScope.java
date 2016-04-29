@@ -1,6 +1,6 @@
 package ameba.websocket.internal;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -401,7 +401,7 @@ public class MessageScope implements Context<MessageScoped> {
 
         @Override
         public String toString() {
-            return Objects.toStringHelper(this).add("id", id.value()).add("referenceCounter", referenceCounter.get())
+            return MoreObjects.toStringHelper(this).add("id", id.value()).add("referenceCounter", referenceCounter.get())
                     .add("store size", store.size()).toString();
         }
     }

@@ -2,14 +2,15 @@ package ameba.message.jackson.internal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.cfg.MapperConfigBase;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
-import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.internal.util.ReflectionHelper;
 import org.glassfish.jersey.message.filtering.spi.ObjectProvider;
 
@@ -110,35 +111,6 @@ public class JacksonUtils {
             generator.setPrettyPrinter(null);
         } else if (pretty != null && !pretty.equalsIgnoreCase("false") || isDev) {
             generator.useDefaultPrettyPrinter();
-        }
-    }
-
-    /**
-     * get naming query param for PropertyNamingStrategy
-     * <br>
-     * u : change set {@link PropertyNamingStrategy#CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES}
-     * <br>
-     * l : change set {@link PropertyNamingStrategy#LOWER_CASE}
-     * <br>
-     * p : change set {@link PropertyNamingStrategy#PASCAL_CASE_TO_CAMEL_CASE}
-     *
-     * @param uriInfo    UriInfo
-     * @param configBase MapperConfigBase
-     */
-    public static void configurePropertyNamingStrategy(UriInfo uriInfo, MapperConfigBase configBase) {
-        MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
-        String naming = params.getFirst("naming");
-        if (StringUtils.isNotBlank(naming)) {
-            switch (naming) {
-                case "u":
-                    configBase.with(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
-                    break;
-                case "l":
-                    configBase.with(PropertyNamingStrategy.LOWER_CASE);
-                    break;
-                case "p":
-                    configBase.with(PropertyNamingStrategy.PASCAL_CASE_TO_CAMEL_CASE);
-            }
         }
     }
 }
