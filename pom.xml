@@ -166,10 +166,7 @@
                     <groupId>org.avaje</groupId>
                     <artifactId>avaje-classpath-scanner</artifactId>
                 </exclusion>
-                <exclusion>
-                    <artifactId>annotations</artifactId>
-                    <groupId>org.jetbrains</groupId>
-                </exclusion>
+
             </exclusions>
         </dependency>
 
@@ -280,7 +277,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.core.version}</version>
+            <version>${jackson.provider.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -328,7 +325,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-guava</artifactId>
-            <version>${jackson.core.version}</version>
+            <version>${jackson.provider.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>guava</artifactId>
@@ -339,7 +336,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-joda</artifactId>
-            <version>${jackson.core.version}</version>
+            <version>${jackson.provider.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>joda-time</artifactId>
@@ -523,8 +520,8 @@
         <hk2.version>2.5.0-b03</hk2.version>
         <javax.websocket.version>1.1</javax.websocket.version>
         <json-patch.version>1.9</json-patch.version>
-        <jackson.core.version>2.7.3</jackson.core.version>
-        <jackson.provider.version>${jackson.core.version}</jackson.provider.version>
+        <jackson.core.version>2.7.4</jackson.core.version>
+        <jackson.provider.version>2.7.3</jackson.provider.version>
         <flyway.version>4.0</flyway.version>
         <bean.validator.version>5.2.4.Final</bean.validator.version>
         <ebean.support.dir>ameba/db/ebean/support</ebean.support.dir>
