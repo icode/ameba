@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * @author icode
@@ -70,7 +71,7 @@ public class ModelMigration extends DbMigration {
                     JdbcClose.close(connection);
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | SQLException e) {
             throw new AmebaException(e);
         } finally {
             if (!online) {

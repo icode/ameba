@@ -1,4 +1,4 @@
-package ameba.event;
+package ameba;
 
 import ameba.util.Times;
 import junit.framework.Assert;
