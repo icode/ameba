@@ -36,7 +36,7 @@ public class EbeanMigration implements Migration {
             version = String.valueOf(ver) + "_" + verIndex;
         }
         migrationConfig.setVersion(version);
-        migrationConfig.setMigrationPath("db/migration/" + server.getName());
+        migrationConfig.setMigrationPath("ameba/db/migration/" + server.getName());
         config.setMigrationConfig(migrationConfig);
 
         dbMigration = new ModelMigration();

@@ -40,7 +40,7 @@ public class MigrationResource {
 
     static {
         try {
-            MIGRATION_HTML = IOUtils.readFromResource("db/migration/migration.html");
+            MIGRATION_HTML = IOUtils.readFromResource("ameba/db/migration/migration.html");
         } catch (IOException e) {
             throw new AmebaException(e);
         }
