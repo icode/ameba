@@ -388,6 +388,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>${antlr.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.9</version>
@@ -461,6 +467,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>${antlr.version}</version>
+                <executions>
+                    <execution>
+                        <id>antlr</id>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -506,7 +525,7 @@
         <jersey.version>2.22.2</jersey.version>
         <slf4j.version>1.7.21</slf4j.version>
         <logback.version>1.1.7</logback.version>
-        <ebean.version>7.9.1</ebean.version>
+        <ebean.version>7.10.1</ebean.version>
         <druid.version>1.0.18</druid.version>
         <groovy.version>2.4.6</groovy.version>
         <hk2.version>2.5.0-b03</hk2.version>
@@ -515,6 +534,7 @@
         <jackson.core.version>2.7.4</jackson.core.version>
         <jackson.provider.version>2.7.3</jackson.provider.version>
         <flyway.version>4.0</flyway.version>
+        <antlr.version>4.5.3</antlr.version>
         <bean.validator.version>5.2.4.Final</bean.validator.version>
         <ebean.support.dir>ameba/db/ebean/support</ebean.support.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

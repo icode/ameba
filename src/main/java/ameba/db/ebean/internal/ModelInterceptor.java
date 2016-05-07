@@ -40,16 +40,16 @@ import java.util.concurrent.ExecutionException;
 @Priority(Priorities.ENTITY_CODER)
 public class ModelInterceptor implements WriterInterceptor {
 
-    final static Integer SYS_DEFAULT_PER_PAGE = 20;
-    static String FIELDS_PARAM_NAME = "fields";
-    static String SORT_PARAM_NAME = "sort";
-    static String PAGE_PARAM_NAME = "page";
-    static String PER_PAGE_PARAM_NAME = "per_page";
-    static String REQ_TOTAL_COUNT_PARAM_NAME = "req_count";
-    static String REQ_TOTAL_COUNT_HEADER_NAME = "X-Total-Count";
-    static String FILTER_PARAM_NAME = "filter";
-    static Integer DEFAULT_PER_PAGE = SYS_DEFAULT_PER_PAGE;
-    static int MAX_PER_PAGE = 1000;
+    private final static Integer SYS_DEFAULT_PER_PAGE = 20;
+    private static String FIELDS_PARAM_NAME = "fields";
+    private static String SORT_PARAM_NAME = "sort";
+    private static String PAGE_PARAM_NAME = "page";
+    private static String PER_PAGE_PARAM_NAME = "per_page";
+    private static String REQ_TOTAL_COUNT_PARAM_NAME = "req_count";
+    private static String REQ_TOTAL_COUNT_HEADER_NAME = "X-Total-Count";
+    private static String FILTER_PARAM_NAME = "filter";
+    private static Integer DEFAULT_PER_PAGE = SYS_DEFAULT_PER_PAGE;
+    private static int MAX_PER_PAGE = 1000;
     @Context
     private Provider<Configuration> configurationProvider;
     @Context
@@ -287,7 +287,7 @@ public class ModelInterceptor implements WriterInterceptor {
     }
 
     /**
-     * /path?filter=p.in(1,2)c.eq(ddd)d.start_with(a)or(f.eq(a)g.start_with(2))
+     * /path?filter=p.in(1,2)c.eq('ddd')d.startWith('a')or(f.eq('a')g.startWith(2))
      * todo
      *
      * @param queryParams uri query params
