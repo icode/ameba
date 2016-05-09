@@ -17,14 +17,14 @@ public class QueryDSL {
     private QueryDSL() {
     }
 
-    public static List<QueryInfo> parse(String expression) {
+    public static List<QueryExpr> parse(String expression) {
         return parse(parser(tokens(expression)));
     }
 
-    public static List<QueryInfo> parse(QueryParser parser) {
-        QueryInfoListener listener = listener(parser);
+    public static List<QueryExpr> parse(QueryParser parser) {
+        QueryExprListener listener = listener(parser);
         parser.query();
-        return listener.getQueryInfoList();
+        return listener.getQueryExprList();
     }
 
     public static CommonTokenStream tokens(String expression) {
@@ -59,12 +59,12 @@ public class QueryDSL {
         return parser;
     }
 
-    public static QueryInfoListener listener() {
-        return new QueryInfoListener();
+    public static QueryExprListener listener() {
+        return new QueryExprListener();
     }
 
-    public static QueryInfoListener listener(QueryParser parser) {
-        QueryInfoListener listener = listener();
+    public static QueryExprListener listener(QueryParser parser) {
+        QueryExprListener listener = listener();
         parser.addParseListener(listener);
         return listener;
     }

@@ -12,64 +12,64 @@ import java.util.List;
 /**
  * @author icode
  */
-public class QueryInfo {
-    private String column;
+public class QueryExpr {
+    private String field;
     private String operator;
     private List<Object> arguments;
-    private QueryInfo parent;
+    private QueryExpr parent;
 
-    private QueryInfo() {
+    private QueryExpr() {
     }
 
-    public static QueryInfo create() {
-        return new QueryInfo();
+    public static QueryExpr create() {
+        return new QueryExpr();
     }
 
     public String operator() {
         return operator;
     }
 
-    public String column() {
-        return column;
+    public String field() {
+        return field;
     }
 
     public List<Object> arguments() {
         return arguments;
     }
 
-    public QueryInfo parent() {
+    public QueryExpr parent() {
         return parent;
     }
 
-    protected QueryInfo column(String column) {
-        this.column = column;
+    protected QueryExpr field(String field) {
+        this.field = field;
         return this;
     }
 
-    protected QueryInfo operator(String operator) {
+    protected QueryExpr operator(String operator) {
         this.operator = operator;
         return this;
     }
 
-    protected QueryInfo arguments(List arguments) {
+    protected QueryExpr arguments(List arguments) {
         this.arguments = arguments;
         return this;
     }
 
-    protected QueryInfo arguments(Object... arguments) {
+    protected QueryExpr arguments(Object... arguments) {
         if (this.arguments == null) this.arguments = Lists.newArrayList();
         Collections.addAll(this.arguments, arguments);
         return this;
     }
 
-    protected QueryInfo parent(QueryInfo parent) {
+    protected QueryExpr parent(QueryExpr parent) {
         this.parent = parent;
         return this;
     }
 
     @Override
     public String toString() {
-        return (column == null ? "" : column + ".") +
+        return (field == null ? "" : field + ".") +
                 operator + "(" +
                 (arguments == null ? "" :
                         StringUtils.join(

@@ -1,7 +1,7 @@
 package ameba;
 
 import ameba.db.dsl.QueryDSL;
-import ameba.db.dsl.QueryInfo;
+import ameba.db.dsl.QueryExpr;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
@@ -15,9 +15,9 @@ import java.util.List;
 /**
  * @author icode
  */
-public class QueryParserTest {
+public class QueryExprParserTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(QueryParserTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(QueryExprParserTest.class);
 
     @Test
     public void parseTest() {
@@ -34,14 +34,14 @@ public class QueryParserTest {
                 "  )" +
                 "xx.dd.dd." +
                 "  ww(" +
-                "    ddddd!nil!1!2!errf" +
+                "    ddddd!'nil'!12343!2ww!errf" +
                 "  )l.w2.f.g.or";
-        List<QueryInfo> queryInfoList = QueryDSL.parse(expr);
+        List<QueryExpr> queryExprList = QueryDSL.parse(expr);
         logger.debug(
-                StringUtils.join(Collections2.transform(queryInfoList, new Function<QueryInfo, String>() {
+                StringUtils.join(Collections2.transform(queryExprList, new Function<QueryExpr, String>() {
                     @Nullable
                     @Override
-                    public String apply(@Nullable QueryInfo input) {
+                    public String apply(@Nullable QueryExpr input) {
                         return String.valueOf(input);
                     }
                 }), ""));
