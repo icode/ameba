@@ -1,14 +1,17 @@
 package ameba.db.migration;
 
 import ameba.db.migration.models.ScriptInfo;
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.jersey.spi.Contract;
 
+import javax.ws.rs.ConstrainedTo;
+import javax.ws.rs.RuntimeType;
 import java.util.List;
 
 /**
  * @author icode
  */
 @Contract
+@ConstrainedTo(RuntimeType.SERVER)
 public interface Migration {
     boolean hasChanged();
 

@@ -4,6 +4,8 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.Providers;
 
 import java.util.List;
 
@@ -19,6 +21,14 @@ public class QueryDSL {
                                   QueryExprGenerator<T> invoker,
                                   ApplyExpr<T> applyExpr) {
         QueryExprGenerator.invoke(parse(expression), invoker, applyExpr);
+    }
+
+    public static Iterable<ExprTransformer> getExprTransformers(ServiceLocator locator) {
+        return Providers.getAllProviders(locator, ExprTransformer.class);
+    }
+
+    public static Iterable<ExprArgTransformer> getExprArgTransformers(ServiceLocator locator) {
+        return Providers.getAllProviders(locator, ExprArgTransformer.class);
     }
 
     public static List<QueryExprMeta> parse(String expression) {

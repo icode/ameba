@@ -11,7 +11,7 @@ import java.util.Set;
  * @author icode
  */
 public class FilteringBeanMap<T> extends BeanMap<T> {
-    private static final BeanTransformer<FilteringBeanMap> TRANSFORMER = new Transform();
+    private static final BeanTransformer<FilteringBeanMap> TRANSFORMER = new Transformer();
     private PathProperties pathProperties;
 
     public FilteringBeanMap(T bean, final PathProperties pathProperties) {
@@ -26,7 +26,7 @@ public class FilteringBeanMap<T> extends BeanMap<T> {
     }
 
     public static Object from(Object src, final PathProperties pathProperties) {
-        return new Transform() {
+        return new Transformer() {
             @Override
             protected FilteringBeanMap onTransform(Object obj) {
                 return new FilteringBeanMap<>(obj, pathProperties);
@@ -60,7 +60,7 @@ public class FilteringBeanMap<T> extends BeanMap<T> {
         return super.transformPropertyName(name);
     }
 
-    private static class Transform extends BeanTransformer<FilteringBeanMap> {
+    private static class Transformer extends BeanTransformer<FilteringBeanMap> {
         @Override
         protected FilteringBeanMap onTransform(Object obj) {
             return new FilteringBeanMap<>(obj);
