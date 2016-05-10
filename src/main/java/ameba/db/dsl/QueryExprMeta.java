@@ -12,17 +12,17 @@ import java.util.List;
 /**
  * @author icode
  */
-public class QueryExpr {
+public class QueryExprMeta {
     private String field;
     private String operator;
     private List<Object> arguments;
-    private QueryExpr parent;
+    private QueryExprMeta parent;
 
-    private QueryExpr() {
+    private QueryExprMeta() {
     }
 
-    public static QueryExpr create() {
-        return new QueryExpr();
+    public static QueryExprMeta create() {
+        return new QueryExprMeta();
     }
 
     public String operator() {
@@ -37,32 +37,32 @@ public class QueryExpr {
         return arguments;
     }
 
-    public QueryExpr parent() {
+    public QueryExprMeta parent() {
         return parent;
     }
 
-    protected QueryExpr field(String field) {
+    protected QueryExprMeta field(String field) {
         this.field = field;
         return this;
     }
 
-    protected QueryExpr operator(String operator) {
+    protected QueryExprMeta operator(String operator) {
         this.operator = operator;
         return this;
     }
 
-    protected QueryExpr arguments(List arguments) {
+    protected QueryExprMeta arguments(List<Object> arguments) {
         this.arguments = arguments;
         return this;
     }
 
-    protected QueryExpr arguments(Object... arguments) {
+    protected QueryExprMeta arguments(Object... arguments) {
         if (this.arguments == null) this.arguments = Lists.newArrayList();
         Collections.addAll(this.arguments, arguments);
         return this;
     }
 
-    protected QueryExpr parent(QueryExpr parent) {
+    protected QueryExprMeta parent(QueryExprMeta parent) {
         this.parent = parent;
         return this;
     }
@@ -78,7 +78,12 @@ public class QueryExpr {
                                             @Nullable
                                             @Override
                                             public String apply(@Nullable Object input) {
-                                                return input == null ? "nil" : input.toString();
+                                                if (input == null) {
+                                                    return "nil";
+                                                } else if (input instanceof String) {
+                                                    return "'" + input + "'";
+                                                }
+                                                return input.toString();
                                             }
                                         }), "!"
                         )

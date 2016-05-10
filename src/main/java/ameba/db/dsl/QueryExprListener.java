@@ -12,44 +12,44 @@ import java.util.List;
  */
 public class QueryExprListener extends QueryBaseListener {
 
-    private ParseTreeProperty<QueryExpr> infoMap = new ParseTreeProperty<>();
-    private List<QueryExpr> queryExprList = Lists.newArrayList();
-    private QueryExpr queryExpr;
+    private ParseTreeProperty<QueryExprMeta> infoMap = new ParseTreeProperty<>();
+    private List<QueryExprMeta> queryExprMetaList = Lists.newArrayList();
+    private QueryExprMeta queryExprMeta;
 
-    public List<QueryExpr> getQueryExprList() {
-        return queryExprList;
+    public List<QueryExprMeta> getQueryExprMetaList() {
+        return queryExprMetaList;
     }
 
     @Override
     public void exitSourceElements(QueryParser.SourceElementsContext ctx) {
         infoMap = null;
-        queryExpr = null;
-        queryExprList = Collections.unmodifiableList(queryExprList);
+        queryExprMeta = null;
+        queryExprMetaList = Collections.unmodifiableList(queryExprMetaList);
     }
 
     @Override
     public void exitSourceElement(QueryParser.SourceElementContext ctx) {
-        if (queryExpr != null) {
-            String op = queryExpr.operator();
+        if (queryExprMeta != null) {
+            String op = queryExprMeta.operator();
             if (op == null) {
-                String co = queryExpr.field();
-                if (co != null && queryExpr.arguments() == null) {
+                String co = queryExprMeta.field();
+                if (co != null && queryExprMeta.arguments() == null) {
                     int offset = co.lastIndexOf('.');
                     if (offset == -1) {
-                        if (queryExpr.parent() == null) {
-                            queryExpr.operator(co);
-                            queryExpr.field(null);
+                        if (queryExprMeta.parent() == null) {
+                            queryExprMeta.operator(co);
+                            queryExprMeta.field(null);
                         } else {
-                            List<Object> args = queryExpr.parent().arguments();
-                            int argOffset = args.indexOf(queryExpr);
+                            List<Object> args = queryExprMeta.parent().arguments();
+                            int argOffset = args.indexOf(queryExprMeta);
                             if (argOffset != -1) {
                                 args.set(argOffset, co);
-                                queryExpr = null;
+                                queryExprMeta = null;
                             }
                         }
                     } else {
-                        queryExpr.field(co.substring(0, offset));
-                        queryExpr.operator(co.substring(offset + 1));
+                        queryExprMeta.field(co.substring(0, offset));
+                        queryExprMeta.operator(co.substring(offset + 1));
                     }
                 }
             }
@@ -58,39 +58,39 @@ public class QueryExprListener extends QueryBaseListener {
 
     @Override
     public void enterSourceElement(QueryParser.SourceElementContext ctx) {
-        queryExpr = QueryExpr.create();
-        infoMap.put(ctx, queryExpr);
+        queryExprMeta = QueryExprMeta.create();
+        infoMap.put(ctx, queryExprMeta);
         // root source element
         if (ctx.getParent() instanceof QueryParser.SourceElementsContext) {
-            queryExprList.add(queryExpr);
+            queryExprMetaList.add(queryExprMeta);
         } else {
-            QueryExpr parentInfo = infoMap.get(getParentSourceElement(ctx)).arguments(queryExpr);
-            queryExpr.parent(parentInfo);
+            QueryExprMeta parentInfo = infoMap.get(getParentSourceElement(ctx)).arguments(queryExprMeta);
+            queryExprMeta.parent(parentInfo);
         }
     }
 
     @Override
     public void exitIdentifierName(QueryParser.IdentifierNameContext ctx) {
-        queryExpr.operator(ctx.getText());
+        queryExprMeta.operator(ctx.getText());
     }
 
     @Override
     public void exitFieldExpression(QueryParser.FieldExpressionContext ctx) {
-        queryExpr.field(ctx.getText());
+        queryExprMeta.field(ctx.getText());
     }
 
     @Override
     public void exitLiteral(QueryParser.LiteralContext ctx) {
         if (ctx.NullLiteral() != null) {
-            queryExpr.arguments((Object) null);
+            queryExprMeta.arguments((Object) null);
         } else {
-            queryExpr.arguments(ctx.getText());
+            queryExprMeta.arguments(ctx.getText());
         }
     }
 
     @Override
     public void exitIdentifierVal(QueryParser.IdentifierValContext ctx) {
-        queryExpr.arguments(ctx.getText());
+        queryExprMeta.arguments(ctx.getText());
     }
 
     protected ParserRuleContext getParentSourceElement(ParserRuleContext node) {

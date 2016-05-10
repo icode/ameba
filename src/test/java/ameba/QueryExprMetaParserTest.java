@@ -1,7 +1,7 @@
 package ameba;
 
 import ameba.db.dsl.QueryDSL;
-import ameba.db.dsl.QueryExpr;
+import ameba.db.dsl.QueryExprMeta;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
@@ -15,13 +15,13 @@ import java.util.List;
 /**
  * @author icode
  */
-public class QueryExprParserTest {
+public class QueryExprMetaParserTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(QueryExprParserTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(QueryExprMetaParserTest.class);
 
     @Test
     public void parseTest() {
-        String expr = "eeex1.x2.w.not." +
+        String expr = "x1.x2.w.not." +
                 "  or(" +
                 "    a_1_1." +
                 "      b_1_2(" +
@@ -34,14 +34,14 @@ public class QueryExprParserTest {
                 "  )" +
                 "xx.dd.dd." +
                 "  ww(" +
-                "    ddddd!'nil'!12343!2ww!errf" +
+                "    ddddd!'nil'!nil!12343!2ww!errf" +
                 "  )l.w2.f.g.or";
-        List<QueryExpr> queryExprList = QueryDSL.parse(expr);
+        List<QueryExprMeta> queryExprMetaList = QueryDSL.parse(expr);
         logger.debug(
-                StringUtils.join(Collections2.transform(queryExprList, new Function<QueryExpr, String>() {
+                StringUtils.join(Collections2.transform(queryExprMetaList, new Function<QueryExprMeta, String>() {
                     @Nullable
                     @Override
-                    public String apply(@Nullable QueryExpr input) {
+                    public String apply(@Nullable QueryExprMeta input) {
                         return String.valueOf(input);
                     }
                 }), ""));
