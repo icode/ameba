@@ -5,7 +5,6 @@ import ameba.exception.AmebaException;
 import com.avaje.ebean.config.dbplatform.DbPlatformName;
 import com.avaje.ebean.dbmigration.DbMigration;
 import com.avaje.ebean.dbmigration.DbOffline;
-import com.avaje.ebean.dbmigration.DdlRunner;
 import com.avaje.ebean.dbmigration.ddlgeneration.DdlHandler;
 import com.avaje.ebean.dbmigration.ddlgeneration.DdlWrite;
 import com.avaje.ebean.dbmigration.migration.Migration;
@@ -16,6 +15,7 @@ import com.avaje.ebean.dbmigration.model.ModelDiff;
 import com.avaje.ebean.plugin.SpiServer;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.util.JdbcClose;
+import org.avaje.dbmigration.ddl.DdlRunner;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
