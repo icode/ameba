@@ -122,21 +122,7 @@ public abstract class Finder<ID, T> {
      */
     public abstract Query<T> createQuery();
 
-    /**
-     * <p>createNamedQuery.</p>
-     *
-     * @param name a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.Query} object.
-     */
-    public abstract Query<T> createNamedQuery(String name);
-
-    /**
-     * <p>createNamedSqlQuery.</p>
-     *
-     * @param name a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.SqlQuery} object.
-     */
-    public abstract SqlQuery createNamedSqlQuery(String name);
+    public abstract UpdateQuery<T> createUpdateQuery();
 
     /**
      * <p>createSqlQuery.</p>
@@ -153,14 +139,6 @@ public abstract class Finder<ID, T> {
      * @return a I object.
      */
     public abstract <I extends ID> I nextId();
-
-    /**
-     * Sets the OQL query to run
-     *
-     * @param oql oql
-     * @return a {@link com.avaje.ebean.Query} object.
-     */
-    public abstract Query<T> setQuery(String oql);
 
     /**
      * <p>setRawSql.</p>
@@ -249,18 +227,9 @@ public abstract class Finder<ID, T> {
      */
     public abstract List<Object> findIds();
 
-    /**
-     * <p>findIterate.</p>
-     *
-     * @return a {@link com.avaje.ebean.QueryIterator} object.
-     */
-    public abstract QueryIterator<T> findIterate();
-
     public abstract List<Version<T>> findVersions();
 
     public abstract List<Version<T>> findVersionsBetween(Timestamp start, Timestamp end);
-
-    public abstract int delete();
 
     public abstract ExpressionList<T> text();
 
@@ -352,11 +321,9 @@ public abstract class Finder<ID, T> {
     /**
      * <p>findPagedList.</p>
      *
-     * @param pageIndex a int.
-     * @param pageSize  a int.
      * @return a {@link com.avaje.ebean.PagedList} object.
      */
-    public abstract PagedList<T> findPagedList(int pageIndex, int pageSize);
+    public abstract PagedList<T> findPagedList();
 
     /**
      * <p>setParameter.</p>

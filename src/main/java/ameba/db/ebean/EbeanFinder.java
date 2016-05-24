@@ -98,20 +98,9 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return server().createQuery(getModelType());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Query<T> createNamedQuery(String name) {
-        return server().createNamedQuery(getModelType(), name);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SqlQuery createNamedSqlQuery(String name) {
-        return server().createNamedSqlQuery(name);
+    public UpdateQuery<T> createUpdateQuery() {
+        return server().update(this.getModelType());
     }
 
     /**
@@ -259,8 +248,8 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * {@inheritDoc}
      */
-    public PagedList<T> findPagedList(int i, int i2) {
-        return query().findPagedList(i, i2);
+    public PagedList<T> findPagedList() {
+        return query().findPagedList();
     }
 
     /**
@@ -306,16 +295,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         query().findEachWhile(consumer);
     }
 
-    /**
-     * <p>findIterate.</p>
-     *
-     * @return a {@link com.avaje.ebean.QueryIterator} object.
-     */
-    public QueryIterator<T> findIterate() {
-        return query().findIterate();
-    }
-
-
     @Override
     public List<Version<T>> findVersions() {
         return query().findVersions();
@@ -324,11 +303,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     @Override
     public List<Version<T>> findVersionsBetween(Timestamp start, Timestamp end) {
         return query().findVersionsBetween(start, end);
-    }
-
-    @Override
-    public int delete() {
-        return query().delete();
     }
 
     @Override
@@ -573,15 +547,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     public Query<T> setParameter(String name, Object value) {
         return query().setParameter(name, value);
     }
-
-    /**
-     * {@inheritDoc}
-     * Sets the OQL query to run
-     */
-    public Query<T> setQuery(String oql) {
-        return (query = server().createQuery(getModelType(), oql));
-    }
-
 
     /**
      * {@inheritDoc}

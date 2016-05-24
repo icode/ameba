@@ -36,7 +36,7 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
     @Override
     @SuppressWarnings("unchecked")
     public <E extends M> Persister<E> on(String server) {
-        return new EbeanPersister<E>(server, (E) getModel());
+        return new EbeanPersister<>(server, (E) getModel());
     }
 
     /**
@@ -55,39 +55,6 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
      * {@inheritDoc}
      */
     @Override
-    public void saveManyToManyAssociations(String path) {
-        server().saveManyToManyAssociations(getModel(), path);
-    }
-
-    public void saveManyToManyAssociations(String path, Transaction t) {
-        server().saveManyToManyAssociations(getModel(), path, t);
-    }
-
-    @Override
-    public void saveAssociation(String propertyName) {
-        server().saveAssociation(getModel(), propertyName);
-    }
-
-    public void saveAssociation(String propertyName, Transaction t) {
-        server().saveAssociation(getModel(), propertyName, t);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void deleteManyToManyAssociations(String path) {
-        server().deleteManyToManyAssociations(getModel(), path);
-    }
-
-    public void deleteManyToManyAssociations(String path, Transaction t) {
-        server().deleteManyToManyAssociations(getModel(), path, t);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void update() {
         server().update(getModel());
     }
@@ -97,9 +64,15 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
     }
 
 
+    public void update(Transaction t, boolean deleteMissingChildren) {
+        server().update(getModel(), t, deleteMissingChildren);
+    }
+
     @Override
     public void update(boolean deleteMissingChildren) {
-        server().update(getModel(), null, deleteMissingChildren);
+        Transaction t = server().currentTransaction();
+        t = t == null ? server().beginTransaction() : t;
+        server().update(getModel(), t, deleteMissingChildren);
     }
 
     /**
@@ -108,6 +81,11 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
     @Override
     public void delete() {
         server().delete(getModel());
+    }
+
+    @Override
+    public void delete(Transaction t) {
+        server().delete(getModel(), t);
     }
 
     /**
@@ -122,8 +100,9 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
      * {@inheritDoc}
      */
     @Override
-    public void markAsDirty() {
+    public Persister<M> markAsDirty() {
         server().markAsDirty(getModel());
+        return this;
     }
 
     /**

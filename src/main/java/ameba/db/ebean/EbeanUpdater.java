@@ -35,10 +35,14 @@ public class EbeanUpdater<M extends Model> extends Updater<M> {
      *
      * @return a {@link com.avaje.ebean.Update} object.
      */
-    protected Update<M> getUpdate() {
+    public Update<M> getUpdate() {
         if (update == null)
-            update = server.createUpdate(getModelType(), getSqlOrName());
+            update = createUpdate();
         return update;
+    }
+
+    public Update<M> createUpdate() {
+        return server.createUpdate(getModelType(), getSqlOrName());
     }
 
     /**
@@ -64,22 +68,6 @@ public class EbeanUpdater<M extends Model> extends Updater<M> {
     @Override
     public SqlUpdate sqlUpdate() {
         return server.createSqlUpdate(getSqlOrName());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Update namedUpdate() {
-        return server.createNamedUpdate(getModelType(), getSqlOrName());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SqlUpdate namedSqlUpdate() {
-        return server.createNamedSqlUpdate(getSqlOrName());
     }
 
     /**

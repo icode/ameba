@@ -1,5 +1,6 @@
 package ameba.db.model;
 
+import com.avaje.ebean.Transaction;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -62,36 +63,15 @@ public abstract class Persister<M extends Model> {
     public abstract void save();
 
     /**
-     * Persist a many-to-many association.
-     *
-     * @param path path
-     */
-    public abstract void saveManyToManyAssociations(String path);
-
-    /**
-     * Save the associated collection or bean given the property name.
-     * <p>
-     * This is similar to performing a save cascade on a specific property
-     * manually.
-     * </p>
-     *
-     * @param propertyName the property we want to save
-     */
-    public abstract void saveAssociation(String propertyName);
-
-    /**
-     * Deletes a many-to-many association
-     *
-     * @param path name of the many-to-many association we want to delete
-     */
-    public abstract void deleteManyToManyAssociations(String path);
-
-    /**
      * Updates this entity.
      */
     public abstract void update();
 
+    public abstract void update(Transaction t);
+
     public abstract void update(boolean deleteMissingChildren);
+
+    public abstract void update(Transaction t, boolean deleteMissingChildren);
 
     /**
      * <p>update.</p>
@@ -100,6 +80,10 @@ public abstract class Persister<M extends Model> {
      */
     public void update(String server) {
         on(server).update();
+    }
+
+    public void update(String server, Transaction t, boolean deleteMissingChildren) {
+        on(server).update(t, deleteMissingChildren);
     }
 
     /**
@@ -112,11 +96,16 @@ public abstract class Persister<M extends Model> {
         on(server).insert();
     }
 
+    public abstract void insert(Transaction t);
+
+    public void insert(String server, Transaction t) {
+        on(server).insert(t);
+    }
+
     /**
      * Insert this entity.
      */
     public abstract void insert();
-
 
     /**
      * <p>delete.</p>
@@ -131,6 +120,12 @@ public abstract class Persister<M extends Model> {
      * Deletes this entity.
      */
     public abstract void delete();
+
+    public abstract void delete(Transaction t);
+
+    public void delete(String server, Transaction t) {
+        on(server).delete(t);
+    }
 
     /**
      * Refreshes this entity from the database.
@@ -155,7 +150,5 @@ public abstract class Persister<M extends Model> {
      * customer.save();
      * </pre>
      */
-    public abstract void markAsDirty();
-
-
+    public abstract Persister<M> markAsDirty();
 }

@@ -83,19 +83,9 @@ public abstract class Updater<M extends Model> {
      */
     public abstract SqlUpdate sqlUpdate();
 
-    /**
-     * <p>namedUpdate.</p>
-     *
-     * @return a {@link com.avaje.ebean.Update} object.
-     */
-    public abstract Update namedUpdate();
+    public abstract Update<M> getUpdate();
 
-    /**
-     * <p>namedSqlUpdate.</p>
-     *
-     * @return a {@link com.avaje.ebean.SqlUpdate} object.
-     */
-    public abstract SqlUpdate namedSqlUpdate();
+    public abstract Update<M> createUpdate();
 
     /**
      * Set this to false if you do not want the cache to invalidate related
