@@ -364,18 +364,8 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * {@inheritDoc}
      * Adds an expression to the <code>having</code> clause and returns the query.
      */
-    public Query<T> having(com.avaje.ebean.Expression addExpressionToHaving) {
+    public Query<T> having(Expression addExpressionToHaving) {
         return query().having(addExpressionToHaving);
-    }
-
-    /**
-     * Adds clauses to the <code>having</code> clause and returns the query.
-     *
-     * @param addToHavingClause a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.Query} object.
-     */
-    public Query<T> having(String addToHavingClause) {
-        return query().having(addToHavingClause);
     }
 
     /**
@@ -630,14 +620,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      */
     public Query<T> where(com.avaje.ebean.Expression expression) {
         return query().where(expression);
-    }
-
-    /**
-     * {@inheritDoc}
-     * Adds additional clauses to the <code>where</code> clause.
-     */
-    public Query<T> where(String addToWhereClause) {
-        return query().where(addToWhereClause);
     }
 
     /**

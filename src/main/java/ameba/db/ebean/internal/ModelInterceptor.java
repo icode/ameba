@@ -297,7 +297,7 @@ public class ModelInterceptor implements WriterInterceptor {
         List<String> wheres = queryParams.get(FILTER_PARAM_NAME);
         if (wheres != null)
             for (String w : wheres) {
-                query.where(w);
+                //query.where(w);
             }
     }
 

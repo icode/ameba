@@ -142,7 +142,6 @@ public class EbeanFeature implements Feature {
             config.loadFromProperties(eBeanConfig);
             config.setUpdateAllPropertiesInBatch(false);
             config.setPackages(null);
-            config.setJars(null);
             config.setRegisterJmxMBeans("true".equals(appConfig.getProperty("jmx.enabled")));
             config.setName(name);
             config.setDataSourceJndiName(null);

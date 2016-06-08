@@ -356,14 +356,6 @@ public abstract class Finder<ID, T> {
     /**
      * <p>where.</p>
      *
-     * @param addToWhereClause a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.Query} object.
-     */
-    public abstract Query<T> where(String addToWhereClause);
-
-    /**
-     * <p>where.</p>
-     *
      * @param expression a {@link com.avaje.ebean.Expression} object.
      * @return a {@link com.avaje.ebean.Query} object.
      */
@@ -390,14 +382,6 @@ public abstract class Finder<ID, T> {
      * @return a {@link com.avaje.ebean.ExpressionList} object.
      */
     public abstract ExpressionList<T> having();
-
-    /**
-     * <p>having.</p>
-     *
-     * @param addToHavingClause a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.Query} object.
-     */
-    public abstract Query<T> having(String addToHavingClause);
 
     /**
      * <p>having.</p>
