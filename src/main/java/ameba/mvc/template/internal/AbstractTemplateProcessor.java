@@ -350,7 +350,7 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
                 if (ex instanceof AmebaException) {
                     r = (RuntimeException) ex;
                 } else {
-                    r = new TemplateException("create writeTo Exception error", ex, -1);
+                    r = new TemplateException("create writeTo Exception error", e, -1);
                 }
             }
             throw r;
