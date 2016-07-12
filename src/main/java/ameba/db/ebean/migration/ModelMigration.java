@@ -38,9 +38,12 @@ public class ModelMigration extends DbMigration {
 
     public ModelDiff diff() {
         if (diff != null) return diff;
-        // use this flag to stop other plugins like full DDL generation
-        if (!online) {
-            DbOffline.setRunningMigration();
+
+        if (!this.online) {
+            DbOffline.setGenerateMigration();
+            if (this.databasePlatform == null || !this.platforms.isEmpty()) {
+                this.setPlatform(DbPlatformName.H2);
+            }
         }
 
         setDefaults();
@@ -83,9 +86,11 @@ public class ModelMigration extends DbMigration {
 
     @Override
     public void generateMigration() throws IOException {
-        // use this flag to stop other plugins like full DDL generation
-        if (!online) {
-            DbOffline.setRunningMigration();
+        if (!this.online) {
+            DbOffline.setGenerateMigration();
+            if (this.databasePlatform == null || !this.platforms.isEmpty()) {
+                this.setPlatform(DbPlatformName.H2);
+            }
         }
         try {
             if (scriptInfo != null) {
