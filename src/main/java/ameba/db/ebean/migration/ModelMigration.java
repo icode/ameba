@@ -39,12 +39,7 @@ public class ModelMigration extends DbMigration {
     public ModelDiff diff() {
         if (diff != null) return diff;
 
-        if (!this.online) {
-            DbOffline.setGenerateMigration();
-            if (this.databasePlatform == null || !this.platforms.isEmpty()) {
-                this.setPlatform(DbPlatformName.H2);
-            }
-        }
+        setOffline();
 
         setDefaults();
 
@@ -84,14 +79,18 @@ public class ModelMigration extends DbMigration {
         return diff;
     }
 
-    @Override
-    public void generateMigration() throws IOException {
+    private void setOffline() {
         if (!this.online) {
             DbOffline.setGenerateMigration();
             if (this.databasePlatform == null || !this.platforms.isEmpty()) {
                 this.setPlatform(DbPlatformName.H2);
             }
         }
+    }
+
+    @Override
+    public void generateMigration() throws IOException {
+        setOffline();
         try {
             if (scriptInfo != null) {
                 return;
