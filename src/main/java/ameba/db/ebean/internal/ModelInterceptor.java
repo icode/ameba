@@ -1,20 +1,26 @@
 package ameba.db.ebean.internal;
 
+import ameba.db.dsl.QueryDSL;
 import ameba.db.ebean.EbeanFeature;
 import ameba.db.ebean.EbeanUtils;
+import ameba.db.ebean.filter.EbeanExprInvoker;
+import ameba.db.ebean.filter.WhereExprApplier;
 import ameba.db.model.Finder;
 import ameba.message.filtering.EntityFieldsFilteringFeature;
 import ameba.message.internal.PathProperties;
 import com.avaje.ebean.*;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.common.BeanList;
+import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.ws.rs.Priorities;
@@ -54,6 +60,8 @@ public class ModelInterceptor implements WriterInterceptor {
     private Provider<Configuration> configurationProvider;
     @Context
     private Provider<UriInfo> uriInfoProvider;
+    @Inject
+    private ServiceLocator locator;
 
     /**
      * <p>getFieldsParamName.</p>
@@ -288,17 +296,25 @@ public class ModelInterceptor implements WriterInterceptor {
 
     /**
      * /path?filter=p.in(1,2)c.eq('ddd')d.startWith('a')or(f.eq('a')g.startWith(2))
-     * todo
      *
      * @param queryParams uri query params
      * @param query       query
      */
-    public static void applyFilter(MultivaluedMap<String, String> queryParams, Query query) {
+    public static <T> void applyFilter(MultivaluedMap<String, String> queryParams,
+                                       SpiQuery<T> query,
+                                       ServiceLocator locator) {
         List<String> wheres = queryParams.get(FILTER_PARAM_NAME);
-        if (wheres != null)
+        if (wheres != null && wheres.size() > 0) {
+            EbeanExprInvoker invoker = new EbeanExprInvoker(query, locator);
+            WhereExprApplier<T> applier = WhereExprApplier.create(query.where());
             for (String w : wheres) {
-                //query.where(w);
+                QueryDSL.invoke(
+                        w,
+                        invoker,
+                        applier
+                );
             }
+        }
     }
 
     /**
@@ -315,10 +331,11 @@ public class ModelInterceptor implements WriterInterceptor {
      */
     @SuppressWarnings("unchecked")
     public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams,
-                                               Query query, boolean needPageList) {
+                                               SpiQuery query,
+                                               ServiceLocator locator, boolean needPageList) {
         Set<String> inv = query.validate();
         applyFetchProperties(queryParams, query);
-        applyFilter(queryParams, query);
+        applyFilter(queryParams, query, locator);
         applyOrderBy(queryParams, query);
         EbeanUtils.checkQuery(query, inv);
         if (needPageList)
@@ -333,8 +350,10 @@ public class ModelInterceptor implements WriterInterceptor {
      * @param query       a {@link com.avaje.ebean.Query} object.
      * @return a {@link com.avaje.ebean.FutureRowCount} object.
      */
-    public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams, Query query) {
-        return applyUriQuery(queryParams, query, true);
+    public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams,
+                                               SpiQuery query,
+                                               ServiceLocator locator) {
+        return applyUriQuery(queryParams, query, locator, true);
     }
 
     /**
@@ -419,17 +438,19 @@ public class ModelInterceptor implements WriterInterceptor {
         if (o != null && isWritable(o.getClass())) {
 
             MultivaluedMap<String, String> queryParams = uriInfoProvider.get().getQueryParameters();
-            Query query = null;
+            SpiQuery query = null;
             if (o instanceof Finder) {
-                query = ((Finder) o).query();
+                query = (SpiQuery) ((Finder) o).query();
             } else if (o instanceof Query) {
-                query = (Query) o;
+                query = (SpiQuery) o;
             } else if (o instanceof ExpressionList) {
-                query = ((ExpressionList) o).query();
+                query = (SpiQuery) ((ExpressionList) o).query();
             }
 
             if (query != null) {
-                FutureRowCount rowCount = applyUriQuery(queryParams, query);
+                SpiEbeanServer server = null;
+
+                FutureRowCount rowCount = applyUriQuery(queryParams, query, locator);
                 BeanList list;
                 if (o instanceof FutureList) {
                     list = (BeanList) ((FutureList) o).getUnchecked();

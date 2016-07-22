@@ -9,17 +9,19 @@ import com.avaje.ebean.*;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.internal.util.collection.Refs;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.persistence.OptimisticLockException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -43,6 +45,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     protected String defaultFindOrderBy;
     @Context
     protected UriInfo uriInfo;
+    @Inject
+    protected ServiceLocator locator;
     private BeanDescriptor descriptor;
 
     /**
@@ -82,7 +86,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      *
      * @param id id string
      * @return ID object
-     * @see ModelResourceStructure#deleteMultiple(Object, PathSegment)
+     * @see ModelResourceStructure#deleteMultiple(String, PathSegment)
      */
     @SuppressWarnings("unchecked")
     protected ID stringToId(String id) {
@@ -96,9 +100,9 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return ID
      * @throws UnprocessableEntityException response status 422
      */
-    protected final ID tryConvertId(Object id) {
+    protected final ID tryConvertId(String id) {
         try {
-            return stringToId(id.toString());
+            return stringToId(id);
         } catch (Exception e) {
             throw new UnprocessableEntityException("Id syntax error", e);
         }
@@ -110,7 +114,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param id id object
      * @return id string
      * @see ModelResourceStructure#insert(Model)
-     * @see ModelResourceStructure#patch(Object, Model)
+     * @see ModelResourceStructure#patch(String, Model)
      */
     protected String idToString(@NotNull ID id) {
         return id.toString();
@@ -215,13 +219,18 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.PUT
-     * @see AbstractModelResource#replace(Object, Model)
+     * @see AbstractModelResource#replace(String, Model)
      */
-    public Response replace(@PathParam("id") final ID id, @NotNull @Valid final M model) throws Exception {
-        matchedReplace(id, model);
+    public Response replace(@PathParam("id") final String id, @NotNull @Valid final M model) throws Exception {
         final ID mId = tryConvertId(id);
+
+        return replace(mId, model);
+    }
+
+    public Response replace(final ID id, @NotNull @Valid final M model) throws Exception {
+        matchedReplace(id, model);
         BeanDescriptor descriptor = getModelBeanDescriptor();
-        descriptor.convertSetId(mId, (EntityBean) model);
+        descriptor.convertSetId(id, (EntityBean) model);
         EbeanUtils.forceUpdateAllProperties(server, model);
 
         final Response.ResponseBuilder builder = Response.noContent();
@@ -239,7 +248,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 preInsertModel(model);
                 insertModel(model);
                 postInsertModel(model);
-                builder.status(Response.Status.CREATED).location(buildLocationUri(mId, true));
+                builder.status(Response.Status.CREATED).location(buildLocationUri(id, true));
             }
         });
         return builder.build();
@@ -291,12 +300,17 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see ameba.core.ws.rs.PATCH
-     * @see AbstractModelResource#patch(Object, Model)
+     * @see AbstractModelResource#patch(String, Model)
      */
-    public Response patch(@PathParam("id") final ID id, @NotNull final M model) throws Exception {
+    public Response patch(@PathParam("id") final String id, @NotNull final M model) throws Exception {
+        ID mId = tryConvertId(id);
+        return patch(mId, model);
+    }
+
+    public Response patch(final ID id, @NotNull final M model) throws Exception {
         matchedPatch(id, model);
         BeanDescriptor descriptor = getModelBeanDescriptor();
-        descriptor.convertSetId(tryConvertId(id), (EntityBean) model);
+        descriptor.convertSetId(id, (EntityBean) model);
         final Response.ResponseBuilder builder = Response.noContent()
                 .contentLocation(uriInfo.getAbsolutePath());
         return executeTx(new TxCallable<Response>() {
@@ -359,17 +373,15 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * <br>
      * logical delete status 202
      *
-     * @param id  The id use for path matching type
-     * @param ids The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
+     * @param idStr The id use for path matching type
+     * @param ids   The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.DELETE
-     * @see AbstractModelResource#deleteMultiple(Object, PathSegment)
+     * @see AbstractModelResource#deleteMultiple(String, PathSegment)
      */
-    public Response deleteMultiple(@NotNull @PathParam("ids") ID id,
+    public Response deleteMultiple(@NotNull @PathParam("ids") String idStr,
                                    @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
-        matchedDelete(id, ids);
-        final ID firstId = tryConvertId(ids.getPath());
         Set<String> idSet = ids.getMatrixParameters().keySet();
         final Response.ResponseBuilder builder = Response.noContent();
         final TxRunnable failProcess = new TxRunnable() {
@@ -378,9 +390,11 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 builder.status(Response.Status.NOT_FOUND);
             }
         };
+        final ID firstId = tryConvertId(ids.getPath());
+        final Set<ID> idCollection = Sets.newLinkedHashSet();
+        idCollection.add(firstId);
+
         if (!idSet.isEmpty()) {
-            final Set<ID> idCollection = Sets.newLinkedHashSet();
-            idCollection.add(firstId);
             idCollection.addAll(Collections2.transform(idSet, new Function<String, ID>() {
                 @Nullable
                 @Override
@@ -388,6 +402,9 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                     return tryConvertId(input);
                 }
             }));
+        }
+        matchedDelete(idStr, idCollection);
+        if (!idSet.isEmpty()) {
             executeTx(new TxRunnable() {
                 @Override
                 public void run(Transaction t) throws Exception {
@@ -413,7 +430,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         return builder.build();
     }
 
-    protected void matchedDelete(ID id, PathSegment ids) throws Exception {
+    protected void matchedDelete(String idStr, Set<ID> idSet) throws Exception {
 
     }
 
@@ -484,19 +501,30 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     /**
      * Find a model or model list given its Ids.
      *
-     * @param id  The id use for path matching type
-     * @param ids the id of the model.
+     * @param idStr The id use for path matching type
+     * @param ids   the id of the model.
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.GET
      * @see AbstractModelResource#findByIds
      */
-    public Response findByIds(@NotNull @PathParam("ids") ID id,
+    public Response findByIds(@NotNull @PathParam("ids") String idStr,
                               @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
-        matchedFindByIds(id, ids);
         final Query<M> query = server.find(modelType);
         final ID firstId = tryConvertId(ids.getPath());
         Set<String> idSet = ids.getMatrixParameters().keySet();
+        final Set<ID> idCollection = Sets.newLinkedHashSet();
+        idCollection.add(firstId);
+        if (!idSet.isEmpty()) {
+            idCollection.addAll(Collections2.transform(idSet, new Function<String, ID>() {
+                @Nullable
+                @Override
+                public ID apply(String input) {
+                    return tryConvertId(input);
+                }
+            }));
+        }
+        matchedFindByIds(idStr, idCollection);
         Object model;
         final TxRunnable configureQuery = new TxRunnable() {
             @Override
@@ -507,15 +535,6 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
             }
         };
         if (!idSet.isEmpty()) {
-            final List<ID> idCollection = Lists.newArrayList();
-            idCollection.add(firstId);
-            idCollection.addAll(Collections2.transform(idSet, new Function<String, ID>() {
-                @Nullable
-                @Override
-                public ID apply(String input) {
-                    return tryConvertId(input);
-                }
-            }));
             model = executeTx(new TxCallable() {
                 @Override
                 public Object call(Transaction t) throws Exception {
@@ -541,7 +560,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
             throw new NotFoundException();
     }
 
-    protected void matchedFindByIds(ID id, PathSegment ids) throws Exception {
+    protected void matchedFindByIds(String idStr, Set<ID> ids) throws Exception {
 
     }
 
@@ -679,10 +698,10 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param query        Query
      * @param needPageList need page list
      * @return page list count or null
-     * @see ModelInterceptor#applyUriQuery(MultivaluedMap, Query, boolean)
+     * @see ModelInterceptor#applyUriQuery(MultivaluedMap, SpiQuery, ServiceLocator, boolean)
      */
     protected FutureRowCount applyUriQuery(final Query<M> query, boolean needPageList) {
-        return ModelInterceptor.applyUriQuery(uriInfo.getQueryParameters(), query, needPageList);
+        return ModelInterceptor.applyUriQuery(uriInfo.getQueryParameters(), (SpiQuery) query, locator, needPageList);
     }
 
     /**

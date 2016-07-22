@@ -18,13 +18,13 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
- * <p>Frameworks class.</p>
+ * <p>ServiceLocators class.</p>
  *
  * @author icode
  * @since 0.1.6e
  */
-public class Frameworks {
-    private Frameworks() {
+public class ServiceLocators {
+    private ServiceLocators() {
     }
 
     /**

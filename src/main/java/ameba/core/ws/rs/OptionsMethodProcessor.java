@@ -1,6 +1,6 @@
 package ameba.core.ws.rs;
 
-import ameba.core.Frameworks;
+import ameba.core.ServiceLocators;
 import jersey.repackaged.com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -54,9 +54,9 @@ public class OptionsMethodProcessor implements ModelProcessor {
                 GenericOptionsInflector.class));
 
         final Iterable<RankedProvider<OptionsResponseGenerator>> rankedProviders =
-                Frameworks.getRankedProviders(locator, OptionsResponseGenerator.class);
+                ServiceLocators.getRankedProviders(locator, OptionsResponseGenerator.class);
 
-        generators = Frameworks
+        generators = ServiceLocators
                 .sortRankedProviders(new RankedComparator<OptionsResponseGenerator>(), rankedProviders);
     }
 

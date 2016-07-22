@@ -1,9 +1,6 @@
 package ameba.db.dsl;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.BailErrorStrategy;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.*;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.Providers;
 
@@ -14,13 +11,15 @@ import java.util.List;
  */
 public class QueryDSL {
 
+    private static final DiagnosticErrorListener ERROR_LISTENER = new DiagnosticErrorListener();
+
     private QueryDSL() {
     }
 
     public static <T> void invoke(String expression,
-                                  QueryExprGenerator<T> invoker,
-                                  ApplyExpr<T> applyExpr) {
-        QueryExprGenerator.invoke(parse(expression), invoker, applyExpr);
+                                  QueryExprInvoker<T> invoker,
+                                  ExprApplier<T> exprApplier) {
+        QueryExprInvoker.invoke(parse(expression), invoker, exprApplier);
     }
 
     public static Iterable<ExprTransformer> getExprTransformers(ServiceLocator locator) {
@@ -50,7 +49,10 @@ public class QueryDSL {
     }
 
     public static QueryLexer lexer(String expression) {
-        return new QueryLexer(input(expression));
+        QueryLexer lexer = new QueryLexer(input(expression));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(ERROR_LISTENER);
+        return lexer;
     }
 
     public static CharStream input(String expression) {

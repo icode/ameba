@@ -19,5 +19,5 @@
 </style>
 ")
 <!--${include("header.httl", ["title":"view.default.empty.title".message, "append":append])}-->
-<h1>${"view.default.empty".message}</h1>
+<h1>${"view.default.empty.body".message}</h1>
 <!--${include("footer.httl")}-->

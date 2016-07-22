@@ -3,6 +3,6 @@ package ameba.db.dsl;
 /**
  * @author icode
  */
-public interface ApplyExpr<T> {
+public interface ExprApplier<T> {
     void apply(T expr);
 }

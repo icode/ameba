@@ -1,6 +1,6 @@
 package ameba.mvc;
 
-import ameba.core.Frameworks;
+import ameba.core.ServiceLocators;
 import ameba.message.error.ErrorMessage;
 import ameba.mvc.template.internal.Viewables;
 import com.google.common.collect.Maps;
@@ -170,7 +170,7 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
                                  MediaType mediaType,
                                  MultivaluedMap<String, Object> httpHeaders,
                                  OutputStream entityStream) throws IOException {
-        MessageBodyWriter<Viewable> writer = Frameworks.getViewableMessageBodyWriter(workers.get());
+        MessageBodyWriter<Viewable> writer = ServiceLocators.getViewableMessageBodyWriter(workers.get());
         if (writer != null) {
             writer.writeTo(viewable,
                     Viewable.class,
