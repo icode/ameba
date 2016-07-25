@@ -2,10 +2,12 @@ package ameba.message.error;
 
 import ameba.core.Application;
 import ameba.core.Requests;
+import ameba.exception.UnprocessableEntityException;
 import ameba.util.ClassUtils;
 import ameba.util.Result;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.internal.process.MappableException;
 import org.glassfish.jersey.server.spi.ResponseErrorMapper;
 import org.slf4j.Logger;
@@ -48,6 +50,9 @@ public class DefaultExceptionMapper implements ExceptionMapper<Throwable>, Respo
     }
 
     protected String parseDescription(Throwable exception, int status) {
+        if (exception instanceof UnprocessableEntityException && StringUtils.isNotBlank(exception.getMessage())) {
+            return exception.getMessage();
+        }
         return ErrorMessage.parseDescription(status);
     }
 

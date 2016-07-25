@@ -1,5 +1,7 @@
 package ameba.exception;
 
+import ameba.i18n.Messages;
+
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.Response;
 
@@ -102,5 +104,13 @@ public class UnprocessableEntityException extends ClientErrorException {
                     expectedStatus, response.getStatus()));
         }
         return response;
+    }
+
+    public static void throwErr(String msg) {
+        throw new UnprocessableEntityException(msg);
+    }
+
+    public static void throwQuery(Object arg) {
+        throw new UnprocessableEntityException(Messages.get("info.query.unprocessable.entity", arg));
     }
 }

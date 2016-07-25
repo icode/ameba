@@ -3,6 +3,7 @@ package ameba.db.ebean.filter;
 import ameba.db.dsl.ExprArgTransformer;
 import ameba.db.dsl.QuerySyntaxException;
 import ameba.db.dsl.Transformed;
+import ameba.i18n.Messages;
 
 /**
  * @author icode
@@ -28,33 +29,24 @@ public class CommonExprArgTransformer implements ExprArgTransformer<Object, Obje
             case "contains":
             case "icontains":
             case "id":
-                if (count != 1) {
-                    throw new QuerySyntaxException("Query '" + operator + "' command must be 1 argument.");
-                }
-                break;
-            case "between":
-                if (count != 2) {
-                    throw new QuerySyntaxException("Query 'between' command must be 2 arguments.");
-                }
-                break;
             case "in":
             case "notIn":
             case "exists":
             case "notExists":
                 if (count != 1) {
-                    throw new QuerySyntaxException("Query '" + operator + "' command must be 1 argument.");
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
+                }
+                break;
+            case "between":
+                if (count != 2) {
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error1"));
                 }
                 break;
             case "filter":
             case "not":
             case "select":
                 if (count < 1) {
-                    throw new QuerySyntaxException("Query '" + operator + "' command must be arguments > 1.");
-                }
-                break;
-            case "or":
-                if (count < 2) {
-                    throw new QuerySyntaxException("Query '" + operator + "' command must be arguments > 2.");
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator));
                 }
                 break;
         }

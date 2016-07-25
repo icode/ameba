@@ -4,9 +4,13 @@ import ameba.db.dsl.ExprTransformer;
 import ameba.db.dsl.QuerySyntaxException;
 import ameba.db.dsl.Transformed;
 import ameba.exception.UnprocessableEntityException;
+import ameba.i18n.Messages;
 import com.avaje.ebean.*;
+import com.avaje.ebean.plugin.BeanType;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiExpressionFactory;
+import com.avaje.ebeaninternal.api.SpiExpressionValidation;
+import com.avaje.ebeaninternal.api.SpiQuery;
 
 import java.util.Set;
 
@@ -135,21 +139,33 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                     expr = junction;
                 }
                 break;
-            case "filter":
+            case "filter": {
                 SpiExpressionFactory queryEf = (SpiExpressionFactory) factory;
                 ExpressionFactory filterEf = queryEf.createExpressionFactory();
-                FilterExpression filter = new FilterExpression<>(field, filterEf, invoker.getQuery());
+                SpiQuery<?> query = invoker.getQuery();
+                FilterExpression filter = new FilterExpression<>(field, filterEf, query);
                 for (Object e : args) {
                     filter.add((Expression) e);
                 }
-                expr = filter;
+                try {
+                    BeanType type = query.getBeanDescriptor().getBeanTypeAtPath(field);
+                    SpiExpressionValidation validation = new SpiExpressionValidation(type);
+                    filter.validate(validation);
+                    Set invalid = validation.getUnknownProperties();
+                    if (invalid != null && !invalid.isEmpty()) {
+                        UnprocessableEntityException.throwQuery(invalid);
+                    }
+
+                    expr = filter;
+                } catch (Exception e) {
+                    UnprocessableEntityException.throwQuery("[" + field + "]");
+                }
                 break;
+            }
             case "select":
                 Class type = Filters.getBeanTypeByName(field, (SpiEbeanServer) server);
                 if (type == null) {
-                    throw new QuerySyntaxException(
-                            "Can not found bean type: '" + field + "'."
-                    );
+                    throw new QuerySyntaxException(Messages.get("dsl.bean.type.err", field));
                 }
                 Query q = Filters.createQuery(type, server);
                 ExpressionList<?> et = q.select((String) args[0]).where();
@@ -158,7 +174,7 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 }
                 Set invalid = q.validate();
                 if (invalid != null && !invalid.isEmpty()) {
-                    throw new UnprocessableEntityException("Validate query error, can not found " + invalid + " field.");
+                    UnprocessableEntityException.throwQuery(invalid);
                 }
                 expr = QueryExpression.of(q);
         }

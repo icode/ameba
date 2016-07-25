@@ -4,6 +4,7 @@ import ameba.db.ebean.EbeanUtils;
 import ameba.db.ebean.internal.ModelInterceptor;
 import ameba.db.model.Model;
 import ameba.exception.UnprocessableEntityException;
+import ameba.i18n.Messages;
 import ameba.lib.LoggerOwner;
 import com.avaje.ebean.*;
 import com.avaje.ebean.bean.EntityBean;
@@ -104,7 +105,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         try {
             return stringToId(id);
         } catch (Exception e) {
-            throw new UnprocessableEntityException("Id syntax error", e);
+            throw new UnprocessableEntityException(Messages.get("info.query.id.unprocessable.entity"), e);
         }
     }
 
