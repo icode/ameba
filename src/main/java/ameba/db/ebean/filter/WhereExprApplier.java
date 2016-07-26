@@ -23,7 +23,13 @@ public class WhereExprApplier<O> implements ExprApplier<Expression> {
 
     @Override
     public void apply(Expression expr) {
-        if (expr instanceof AbstractTextExpression) {
+        if (expr instanceof CommonExprTransformer.HavingExpression) {
+            ExpressionList having = expressionList.query().having();
+            for (Expression he : ((CommonExprTransformer.HavingExpression) expr).getExpressionList()) {
+                having.add(he);
+            }
+            return;
+        } else if (expr instanceof AbstractTextExpression) {
             SpiQuery query = (SpiQuery) expressionList.query();
             if (!query.isUseDocStore()) {
                 expressionList.setUseDocStore(true);

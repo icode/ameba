@@ -10,6 +10,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.model.internal.RankedComparator;
 import org.glassfish.jersey.model.internal.RankedProvider;
 
+import java.util.Arrays;
+
 /**
  * @author icode
  */
@@ -43,7 +45,7 @@ public class EbeanExprInvoker extends QueryExprInvoker<Expression> {
                 return transformed.result();
             }
         }
-        throw new QuerySyntaxException(Messages.get("dsl.transform.err", field, op, arg));
+        throw new QuerySyntaxException(Messages.get("dsl.transform.err", field, op, String.valueOf(arg)));
     }
 
     protected <R, T extends Transformer<?, Transformed<R>>> Iterable<T> getTransformer(Class<T> transformerClass) {
@@ -63,6 +65,6 @@ public class EbeanExprInvoker extends QueryExprInvoker<Expression> {
                 return transformed.result();
             }
         }
-        throw new QuerySyntaxException(Messages.get("dsl.transform.err", field, op, args));
+        throw new QuerySyntaxException(Messages.get("dsl.transform.err", field, op, Arrays.toString(args)));
     }
 }

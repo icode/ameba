@@ -1,8 +1,8 @@
 package ameba.db.dsl;
 
+import ameba.i18n.Messages;
 import org.antlr.v4.runtime.*;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.internal.inject.Providers;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.List;
 
@@ -22,16 +22,22 @@ public class QueryDSL {
         QueryExprInvoker.invoke(parse(expression), invoker, exprApplier);
     }
 
-    public static Iterable<ExprTransformer> getExprTransformers(ServiceLocator locator) {
-        return Providers.getAllProviders(locator, ExprTransformer.class);
-    }
-
-    public static Iterable<ExprArgTransformer> getExprArgTransformers(ServiceLocator locator) {
-        return Providers.getAllProviders(locator, ExprArgTransformer.class);
-    }
-
     public static List<QueryExprMeta> parse(String expression) {
-        return parse(parser(tokens(expression)));
+        QueryParser parser = parser(tokens(expression));
+        try {
+            return parse(parser);
+        } catch (ParseCancellationException | RecognitionException e) {
+            RecognitionException err;
+            if (e instanceof ParseCancellationException) {
+                err = (RecognitionException) e.getCause();
+            } else {
+                err = (RecognitionException) e;
+            }
+            throw new QuerySyntaxException(
+                    Messages.get("dsl.parse.err", err.getOffendingToken().getCharPositionInLine()),
+                    e
+            );
+        }
     }
 
     public static List<QueryExprMeta> parse(QueryParser parser) {

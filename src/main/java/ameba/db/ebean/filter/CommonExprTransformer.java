@@ -11,7 +11,9 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiExpressionFactory;
 import com.avaje.ebeaninternal.api.SpiExpressionValidation;
 import com.avaje.ebeaninternal.api.SpiQuery;
+import com.google.common.collect.Lists;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -85,10 +87,27 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
             case "idIn":
                 expr = factory.idIn(args);
                 break;
+            case "having":
+                if (args.length > 0) {
+                    List<Expression> expressionList = Lists.newArrayListWithCapacity(args.length);
+                    for (Object e : args) {
+                        if (e instanceof Expression) {
+                            expressionList.add((Expression) e);
+                        } else {
+                            throw new QuerySyntaxException(Messages.get("dsl.arguments.error3", operator));
+                        }
+                    }
+                    expr = HavingExpression.of(expressionList);
+                } else {
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
+                }
+                break;
             case "in":
                 if (args.length == 1) {
                     if (args[0] instanceof QueryExpression) {
                         expr = factory.in(field, ((QueryExpression<?>) args[0]).query);
+                    } else {
+                        throw new QuerySyntaxException(Messages.get("dsl.arguments.error3", operator));
                     }
                 }
                 if (expr == null) {
@@ -99,6 +118,8 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 if (args.length == 1) {
                     if (args[0] instanceof QueryExpression) {
                         expr = factory.notIn(field, ((QueryExpression<?>) args[0]).query);
+                    } else {
+                        throw new QuerySyntaxException(Messages.get("dsl.arguments.error3", operator));
                     }
                 }
                 if (expr == null) {
@@ -109,24 +130,38 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 if (args.length == 1) {
                     if (args[0] instanceof QueryExpression) {
                         expr = factory.exists(((QueryExpression<?>) args[0]).query);
+                    } else {
+                        throw new QuerySyntaxException(Messages.get("dsl.arguments.error3", operator));
                     }
+                } else {
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
                 }
                 break;
             case "notExists":
                 if (args.length == 1) {
                     if (args[0] instanceof QueryExpression) {
                         expr = factory.notExists(((QueryExpression<?>) args[0]).query);
+                    } else {
+                        throw new QuerySyntaxException(Messages.get("dsl.arguments.error3", operator));
                     }
+                } else {
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
                 }
                 break;
             case "not":
-                if (args.length > 1) {
+                if (args.length > 0) {
                     Query query = invoker.getQuery();
                     Junction junction = factory.junction(Junction.Type.NOT, query, query.where());
                     for (Object e : args) {
-                        junction.add((Expression) e);
+                        if (e instanceof Expression) {
+                            junction.add((Expression) e);
+                        } else {
+                            throw new QuerySyntaxException(Messages.get("dsl.arguments.error3", operator));
+                        }
                     }
                     expr = junction;
+                } else {
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
                 }
                 break;
             case "or":
@@ -134,49 +169,81 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                     Query query = invoker.getQuery();
                     Junction junction = factory.disjunction(query);
                     for (Object e : args) {
-                        junction.add((Expression) e);
+                        if (e instanceof Expression) {
+                            junction.add((Expression) e);
+                        } else {
+                            throw new QuerySyntaxException(Messages.get("dsl.arguments.error3", operator));
+                        }
                     }
                     expr = junction;
+                } else {
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator));
                 }
                 break;
             case "filter": {
-                SpiExpressionFactory queryEf = (SpiExpressionFactory) factory;
-                ExpressionFactory filterEf = queryEf.createExpressionFactory();
-                SpiQuery<?> query = invoker.getQuery();
-                FilterExpression filter = new FilterExpression<>(field, filterEf, query);
-                for (Object e : args) {
-                    filter.add((Expression) e);
-                }
-                try {
-                    BeanType type = query.getBeanDescriptor().getBeanTypeAtPath(field);
-                    SpiExpressionValidation validation = new SpiExpressionValidation(type);
-                    filter.validate(validation);
-                    Set invalid = validation.getUnknownProperties();
-                    if (invalid != null && !invalid.isEmpty()) {
-                        UnprocessableEntityException.throwQuery(invalid);
+                if (args.length > 0) {
+                    SpiExpressionFactory queryEf = (SpiExpressionFactory) factory;
+                    ExpressionFactory filterEf = queryEf.createExpressionFactory();
+                    SpiQuery<?> query = invoker.getQuery();
+                    FilterExpression filter = new FilterExpression<>(field, filterEf, query);
+                    for (Object e : args) {
+                        if (e instanceof Expression) {
+                            filter.add((Expression) e);
+                        } else {
+                            throw new QuerySyntaxException(Messages.get("dsl.arguments.error3", operator));
+                        }
                     }
+                    try {
+                        BeanType type = query.getBeanDescriptor().getBeanTypeAtPath(field);
+                        SpiExpressionValidation validation = new SpiExpressionValidation(type);
+                        filter.validate(validation);
+                        Set invalid = validation.getUnknownProperties();
+                        if (invalid != null && !invalid.isEmpty()) {
+                            UnprocessableEntityException.throwQuery(invalid);
+                        }
 
-                    expr = filter;
-                } catch (Exception e) {
-                    UnprocessableEntityException.throwQuery("[" + field + "]");
+                        expr = filter;
+                    } catch (Exception e) {
+                        UnprocessableEntityException.throwQuery("[" + field + "]");
+                    }
+                } else {
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
                 }
                 break;
             }
             case "select":
-                Class type = Filters.getBeanTypeByName(field, (SpiEbeanServer) server);
-                if (type == null) {
-                    throw new QuerySyntaxException(Messages.get("dsl.bean.type.err", field));
+                if (args.length > 0) {
+                    Class type = Filters.getBeanTypeByName(field, (SpiEbeanServer) server);
+                    if (type == null) {
+                        throw new QuerySyntaxException(Messages.get("dsl.bean.type.err", field));
+                    }
+                    Query q = Filters.createQuery(type, server);
+                    ExpressionList<?> et = q.select((String) args[0]).where();
+                    for (int i = 1; i < args.length; i++) {
+                        if (args[i] instanceof HavingExpression) {
+                            ExpressionList having = q.having();
+                            for (Expression he : ((HavingExpression) args[i]).expressionList) {
+                                having.add(he);
+                            }
+                        } else if (args[i] instanceof Expression) {
+                            et.add((Expression) args[i]);
+                        } else {
+                            throw new QuerySyntaxException(Messages.get("dsl.arguments.error3", operator));
+                        }
+                    }
+                    Set invalid = q.validate();
+                    if (invalid != null && !invalid.isEmpty()) {
+                        UnprocessableEntityException.throwQuery(invalid);
+                    }
+                    expr = QueryExpression.of(q);
+                } else {
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
                 }
-                Query q = Filters.createQuery(type, server);
-                ExpressionList<?> et = q.select((String) args[0]).where();
-                for (int i = 1; i < args.length; i++) {
-                    et.add((Expression) args[i]);
-                }
-                Set invalid = q.validate();
-                if (invalid != null && !invalid.isEmpty()) {
-                    UnprocessableEntityException.throwQuery(invalid);
-                }
-                expr = QueryExpression.of(q);
+                break;
+            case "text": {
+
+                break;
+            }
         }
         if (expr != null)
             return Transformed.succ(this, expr);
@@ -193,6 +260,22 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
 
         public static <T> QueryExpression<T> of(Query<T> query) {
             return new QueryExpression<>(query);
+        }
+    }
+
+    static class HavingExpression implements Expression {
+        private List<Expression> expressionList;
+
+        public HavingExpression(List<Expression> expressionList) {
+            this.expressionList = expressionList;
+        }
+
+        public static HavingExpression of(List<Expression> expressionList) {
+            return new HavingExpression(expressionList);
+        }
+
+        public List<Expression> getExpressionList() {
+            return expressionList;
         }
     }
 }
