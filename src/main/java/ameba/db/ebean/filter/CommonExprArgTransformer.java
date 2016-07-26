@@ -46,7 +46,7 @@ public class CommonExprArgTransformer implements ExprArgTransformer<Object, Obje
             case "not":
             case "select":
                 if (count < 1) {
-                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator));
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator, ">", "1"));
                 }
                 break;
         }
