@@ -2,6 +2,7 @@ package ameba.db.ebean.filter;
 
 import ameba.core.ServiceLocators;
 import ameba.db.dsl.*;
+import ameba.db.dsl.QueryExprMeta.Val;
 import ameba.i18n.Messages;
 import com.avaje.ebean.Expression;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
@@ -37,10 +38,13 @@ public class EbeanExprInvoker extends QueryExprInvoker<Expression> {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected Object arg(String field, String op, Object arg, int index, int count) {
+    protected Val<Expression> arg(String field, String op, Val<Expression> arg,
+                                  int index, int count, QueryExprMeta parent) {
         Iterable<ExprArgTransformer> transformers = getTransformer(ExprArgTransformer.class);
         for (ExprArgTransformer transformer : transformers) {
-            Transformed transformed = transformer.transform(field, op, arg, index, count, this);
+            Transformed<Val<Expression>> transformed = transformer.transform(
+                    field, op, arg, index, count, this, parent
+            );
             if (transformed.success()) {
                 return transformed.result();
             }
@@ -48,7 +52,7 @@ public class EbeanExprInvoker extends QueryExprInvoker<Expression> {
         throw new QuerySyntaxException(Messages.get("dsl.transform.err", field, op, String.valueOf(arg)));
     }
 
-    protected <R, T extends Transformer<?, Transformed<R>>> Iterable<T> getTransformer(Class<T> transformerClass) {
+    protected <R, T extends Transformer<Transformed<R>>> Iterable<T> getTransformer(Class<T> transformerClass) {
         Iterable<RankedProvider<T>> rankedProviders =
                 ServiceLocators.getRankedProviders(locator, transformerClass);
         return ServiceLocators
@@ -57,10 +61,10 @@ public class EbeanExprInvoker extends QueryExprInvoker<Expression> {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected Expression expr(String field, String op, Object[] args) {
+    protected Val<Expression> expr(String field, String op, Val<Expression>[] args, QueryExprMeta parent) {
         Iterable<ExprTransformer> transformers = getTransformer(ExprTransformer.class);
         for (ExprTransformer<Expression, EbeanExprInvoker> transformer : transformers) {
-            Transformed<Expression> transformed = transformer.transform(field, op, args, this);
+            Transformed<Val<Expression>> transformed = transformer.transform(field, op, args, this, parent);
             if (transformed.success()) {
                 return transformed.result();
             }

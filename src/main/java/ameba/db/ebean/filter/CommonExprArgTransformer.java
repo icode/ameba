@@ -1,18 +1,22 @@
 package ameba.db.ebean.filter;
 
 import ameba.db.dsl.ExprArgTransformer;
+import ameba.db.dsl.QueryExprMeta;
+import ameba.db.dsl.QueryExprMeta.Val;
 import ameba.db.dsl.QuerySyntaxException;
 import ameba.db.dsl.Transformed;
 import ameba.i18n.Messages;
+import com.avaje.ebean.Expression;
 
 /**
  * @author icode
  */
-public class CommonExprArgTransformer implements ExprArgTransformer<Object, Object, EbeanExprInvoker> {
+public class CommonExprArgTransformer implements ExprArgTransformer<Expression, EbeanExprInvoker> {
     @Override
-    public Transformed<Object> transform(String field, String operator,
-                                         Object arg, int index, int count,
-                                         EbeanExprInvoker invoker) {
+    public Transformed<Val<Expression>> transform(String field, String operator,
+                                                  Val<Expression> arg, int index, int count,
+                                                  EbeanExprInvoker invoker,
+                                                  QueryExprMeta parent) {
 
         switch (operator) {
             case "eq":
@@ -39,7 +43,7 @@ public class CommonExprArgTransformer implements ExprArgTransformer<Object, Obje
                 break;
             case "between":
                 if (count != 2) {
-                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error1"));
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error1", operator));
                 }
                 break;
             case "filter":

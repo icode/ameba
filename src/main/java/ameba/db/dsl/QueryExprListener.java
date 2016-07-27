@@ -1,5 +1,6 @@
 package ameba.db.dsl;
 
+import ameba.db.dsl.QueryExprMeta.Val;
 import com.google.common.collect.Lists;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
@@ -40,10 +41,17 @@ public class QueryExprListener extends QueryBaseListener {
                             queryExprMeta.operator(co);
                             queryExprMeta.field(null);
                         } else {
-                            List<Object> args = queryExprMeta.parent().arguments();
-                            int argOffset = args.indexOf(queryExprMeta);
+                            List<Val<?>> args = queryExprMeta.parent().arguments();
+                            int argOffset = -1;
+                            for (int i = 0; i < args.size(); i++) {
+                                Val val = args.get(i);
+                                if (queryExprMeta.equals(val.object())) {
+                                    argOffset = i;
+                                    break;
+                                }
+                            }
                             if (argOffset != -1) {
-                                args.set(argOffset, co);
+                                args.set(argOffset, Val.of(co));
                                 queryExprMeta = null;
                             }
                         }
@@ -81,16 +89,21 @@ public class QueryExprListener extends QueryBaseListener {
 
     @Override
     public void exitLiteral(QueryParser.LiteralContext ctx) {
+        String text = ctx.getText();
         if (ctx.NullLiteral() != null) {
-            queryExprMeta.arguments((Object) null);
+            queryExprMeta.arguments(Val.of());
+        } else if (ctx.BooleanLiteral() != null) {
+            queryExprMeta.arguments(Val.ofBool(text));
+        } else if (ctx.DecimalLiteral() != null) {
+            queryExprMeta.arguments(Val.ofDecimal(text));
         } else {
-            queryExprMeta.arguments(ctx.getText());
+            queryExprMeta.arguments(Val.of(text));
         }
     }
 
     @Override
     public void exitIdentifierVal(QueryParser.IdentifierValContext ctx) {
-        queryExprMeta.arguments(ctx.getText());
+        queryExprMeta.arguments(Val.of(ctx.getText()));
     }
 
     protected ParserRuleContext getParentSourceElement(ParserRuleContext node) {
