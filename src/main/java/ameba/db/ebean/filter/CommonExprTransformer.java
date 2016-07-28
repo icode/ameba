@@ -664,7 +664,7 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         private Map<String, Val<Expression>> options = Maps.newLinkedHashMap();
     }
 
-    private static class MapExpression implements Expression {
+    static class MapExpression implements Expression {
         private String key;
         private Val<Expression> value;
 
@@ -673,7 +673,7 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
             this.value = value;
         }
 
-        private static MapExpression of(String key, Val<Expression> v) {
+        public static MapExpression of(String key, Val<Expression> v) {
             return new MapExpression(key, v);
         }
     }
