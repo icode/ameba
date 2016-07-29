@@ -170,8 +170,9 @@ public class Requests {
      * @param name a {@link java.lang.String} object.
      * @return a {@link java.lang.Object} object.
      */
-    public static Object getProperty(String name) {
-        return getRequest().getProperty(name);
+    @SuppressWarnings("unchecked")
+    public static <T> T getProperty(String name) {
+        return (T) getRequest().getProperty(name);
     }
 
     /**

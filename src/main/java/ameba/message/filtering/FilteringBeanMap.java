@@ -40,7 +40,7 @@ public class FilteringBeanMap<T> extends BeanMap<T> {
         if (o instanceof FilteringBeanMap) {
             final PathProperties pathProperties = new PathProperties();
             if (this.pathProperties != null) {
-                pathProperties.put(null, pathProperties.get(invoker.getPropertyName()));
+                pathProperties.put(null, pathProperties.getProperties(invoker.getPropertyName()));
                 ((FilteringBeanMap) o).pathProperties = pathProperties;
             }
         }
@@ -51,7 +51,7 @@ public class FilteringBeanMap<T> extends BeanMap<T> {
     protected String transformPropertyName(final String name) {
 
         if (pathProperties != null) {
-            Set<String> props = pathProperties.get(null);
+            Set<String> props = pathProperties.getProperties(null);
             if (!props.contains("*") && !props.contains(name)) {
                 return null;
             }

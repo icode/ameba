@@ -1,30 +1,33 @@
 package ameba.db.ebean;
 
+import ameba.core.Application;
 import ameba.core.Requests;
+import ameba.db.ebean.filter.Filter;
+import ameba.db.ebean.internal.ListExpressionValidation;
 import ameba.db.ebean.jackson.CommonBeanSerializer;
 import ameba.exception.UnprocessableEntityException;
 import ameba.i18n.Messages;
 import ameba.message.filtering.EntityFieldsUtils;
-import ameba.message.internal.PathProperties.Each;
-import ameba.message.internal.PathProperties.Props;
+import ameba.message.internal.PathProperties;
+import com.avaje.ebean.FetchPath;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
 import com.avaje.ebean.bean.EntityBean;
 import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebean.common.BeanMap;
-import com.avaje.ebean.text.PathProperties;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import com.avaje.ebeaninternal.api.SpiExpression;
+import com.avaje.ebeaninternal.api.SpiExpressionList;
+import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.hk2.api.ServiceLocator;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
+import javax.ws.rs.container.ResourceInfo;
+import java.util.*;
 
 import static com.avaje.ebean.OrderBy.Property;
 
@@ -73,52 +76,16 @@ public class EbeanUtils {
     }
 
     /**
-     * <p>forcePropertiesLoaded.</p>
-     *
-     * @param model a T object.
-     * @param <T>   a T object.
-     */
-    public static <T> void forcePropertiesLoaded(T model) {
-        if (model == null) return;
-        if (model instanceof EntityBean) {
-            EntityBeanIntercept intercept = ((EntityBean) model)._ebean_getIntercept();
-            intercept.setLoaded();
-            for (int i = 0; i < intercept.getPropertyLength(); i++) {
-                intercept.setLoadedProperty(i);
-            }
-        } else if (model instanceof Collection) {
-            for (Object m : (Collection) model) {
-                forcePropertiesLoaded(m);
-            }
-        } else if (model instanceof BeanMap) {
-            forcePropertiesLoaded(((BeanMap) model).values());
-        } else if (model.getClass().isArray()) {
-            for (Object m : (Object[]) model) {
-                forcePropertiesLoaded(m);
-            }
-        }
-    }
-
-    /**
      * parse uri query param to PathProperties for Ebean.json().toJson()
      *
      * @return PathProperties
      * @see CommonBeanSerializer#serialize(Object, JsonGenerator, SerializerProvider)
      */
-    public static PathProperties getCurrentRequestPathProperties() {
-        PathProperties properties = (PathProperties) Requests.getProperty(PATH_PROPS_PARSED);
+    public static FetchPath getCurrentRequestPathProperties() {
+        FetchPath properties = Requests.getProperty(PATH_PROPS_PARSED);
         if (properties == null) {
-            final ameba.message.internal.PathProperties pathProperties = EntityFieldsUtils.parsePathProperties();
-            final PathProperties finalProperties = properties = new PathProperties();
-            pathProperties.each(new Each<String, Props>() {
-                @Override
-                public void execute(Props props) {
-                    for (String prop : props.getProperties()) {
-                        finalProperties.addToPath(props.getPath(), prop);
-                    }
-                }
-            });
-            Requests.setProperty(PATH_PROPS_PARSED, properties);
+            PathProperties pathProperties = EntityFieldsUtils.parsePathProperties();
+            Requests.setProperty(PATH_PROPS_PARSED, EbeanPathProps.of(pathProperties));
         }
         return properties;
     }
@@ -139,19 +106,94 @@ public class EbeanUtils {
         }
     }
 
-    public static void checkQuery(Query query) {
-        checkQuery(query, null);
+    public static void checkQuery(Query<?> query, ServiceLocator locator) {
+        checkQuery(query, null, null, locator);
     }
 
-    @SuppressWarnings("unchecked")
-    public static void checkQuery(Query query, Set<String> ignore) {
-        if (query != null) {
-            Set<String> invalid = query.validate();
-            if (ignore != null) {
-                invalid = Sets.difference(invalid, ignore);
+    public static void checkQuery(Query<?> query, Set<String> whitelist,
+                                  Set<String> blacklist, ServiceLocator locator) {
+        ResourceInfo resource = locator.getService(ResourceInfo.class);
+        Class<?> rc = resource.getResourceClass();
+        Set<String> wl = null, bl = null;
+        if (rc != null) {
+            Filter filter = rc.getAnnotation(Filter.class);
+
+            if (filter != null) {
+                if (filter.whitelist().length > 0) {
+                    wl = Sets.newLinkedHashSet();
+                    Collections.addAll(wl, filter.whitelist());
+                }
+                if (filter.blacklist().length > 0) {
+                    bl = Sets.newLinkedHashSet();
+                    Collections.addAll(bl, filter.blacklist());
+                }
             }
-            if (invalid != null && !invalid.isEmpty()) {
+        }
+
+        if (whitelist != null) {
+            if (wl == null) {
+                wl = Sets.newLinkedHashSet();
+            }
+            wl.addAll(whitelist);
+        }
+
+        if (blacklist != null) {
+            if (bl == null) {
+                bl = Sets.newLinkedHashSet();
+            }
+            bl.addAll(blacklist);
+        }
+        checkQuery((SpiQuery) query, wl, bl, locator.getService(Application.Mode.class).isProd());
+    }
+
+    public static void checkQuery(SpiQuery<?> query, Set<String> whitelist,
+                                  Set<String> blacklist, boolean ignoreUnknown) {
+        checkQuery(
+                query,
+                new ListExpressionValidation(
+                        query.getBeanDescriptor(), whitelist, blacklist
+                ),
+                ignoreUnknown
+        );
+    }
+
+    public static void checkQuery(SpiQuery<?> query, ListExpressionValidation validation, boolean ignoreUnknown) {
+        if (query != null) {
+            validate(query.getWhereExpressions(), validation, ignoreUnknown);
+            validate(query.getHavingExpressions(), validation, ignoreUnknown);
+            validate(query.getOrderBy(), validation, ignoreUnknown);
+
+            Set<String> invalid = validation.getUnknownProperties();
+
+            if (!ignoreUnknown && !invalid.isEmpty()) {
                 UnprocessableEntityException.throwQuery(invalid);
+            }
+        }
+    }
+
+    public static void validate(SpiExpressionList<?> expressions,
+                                ListExpressionValidation validation,
+                                boolean ignoreUnknown) {
+        if (expressions == null) return;
+        List<SpiExpression> list = expressions.getUnderlyingList();
+        Iterator<SpiExpression> it = list.iterator();
+        while (it.hasNext()) {
+            it.next().validate(validation);
+            if (ignoreUnknown && !validation.lastValid()) {
+                it.remove();
+            }
+        }
+    }
+
+    public static void validate(OrderBy<?> orderBy,
+                                ListExpressionValidation validation,
+                                boolean ignoreUnknown) {
+        if (orderBy == null) return;
+        Iterator<Property> it = orderBy.getProperties().iterator();
+        while (it.hasNext()) {
+            validation.validate(it.next().getProperty());
+            if (ignoreUnknown && !validation.lastValid()) {
+                it.remove();
             }
         }
     }

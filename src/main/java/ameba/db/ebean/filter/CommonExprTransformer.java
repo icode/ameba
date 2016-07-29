@@ -5,6 +5,7 @@ import ameba.db.dsl.QueryExprMeta;
 import ameba.db.dsl.QueryExprMeta.Val;
 import ameba.db.dsl.QuerySyntaxException;
 import ameba.db.dsl.Transformed;
+import ameba.db.ebean.EbeanUtils;
 import ameba.exception.UnprocessableEntityException;
 import ameba.i18n.Messages;
 import com.avaje.ebean.*;
@@ -17,6 +18,7 @@ import com.avaje.ebeaninternal.api.SpiQuery;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +66,7 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 BeanType type = query.getBeanDescriptor().getBeanTypeAtPath(field);
                 SpiExpressionValidation validation = new SpiExpressionValidation(type);
                 filter.validate(validation);
-                Set invalid = validation.getUnknownProperties();
+                Set<String> invalid = validation.getUnknownProperties();
                 if (invalid != null && !invalid.isEmpty()) {
                     UnprocessableEntityException.throwQuery(invalid);
                 }
@@ -77,8 +79,9 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
     }
 
-    public static Expression select(String field, String operator, Val<Expression>[] args, EbeanServer server) {
+    public static Expression select(String field, String operator, Val<Expression>[] args, EbeanExprInvoker invoker) {
         if (args.length > 0) {
+            EbeanServer server = invoker.getServer();
             Class type = Filters.getBeanTypeByName(field, (SpiEbeanServer) server);
             if (type == null) {
                 throw new QuerySyntaxException(Messages.get("dsl.bean.type.err", field));
@@ -94,16 +97,15 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                     }
                 } else if (o instanceof AsOfExpression) {
                     et.asOf(((AsOfExpression) o).timestamp);
+                } else if (o instanceof DistinctExpression) {
+                    et.setDistinct(((DistinctExpression) o).distinct);
                 } else if (o instanceof Expression) {
                     et.add(args[i].expr());
                 } else {
                     throw new QuerySyntaxException(Messages.get("dsl.arguments.error3", operator));
                 }
             }
-            Set invalid = q.validate();
-            if (invalid != null && !invalid.isEmpty()) {
-                UnprocessableEntityException.throwQuery(invalid);
-            }
+            EbeanUtils.checkQuery(q, invoker.getLocator());
             return QueryExpression.of(q);
         }
         throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
@@ -584,7 +586,17 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 expr = filter(field, operator, args, invoker);
                 break;
             case "select":
-                expr = select(field, operator, args, server);
+                expr = select(field, operator, args, invoker);
+                break;
+            case "distinct":
+                boolean dis = true;
+                if (args.length > 1) {
+                    Object o = args[0].object();
+                    if (o instanceof Boolean || o instanceof BigDecimal) {
+                        dis = args[0].bool();
+                    }
+                }
+                expr = new DistinctExpression(dis);
                 break;
             case "asOf":
                 expr = asOf(args);
@@ -716,6 +728,14 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
 
         public List<Expression> getExpressionList() {
             return expressionList;
+        }
+    }
+
+    static class DistinctExpression implements Expression {
+        boolean distinct;
+
+        public DistinctExpression(boolean distinct) {
+            this.distinct = distinct;
         }
     }
 

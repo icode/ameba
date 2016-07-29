@@ -11,7 +11,6 @@ import ameba.message.internal.PathProperties;
 import com.avaje.ebean.*;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.common.BeanList;
-import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
 import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
@@ -181,16 +180,12 @@ public class ModelInterceptor implements WriterInterceptor {
         if (selectables != null) {
             StringBuilder selectBuilder = new StringBuilder();
 
-            OrmQueryDetail detail = null;
+            OrmQueryDetail detail = ((SpiQuery) query).getDetail();
 
-            if (query instanceof SpiQuery) {
-                detail = ((SpiQuery) query).getDetail();
-
-                OrmQueryProperties base = detail.getChunk(null, false);
-                if (base != null && StringUtils.isNotBlank(base.getProperties())) {
-                    // 获取已经设置的select
-                    selectBuilder.append(base.getProperties());
-                }
+            OrmQueryProperties base = detail.getChunk(null, false);
+            if (base != null && StringUtils.isNotBlank(base.getProperties())) {
+                // 获取已经设置的select
+                selectBuilder.append(base.getProperties());
             }
             for (String s : selectables) {
                 if (StringUtils.isBlank(s)) {
@@ -215,14 +210,12 @@ public class ModelInterceptor implements WriterInterceptor {
                             selectBuilder.append(propsStr);
                     } else if (StringUtils.isNotBlank(path)) {
                         FetchConfig config = null;
-                        if (detail != null) {
-                            // 获取已经存在的fetch
-                            OrmQueryProperties fetch = detail.getChunk(path, false);
-                            if (fetch != null && StringUtils.isNotBlank(fetch.getProperties())) {
-                                // 增加客户端传入值
-                                propsStr = fetch.getProperties() + "," + propsStr;
-                                config = fetch.getFetchConfig();
-                            }
+                        // 获取已经存在的fetch
+                        OrmQueryProperties fetch = detail.getChunk(path, false);
+                        if (fetch != null && StringUtils.isNotBlank(fetch.getProperties())) {
+                            // 增加客户端传入值
+                            propsStr = fetch.getProperties() + "," + propsStr;
+                            config = fetch.getFetchConfig();
                         }
                         query.fetch(path, propsStr, config);
                     }
@@ -337,7 +330,13 @@ public class ModelInterceptor implements WriterInterceptor {
         applyFetchProperties(queryParams, query);
         applyFilter(queryParams, query, locator);
         applyOrderBy(queryParams, query);
-        EbeanUtils.checkQuery(query, inv);
+
+        EbeanUtils.checkQuery(
+                (SpiQuery<?>) query,
+                inv,
+                null,
+                locator
+        );
         if (needPageList)
             return applyPageList(queryParams, query);
         return null;
@@ -448,8 +447,6 @@ public class ModelInterceptor implements WriterInterceptor {
             }
 
             if (query != null) {
-                SpiEbeanServer server = null;
-
                 FutureRowCount rowCount = applyUriQuery(queryParams, query, locator);
                 BeanList list;
                 if (o instanceof FutureList) {

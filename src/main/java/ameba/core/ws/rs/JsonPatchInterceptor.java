@@ -7,6 +7,7 @@ import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import org.glassfish.jersey.message.MessageBodyWorkers;
 
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
@@ -33,6 +34,8 @@ public class JsonPatchInterceptor implements ReaderInterceptor {
 
     private final UriInfo uriInfo;
     private final MessageBodyWorkers workers;
+    @Inject
+    private ObjectMapper mapper;
 
     /**
      * {@code PatchingInterceptor} injection constructor.
@@ -91,7 +94,6 @@ public class JsonPatchInterceptor implements ReaderInterceptor {
 
         // Use the Jackson 2.x classes to convert both the incoming patch
         // and the current state of the object into a JsonNode / JsonPatch
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode serverState = mapper.readValue(baos.toByteArray(), JsonNode.class);
         JsonNode patchAsNode = mapper.readValue(readerInterceptorContext.getInputStream(), JsonNode.class);
         JsonPatch patch = JsonPatch.fromJson(patchAsNode);

@@ -1,14 +1,14 @@
 package ameba.db.ebean.filter;
 
 import ameba.db.dsl.ExprApplier;
+import ameba.db.ebean.filter.CommonExprTransformer.AsOfExpression;
+import ameba.db.ebean.filter.CommonExprTransformer.DistinctExpression;
+import ameba.db.ebean.filter.CommonExprTransformer.HavingExpression;
 import ameba.db.ebean.filter.CommonExprTransformer.TextExpression;
 import com.avaje.ebean.Expression;
 import com.avaje.ebean.ExpressionList;
-import com.avaje.ebeaninternal.api.SpiQuery;
+import com.avaje.ebean.Query;
 import com.avaje.ebeaninternal.server.expression.AbstractTextExpression;
-
-import static ameba.db.ebean.filter.CommonExprTransformer.AsOfExpression;
-import static ameba.db.ebean.filter.CommonExprTransformer.HavingExpression;
 
 /**
  * @author icode
@@ -26,6 +26,7 @@ public class WhereExprApplier<O> implements ExprApplier<Expression> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void apply(Expression expr) {
         if (expr instanceof HavingExpression) {
             ExpressionList having = expressionList.query().having();
@@ -43,12 +44,15 @@ public class WhereExprApplier<O> implements ExprApplier<Expression> {
                 et.add(e);
             }
             return;
+        } else if (expr instanceof DistinctExpression) {
+            expressionList.setDistinct(((DistinctExpression) expr).distinct);
+            return;
         } else if (expr instanceof AbstractTextExpression) {
             expressionList.setUseDocStore(true);
         } else if (expr instanceof FilterExpression) {
-            SpiQuery<?> query = (SpiQuery) expressionList.query();
-            FilterExpression<?> filter = (FilterExpression) expr;
-            query.setFilterMany(filter.getPath(), filter);
+            FilterExpression filter = (FilterExpression) expr;
+            Query query = expressionList.query();
+            query.filterMany(filter.getPath()).addAll(filter);
             return;
         }
         expressionList.add(expr);

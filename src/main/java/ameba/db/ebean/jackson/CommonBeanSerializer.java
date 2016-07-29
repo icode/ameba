@@ -1,15 +1,13 @@
 package ameba.db.ebean.jackson;
 
+import ameba.core.Requests;
 import ameba.db.ebean.EbeanUtils;
-import com.avaje.ebean.text.PathProperties;
+import com.avaje.ebean.FetchPath;
 import com.avaje.ebean.text.json.JsonContext;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import org.glassfish.jersey.server.ContainerRequest;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
 import java.io.IOException;
 
 /**
@@ -22,8 +20,6 @@ public class CommonBeanSerializer<T> extends JsonSerializer<T> {
 
     private static final String REQ_PATH_PROPS = FindSerializers.class + ".currentRequestPathProperties";
     private final JsonContext jsonContext;
-    @Inject
-    private Provider<ContainerRequest> requestProvider;
 
 
     /**
@@ -33,10 +29,17 @@ public class CommonBeanSerializer<T> extends JsonSerializer<T> {
         this.jsonContext = jsonContext;
     }
 
-    private PathProperties getPathProperties() {
-        if (requestProvider.get().getProperty(REQ_PATH_PROPS) != null) return null;
-        PathProperties pathProperties = EbeanUtils.getCurrentRequestPathProperties();
-        requestProvider.get().setProperty(REQ_PATH_PROPS, pathProperties);
+    /**
+     * only first call return FetchPath
+     * <p>
+     * and then call is bean sub-path (property)
+     *
+     * @return fetch path or null
+     */
+    private FetchPath getPathProperties() {
+        if (Requests.getProperty(REQ_PATH_PROPS) != null) return null;
+        FetchPath pathProperties = EbeanUtils.getCurrentRequestPathProperties();
+        Requests.setProperty(REQ_PATH_PROPS, pathProperties);
         return pathProperties;
     }
 
@@ -45,7 +48,7 @@ public class CommonBeanSerializer<T> extends JsonSerializer<T> {
      */
     @Override
     public void serialize(T o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
-        final PathProperties pathProperties = getPathProperties();
+        final FetchPath pathProperties = getPathProperties();
 
         if (pathProperties != null) {
             jsonContext.toJson(o, jsonGenerator, pathProperties);

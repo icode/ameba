@@ -99,7 +99,7 @@ public class PathProperties {
      * @param path path
      * @return properties
      */
-    public Set<String> get(String path) {
+    public Set<String> getProperties(String path) {
         Props props = pathMap.get(path);
         return props == null ? null : props.getProperties();
     }
@@ -152,7 +152,7 @@ public class PathProperties {
      *
      * @param each each process
      */
-    public void each(Each<String, Props> each) {
+    public void each(Each<Props> each) {
 
         for (Map.Entry<String, Props> entry : pathMap.entrySet()) {
             Props props = entry.getValue();
@@ -165,7 +165,7 @@ public class PathProperties {
         return pathMap.get(null);
     }
 
-    public interface Each<PATH, PROPS> {
+    public interface Each<PROPS> {
         void execute(PROPS props);
     }
 

@@ -3,6 +3,7 @@ package ameba.db.dsl;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
@@ -147,7 +148,12 @@ public class QueryExprMeta {
         }
 
         public Boolean bool() {
-            return ((Boolean) value);
+            if (value instanceof Boolean) {
+                return ((Boolean) value);
+            } else if (value instanceof BigDecimal) {
+                return BooleanUtils.toBooleanObject(integer());
+            }
+            return null;
         }
 
         public String string() {

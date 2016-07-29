@@ -77,7 +77,7 @@ public class EntityFieldsUtils {
      * @return pah properties
      */
     public static PathProperties parsePathProperties() {
-        PathProperties pathProperties = (PathProperties) Requests.getProperty(PATH_PROPS_PARSED);
+        PathProperties pathProperties = Requests.getProperty(PATH_PROPS_PARSED);
         if (pathProperties == null) {
             pathProperties = PathProperties.parse(parseQueryFields());
             Requests.setProperty(PATH_PROPS_PARSED, pathProperties);

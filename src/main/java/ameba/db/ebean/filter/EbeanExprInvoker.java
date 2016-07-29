@@ -36,6 +36,10 @@ public class EbeanExprInvoker extends QueryExprInvoker<Expression> {
         return query;
     }
 
+    public ServiceLocator getLocator() {
+        return locator;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     protected Val<Expression> arg(String field, String op, Val<Expression> arg,
