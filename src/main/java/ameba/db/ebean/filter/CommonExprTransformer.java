@@ -447,6 +447,24 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return factory(invoker).textSimple(args[0].string(), simple);
     }
 
+    public static Expression text(String operator, Val<Expression>[] args) {
+        if (args.length < 1) {
+            throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator, 0));
+        }
+        return TextExpression.of(transformArgsToList(operator, args));
+    }
+
+    public static Expression map(String operator, Val<Expression> arg) {
+        return MapExpression.of(operator, arg);
+    }
+
+    public static Expression fields(String operator, Val<Expression>[] args) {
+        if (args.length < 1) {
+            throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator, 0));
+        }
+        return TextFieldsExpression.of(args);
+    }
+
     public static Expression options(String operator, Val<Expression>[] args) {
         if (args.length < 1) {
             throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator, 0));
@@ -461,6 +479,17 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
             }
         }
         return op;
+    }
+
+    public static Expression distinct(Val<Expression>[] args) {
+        boolean dis = true;
+        if (args.length > 1) {
+            Object o = args[0].object();
+            if (o instanceof Boolean || o instanceof BigDecimal) {
+                dis = args[0].bool();
+            }
+        }
+        return new DistinctExpression(dis);
     }
 
     public static Object transformArgs(Val<Expression>[] args) {
@@ -589,23 +618,13 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 expr = select(field, operator, args, invoker);
                 break;
             case "distinct":
-                boolean dis = true;
-                if (args.length > 1) {
-                    Object o = args[0].object();
-                    if (o instanceof Boolean || o instanceof BigDecimal) {
-                        dis = args[0].bool();
-                    }
-                }
-                expr = new DistinctExpression(dis);
+                expr = distinct(args);
                 break;
             case "asOf":
                 expr = asOf(args);
                 break;
             case "text":
-                if (args.length < 1) {
-                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator, 0));
-                }
-                expr = TextExpression.of(transformArgsToList(operator, args));
+                expr = text(operator, args);
                 break;
             case "match":
                 expr = match(field, operator, args, invoker);
@@ -623,16 +642,13 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 expr = options(operator, args);
                 break;
             case "fields":
-                if (args.length < 1) {
-                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator, 0));
-                }
-                expr = TextFieldsExpression.of(args);
+                expr = fields(operator, args);
                 break;
             case "phrase":
             case "phrasePre":
             case "opAnd":
             case "opOr":
-                expr = MapExpression.of(operator, null);
+                expr = map(operator, null);
                 break;
             case "type":
             case "tie":
@@ -663,7 +679,7 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 if (args.length != 1) {
                     throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
                 }
-                expr = MapExpression.of(operator, args[0]);
+                expr = map(operator, args[0]);
                 break;
         }
         if (expr != null)
