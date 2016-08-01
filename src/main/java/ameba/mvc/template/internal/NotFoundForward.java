@@ -1,5 +1,6 @@
 package ameba.mvc.template.internal;
 
+import ameba.exception.UnprocessableEntityException;
 import groovy.lang.Singleton;
 import jersey.repackaged.com.google.common.collect.Sets;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -24,7 +25,7 @@ import java.util.Set;
 /**
  * 404 跳转到模板
  *
- * @author 张立鑫 IntelligentCode
+ * @author icode
  * @since 2013-08-27
  */
 @Singleton
@@ -70,7 +71,8 @@ public class NotFoundForward implements ContainerResponseFilter {
     @Override
     public void filter(ContainerRequestContext requestContext,
                        ContainerResponseContext responseContext) throws IOException {
-        if (responseContext.getStatus() == 404) {
+        int status = responseContext.getStatus();
+        if (status == 404 || status == UnprocessableEntityException.STATUS) {
             String path = mappedViewPath();
             if (path != null) {
                 responseContext.setEntity(Viewables.newDefaultViewable(path),

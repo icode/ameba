@@ -39,15 +39,16 @@ import java.util.Set;
  * @author icode
  * @since 0.1.6e
  */
-public abstract class ModelResourceStructure<ID, M extends Model> extends LoggerOwner {
+public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends LoggerOwner {
 
     protected final SpiEbeanServer server;
-    protected Class<M> modelType;
+    protected Class<MODEL> modelType;
     protected String defaultFindOrderBy;
     @Context
     protected UriInfo uriInfo;
     @Inject
     protected ServiceLocator locator;
+    private TxScope txScope = null;
     private BeanDescriptor descriptor;
 
     /**
@@ -55,7 +56,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      *
      * @param modelType a {@link java.lang.Class} object.
      */
-    public ModelResourceStructure(Class<M> modelType) {
+    public ModelResourceStructure(Class<MODEL> modelType) {
         this(modelType, (SpiEbeanServer) Ebean.getServer(null));
     }
 
@@ -65,9 +66,33 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param modelType a {@link java.lang.Class} object.
      * @param server    a {@link com.avaje.ebeaninternal.api.SpiEbeanServer} object.
      */
-    public ModelResourceStructure(Class<M> modelType, SpiEbeanServer server) {
+    public ModelResourceStructure(Class<MODEL> modelType, SpiEbeanServer server) {
         this.modelType = modelType;
         this.server = server;
+    }
+
+    public void setTxScope(TxScope txScope) {
+        this.txScope = txScope;
+    }
+
+    public void switchToSupportsScope() {
+        txScope = TxScope.supports();
+    }
+
+    public void switchToNotSupportedScope() {
+        txScope = TxScope.notSupported();
+    }
+
+    public void switchToRequiredScope() {
+        txScope = TxScope.required();
+    }
+
+    public void switchToRequiredNewScope() {
+        txScope = TxScope.requiresNew();
+    }
+
+    public void switchToMandatoryScope() {
+        txScope = TxScope.mandatory();
     }
 
     /**
@@ -83,27 +108,16 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     }
 
     /**
-     * convert string to id
-     *
-     * @param id id string
-     * @return ID object
-     * @see ModelResourceStructure#deleteMultiple(String, PathSegment)
-     */
-    @SuppressWarnings("unchecked")
-    protected ID stringToId(String id) {
-        return (ID) getModelBeanDescriptor().convertId(id);
-    }
-
-    /**
-     * convert string to id
+     * convert to id
      *
      * @param id string id
-     * @return ID
-     * @throws UnprocessableEntityException response status 422
+     * @return MODEL_ID
+     * @throws NotFoundException response status 404
      */
-    protected final ID tryConvertId(String id) {
+    @SuppressWarnings("unchecked")
+    protected final MODEL_ID tryConvertId(Object id) {
         try {
-            return stringToId(id);
+            return (MODEL_ID) getModelBeanDescriptor().convertId(id);
         } catch (Exception e) {
             throw new UnprocessableEntityException(Messages.get("info.query.id.unprocessable.entity"), e);
         }
@@ -115,18 +129,18 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param id id object
      * @return id string
      * @see ModelResourceStructure#insert(Model)
-     * @see ModelResourceStructure#patch(String, Model)
+     * @see ModelResourceStructure#patch(URI_ID, Model)
      */
-    protected String idToString(@NotNull ID id) {
+    protected String idToString(@NotNull MODEL_ID id) {
         return id.toString();
     }
 
     /**
      * <p>setForInsertId.</p>
      *
-     * @param model a M object.
+     * @param model a MODEL object.
      */
-    protected void setForInsertId(final M model) {
+    protected void setForInsertId(final MODEL model) {
         BeanDescriptor descriptor = getModelBeanDescriptor();
         EntityBeanIntercept intercept = ((EntityBean) model)._ebean_getIntercept();
         BeanProperty idProp = descriptor.getIdProperty();
@@ -155,7 +169,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @see AbstractModelResource#insert(Model)
      */
     @SuppressWarnings("unchecked")
-    public Response insert(@NotNull @Valid final M model) throws Exception {
+    public Response insert(@NotNull @Valid final MODEL model) throws Exception {
         matchedInsert(model);
         setForInsertId(model);
 
@@ -167,32 +181,32 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 postInsertModel(model);
             }
         });
-        ID id = (ID) server.getBeanId(model);
+        MODEL_ID id = (MODEL_ID) server.getBeanId(model);
 
         return Response.created(buildLocationUri(id)).build();
     }
 
-    protected void matchedInsert(final M model) throws Exception {
+    protected void matchedInsert(final MODEL model) throws Exception {
 
     }
 
     /**
      * <p>preInsertModel.</p>
      *
-     * @param model a M object.
+     * @param model a MODEL object.
      * @throws java.lang.Exception if any.
      */
-    protected void preInsertModel(final M model) throws Exception {
+    protected void preInsertModel(final MODEL model) throws Exception {
 
     }
 
     /**
      * <p>insertModel.</p>
      *
-     * @param model a M object.
+     * @param model a MODEL object.
      * @throws java.lang.Exception if any.
      */
-    protected void insertModel(final M model) throws Exception {
+    protected void insertModel(final MODEL model) throws Exception {
         server.insert(model);
         flushBatch();
     }
@@ -200,10 +214,10 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     /**
      * <p>postInsertModel.</p>
      *
-     * @param model a M object.
+     * @param model a MODEL object.
      * @throws java.lang.Exception if any.
      */
-    protected void postInsertModel(final M model) throws Exception {
+    protected void postInsertModel(final MODEL model) throws Exception {
 
     }
 
@@ -220,18 +234,13 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.PUT
-     * @see AbstractModelResource#replace(String, Model)
+     * @see AbstractModelResource#replace(URI_ID, Model)
      */
-    public Response replace(@PathParam("id") final String id, @NotNull @Valid final M model) throws Exception {
-        final ID mId = tryConvertId(id);
-
-        return replace(mId, model);
-    }
-
-    public Response replace(final ID id, @NotNull @Valid final M model) throws Exception {
-        matchedReplace(id, model);
+    public Response replace(@PathParam("id") final URI_ID id, @NotNull @Valid final MODEL model) throws Exception {
+        final MODEL_ID mId = tryConvertId(id);
+        matchedReplace(mId, model);
         BeanDescriptor descriptor = getModelBeanDescriptor();
-        descriptor.convertSetId(id, (EntityBean) model);
+        descriptor.convertSetId(mId, (EntityBean) model);
         EbeanUtils.forceUpdateAllProperties(server, model);
 
         final Response.ResponseBuilder builder = Response.noContent();
@@ -249,43 +258,43 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 preInsertModel(model);
                 insertModel(model);
                 postInsertModel(model);
-                builder.status(Response.Status.CREATED).location(buildLocationUri(id, true));
+                builder.status(Response.Status.CREATED).location(buildLocationUri(mId, true));
             }
         });
         return builder.build();
     }
 
-    protected void matchedReplace(ID id, final M model) throws Exception {
+    protected void matchedReplace(MODEL_ID id, final MODEL model) throws Exception {
 
     }
 
     /**
      * <p>preReplaceModel.</p>
      *
-     * @param model a M object.
+     * @param model a MODEL object.
      * @throws java.lang.Exception if any.
      */
-    protected void preReplaceModel(final M model) throws Exception {
+    protected void preReplaceModel(final MODEL model) throws Exception {
 
     }
 
     /**
      * <p>replaceModel.</p>
      *
-     * @param model a M object.
+     * @param model a MODEL object.
      * @throws java.lang.Exception if any.
      */
-    protected void replaceModel(final M model) throws Exception {
+    protected void replaceModel(final MODEL model) throws Exception {
         server.update(model, null, true);
     }
 
     /**
      * <p>postReplaceModel.</p>
      *
-     * @param model a M object.
+     * @param model a MODEL object.
      * @throws java.lang.Exception if any.
      */
-    protected void postReplaceModel(final M model) throws Exception {
+    protected void postReplaceModel(final MODEL model) throws Exception {
 
     }
 
@@ -301,17 +310,13 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see ameba.core.ws.rs.PATCH
-     * @see AbstractModelResource#patch(String, Model)
+     * @see AbstractModelResource#patch(URI_ID, Model)
      */
-    public Response patch(@PathParam("id") final String id, @NotNull final M model) throws Exception {
-        ID mId = tryConvertId(id);
-        return patch(mId, model);
-    }
-
-    public Response patch(final ID id, @NotNull final M model) throws Exception {
-        matchedPatch(id, model);
+    public Response patch(@PathParam("id") final URI_ID id, @NotNull final MODEL model) throws Exception {
+        MODEL_ID mId = tryConvertId(id);
+        matchedPatch(mId, model);
         BeanDescriptor descriptor = getModelBeanDescriptor();
-        descriptor.convertSetId(id, (EntityBean) model);
+        descriptor.convertSetId(mId, (EntityBean) model);
         final Response.ResponseBuilder builder = Response.noContent()
                 .contentLocation(uriInfo.getAbsolutePath());
         return executeTx(new TxCallable<Response>() {
@@ -331,37 +336,37 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         });
     }
 
-    protected void matchedPatch(final ID id, final M model) throws Exception {
+    protected void matchedPatch(final MODEL_ID id, final MODEL model) throws Exception {
 
     }
 
     /**
      * <p>prePatchModel.</p>
      *
-     * @param model a M object.
+     * @param model a MODEL object.
      * @throws java.lang.Exception if any.
      */
-    protected void prePatchModel(final M model) throws Exception {
+    protected void prePatchModel(final MODEL model) throws Exception {
 
     }
 
     /**
      * <p>patchModel.</p>
      *
-     * @param model a M object.
+     * @param model a MODEL object.
      * @throws java.lang.Exception if any.
      */
-    protected void patchModel(final M model) throws Exception {
+    protected void patchModel(final MODEL model) throws Exception {
         server.update(model, null, false);
     }
 
     /**
      * <p>postPatchModel.</p>
      *
-     * @param model a M object.
+     * @param model a MODEL object.
      * @throws java.lang.Exception if any.
      */
-    protected void postPatchModel(final M model) throws Exception {
+    protected void postPatchModel(final MODEL model) throws Exception {
 
     }
 
@@ -374,14 +379,14 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * <br>
      * logical delete status 202
      *
-     * @param idStr The id use for path matching type
-     * @param ids   The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
+     * @param id  The id use for path matching type
+     * @param ids The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.DELETE
-     * @see AbstractModelResource#deleteMultiple(String, PathSegment)
+     * @see AbstractModelResource#deleteMultiple(URI_ID, PathSegment)
      */
-    public Response deleteMultiple(@NotNull @PathParam("ids") String idStr,
+    public Response deleteMultiple(@NotNull @PathParam("ids") URI_ID id,
                                    @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
         Set<String> idSet = ids.getMatrixParameters().keySet();
         final Response.ResponseBuilder builder = Response.noContent();
@@ -391,20 +396,20 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 builder.status(Response.Status.NOT_FOUND);
             }
         };
-        final ID firstId = tryConvertId(ids.getPath());
-        final Set<ID> idCollection = Sets.newLinkedHashSet();
+        final MODEL_ID firstId = tryConvertId(ids.getPath());
+        final Set<MODEL_ID> idCollection = Sets.newLinkedHashSet();
         idCollection.add(firstId);
 
         if (!idSet.isEmpty()) {
-            idCollection.addAll(Collections2.transform(idSet, new Function<String, ID>() {
+            idCollection.addAll(Collections2.transform(idSet, new Function<String, MODEL_ID>() {
                 @Nullable
                 @Override
-                public ID apply(String input) {
+                public MODEL_ID apply(String input) {
                     return tryConvertId(input);
                 }
             }));
         }
-        matchedDelete(idStr, idCollection);
+        matchedDelete(firstId, idCollection);
         if (!idSet.isEmpty()) {
             executeTx(new TxRunnable() {
                 @Override
@@ -431,7 +436,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         return builder.build();
     }
 
-    protected void matchedDelete(String idStr, Set<ID> idSet) throws Exception {
+    protected void matchedDelete(MODEL_ID id, Set<MODEL_ID> idSet) throws Exception {
 
     }
 
@@ -441,7 +446,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param idCollection a {@link java.util.Set} object.
      * @throws java.lang.Exception if any.
      */
-    protected void preDeleteMultipleModel(Set<ID> idCollection) throws Exception {
+    protected void preDeleteMultipleModel(Set<MODEL_ID> idCollection) throws Exception {
 
     }
 
@@ -452,7 +457,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return delete from physical device, if logical delete return false, response status 202
      * @throws java.lang.Exception if any.
      */
-    protected boolean deleteMultipleModel(Set<ID> idCollection) throws Exception {
+    protected boolean deleteMultipleModel(Set<MODEL_ID> idCollection) throws Exception {
         server.delete(modelType, idCollection);
         return true;
     }
@@ -463,17 +468,17 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param idCollection a {@link java.util.Set} object.
      * @throws java.lang.Exception if any.
      */
-    protected void postDeleteMultipleModel(Set<ID> idCollection) throws Exception {
+    protected void postDeleteMultipleModel(Set<MODEL_ID> idCollection) throws Exception {
 
     }
 
     /**
      * <p>preDeleteModel.</p>
      *
-     * @param id a ID object.
+     * @param id a MODEL_ID object.
      * @throws java.lang.Exception if any.
      */
-    protected void preDeleteModel(ID id) throws Exception {
+    protected void preDeleteModel(MODEL_ID id) throws Exception {
 
     }
 
@@ -484,7 +489,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return delete from physical device, if logical delete return false, response status 202
      * @throws java.lang.Exception if any.
      */
-    protected boolean deleteModel(ID id) throws Exception {
+    protected boolean deleteModel(MODEL_ID id) throws Exception {
         server.delete(modelType, id);
         return true;
     }
@@ -492,40 +497,40 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     /**
      * <p>postDeleteModel.</p>
      *
-     * @param id a ID object.
+     * @param id a MODEL_ID object.
      * @throws java.lang.Exception if any.
      */
-    protected void postDeleteModel(ID id) throws Exception {
+    protected void postDeleteModel(MODEL_ID id) throws Exception {
 
     }
 
     /**
      * Find a model or model list given its Ids.
      *
-     * @param idStr The id use for path matching type
-     * @param ids   the id of the model.
+     * @param id  The id use for path matching type
+     * @param ids the id of the model.
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.GET
      * @see AbstractModelResource#findByIds
      */
-    public Response findByIds(@NotNull @PathParam("ids") String idStr,
+    public Response findByIds(@NotNull @PathParam("ids") URI_ID id,
                               @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
-        final Query<M> query = server.find(modelType);
-        final ID firstId = tryConvertId(ids.getPath());
+        final Query<MODEL> query = server.find(modelType);
+        final MODEL_ID firstId = tryConvertId(ids.getPath());
         Set<String> idSet = ids.getMatrixParameters().keySet();
-        final Set<ID> idCollection = Sets.newLinkedHashSet();
+        final Set<MODEL_ID> idCollection = Sets.newLinkedHashSet();
         idCollection.add(firstId);
         if (!idSet.isEmpty()) {
-            idCollection.addAll(Collections2.transform(idSet, new Function<String, ID>() {
+            idCollection.addAll(Collections2.transform(idSet, new Function<String, MODEL_ID>() {
                 @Nullable
                 @Override
-                public ID apply(String input) {
+                public MODEL_ID apply(String input) {
                     return tryConvertId(input);
                 }
             }));
         }
-        matchedFindByIds(idStr, idCollection);
+        matchedFindByIds(firstId, idCollection);
         Object model;
         final TxRunnable configureQuery = new TxRunnable() {
             @Override
@@ -540,7 +545,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 @Override
                 public Object call(Transaction t) throws Exception {
                     configureQuery.run(t);
-                    List<M> m = query.where().idIn(idCollection).findList();
+                    List<MODEL> m = query.where().idIn(idCollection).findList();
                     return processFoundByIdsModelList(m);
                 }
             });
@@ -549,7 +554,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 @Override
                 public Object call(Transaction t) throws Exception {
                     configureQuery.run(t);
-                    M m = query.setId(firstId).findUnique();
+                    MODEL m = query.setId(firstId).findUnique();
                     return processFoundByIdModel(m);
                 }
             });
@@ -561,8 +566,8 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
             throw new NotFoundException();
     }
 
-    protected void matchedFindByIds(String idStr, Set<ID> ids) throws Exception {
-
+    protected void matchedFindByIds(MODEL_ID id, Set<MODEL_ID> ids) throws Exception {
+        switchToSupportsScope();
     }
 
     /**
@@ -577,22 +582,22 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param query a {@link com.avaje.ebean.Query} object.
      * @throws java.lang.Exception if any.
      */
-    protected void configFindByIdsQuery(final Query<M> query) throws Exception {
+    protected void configFindByIdsQuery(final Query<MODEL> query) throws Exception {
 
     }
 
     /**
      * <p>processFoundModel.</p>
      *
-     * @param model a M object.
+     * @param model a MODEL object.
      * @return a {@link java.lang.Object} object.
      * @throws java.lang.Exception if any.
      */
-    protected Object processFoundByIdModel(final M model) throws Exception {
+    protected Object processFoundByIdModel(final MODEL model) throws Exception {
         return model;
     }
 
-    protected Object processFoundByIdsModelList(final List<M> models) throws Exception {
+    protected Object processFoundByIdsModelList(final List<MODEL> models) throws Exception {
         return models;
     }
 
@@ -610,11 +615,11 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      */
     public Response find() throws Exception {
         matchedFind();
-        final Query<M> query = server.find(modelType);
+        final Query<MODEL> query = server.find(modelType);
 
         if (StringUtils.isNotBlank(defaultFindOrderBy)) {
             // see if we should use the default orderBy clause
-            OrderBy<M> orderBy = query.orderBy();
+            OrderBy<MODEL> orderBy = query.orderBy();
             if (orderBy.isEmpty()) {
                 query.orderBy(defaultFindOrderBy);
             }
@@ -629,7 +634,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                         configDefaultQuery(query);
                         configFindQuery(query);
                         rowCount.set(applyUriQuery(query));
-                        List<M> list = query.findList();
+                        List<MODEL> list = query.findList();
                         return processFoundModelList(list);
                     }
                 })
@@ -641,7 +646,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     }
 
     protected void matchedFind() throws Exception {
-
+        switchToSupportsScope();
     }
 
     /**
@@ -657,7 +662,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param query a {@link com.avaje.ebean.Query} object.
      * @throws java.lang.Exception if any.
      */
-    protected void configFindQuery(final Query<M> query) throws Exception {
+    protected void configFindQuery(final Query<MODEL> query) throws Exception {
 
     }
 
@@ -668,7 +673,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return a {@link java.lang.Object} object.
      * @throws java.lang.Exception if any.
      */
-    protected Object processFoundModelList(final List<M> list) throws Exception {
+    protected Object processFoundModelList(final List<MODEL> list) throws Exception {
         return list;
     }
 
@@ -679,7 +684,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param query query
      * @throws java.lang.Exception if any.
      */
-    protected void configDefaultQuery(final Query<M> query) throws Exception {
+    protected void configDefaultQuery(final Query<MODEL> query) throws Exception {
 
     }
 
@@ -701,7 +706,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @return page list count or null
      * @see ModelInterceptor#applyUriQuery(MultivaluedMap, SpiQuery, ServiceLocator, boolean)
      */
-    protected FutureRowCount applyUriQuery(final Query<M> query, boolean needPageList) {
+    protected FutureRowCount applyUriQuery(final Query<MODEL> query, boolean needPageList) {
         return ModelInterceptor.applyUriQuery(uriInfo.getQueryParameters(), (SpiQuery) query, locator, needPageList);
     }
 
@@ -711,7 +716,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @param query a {@link com.avaje.ebean.Query} object.
      * @return a {@link com.avaje.ebean.FutureRowCount} object.
      */
-    protected FutureRowCount applyUriQuery(final Query<M> query) {
+    protected FutureRowCount applyUriQuery(final Query<MODEL> query) {
         return applyUriQuery(query, true);
     }
 
@@ -777,7 +782,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
      * @throws java.lang.Exception if any.
      */
     protected void executeTx(final TxRunnable r, final TxRunnable errorHandler) throws Exception {
-        final Transaction transaction = server.beginTransaction();
+        Transaction transaction = beginTransaction();
         configureTransDefault(transaction);
         processTransactionError(transaction, new TxCallable() {
             @Override
@@ -800,6 +805,10 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                 return null;
             }
         } : null);
+    }
+
+    protected Transaction beginTransaction() {
+        return server.beginTransaction(txScope);
     }
 
     /**
@@ -827,7 +836,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
 
     @SuppressWarnings("unchecked")
     protected <O> O executeTx(final TxCallable<O> c, final TxCallable<O> errorHandler) throws Exception {
-        final Transaction transaction = server.beginTransaction();
+        Transaction transaction = beginTransaction();
         configureTransDefault(transaction);
         return processTransactionError(transaction, new TxCallable<O>() {
             @Override
@@ -837,10 +846,10 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
                     o = c.call(t);
                     t.commit();
                 } catch (Throwable e) {
-                    transaction.rollback(e);
+                    t.rollback(e);
                     throw e;
                 } finally {
-                    transaction.end();
+                    t.end();
                 }
                 return (O) o;
             }
@@ -854,11 +863,11 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
     /**
      * <p>buildLocationUri.</p>
      *
-     * @param id          a ID object.
+     * @param id          a MODEL_ID object.
      * @param useTemplate use current template
      * @return a {@link java.net.URI} object.
      */
-    protected URI buildLocationUri(ID id, boolean useTemplate) {
+    protected URI buildLocationUri(MODEL_ID id, boolean useTemplate) {
         if (id == null) {
             throw new NotFoundException();
         }
@@ -870,7 +879,7 @@ public abstract class ModelResourceStructure<ID, M extends Model> extends Logger
         }
     }
 
-    protected URI buildLocationUri(ID id) {
+    protected URI buildLocationUri(MODEL_ID id) {
         return buildLocationUri(id, false);
     }
 

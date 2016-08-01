@@ -34,6 +34,9 @@ public class MvcFeature implements Feature {
     @Override
     public boolean configure(final FeatureContext context) {
         final Configuration config = context.getConfiguration();
+        if (!config.isRegistered(NotFoundForward.class)) {
+            context.register(NotFoundForward.class);
+        }
         if (!config.isRegistered(DataViewMessageBodyWriter.class)) {
             context.register(ErrorTemplateExceptionMapper.class);
             context.register(DataViewMessageBodyWriter.class, 1000);
