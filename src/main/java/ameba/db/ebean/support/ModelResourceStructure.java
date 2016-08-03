@@ -2,7 +2,6 @@ package ameba.db.ebean.support;
 
 import ameba.db.ebean.EbeanUtils;
 import ameba.db.ebean.internal.ModelInterceptor;
-import ameba.db.model.Model;
 import ameba.exception.UnprocessableEntityException;
 import ameba.i18n.Messages;
 import ameba.lib.LoggerOwner;
@@ -128,8 +127,6 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      *
      * @param id id object
      * @return id string
-     * @see ModelResourceStructure#insert(Model)
-     * @see ModelResourceStructure#patch(URI_ID, Model)
      */
     protected String idToString(@NotNull MODEL_ID id) {
         return id.toString();
@@ -166,7 +163,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.POST
-     * @see AbstractModelResource#insert(Model)
+     * @see AbstractModelResource#insert(MODEL)
      */
     @SuppressWarnings("unchecked")
     public Response insert(@NotNull @Valid final MODEL model) throws Exception {
@@ -208,7 +205,6 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      */
     protected void insertModel(final MODEL model) throws Exception {
         server.insert(model);
-        flushBatch();
     }
 
     /**
@@ -234,7 +230,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.PUT
-     * @see AbstractModelResource#replace(URI_ID, Model)
+     * @see AbstractModelResource#replace(URI_ID, MODEL)
      */
     public Response replace(@PathParam("id") final URI_ID id, @NotNull @Valid final MODEL model) throws Exception {
         final MODEL_ID mId = tryConvertId(id);
@@ -310,7 +306,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see ameba.core.ws.rs.PATCH
-     * @see AbstractModelResource#patch(URI_ID, Model)
+     * @see AbstractModelResource#patch(URI_ID, MODEL)
      */
     public Response patch(@PathParam("id") final URI_ID id, @NotNull final MODEL model) throws Exception {
         MODEL_ID mId = tryConvertId(id);
