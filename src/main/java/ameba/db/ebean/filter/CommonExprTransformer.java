@@ -1,5 +1,6 @@
 package ameba.db.ebean.filter;
 
+import ameba.core.ws.rs.ParamConverters;
 import ameba.db.dsl.ExprTransformer;
 import ameba.db.dsl.QueryExprMeta;
 import ameba.db.dsl.QueryExprMeta.Val;
@@ -592,7 +593,7 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 if (parent == null) {
                     throw new QuerySyntaxException(Messages.get("dsl.arguments.error5", operator));
                 }
-                expr = Val.ofDate(args[0].string()).date();
+                expr = ParamConverters.parseDate(args[0].string());
                 break;
             case "having":
                 expr = having(operator, args);
