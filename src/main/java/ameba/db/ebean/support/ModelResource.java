@@ -17,8 +17,8 @@ import java.sql.Timestamp;
 public abstract class ModelResource<URI_ID, MODEL_ID, MODEL>
         extends ModelResourceStructure<URI_ID, MODEL_ID, MODEL> {
     protected static final String DATE_REGEX = "^(\\d{4})(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])" + //date yyyyMMDD
-            "(T(2[0-3]|[01][0-9])([0-5][0-9]|0[0-9])([0-5][0-9]|0[0-9])(\\.\\d{1,3})?" + //time 'T'HH:mm:ss.EEE
-            "(-1[012]00|-0[0-9][0-3]0|[+ ]1[0-4]{2}[0-5]|[+ ]0[0-9][0-3][0-5])?)?$";//time zone +0800
+            "(T(2[0-3]|[01][0-9])([0-5][0-9]|0[0-9])([0-5][0-9]|0[0-9])(\\.\\d{1,3}))?" + //time 'T'HH:mm:ss.EEE
+            "(Z|(-1[012]00|-0[0-9][0-3]0|[+ ]1[0-4]{2}[0-5]|[+ ]0[0-9][0-3][0-5]))?$";//time zone +0800
 
     /**
      * <p>Constructor for AbstractModelResource.</p>

@@ -53,7 +53,7 @@ public class ParamConverters {
         if (value.contains(" ")) {
             value = value.replace(" ", "+");
         }
-        if (!(value.contains("-") || value.contains("+"))) {
+        if (!(value.contains("-") || value.contains("+")) && !value.endsWith("Z")) {
             value += SYS_TZ;
         }
         try {
