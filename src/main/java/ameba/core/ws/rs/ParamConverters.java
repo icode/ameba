@@ -49,7 +49,7 @@ public class ParamConverters {
     private ParamConverters() {
     }
 
-    public static Date parseDate(String value) {
+    public static Date parseDate(String value, ParsePosition pos) {
         if (value.contains(" ")) {
             value = value.replace(" ", "+");
         }
@@ -57,10 +57,14 @@ public class ParamConverters {
             value += SYS_TZ;
         }
         try {
-            return ISO8601Utils.parse(value, new ParsePosition(0));
+            return ISO8601Utils.parse(value, pos);
         } catch (ParseException e) {
             throw new ExtractorException(e);
         }
+    }
+
+    public static Date parseDate(String value) {
+        return parseDate(value, new ParsePosition(0));
     }
 
     /**

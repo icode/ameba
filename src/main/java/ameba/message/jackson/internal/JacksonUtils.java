@@ -1,6 +1,7 @@
 package ameba.message.jackson.internal;
 
 import ameba.core.Application;
+import ameba.core.ws.rs.ParamConverters;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
@@ -23,6 +24,9 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.util.Date;
 
 /**
  * <p>JacksonUtils class.</p>
@@ -99,15 +103,21 @@ public class JacksonUtils {
         mapper.registerModule(new JodaModule())
                 .registerModule(new GuavaModule());
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-                .setDateFormat(new ISO8601DateFormat())
-                .enable(
-                        SerializationFeature.WRITE_ENUMS_USING_INDEX
-                )
+                .setDateFormat(new ISO8601DateFormat() {
+                    @Override
+                    public Date parse(String source, ParsePosition pos) {
+                        return ParamConverters.parseDate(source, pos);
+                    }
+
+                    @Override
+                    public Date parse(String source) throws ParseException {
+                        return ParamConverters.parseDate(source);
+                    }
+                })
+                .enable(SerializationFeature.WRITE_ENUMS_USING_INDEX)
                 .disable(
                         SerializationFeature.WRITE_NULL_MAP_VALUES,
                         SerializationFeature.WRITE_DATES_AS_TIMESTAMPS
-//                        ,
-//                        SerializationFeature.WRITE_EMPTY_JSON_ARRAYS
                 );
         if (!mode.isDev()) {
             mapper
