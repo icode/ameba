@@ -243,6 +243,14 @@ public class ModelInterceptor implements WriterInterceptor {
         }
     }
 
+    public static FutureRowCount fetchRowCount(MultivaluedMap<String, String> queryParams, Query query) {
+        String reqTotalCount = getSingleParam(queryParams.get(REQ_TOTAL_COUNT_PARAM_NAME));
+        if (reqTotalCount != null && !"false".equalsIgnoreCase(reqTotalCount) && !"0".equals(reqTotalCount)) {
+            return query.findFutureCount();
+        }
+        return null;
+    }
+
     /**
      * <p>applyPageList.</p>
      *
@@ -252,12 +260,14 @@ public class ModelInterceptor implements WriterInterceptor {
      */
     public static FutureRowCount applyPageList(MultivaluedMap<String, String> queryParams, Query query) {
 
-        FutureRowCount futureRowCount = null;
-        String reqTotalCount = getSingleParam(queryParams.get(REQ_TOTAL_COUNT_PARAM_NAME));
-        if (reqTotalCount != null && !"false".equalsIgnoreCase(reqTotalCount)) {
-            futureRowCount = query.findFutureRowCount();
-        }
+        FutureRowCount futureRowCount = fetchRowCount(queryParams, query);
 
+        applyPageConfig(queryParams, query);
+
+        return futureRowCount;
+    }
+
+    public static void applyPageConfig(MultivaluedMap<String, String> queryParams, Query query) {
         Integer maxRows = getSingleIntegerParam(queryParams.get(PER_PAGE_PARAM_NAME));
 
         if (maxRows == null && DEFAULT_PER_PAGE != null && DEFAULT_PER_PAGE > 0) {
@@ -283,8 +293,6 @@ public class ModelInterceptor implements WriterInterceptor {
             firstRow = firstRow * maxRows;
             query.setFirstRow(firstRow);
         }
-
-        return futureRowCount;
     }
 
     /**

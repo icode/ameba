@@ -1,7 +1,6 @@
 package ameba.db.ebean.filter;
 
 import ameba.db.dsl.ExprApplier;
-import ameba.db.ebean.filter.CommonExprTransformer.AsOfExpression;
 import ameba.db.ebean.filter.CommonExprTransformer.DistinctExpression;
 import ameba.db.ebean.filter.CommonExprTransformer.HavingExpression;
 import ameba.db.ebean.filter.CommonExprTransformer.TextExpression;
@@ -33,9 +32,6 @@ public class WhereExprApplier<O> implements ExprApplier<Expression> {
             for (Expression he : ((HavingExpression) expr).getExpressionList()) {
                 having.add(he);
             }
-            return;
-        } else if (expr instanceof AsOfExpression) {
-            expressionList.asOf(((AsOfExpression) expr).getTimestamp());
             return;
         } else if (expr instanceof TextExpression) {
             TextExpression expression = (TextExpression) expr;

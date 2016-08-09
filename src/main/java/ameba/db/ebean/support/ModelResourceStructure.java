@@ -27,8 +27,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.*;
 import java.net.URI;
+import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -380,10 +383,11 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.DELETE
-     * @see AbstractModelResource#deleteMultiple(URI_ID, PathSegment)
+     * @see AbstractModelResource#deleteMultiple(URI_ID, PathSegment, boolean)
      */
     public Response deleteMultiple(@NotNull @PathParam("ids") URI_ID id,
-                                   @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
+                                   @NotNull @PathParam("ids") final PathSegment ids,
+                                   @QueryParam("permanent") final boolean permanent) throws Exception {
         Set<String> idSet = ids.getMatrixParameters().keySet();
         final Response.ResponseBuilder builder = Response.noContent();
         final TxRunnable failProcess = new TxRunnable() {
@@ -405,34 +409,36 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
                 }
             }));
         }
-        matchedDelete(firstId, idCollection);
+        matchedDelete(firstId, idCollection, permanent);
         if (!idSet.isEmpty()) {
             executeTx(new TxRunnable() {
                 @Override
                 public void run(Transaction t) throws Exception {
-                    preDeleteMultipleModel(idCollection);
-                    if (!deleteMultipleModel(idCollection)) {
+                    preDeleteMultipleModel(idCollection, permanent);
+                    boolean p = deleteMultipleModel(idCollection, permanent);
+                    if (!p) {
                         builder.status(Response.Status.ACCEPTED);
                     }
-                    postDeleteMultipleModel(idCollection);
+                    postDeleteMultipleModel(idCollection, p);
                 }
             }, failProcess);
         } else {
             executeTx(new TxRunnable() {
                 @Override
                 public void run(Transaction t) throws Exception {
-                    preDeleteModel(firstId);
-                    if (!deleteModel(firstId)) {
+                    preDeleteModel(firstId, permanent);
+                    boolean p = deleteModel(firstId, permanent);
+                    if (!p) {
                         builder.status(Response.Status.ACCEPTED);
                     }
-                    postDeleteModel(firstId);
+                    postDeleteModel(firstId, p);
                 }
             }, failProcess);
         }
         return builder.build();
     }
 
-    protected void matchedDelete(MODEL_ID id, Set<MODEL_ID> idSet) throws Exception {
+    protected void matchedDelete(MODEL_ID id, Set<MODEL_ID> idSet, boolean permanent) throws Exception {
 
     }
 
@@ -442,7 +448,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @param idCollection a {@link java.util.Set} object.
      * @throws java.lang.Exception if any.
      */
-    protected void preDeleteMultipleModel(Set<MODEL_ID> idCollection) throws Exception {
+    protected void preDeleteMultipleModel(Set<MODEL_ID> idCollection, boolean permanent) throws Exception {
 
     }
 
@@ -450,12 +456,16 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * delete multiple Model
      *
      * @param idCollection model id collection
-     * @return delete from physical device, if logical delete return false, response status 202
+     * @return if true delete from physical device, if logical delete return false, response status 202
      * @throws java.lang.Exception if any.
      */
-    protected boolean deleteMultipleModel(Set<MODEL_ID> idCollection) throws Exception {
-        server.delete(modelType, idCollection);
-        return true;
+    protected boolean deleteMultipleModel(Set<MODEL_ID> idCollection, boolean permanent) throws Exception {
+        if (permanent) {
+            server.deleteAllPermanent(modelType, idCollection);
+        } else {
+            server.deleteAll(modelType, idCollection);
+        }
+        return permanent;
     }
 
     /**
@@ -464,7 +474,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @param idCollection a {@link java.util.Set} object.
      * @throws java.lang.Exception if any.
      */
-    protected void postDeleteMultipleModel(Set<MODEL_ID> idCollection) throws Exception {
+    protected void postDeleteMultipleModel(Set<MODEL_ID> idCollection, boolean permanent) throws Exception {
 
     }
 
@@ -474,7 +484,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @param id a MODEL_ID object.
      * @throws java.lang.Exception if any.
      */
-    protected void preDeleteModel(MODEL_ID id) throws Exception {
+    protected void preDeleteModel(MODEL_ID id, boolean permanent) throws Exception {
 
     }
 
@@ -482,12 +492,16 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * delete a model
      *
      * @param id model id
-     * @return delete from physical device, if logical delete return false, response status 202
+     * @return if true delete from physical device, if logical delete return false, response status 202
      * @throws java.lang.Exception if any.
      */
-    protected boolean deleteModel(MODEL_ID id) throws Exception {
-        server.delete(modelType, id);
-        return true;
+    protected boolean deleteModel(MODEL_ID id, boolean permanent) throws Exception {
+        if (permanent) {
+            server.deletePermanent(modelType, id);
+        } else {
+            server.delete(modelType, id);
+        }
+        return permanent;
     }
 
     /**
@@ -496,7 +510,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @param id a MODEL_ID object.
      * @throws java.lang.Exception if any.
      */
-    protected void postDeleteModel(MODEL_ID id) throws Exception {
+    protected void postDeleteModel(MODEL_ID id, boolean permanent) throws Exception {
 
     }
 
@@ -511,7 +525,8 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @see AbstractModelResource#findByIds
      */
     public Response findByIds(@NotNull @PathParam("ids") URI_ID id,
-                              @NotNull @PathParam("ids") final PathSegment ids) throws Exception {
+                              @NotNull @PathParam("ids") final PathSegment ids,
+                              @QueryParam("include_deleted") final boolean includeDeleted) throws Exception {
         final Query<MODEL> query = server.find(modelType);
         final MODEL_ID firstId = tryConvertId(ids.getPath());
         Set<String> idSet = ids.getMatrixParameters().keySet();
@@ -526,13 +541,16 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
                 }
             }));
         }
-        matchedFindByIds(firstId, idCollection);
+        matchedFindByIds(firstId, idCollection, includeDeleted);
         Object model;
+        if (includeDeleted) {
+            query.setIncludeSoftDeletes();
+        }
         final TxRunnable configureQuery = new TxRunnable() {
             @Override
             public void run(Transaction t) throws Exception {
                 configDefaultQuery(query);
-                configFindByIdsQuery(query);
+                configFindByIdsQuery(query, includeDeleted);
                 applyUriQuery(query, false);
             }
         };
@@ -542,7 +560,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
                 public Object call(Transaction t) throws Exception {
                     configureQuery.run(t);
                     List<MODEL> m = query.where().idIn(idCollection).findList();
-                    return processFoundByIdsModelList(m);
+                    return processFoundByIdsModelList(m, includeDeleted);
                 }
             });
         } else {
@@ -551,18 +569,18 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
                 public Object call(Transaction t) throws Exception {
                     configureQuery.run(t);
                     MODEL m = query.setId(firstId).findUnique();
-                    return processFoundByIdModel(m);
+                    return processFoundByIdModel(m, includeDeleted);
                 }
             });
         }
 
-        if (model != null)
-            return Response.ok(model).build();
-        else
+        if (isEmptyEntity(model)) {
             throw new NotFoundException();
+        }
+        return Response.ok(model).build();
     }
 
-    protected void matchedFindByIds(MODEL_ID id, Set<MODEL_ID> ids) throws Exception {
+    protected void matchedFindByIds(MODEL_ID id, Set<MODEL_ID> ids, boolean includeDeleted) throws Exception {
         switchToSupportsScope();
     }
 
@@ -578,7 +596,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @param query a {@link com.avaje.ebean.Query} object.
      * @throws java.lang.Exception if any.
      */
-    protected void configFindByIdsQuery(final Query<MODEL> query) throws Exception {
+    protected void configFindByIdsQuery(final Query<MODEL> query, boolean includeDeleted) throws Exception {
 
     }
 
@@ -589,11 +607,11 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @return a {@link java.lang.Object} object.
      * @throws java.lang.Exception if any.
      */
-    protected Object processFoundByIdModel(final MODEL model) throws Exception {
+    protected Object processFoundByIdModel(final MODEL model, boolean includeDeleted) throws Exception {
         return model;
     }
 
-    protected Object processFoundByIdsModelList(final List<MODEL> models) throws Exception {
+    protected Object processFoundByIdsModelList(final List<MODEL> models, boolean includeDeleted) throws Exception {
         return models;
     }
 
@@ -609,39 +627,38 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @see javax.ws.rs.GET
      * @see AbstractModelResource#find()
      */
-    public Response find() throws Exception {
-        matchedFind();
+    public Response find(@QueryParam("include_deleted") final boolean includeDeleted) throws Exception {
+        matchedFind(includeDeleted);
         final Query<MODEL> query = server.find(modelType);
 
-        if (StringUtils.isNotBlank(defaultFindOrderBy)) {
-            // see if we should use the default orderBy clause
-            OrderBy<MODEL> orderBy = query.orderBy();
-            if (orderBy.isEmpty()) {
-                query.orderBy(defaultFindOrderBy);
-            }
+        if (includeDeleted) {
+            query.setIncludeSoftDeletes();
         }
+
+        defaultFindOrderBy(query);
 
         final Ref<FutureRowCount> rowCount = Refs.emptyRef();
 
-        Response.ResponseBuilder builder = Response.ok();
-        Response response = builder.entity(executeTx(new TxCallable<Object>() {
-                    @Override
-                    public Object call(Transaction t) throws Exception {
-                        configDefaultQuery(query);
-                        configFindQuery(query);
-                        rowCount.set(applyUriQuery(query));
-                        List<MODEL> list = query.findList();
-                        return processFoundModelList(list);
-                    }
-                })
-        ).build();
+        Object entity = executeTx(new TxCallable<Object>() {
+            @Override
+            public Object call(Transaction t) throws Exception {
+                configDefaultQuery(query);
+                configFindQuery(query, includeDeleted);
+                rowCount.set(applyUriQuery(query));
+                List<MODEL> list = query.findList();
+                return processFoundModelList(list, includeDeleted);
+            }
+        });
 
+        if (isEmptyEntity(entity)) {
+            return Response.noContent().build();
+        }
+        Response response = Response.ok(entity).build();
         applyRowCountHeader(response.getHeaders(), query, rowCount.get());
-
         return response;
     }
 
-    protected void matchedFind() throws Exception {
+    protected void matchedFind(boolean includeDeleted) throws Exception {
         switchToSupportsScope();
     }
 
@@ -658,7 +675,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @param query a {@link com.avaje.ebean.Query} object.
      * @throws java.lang.Exception if any.
      */
-    protected void configFindQuery(final Query<MODEL> query) throws Exception {
+    protected void configFindQuery(final Query<MODEL> query, boolean includeDeleted) throws Exception {
 
     }
 
@@ -669,10 +686,173 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @return a {@link java.lang.Object} object.
      * @throws java.lang.Exception if any.
      */
-    protected Object processFoundModelList(final List<MODEL> list) throws Exception {
+    protected Object processFoundModelList(final List<MODEL> list, boolean includeDeleted) throws Exception {
         return list;
     }
 
+    protected void defaultFindOrderBy(Query<MODEL> query) {
+        if (StringUtils.isNotBlank(defaultFindOrderBy)) {
+            // see if we should use the default orderBy clause
+            OrderBy<MODEL> orderBy = query.orderBy();
+            if (orderBy.isEmpty()) {
+                query.orderBy(defaultFindOrderBy);
+            }
+        }
+    }
+
+    /***
+     *  find model history between start to end timestamp versions
+     *
+     *  need model mark {@History}
+     *
+     * @param id model id
+     * @param start start timestamp
+     * @param end end timestamp
+     * @return history versions
+     * @throws Exception any error
+     */
+    public Response fetchHistory(@PathParam("id") URI_ID id,
+                                 @PathParam("start") final Timestamp start,
+                                 @PathParam("end") final Timestamp end) throws Exception {
+        final MODEL_ID mId = tryConvertId(id);
+        matchedFetchHistory(mId, start, end);
+        final Query<MODEL> query = server.find(modelType);
+
+        defaultFindOrderBy(query);
+
+        final Ref<FutureRowCount> rowCount = Refs.emptyRef();
+        Object entity = executeTx(new TxCallable<Object>() {
+            @Override
+            public Object call(Transaction t) throws Exception {
+                configDefaultQuery(query);
+                configFetchHistoryQuery(query, mId, start, end);
+                applyUriQuery(query, false);
+                applyPageConfig(query);
+                List<Version<MODEL>> list = query.findVersionsBetween(start, end);
+                rowCount.set(fetchRowCount(query));
+                return processFetchedHistoryModelList(list, mId, start, end);
+            }
+        });
+
+        if (isEmptyEntity(entity)) {
+            return Response.noContent().build();
+        }
+        Response response = Response.ok(entity).build();
+        applyRowCountHeader(response.getHeaders(), query, rowCount.get());
+        return response;
+    }
+
+    protected void matchedFetchHistory(final MODEL_ID id,
+                                       final Timestamp start,
+                                       final Timestamp end) throws Exception {
+        switchToSupportsScope();
+    }
+
+    protected void configFetchHistoryQuery(final Query<MODEL> query,
+                                           final MODEL_ID id,
+                                           final Timestamp start,
+                                           final Timestamp end) throws Exception {
+
+    }
+
+    protected Object processFetchedHistoryModelList(final List<Version<MODEL>> list,
+                                                    final MODEL_ID id,
+                                                    final Timestamp start,
+                                                    final Timestamp end) throws Exception {
+        return list;
+    }
+
+    public Response fetchHistory(@PathParam("id") URI_ID id) throws Exception {
+        final MODEL_ID mId = tryConvertId(id);
+        matchedFetchHistory(mId);
+        final Query<MODEL> query = server.find(modelType);
+
+        defaultFindOrderBy(query);
+
+        final Ref<FutureRowCount> rowCount = Refs.emptyRef();
+        Object entity = executeTx(new TxCallable<Object>() {
+            @Override
+            public Object call(Transaction t) throws Exception {
+                configDefaultQuery(query);
+                configFetchHistoryQuery(query, mId);
+                applyUriQuery(query, false);
+                applyPageConfig(query);
+                List<Version<MODEL>> list = query.findVersions();
+                rowCount.set(fetchRowCount(query));
+                return processFetchedHistoryModelList(list, mId);
+            }
+        });
+
+        if (isEmptyEntity(entity)) {
+            return Response.noContent().build();
+        }
+        Response response = Response.ok(entity).build();
+        applyRowCountHeader(response.getHeaders(), query, rowCount.get());
+        return response;
+    }
+
+    protected void matchedFetchHistory(final MODEL_ID id) throws Exception {
+        switchToSupportsScope();
+    }
+
+    protected void configFetchHistoryQuery(final Query<MODEL> query,
+                                           final MODEL_ID id) throws Exception {
+
+    }
+
+    protected Object processFetchedHistoryModelList(final List<Version<MODEL>> list,
+                                                    final MODEL_ID id) throws Exception {
+        return list;
+    }
+
+    /**
+     * find history as of timestamp
+     *
+     * @param id   model id
+     * @param asOf Timestamp
+     * @return history model
+     * @throws Exception any error
+     */
+    public Response fetchHistoryAsOf(@PathParam("id") URI_ID id,
+                                     @PathParam("asOf") final Timestamp asOf) throws Exception {
+        final MODEL_ID mId = tryConvertId(id);
+        matchedFetchHistoryAsOf(mId, asOf);
+        final Query<MODEL> query = server.find(modelType);
+
+        defaultFindOrderBy(query);
+
+        Object entity = executeTx(new TxCallable<Object>() {
+            @Override
+            public Object call(Transaction t) throws Exception {
+                configDefaultQuery(query);
+                configFetchHistoryAsOfQuery(query, mId, asOf);
+                applyUriQuery(query, false);
+                MODEL model = query.asOf(asOf).setId(mId).findUnique();
+                return processFetchedHistoryAsOfModel(mId, model, asOf);
+            }
+        });
+
+        if (isEmptyEntity(entity)) {
+            return Response.noContent().build();
+        }
+        return Response.ok(entity).build();
+    }
+
+    protected void matchedFetchHistoryAsOf(final MODEL_ID id, final Timestamp asOf) throws Exception {
+        switchToSupportsScope();
+    }
+
+    protected void configFetchHistoryAsOfQuery(final Query<MODEL> query,
+                                               final MODEL_ID id,
+                                               final Timestamp asOf) throws Exception {
+
+    }
+
+    protected Object processFetchedHistoryAsOfModel(final MODEL_ID id,
+                                                    final MODEL model,
+                                                    final Timestamp asOf) throws Exception {
+        return model;
+    }
 
     /**
      * all query config default query
@@ -684,7 +864,6 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
 
     }
 
-
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////                                   ///////////////////////////////////
@@ -693,6 +872,9 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    protected boolean isEmptyEntity(Object entity) {
+        return entity == null || (entity instanceof Collection && ((Collection) entity).isEmpty());
+    }
 
     /**
      * apply uri query parameter on query
@@ -714,6 +896,14 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      */
     protected FutureRowCount applyUriQuery(final Query<MODEL> query) {
         return applyUriQuery(query, true);
+    }
+
+    protected void applyPageConfig(Query query) {
+        ModelInterceptor.applyPageConfig(uriInfo.getQueryParameters(), query);
+    }
+
+    protected FutureRowCount fetchRowCount(Query query) {
+        return ModelInterceptor.fetchRowCount(uriInfo.getQueryParameters(), query);
     }
 
     /**

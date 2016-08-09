@@ -202,8 +202,8 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      *
      * @return a {@link com.avaje.ebean.FutureRowCount} object.
      */
-    public FutureRowCount<T> findFutureRowCount() {
-        return query().findFutureRowCount();
+    public FutureRowCount<T> findFutureCount() {
+        return query().findFutureCount();
     }
 
     /**
@@ -237,16 +237,6 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     * Executes the query and returns the results as a map of the objects.
-     */
-    @SuppressWarnings("unchecked")
-    public <K, M extends T> Map<K, M> findMap(String a, Class<K> b) {
-        return (Map<K, M>) query().findMap(a, b);
-    }
-
-
-    /**
-     * {@inheritDoc}
      */
     public PagedList<T> findPagedList() {
         return query().findPagedList();
@@ -257,8 +247,8 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      *
      * @return a int.
      */
-    public int findRowCount() {
-        return query().findRowCount();
+    public int findCount() {
+        return query().findCount();
     }
 
     /**

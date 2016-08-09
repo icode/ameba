@@ -272,17 +272,6 @@ public abstract class Finder<ID, T> {
     public abstract <M extends T> Map<?, M> findMap();
 
     /**
-     * <p>findMap.</p>
-     *
-     * @param keyProperty a {@link java.lang.String} object.
-     * @param keyType     a {@link java.lang.Class} object.
-     * @param <K>         a K object.
-     * @param <M>         a M object.
-     * @return a {@link java.util.Map} object.
-     */
-    public abstract <K, M extends T> Map<K, M> findMap(String keyProperty, Class<K> keyType);
-
-    /**
      * <p>findUnique.</p>
      *
      * @param <M> a M object.
@@ -291,18 +280,18 @@ public abstract class Finder<ID, T> {
     public abstract <M extends T> M findUnique();
 
     /**
-     * <p>findRowCount.</p>
+     * <p>findCount.</p>
      *
      * @return a int.
      */
-    public abstract int findRowCount();
+    public abstract int findCount();
 
     /**
-     * <p>findFutureRowCount.</p>
+     * <p>findFutureCount.</p>
      *
      * @return a {@link com.avaje.ebean.FutureRowCount} object.
      */
-    public abstract FutureRowCount<T> findFutureRowCount();
+    public abstract FutureRowCount<T> findFutureCount();
 
     /**
      * <p>findFutureIds.</p>

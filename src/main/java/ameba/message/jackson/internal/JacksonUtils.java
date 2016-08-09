@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
@@ -98,9 +99,15 @@ public class JacksonUtils {
         mapper.registerModule(new JodaModule())
                 .registerModule(new GuavaModule());
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+                .setDateFormat(new ISO8601DateFormat())
+                .enable(
+                        SerializationFeature.WRITE_ENUMS_USING_INDEX
+                )
                 .disable(
-                        SerializationFeature.WRITE_NULL_MAP_VALUES
-                        , SerializationFeature.WRITE_EMPTY_JSON_ARRAYS
+                        SerializationFeature.WRITE_NULL_MAP_VALUES,
+                        SerializationFeature.WRITE_DATES_AS_TIMESTAMPS
+//                        ,
+//                        SerializationFeature.WRITE_EMPTY_JSON_ARRAYS
                 );
         if (!mode.isDev()) {
             mapper

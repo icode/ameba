@@ -19,7 +19,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,8 +94,6 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                     for (Expression he : ((HavingExpression) o).expressionList) {
                         having.add(he);
                     }
-                } else if (o instanceof AsOfExpression) {
-                    et.asOf(((AsOfExpression) o).timestamp);
                 } else if (o instanceof DistinctExpression) {
                     et.setDistinct(((DistinctExpression) o).distinct);
                 } else if (o instanceof Expression) {
@@ -157,13 +154,6 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
             throw new QuerySyntaxException(Messages.get("dsl.arguments.error3", operator));
         }
         throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
-    }
-
-    public static Expression asOf(Val<Expression>[] args) {
-        if (args.length != 1) {
-            throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", "asOf"));
-        }
-        return AsOfExpression.of(args[0].string());
     }
 
     public static Expression match(String field, String operator, Val<Expression>[] args, EbeanExprInvoker invoker) {
@@ -454,20 +444,34 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return TextExpression.of(transformArgsToList(operator, args));
     }
 
-    public static Expression map(String operator, Val<Expression> arg) {
+    public static Expression map(String operator, Val<Expression> arg, QueryExprMeta parent) {
+        if (parent == null) {
+            throw new QuerySyntaxException(Messages.get("dsl.arguments.error5", operator));
+        } else if (!parent.operator().equals("option")) {
+            throw new QuerySyntaxException(Messages.get("dsl.arguments.error6", operator, "option"));
+        }
         return MapExpression.of(operator, arg);
     }
 
-    public static Expression fields(String operator, Val<Expression>[] args) {
+    public static Expression fields(String operator, Val<Expression>[] args, QueryExprMeta parent) {
         if (args.length < 1) {
             throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator, 0));
         }
+        if (parent == null) {
+            throw new QuerySyntaxException(Messages.get("dsl.arguments.error5", operator));
+        } else if (!parent.operator().equals("option")) {
+            throw new QuerySyntaxException(Messages.get("dsl.arguments.error6", operator, "option"));
+        }
+
         return TextFieldsExpression.of(args);
     }
 
-    public static Expression options(String operator, Val<Expression>[] args) {
+    public static Expression options(String operator, Val<Expression>[] args, QueryExprMeta parent) {
         if (args.length < 1) {
             throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator, 0));
+        }
+        if (parent == null) {
+            throw new QuerySyntaxException(Messages.get("dsl.arguments.error5", operator));
         }
         TextOptionsExpression op = new TextOptionsExpression();
         for (Val v : args) {
@@ -519,7 +523,7 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                                                   QueryExprMeta parent) {
         EbeanServer server = invoker.getServer();
         ExpressionFactory factory = server.getExpressionFactory();
-        Expression expr = null;
+        Object expr = null;
         switch (operator) {
             case "eq":
                 expr = factory.eq(field, args[0].object());
@@ -581,6 +585,15 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
             case "idIn":
                 expr = factory.idIn(transformArgs(args));
                 break;
+            case "date":
+                if (args.length != 1) {
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
+                }
+                if (parent == null) {
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error5", operator));
+                }
+                expr = Val.ofDate(args[0].string()).date();
+                break;
             case "having":
                 expr = having(operator, args);
                 break;
@@ -620,9 +633,6 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
             case "distinct":
                 expr = distinct(args);
                 break;
-            case "asOf":
-                expr = asOf(args);
-                break;
             case "text":
                 expr = text(operator, args);
                 break;
@@ -639,16 +649,16 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 expr = textCommonTerms(operator, args, invoker);
                 break;
             case "option":
-                expr = options(operator, args);
+                expr = options(operator, args, parent);
                 break;
             case "fields":
-                expr = fields(operator, args);
+                expr = fields(operator, args, parent);
                 break;
             case "phrase":
             case "phrasePre":
             case "opAnd":
             case "opOr":
-                expr = map(operator, null);
+                expr = map(operator, null, parent);
                 break;
             case "type":
             case "tie":
@@ -679,11 +689,11 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 if (args.length != 1) {
                     throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
                 }
-                expr = map(operator, args[0]);
+                expr = map(operator, args[0], parent);
                 break;
         }
         if (expr != null)
-            return Transformed.succ(this, Val.of(expr));
+            return Transformed.succ(this, Val.<Expression>ofObject(expr));
         else
             return Transformed.fail(this);
     }
@@ -752,25 +762,6 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
 
         public DistinctExpression(boolean distinct) {
             this.distinct = distinct;
-        }
-    }
-
-    static class AsOfExpression implements Expression {
-        private Timestamp timestamp;
-
-        AsOfExpression(Timestamp timestamp) {
-            this.timestamp = timestamp;
-        }
-
-        public static AsOfExpression of(String time) {
-            if (time.length() == 8 || time.length() == 10) {
-                time += "0:0:0";
-            }
-            return new AsOfExpression(Timestamp.valueOf(time));
-        }
-
-        public Timestamp getTimestamp() {
-            return timestamp;
         }
     }
 

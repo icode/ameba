@@ -1,5 +1,6 @@
 package ameba.db.dsl;
 
+import ameba.core.ws.rs.ParamConverters;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -9,7 +10,9 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.text.ParsePosition;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -101,6 +104,7 @@ public class QueryExprMeta {
     }
 
     public static class Val<E> {
+        private static final ParsePosition POS = new ParsePosition(0);
         private Object value;
 
         Val(Object value) {
@@ -121,6 +125,14 @@ public class QueryExprMeta {
 
         public static <E> Val<E> of(E value) {
             return new Val<>(value);
+        }
+
+        public static <E> Val<E> ofObject(Object value) {
+            return new Val<>(value);
+        }
+
+        public static <E> Val<E> ofDate(String value) {
+            return new Val<>(ParamConverters.parseDate(value));
         }
 
         public static <E> Val<E> ofDecimal(String s) {
@@ -162,6 +174,10 @@ public class QueryExprMeta {
 
         public QueryExprMeta meta() {
             return (QueryExprMeta) value;
+        }
+
+        public Date date() {
+            return (Date) value;
         }
 
         public <T extends Enum<T>> T enumV(Class<T> eClass) {

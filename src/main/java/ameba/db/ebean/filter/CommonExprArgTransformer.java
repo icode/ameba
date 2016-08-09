@@ -15,6 +15,7 @@ import org.apache.commons.lang3.ArrayUtils;
  */
 public class CommonExprArgTransformer implements ExprArgTransformer<Expression, EbeanExprInvoker> {
     private static final String[] OPT_STR_ARG = ArrayUtils.toArray(
+            "phrase",
             "phrasePre",
             "opAnd",
             "opOr");
@@ -24,7 +25,6 @@ public class CommonExprArgTransformer implements ExprArgTransformer<Expression, 
                                                   Val<Expression> arg, int index, int count,
                                                   EbeanExprInvoker invoker,
                                                   QueryExprMeta parent) {
-
         switch (operator) {
             case "eq":
             case "ne":
