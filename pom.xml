@@ -531,8 +531,8 @@
         <hk2.version>2.5.0-b06</hk2.version>
         <javax.websocket.version>1.1</javax.websocket.version>
         <json-patch.version>1.9</json-patch.version>
-        <jackson.core.version>2.8.0</jackson.core.version>
-        <jackson.provider.version>2.8.0</jackson.provider.version>
+        <jackson.core.version>2.8.3</jackson.core.version>
+        <jackson.provider.version>2.8.3</jackson.provider.version>
         <flyway.version>4.0.3</flyway.version>
         <antlr.version>4.5.3</antlr.version>
         <bean.validator.version>5.2.4.Final</bean.validator.version>
