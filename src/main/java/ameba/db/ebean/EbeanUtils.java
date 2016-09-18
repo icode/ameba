@@ -8,7 +8,6 @@ import ameba.db.ebean.jackson.CommonBeanSerializer;
 import ameba.exception.UnprocessableEntityException;
 import ameba.i18n.Messages;
 import ameba.message.filtering.EntityFieldsUtils;
-import ameba.message.internal.PathProperties;
 import com.avaje.ebean.FetchPath;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
@@ -84,8 +83,8 @@ public class EbeanUtils {
     public static FetchPath getCurrentRequestPathProperties() {
         FetchPath properties = Requests.getProperty(PATH_PROPS_PARSED);
         if (properties == null) {
-            PathProperties pathProperties = EntityFieldsUtils.parsePathProperties();
-            Requests.setProperty(PATH_PROPS_PARSED, EbeanPathProps.of(pathProperties));
+            properties = EbeanPathProps.of(EntityFieldsUtils.parsePathProperties());
+            Requests.setProperty(PATH_PROPS_PARSED, properties);
         }
         return properties;
     }
