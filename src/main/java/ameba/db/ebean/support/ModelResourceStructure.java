@@ -559,7 +559,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
                 @Override
                 public Object call(Transaction t) throws Exception {
                     configureQuery.run(t);
-                    List<MODEL> m = query.where().idIn(idCollection).findList();
+                    List<MODEL> m = query.where().idIn(idCollection.toArray()).findList();
                     return processFoundByIdsModelList(m, includeDeleted);
                 }
             });
