@@ -181,7 +181,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
                 postInsertModel(model);
             }
         });
-        MODEL_ID id = (MODEL_ID) getModelBeanDescriptor().getIdProperty().pathGet(model);
+        MODEL_ID id = (MODEL_ID) this.server.getBeanId(model);
 
         return Response.created(buildLocationUri(id)).build();
     }
