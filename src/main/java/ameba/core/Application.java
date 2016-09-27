@@ -15,10 +15,7 @@ import ameba.scanner.Acceptable;
 import ameba.scanner.ClassFoundEvent;
 import ameba.scanner.ClassInfo;
 import ameba.scanner.PackageScanner;
-import ameba.util.ClassUtils;
-import ameba.util.IOUtils;
-import ameba.util.LinkedProperties;
-import ameba.util.Times;
+import ameba.util.*;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.gaffer.GafferUtil;
 import com.google.common.collect.Lists;
@@ -26,7 +23,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import javassist.CtClass;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -54,6 +50,7 @@ import java.lang.reflect.Modifier;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -296,6 +293,67 @@ public class Application {
             logger.warn(Messages.get("info.load.error.not.found", confFile));
         }
         return url;
+    }
+
+    /**
+     * Returns a human-readable version of the file size (original is in bytes). The implementation has the following features:
+     * <ul>
+     * <li>Supports the SI or IEC units.</li>
+     * <li>Supports I18n</li>
+     * <li>Display a one digit remainder (rounded down if less than 5, rounded up otherwise)</li>
+     * <li>Once the main unit is >= 100, drops the remainder which would be over precision.</li>
+     * </ul>
+     *
+     * @param size       The number of bytes.
+     * @param useSiUnits if false, uses the IEC (International Electrotechnical Commission) units (powers of 2), else uses SI (International System of Units)
+     *                   units (powers of 10).
+     * @return A human-readable display value (includes units).
+     */
+    public static String byteCountToDisplaySize(long size, boolean useSiUnits) {
+        if (size == 1) {
+            return "1 byte";
+        }
+
+        final String[] units;
+        final int unitNb;
+        if (useSiUnits) {
+            unitNb = 1000;
+            units = new String[]{"bytes", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+        } else {
+            unitNb = 1024;
+            units = new String[]{"bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
+        }
+
+        // The reported length
+        long reportedLength = size;
+        // The reported remainder
+        long remainder = 0;
+        int i = 0;
+        // The reported unit
+        String reportedUnit = units[i++];
+        while (reportedLength >= unitNb) {
+            remainder = reportedLength % unitNb;
+            reportedLength = reportedLength / unitNb;
+            reportedUnit = units[i++];
+        }
+
+        // Now sort out the remainder
+        if (reportedLength >= 100) {
+            // then do not report the remainder
+            remainder = 0;
+        } else {
+            // round the remainder to only keep one digit
+            while (remainder >= 100) {
+                remainder = remainder / 10;
+            }
+            if (remainder >= 10) {
+                // round down if less than 5, round up otherwise
+                remainder = (remainder / 10) + (remainder % 10 < 5 ? 0 : 1);
+            }
+        }
+
+        final double decimalForDisplay = reportedLength + (remainder / 10.0);
+        return DecimalFormat.getInstance().format(decimalForDisplay) + " " + reportedUnit;
     }
 
     public void reconfigure() {
