@@ -6,8 +6,8 @@ import ameba.message.internal.MediaType;
 import ameba.message.jackson.internal.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.CommonProperties;
@@ -21,6 +21,7 @@ import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
+import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import java.util.Collections;
@@ -60,20 +61,35 @@ public class JacksonFeature implements Feature {
                 PropertiesHelper.getPropertyNameForRuntime(InternalProperties.JSON_FEATURE, config.getRuntimeType()),
                 JSON_FEATURE);
 
-        if (!config.isRegistered(JacksonJaxbJsonProvider.class)) {
-
+        if (!config.isRegistered(JacksonJsonProvider.class)) {
             ServiceLocatorUtilities.bind(locator, new AbstractBinder() {
                 @Override
                 protected void configure() {
+                    {
+                        final XmlMapper xmlMapper = new XmlMapper();
+                        JacksonUtils.configureMapper(xmlMapper, mode);
+                        bind(new ContextResolver<XmlMapper>() {
+                            @Override
+                            public XmlMapper getContext(Class<?> type) {
+                                return xmlMapper;
+                            }
+                        }).to(new TypeLiteral<ContextResolver<XmlMapper>>() {
+                        });
+                        bind(xmlMapper).to(XmlMapper.class).proxy(false);
+                    }
+                    {
+                        final ObjectMapper objectMapper = new ObjectMapper();
+                        JacksonUtils.configureMapper(objectMapper, mode);
+                        bind(new ContextResolver<ObjectMapper>() {
 
-                    XmlMapper xmlMapper = new XmlMapper();
-                    ObjectMapper objectMapper = new ObjectMapper();
-
-                    JacksonUtils.configureMapper(xmlMapper, mode);
-                    JacksonUtils.configureMapper(objectMapper, mode);
-
-                    bind(xmlMapper).to(XmlMapper.class).proxy(false);
-                    bind(objectMapper).to(ObjectMapper.class).proxy(false);
+                            @Override
+                            public ObjectMapper getContext(Class<?> type) {
+                                return objectMapper;
+                            }
+                        }).to(new TypeLiteral<ContextResolver<ObjectMapper>>() {
+                        });
+                        bind(objectMapper).to(ObjectMapper.class).proxy(false);
+                    }
                 }
             });
 

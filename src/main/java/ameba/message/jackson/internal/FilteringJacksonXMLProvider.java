@@ -27,16 +27,6 @@ public class FilteringJacksonXMLProvider extends JacksonXMLProvider {
     private Provider<ObjectProvider<FilterProvider>> provider;
 
     /**
-     * <p>Constructor for FilteringJacksonXMLProvider.</p>
-     *
-     * @param xmlMapper a {@link com.fasterxml.jackson.dataformat.xml.XmlMapper} object.
-     */
-    @Inject
-    public FilteringJacksonXMLProvider(XmlMapper xmlMapper) {
-        super(xmlMapper);
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override

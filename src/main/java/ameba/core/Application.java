@@ -25,6 +25,10 @@ import com.google.common.primitives.Ints;
 import javassist.CtClass;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.hk2.api.DynamicConfigurationService;
+import org.glassfish.hk2.api.MultiException;
+import org.glassfish.hk2.api.Populator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.model.ContractProvider;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -39,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.Path;
 import javax.ws.rs.RuntimeType;
@@ -480,25 +485,7 @@ public class Application {
 
     private void registerBinder() {
         register(Requests.BindRequest.class);
-        register(new ApplicationEventListener() {
-            @Override
-            public void onEvent(ApplicationEvent event) {
-                SystemEventBus.publish(new ameba.core.event.ApplicationEvent(event));
-            }
-
-            @Override
-            public RequestEventListener onRequest(org.glassfish.jersey.server.monitoring.RequestEvent requestEvent) {
-                logger.trace(Messages.get("info.on.request", requestEvent.getType().name()));
-                AmebaFeature.publishEvent(new RequestEvent(requestEvent));
-                return new RequestEventListener() {
-                    @Override
-                    public void onEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
-                        logger.trace(Messages.get("info.on.request", event.getType().name()));
-                        AmebaFeature.publishEvent(new RequestEvent(event));
-                    }
-                };
-            }
-        });
+        register(SysEventListener.class);
         register(new AbstractBinder() {
             @Override
             protected void configure() {
@@ -1525,6 +1512,49 @@ public class Application {
                 }
             }
             return super.put(key, value);
+        }
+    }
+
+    @Provider
+    protected static class SysEventListener implements ApplicationEventListener {
+        @Inject
+        protected ServiceLocator serviceLocator;
+
+        @Override
+        public void onEvent(ApplicationEvent event) {
+            switch (event.getType()) {
+                case INITIALIZATION_FINISHED:
+                    populate(serviceLocator);
+                    break;
+            }
+            SystemEventBus.publish(new ameba.core.event.ApplicationEvent(event));
+        }
+
+        /**
+         * Populate serviceLocator with services from classpath
+         *
+         * @see <a href="https://hk2.java.net/2.4.0-b16/inhabitant-generator.html">https://hk2.java.net/2.4.0-b16/inhabitant-generator.html</a>
+         */
+        protected void populate(ServiceLocator serviceLocator) {
+            DynamicConfigurationService dcs = serviceLocator.getService(DynamicConfigurationService.class);
+            Populator populator = dcs.getPopulator();
+
+            try {
+                populator.populate();
+            } catch (IOException | MultiException e) {
+                throw new MultiException(e);
+            }
+        }
+
+        @Override
+        public RequestEventListener onRequest(org.glassfish.jersey.server.monitoring.RequestEvent requestEvent) {
+            AmebaFeature.publishEvent(new RequestEvent(requestEvent));
+            return new RequestEventListener() {
+                @Override
+                public void onEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
+                    AmebaFeature.publishEvent(new RequestEvent(event));
+                }
+            };
         }
     }
 

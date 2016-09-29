@@ -27,16 +27,6 @@ public class FilteringJacksonJsonProvider extends JacksonJsonProvider {
     private Provider<ObjectProvider<FilterProvider>> provider;
 
     /**
-     * <p>Constructor for FilteringJacksonJsonProvider.</p>
-     *
-     * @param objectMapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
-     */
-    @Inject
-    public FilteringJacksonJsonProvider(ObjectMapper objectMapper) {
-        super(objectMapper);
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override

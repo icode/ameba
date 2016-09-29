@@ -5,7 +5,6 @@ import org.glassfish.jersey.internal.inject.ExtractorException;
 import org.glassfish.jersey.message.internal.HttpDateFormat;
 import org.glassfish.jersey.server.internal.LocalizationMessages;
 import org.joda.time.*;
-import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 import javax.inject.Singleton;
@@ -49,12 +48,21 @@ public class ParamConverters {
     private ParamConverters() {
     }
 
-    public static Date parseDate(String value, ParsePosition pos) {
-        if (value.contains(" ")) {
-            value = value.replace(" ", "+");
+    public static Long parseTimestamp(String value) {
+        if (value.matches("^[0-9]+$")) {
+            try {
+                return Long.parseLong(value);
+            } catch (Exception e) {
+                return null;
+            }
         }
-        if (!(value.contains("-") || value.contains("+")) && !value.endsWith("Z")) {
-            value += SYS_TZ;
+        return null;
+    }
+
+    public static Date parseDate(String value, ParsePosition pos) {
+        Object instant = parseInstant(value);
+        if (instant instanceof Long) {
+            return new Date((Long) instant);
         }
         try {
             return ISO8601Utils.parse(value, pos);
@@ -65,6 +73,20 @@ public class ParamConverters {
 
     public static Date parseDate(String value) {
         return parseDate(value, new ParsePosition(0));
+    }
+
+    private static Object parseInstant(String value) {
+        Long timestamp = parseTimestamp(value);
+        if (timestamp != null) {
+            return timestamp;
+        }
+        if (value.contains(" ")) {
+            value = value.replace(" ", "+");
+        }
+        if (!(value.contains("-") || value.contains("+")) && !value.endsWith("Z")) {
+            value += SYS_TZ;
+        }
+        return value;
     }
 
     /**
@@ -106,7 +128,6 @@ public class ParamConverters {
             };
         }
     }
-
 
     @Singleton
     @SuppressWarnings("unchecked")
@@ -203,7 +224,7 @@ public class ParamConverters {
                 );
             }
             try {
-                return ISODateTimeFormat.dateTimeNoMillis().parseDateTime(value);
+                return new DateTime(parseInstant(value));
             } catch (IllegalArgumentException e) {
                 return ISODateTimeFormat.dateTime().parseDateTime(value);
             }
@@ -228,7 +249,7 @@ public class ParamConverters {
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return new Duration(value);
+            return new Duration(parseInstant(value));
         }
 
         @Override
@@ -250,7 +271,7 @@ public class ParamConverters {
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return new Instant(value);
+            return new Instant(parseInstant(value));
         }
 
         @Override
@@ -272,7 +293,7 @@ public class ParamConverters {
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return new Interval(value);
+            return new Interval(parseInstant(value));
         }
 
         @Override
@@ -288,10 +309,6 @@ public class ParamConverters {
 
     public static class LocalDateParamConverter implements ParamConverter<LocalDate> {
 
-        final static DateTimeFormatter parser = ISODateTimeFormat.localDateOptionalTimeParser();
-
-        final static DateTimeFormatter format = ISODateTimeFormat.dateTime();
-
         @Override
         public LocalDate fromString(String value) {
             if (value == null) {
@@ -299,7 +316,8 @@ public class ParamConverters {
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return parser.parseLocalDate(value);
+
+            return new LocalDate(parseInstant(value));
         }
 
         @Override
@@ -309,15 +327,11 @@ public class ParamConverters {
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return format.print(value);
+            return value.toString();
         }
     }
 
     public static class LocalDateTimeParamConverter implements ParamConverter<LocalDateTime> {
-
-        final static DateTimeFormatter parser = ISODateTimeFormat.localDateOptionalTimeParser();
-
-        final static DateTimeFormatter format = ISODateTimeFormat.dateTime();
 
         @Override
         public LocalDateTime fromString(String value) {
@@ -326,7 +340,7 @@ public class ParamConverters {
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return parser.parseLocalDateTime(value);
+            return new LocalDateTime(parseInstant(value));
         }
 
         @Override
@@ -336,15 +350,11 @@ public class ParamConverters {
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return format.print(value);
+            return value.toString();
         }
     }
 
     public static class LocalTimeParamConverter implements ParamConverter<LocalTime> {
-
-        final static DateTimeFormatter parser = ISODateTimeFormat.localDateOptionalTimeParser();
-
-        final static DateTimeFormatter format = ISODateTimeFormat.dateTime();
 
         @Override
         public LocalTime fromString(String value) {
@@ -353,7 +363,7 @@ public class ParamConverters {
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return parser.parseLocalTime(value);
+            return new LocalTime(parseInstant(value));
         }
 
         @Override
@@ -363,7 +373,7 @@ public class ParamConverters {
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return format.print(value);
+            return value.toString();
         }
     }
 
@@ -375,7 +385,7 @@ public class ParamConverters {
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return new Period(value);
+            return new Period(parseInstant(value));
         }
 
         @Override

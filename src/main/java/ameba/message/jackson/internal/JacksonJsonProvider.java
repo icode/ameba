@@ -3,7 +3,6 @@ package ameba.message.jackson.internal;
 import ameba.core.Application;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
@@ -30,16 +29,6 @@ public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
     private UriInfo uriInfo;
     @Inject
     private Application.Mode mode;
-
-    /**
-     * <p>Constructor for JacksonJsonProvider.</p>
-     *
-     * @param objectMapper a {@link com.fasterxml.jackson.databind.ObjectMapper} object.
-     */
-    @Inject
-    public JacksonJsonProvider(ObjectMapper objectMapper) {
-        super(objectMapper, DEFAULT_ANNOTATIONS);
-    }
 
     @Override
     protected JsonGenerator _createGenerator(ObjectWriter writer, OutputStream rawStream, JsonEncoding enc) throws IOException {

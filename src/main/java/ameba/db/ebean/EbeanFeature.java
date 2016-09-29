@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 import java.util.List;
@@ -78,9 +79,9 @@ public class EbeanFeature implements Feature {
     private static final List<EbeanServer> SERVERS = Lists.newArrayList();
     @Inject
     private ServiceLocator locator;
-    @Inject
+    @Context
     private ObjectMapper objectMapper;
-    @Inject
+    @Context
     private XmlMapper xmlMapper;
     @Inject
     private Application application;

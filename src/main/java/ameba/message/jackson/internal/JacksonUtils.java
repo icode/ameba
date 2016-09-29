@@ -1,7 +1,6 @@
 package ameba.message.jackson.internal;
 
 import ameba.core.Application;
-import ameba.core.ws.rs.ParamConverters;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
@@ -10,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
-import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
@@ -24,9 +22,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.text.ParseException;
-import java.text.ParsePosition;
-import java.util.Date;
 
 /**
  * <p>JacksonUtils class.</p>
@@ -103,31 +98,15 @@ public class JacksonUtils {
         mapper.registerModule(new JodaModule())
                 .registerModule(new GuavaModule());
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-                .setDateFormat(new ISO8601DateFormat() {
-                    @Override
-                    public Date parse(String source, ParsePosition pos) {
-                        return ParamConverters.parseDate(source, pos);
-                    }
-
-                    @Override
-                    public Date parse(String source) throws ParseException {
-                        return ParamConverters.parseDate(source);
-                    }
-                })
                 .enable(SerializationFeature.WRITE_ENUMS_USING_INDEX)
                 .disable(
                         SerializationFeature.WRITE_NULL_MAP_VALUES,
-                        SerializationFeature.WRITE_DATES_AS_TIMESTAMPS
+                        SerializationFeature.FAIL_ON_EMPTY_BEANS
                 );
         if (!mode.isDev()) {
-            mapper
-                    .disable(
-                            DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
-                    )
-                    .disable(
-                            SerializationFeature.FAIL_ON_EMPTY_BEANS
-                            , SerializationFeature.FAIL_ON_SELF_REFERENCES
-                    );
+            mapper.disable(
+                    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
+            );
         }
     }
 
@@ -136,8 +115,12 @@ public class JacksonUtils {
         String pretty = params.getFirst("pretty");
         if ("false".equalsIgnoreCase(pretty)) {
             generator.setPrettyPrinter(null);
-        } else if (pretty != null && !pretty.equalsIgnoreCase("false") || isDev) {
+        } else if (pretty != null && !"false".equalsIgnoreCase(pretty) || isDev) {
             generator.useDefaultPrettyPrinter();
+        }
+        String unicode = params.getFirst("unicode");
+        if (unicode != null && !"false".equalsIgnoreCase(unicode)) {
+            generator.enable(JsonGenerator.Feature.ESCAPE_NON_ASCII);
         }
     }
 }
