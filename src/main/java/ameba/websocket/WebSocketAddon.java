@@ -44,6 +44,23 @@ public class WebSocketAddon extends Addon {
         return enabled;
     }
 
+    protected static WebSocket getWebSocketConf(Class endpointClass) {
+        if (endpointClass == Object.class) return null;
+        WebSocket webSocket = (WebSocket) endpointClass.getAnnotation(WebSocket.class);
+        if (webSocket == null) {
+            for (Class infc : endpointClass.getInterfaces()) {
+                webSocket = (WebSocket) infc.getAnnotation(WebSocket.class);
+                if (webSocket != null) {
+                    return webSocket;
+                }
+            }
+        }
+        if (webSocket == null) {
+            return getWebSocketConf(endpointClass.getSuperclass());
+        }
+        return null;
+    }
+
     public boolean isEnabled(Application application) {
         if (enabled == null) {
             enabled = !"false".equals(application.getSrcProperties().get(WEB_SOCKET_ENABLED_CONF));
@@ -100,8 +117,7 @@ public class WebSocketAddon extends Addon {
             context.register(new WebSocketBinder());
 
             for (Class endpointClass : endpointClasses) {
-                //todo 或许是在父类或接口上
-                WebSocket webSocket = (WebSocket) endpointClass.getAnnotation(WebSocket.class);
+                WebSocket webSocket = getWebSocketConf(endpointClass);
                 try {
                     Invocable.create(MethodHandler.create(endpointClass), null);
                     serverContainer.addEndpoint(

@@ -115,7 +115,7 @@ public class Ameba {
         try {
             bootstrap(list.toArray(new String[list.size()]));
         } catch (Throwable e) {
-            logger.error(Messages.get("info.service.error.shutdown"), e);
+            logger.error(Messages.get("info.service.error.startup"), e);
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException e1) {
@@ -162,15 +162,11 @@ public class Ameba {
         }
 
         app = application;
-        try {
-            container = Container.create(app);
+        container = Container.create(app);
 
-            // run
-            logger.info(Messages.get("info.service.start"));
-            container.start();
-        } catch (Exception e) {
-            logger.error(Messages.get("info.service.error.startup"), e);
-        }
+        // run
+        logger.info(Messages.get("info.service.start"));
+        container.start();
     }
 
     /**

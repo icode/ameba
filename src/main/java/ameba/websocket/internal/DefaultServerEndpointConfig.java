@@ -42,7 +42,7 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
     public DefaultServerEndpointConfig(final ServiceLocator serviceLocator,
                                        Class<?> endpointClass,
                                        final WebSocket webSocketConf) {
-        this.path = webSocketConf.path();
+//        this.path = webSocketConf.path();
         this.endpointClass = endpointClass;
         this.subprotocols = Arrays.asList(webSocketConf.subprotocols());
         encoders = Lists.newArrayList(webSocketConf.encoders());
