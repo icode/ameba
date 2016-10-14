@@ -6,7 +6,7 @@
     <groupId>org.amebastack</groupId>
     <artifactId>ameba</artifactId>
     <packaging>jar</packaging>
-    <version>0.1.10-SNAPSHOT</version>
+    <version>0.1.10</version>
     <name>Ameba-Framework</name>
     <description>A useful Java framework!</description>
 
@@ -517,7 +517,7 @@
     </repositories>
 
     <properties>
-        <ameba.utils.version>0.1.10-SNAPSHOT</ameba.utils.version>
+        <ameba.utils.version>0.1.10</ameba.utils.version>
         <osgi.version>4.2.0</osgi.version>
         <akka.logger>2.3.11</akka.logger>
         <paranamer.version>2.8</paranamer.version>
