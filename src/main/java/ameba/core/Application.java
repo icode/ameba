@@ -25,9 +25,6 @@ import com.google.common.primitives.Ints;
 import javassist.CtClass;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.hk2.api.DynamicConfigurationService;
-import org.glassfish.hk2.api.MultiException;
-import org.glassfish.hk2.api.Populator;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.model.ContractProvider;
@@ -1522,28 +1519,7 @@ public class Application {
 
         @Override
         public void onEvent(ApplicationEvent event) {
-            switch (event.getType()) {
-                case INITIALIZATION_FINISHED:
-                    populate(serviceLocator);
-                    break;
-            }
             SystemEventBus.publish(new ameba.core.event.ApplicationEvent(event));
-        }
-
-        /**
-         * Populate serviceLocator with services from classpath
-         *
-         * @see <a href="https://hk2.java.net/2.4.0-b16/inhabitant-generator.html">https://hk2.java.net/2.4.0-b16/inhabitant-generator.html</a>
-         */
-        protected void populate(ServiceLocator serviceLocator) {
-            DynamicConfigurationService dcs = serviceLocator.getService(DynamicConfigurationService.class);
-            Populator populator = dcs.getPopulator();
-
-            try {
-                populator.populate();
-            } catch (IOException | MultiException e) {
-                throw new MultiException(e);
-            }
         }
 
         @Override

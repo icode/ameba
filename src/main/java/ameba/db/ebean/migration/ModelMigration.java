@@ -2,7 +2,6 @@ package ameba.db.ebean.migration;
 
 import ameba.db.migration.models.ScriptInfo;
 import ameba.exception.AmebaException;
-import com.avaje.ebean.config.dbplatform.DbPlatformName;
 import com.avaje.ebean.dbmigration.DbMigration;
 import com.avaje.ebean.dbmigration.DbOffline;
 import com.avaje.ebean.dbmigration.ddlgeneration.DdlHandler;
@@ -80,10 +79,12 @@ public class ModelMigration extends DbMigration {
     }
 
     private void setOffline() {
-        if (!this.online) {
+        if (!online) {
             DbOffline.setGenerateMigration();
-            if (this.databasePlatform == null || !this.platforms.isEmpty()) {
-                this.setPlatform(DbPlatformName.H2);
+            if (databasePlatform == null && !platforms.isEmpty()) {
+                // for multiple platform generation set the general platform
+                // to H2 so that it runs offline without DB connection
+                setPlatform(platforms.get(0).platform);
             }
         }
     }
@@ -125,11 +126,6 @@ public class ModelMigration extends DbMigration {
                 DbOffline.reset();
             }
         }
-    }
-
-    @Override
-    public void addPlatform(DbPlatformName platform, String prefix) {
-        throw new UnsupportedOperationException("addPlatform Unsupported");
     }
 
     @Override

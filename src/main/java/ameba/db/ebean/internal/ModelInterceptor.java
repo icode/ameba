@@ -375,7 +375,7 @@ public class ModelInterceptor implements WriterInterceptor {
             try {
                 headerParams.putSingle(REQ_TOTAL_COUNT_HEADER_NAME, rowCount.get());
             } catch (InterruptedException | ExecutionException e) {
-                headerParams.putSingle(REQ_TOTAL_COUNT_HEADER_NAME, query.findRowCount());
+                headerParams.putSingle(REQ_TOTAL_COUNT_HEADER_NAME, query.findCount());
             }
         }
     }

@@ -3,6 +3,7 @@ package ameba.websocket;
 import ameba.core.Addon;
 import ameba.core.Application;
 import ameba.event.Listener;
+import ameba.i18n.Messages;
 import ameba.scanner.Acceptable;
 import ameba.scanner.ClassFoundEvent;
 import ameba.scanner.ClassInfo;
@@ -11,8 +12,6 @@ import ameba.websocket.internal.WebSocketBinder;
 import com.google.common.collect.Lists;
 import javassist.CtClass;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.server.model.Invocable;
-import org.glassfish.jersey.server.model.MethodHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,21 +43,39 @@ public class WebSocketAddon extends Addon {
         return enabled;
     }
 
-    protected static WebSocket getWebSocketConf(Class endpointClass) {
-        if (endpointClass == Object.class) return null;
-        WebSocket webSocket = (WebSocket) endpointClass.getAnnotation(WebSocket.class);
-        if (webSocket == null) {
-            for (Class infc : endpointClass.getInterfaces()) {
-                webSocket = (WebSocket) infc.getAnnotation(WebSocket.class);
-                if (webSocket != null) {
-                    return webSocket;
+    protected static <A> A _getAnnotation(Class<A> annotationClass, Class endpointClass) {
+        return annotationClass.cast(endpointClass.getAnnotation(annotationClass));
+    }
+
+    protected static <A> A getAnnotation(Class<A> annotationClass, Class endpointClass) {
+        if (endpointClass == Object.class || endpointClass == null) return null;
+        A annotation = _getAnnotation(annotationClass, endpointClass);
+        if (annotation == null) {
+            Class sCls = endpointClass.getSuperclass();
+            if (sCls != null) {
+                annotation = _getAnnotation(annotationClass, sCls);
+            }
+
+            if (annotation == null) {
+                Class[] inces = endpointClass.getInterfaces();
+                for (Class infc : inces) {
+                    annotation = _getAnnotation(annotationClass, infc);
+                    if (annotation != null) {
+                        return annotation;
+                    }
+                }
+                annotation = getAnnotation(annotationClass, sCls);
+                if (annotation == null) {
+                    for (Class infc : inces) {
+                        annotation = getAnnotation(annotationClass, infc);
+                        if (annotation != null) {
+                            return annotation;
+                        }
+                    }
                 }
             }
         }
-        if (webSocket == null) {
-            return getWebSocketConf(endpointClass.getSuperclass());
-        }
-        return null;
+        return annotation;
     }
 
     public boolean isEnabled(Application application) {
@@ -66,7 +83,7 @@ public class WebSocketAddon extends Addon {
             enabled = !"false".equals(application.getSrcProperties().get(WEB_SOCKET_ENABLED_CONF));
 
             if (!enabled) {
-                logger.debug("WebSocket 未启用");
+                logger.debug(Messages.get("info.websocket.disabled"));
             }
         }
 
@@ -113,18 +130,24 @@ public class WebSocketAddon extends Addon {
          */
         @Override
         public boolean configure(FeatureContext context) {
-
             context.register(new WebSocketBinder());
 
             for (Class endpointClass : endpointClasses) {
-                WebSocket webSocket = getWebSocketConf(endpointClass);
+                WebSocket webSocket = getAnnotation(WebSocket.class, endpointClass);
+                if (webSocket == null) continue;
                 try {
-                    Invocable.create(MethodHandler.create(endpointClass), null);
                     serverContainer.addEndpoint(
-                            new DefaultServerEndpointConfig(serviceLocator, endpointClass, webSocket)
+                            new DefaultServerEndpointConfig(
+                                    serviceLocator,
+                                    endpointClass,
+                                    webSocket
+                            )
                     );
                 } catch (DeploymentException e) {
                     throw new WebSocketException(e);
+                }
+                if (webSocket.withSockJS()) {
+                    // create resource use modelProcessor
                 }
             }
 

@@ -5,7 +5,6 @@ import ameba.container.server.Connector;
 import ameba.core.Application;
 import ameba.event.SystemEventBus;
 import ameba.util.ClassUtils;
-import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -39,7 +38,6 @@ public abstract class Container {
     public Container(final Application application) {
         this.application = application;
         prepare();
-        configureWebSocketContainerProvider();
         configureHttpServer();
         registerBinder(application.getConfig());
         configureHttpContainer();
@@ -77,7 +75,6 @@ public abstract class Container {
         configuration.register(new AbstractBinder() {
             @Override
             protected void configure() {
-                bindFactory(getWebSocketContainerProvider()).to(ServerContainer.class).proxy(false);
                 bind(Container.this).to(Container.class).proxy(false);
             }
         });
@@ -144,18 +141,6 @@ public abstract class Container {
     public abstract ServerContainer getWebSocketContainer();
 
     /**
-     * <p>configureWebSocketContainerProvider.</p>
-     */
-    protected abstract void configureWebSocketContainerProvider();
-
-    /**
-     * <p>getWebSocketContainerProvider.</p>
-     *
-     * @return a {@link ameba.container.Container.WebSocketContainerProvider} object.
-     */
-    protected abstract WebSocketContainerProvider getWebSocketContainerProvider();
-
-    /**
      * <p>start.</p>
      *
      * @throws java.lang.Exception if any.
@@ -216,16 +201,4 @@ public abstract class Container {
      * @return a {@link java.lang.String} object.
      */
     public abstract String getType();
-
-    public abstract class WebSocketContainerProvider implements Factory<ServerContainer> {
-
-        @Override
-        public ServerContainer provide() {
-            return getWebSocketContainer();
-        }
-
-        @Override
-        public abstract void dispose(ServerContainer serverContainer);
-    }
-
 }

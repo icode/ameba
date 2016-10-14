@@ -1,9 +1,13 @@
 package ameba.websocket.internal;
 
+import ameba.websocket.EndpointDelegate;
+import ameba.websocket.EndpointMeta;
 import ameba.websocket.WebSocket;
+import ameba.websocket.WebSocketEndpointProvider;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.Injections;
 
 import javax.websocket.Decoder;
 import javax.websocket.Encoder;
@@ -24,7 +28,6 @@ import java.util.Map;
 public class DefaultServerEndpointConfig implements ServerEndpointConfig {
 
     private String path;
-    private Class<?> endpointClass;
     private List<String> subprotocols;
     private List<Extension> extensions = Lists.newArrayList();
     private List<Class<? extends Encoder>> encoders;
@@ -36,22 +39,56 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
      * <p>Constructor for DefaultServerEndpointConfig.</p>
      *
      * @param serviceLocator a {@link org.glassfish.hk2.api.ServiceLocator} object.
-     * @param endpointClass  a {@link java.lang.Class} object.
+     * @param endpointClass  a {@link java.lang.Class} endpoint class.
      * @param webSocketConf  a {@link ameba.websocket.WebSocket} object.
      */
     public DefaultServerEndpointConfig(final ServiceLocator serviceLocator,
-                                       Class<?> endpointClass,
+                                       Class endpointClass,
                                        final WebSocket webSocketConf) {
-//        this.path = webSocketConf.path();
-        this.endpointClass = endpointClass;
-        this.subprotocols = Arrays.asList(webSocketConf.subprotocols());
+        path = webSocketConf.path();
+        subprotocols = Arrays.asList(webSocketConf.subprotocols());
         encoders = Lists.newArrayList(webSocketConf.encoders());
         decoders = Lists.newArrayList(webSocketConf.decoders());
         for (Class<? extends Extension> extensionClass : webSocketConf.extensions()) {
-            extensions.add(serviceLocator.createAndInitialize(extensionClass));
+            extensions.add(Injections.getOrCreate(serviceLocator, extensionClass));
         }
-        ServerEndpointConfig.Configurator configurator = serviceLocator.createAndInitialize(webSocketConf.configurator());
-        serverEndpointConfigurator = new Configurator(configurator, endpointClass);
+        final WebSocketEndpointProvider provider = serviceLocator.getService(WebSocketEndpointProvider.class);
+
+        final EndpointMeta endpointMeta = provider.parseEndpointMeta(endpointClass, webSocketConf);
+
+        final ServerEndpointConfig.Configurator cfgr =
+                Injections.getOrCreate(serviceLocator, webSocketConf.configurator());
+        serverEndpointConfigurator = new ServerEndpointConfig.Configurator() {
+
+            @Override
+            public String getNegotiatedSubprotocol(List<String> supported, List<String> requested) {
+                return cfgr.getNegotiatedSubprotocol(supported, requested);
+            }
+
+            @Override
+            public List<Extension> getNegotiatedExtensions(List<Extension> installed, List<Extension> requested) {
+                return cfgr.getNegotiatedExtensions(installed, requested);
+            }
+
+            @Override
+            public boolean checkOrigin(String originHeaderValue) {
+                return cfgr.checkOrigin(originHeaderValue);
+            }
+
+            @Override
+            public void modifyHandshake(ServerEndpointConfig sec,
+                                        HandshakeRequest request, HandshakeResponse response) {
+                cfgr.modifyHandshake(sec, request, response);
+            }
+
+            @Override
+            public <T> T getEndpointInstance(Class<T> eClass) throws InstantiationException {
+                if (EndpointDelegate.class.equals(eClass)) {
+                    return eClass.cast(new EndpointDelegate(endpointMeta));
+                }
+                return cfgr.getEndpointInstance(eClass);
+            }
+        };
     }
 
     /**
@@ -59,7 +96,7 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
      */
     @Override
     public Class<?> getEndpointClass() {
-        return endpointClass;
+        return EndpointDelegate.class;
     }
 
     /**
@@ -116,40 +153,5 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
     @Override
     public Map<String, Object> getUserProperties() {
         return userProperties;
-    }
-
-    private class Configurator extends ServerEndpointConfig.Configurator {
-        private ServerEndpointConfig.Configurator configurator;
-        private Class<?> endpointClass;
-
-        public Configurator(ServerEndpointConfig.Configurator configurator, Class<?> endpointClass) {
-            this.configurator = configurator;
-            this.endpointClass = endpointClass;
-        }
-
-        @Override
-        public String getNegotiatedSubprotocol(List<String> supported, List<String> requested) {
-            return configurator.getNegotiatedSubprotocol(supported, requested);
-        }
-
-        @Override
-        public List<Extension> getNegotiatedExtensions(List<Extension> installed, List<Extension> requested) {
-            return configurator.getNegotiatedExtensions(installed, requested);
-        }
-
-        @Override
-        public boolean checkOrigin(String originHeaderValue) {
-            return configurator.checkOrigin(originHeaderValue);
-        }
-
-        @Override
-        public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request, HandshakeResponse response) {
-            configurator.modifyHandshake(sec, request, response);
-        }
-
-        @Override
-        public <T> T getEndpointInstance(Class<T> endpointClass) throws InstantiationException {
-            return configurator.getEndpointInstance(endpointClass);
-        }
     }
 }

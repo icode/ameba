@@ -16,8 +16,15 @@ import java.lang.annotation.Target;
  * @since 0.1.6e
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
+@Target(ElementType.TYPE)
 public @interface WebSocket {
+
+    /**
+     * websocket path
+     *
+     * @return path
+     */
+    String path();
 
     /**
      * Enable SockJS support
