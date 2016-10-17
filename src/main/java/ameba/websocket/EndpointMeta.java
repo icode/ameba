@@ -76,7 +76,7 @@ public abstract class EndpointMeta {
             if (callOnError) {
                 onError(session, (e instanceof InvocationTargetException ? e.getCause() : e));
             } else {
-                logger.error(Messages.get("error.web.socket.endpoint"), e);
+                logger.error(Messages.get("web.socket.error.endpoint"), e);
             }
         }
 
@@ -111,7 +111,7 @@ public abstract class EndpointMeta {
         if (getOnErrorHandle() != null) {
             callMethod(getOnErrorHandle(), getOnErrorParameters(), session, false, thr);
         } else {
-            logger.error(Messages.get("error.web.socket"), thr);
+            logger.error(Messages.get("web.socket.error"), thr);
         }
     }
 

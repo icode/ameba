@@ -92,7 +92,7 @@ public class WebSocketAddon extends Addon {
             enabled = !"false".equals(application.getSrcProperties().get(WEB_SOCKET_ENABLED_CONF));
 
             if (!enabled) {
-                logger.debug(Messages.get("info.websocket.disabled"));
+                logger.info(Messages.get("web.socket.info.disabled"));
             }
         }
 
@@ -175,6 +175,10 @@ public class WebSocketAddon extends Addon {
             context.register(new WebSocketBinder());
             final DynamicConfiguration dc = Injections.getConfiguration(serviceLocator);
 
+            if (serverContainer == null) {
+                logger.warn(Messages.get("web.socket.server.unsupported"));
+            }
+
             for (Class endpointClass : endpointClasses) {
                 WebSocket webSocket = getAnnotation(WebSocket.class, endpointClass);
                 if (webSocket == null) continue;
@@ -185,16 +189,17 @@ public class WebSocketAddon extends Addon {
                     bindingBuilder.to(contract);
                 }
                 Injections.addBinding(bindingBuilder, dc);
-                try {
-                    serverContainer.addEndpoint(
-                            new DefaultServerEndpointConfig(
-                                    serviceLocator,
-                                    endpointClass,
-                                    webSocket
-                            )
-                    );
-                } catch (DeploymentException e) {
-                    throw new WebSocketException(e);
+                DefaultServerEndpointConfig endpointConfig = new DefaultServerEndpointConfig(
+                        serviceLocator,
+                        endpointClass,
+                        webSocket
+                );
+                if (serverContainer != null) {
+                    try {
+                        serverContainer.addEndpoint(endpointConfig);
+                    } catch (DeploymentException e) {
+                        throw new WebSocketException(e);
+                    }
                 }
                 if (webSocket.withSockJS()) {
                     // create resource use modelProcessor
