@@ -11,16 +11,25 @@ import ameba.websocket.internal.DefaultServerEndpointConfig;
 import ameba.websocket.internal.WebSocketBinder;
 import com.google.common.collect.Lists;
 import javassist.CtClass;
+import jersey.repackaged.com.google.common.collect.Sets;
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder;
+import org.glassfish.jersey.internal.inject.Injections;
+import org.glassfish.jersey.process.internal.RequestScoped;
+import org.glassfish.jersey.spi.Contract;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
-import java.util.List;
+import java.lang.annotation.Annotation;
+import java.util.*;
 
 
 /**
@@ -125,16 +134,57 @@ public class WebSocketAddon extends Addon {
         @Inject
         private ServerContainer serverContainer;
 
+        public static Set<Class<?>> getProviderContracts(final Class<?> clazz) {
+            final Set<Class<?>> contracts = Sets.newIdentityHashSet();
+            computeProviderContracts(clazz, contracts);
+            return contracts;
+        }
+
+        private static void computeProviderContracts(final Class<?> clazz, final Set<Class<?>> contracts) {
+            for (final Class<?> contract : getImplementedContracts(clazz)) {
+                if (isSupportedContract(contract)) {
+                    contracts.add(contract);
+                }
+                computeProviderContracts(contract, contracts);
+            }
+        }
+
+        private static Iterable<Class<?>> getImplementedContracts(final Class<?> clazz) {
+            final Collection<Class<?>> list = new LinkedList<Class<?>>();
+
+            Collections.addAll(list, clazz.getInterfaces());
+
+            final Class<?> superclass = clazz.getSuperclass();
+            if (superclass != null) {
+                list.add(superclass);
+            }
+
+            return list;
+        }
+
+        public static boolean isSupportedContract(final Class<?> type) {
+            return type.isAnnotationPresent(Contract.class);
+        }
+
         /**
          * {@inheritDoc}
          */
         @Override
+        @SuppressWarnings("unchecked")
         public boolean configure(FeatureContext context) {
             context.register(new WebSocketBinder());
+            final DynamicConfiguration dc = Injections.getConfiguration(serviceLocator);
 
             for (Class endpointClass : endpointClasses) {
                 WebSocket webSocket = getAnnotation(WebSocket.class, endpointClass);
                 if (webSocket == null) continue;
+                Class<? extends Annotation> scope = getScope(endpointClass);
+                final ScopedBindingBuilder<?> bindingBuilder = Injections.newBinder(endpointClass)
+                        .to(endpointClass).in(scope);
+                for (final Class contract : getProviderContracts(endpointClass)) {
+                    bindingBuilder.to(contract);
+                }
+                Injections.addBinding(bindingBuilder, dc);
                 try {
                     serverContainer.addEndpoint(
                             new DefaultServerEndpointConfig(
@@ -150,8 +200,19 @@ public class WebSocketAddon extends Addon {
                     // create resource use modelProcessor
                 }
             }
+            dc.commit();
 
             return true;
+        }
+
+        private Class<? extends Annotation> getScope(final Class<?> clazz) {
+            Class<? extends Annotation> hk2Scope = RequestScoped.class;
+            if (clazz.isAnnotationPresent(Singleton.class)) {
+                hk2Scope = Singleton.class;
+            } else if (clazz.isAnnotationPresent(PerLookup.class)) {
+                hk2Scope = PerLookup.class;
+            }
+            return hk2Scope;
         }
     }
 }

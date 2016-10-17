@@ -17,7 +17,6 @@ import java.util.Set;
 public abstract class EndpointMeta {
     private static final Logger logger = LoggerFactory.getLogger(EndpointMeta.class);
     protected final Set<MessageHandlerFactory> messageHandlerFactories = Sets.newLinkedHashSet();
-    protected Object endpoint;
     private Class endpointClass;
 
     public EndpointMeta(Class endpointClass) {
@@ -38,9 +37,7 @@ public abstract class EndpointMeta {
         return endpointClass;
     }
 
-    public Object getEndpoint() {
-        return endpoint;
-    }
+    public abstract Object getEndpoint();
 
     public abstract MethodHandle getOnCloseHandle();
 
@@ -60,7 +57,7 @@ public abstract class EndpointMeta {
 
         try {
             // TYRUS-325: Server do not close session properly if non-instantiable endpoint class is provided
-            if (callOnError && endpoint == null) {
+            if (callOnError && getEndpoint() == null) {
                 try {
                     session.close(CloseReasons.UNEXPECTED_CONDITION.getCloseReason());
                 } catch (Exception e) {
@@ -68,7 +65,7 @@ public abstract class EndpointMeta {
                 }
                 return null;
             }
-            paramValues[0] = endpoint;
+            paramValues[0] = getEndpoint();
             for (int i = 0; i < extractors.length; i++) {
                 paramValues[i + 1] = extractors[i].value(session, params);
             }
