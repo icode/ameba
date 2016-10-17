@@ -1,5 +1,6 @@
 package ameba.websocket;
 
+import ameba.i18n.Messages;
 import ameba.util.ClassUtils;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Primitives;
@@ -75,7 +76,7 @@ public abstract class EndpointMeta {
             if (callOnError) {
                 onError(session, (e instanceof InvocationTargetException ? e.getCause() : e));
             } else {
-                logger.error("endpoint has a error", e);
+                logger.error(Messages.get("error.web.socket.endpoint"), e);
             }
         }
 
@@ -110,7 +111,7 @@ public abstract class EndpointMeta {
         if (getOnErrorHandle() != null) {
             callMethod(getOnErrorHandle(), getOnErrorParameters(), session, false, thr);
         } else {
-            logger.error("web socket has a error", thr);
+            logger.error(Messages.get("error.web.socket"), thr);
         }
     }
 
