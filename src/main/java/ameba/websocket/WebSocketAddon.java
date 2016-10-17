@@ -18,7 +18,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder;
 import org.glassfish.jersey.internal.inject.Injections;
 import org.glassfish.jersey.process.internal.RequestScoped;
-import org.glassfish.jersey.spi.Contract;
+import org.jvnet.hk2.annotations.Contract;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,7 +163,8 @@ public class WebSocketAddon extends Addon {
         }
 
         public static boolean isSupportedContract(final Class<?> type) {
-            return type.isAnnotationPresent(Contract.class);
+            return type.isAnnotationPresent(Contract.class)
+                    || type.isAnnotationPresent(org.glassfish.jersey.spi.Contract.class);
         }
 
         /**
