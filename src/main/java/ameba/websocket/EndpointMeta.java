@@ -148,6 +148,18 @@ public abstract class EndpointMeta {
         }
 
         abstract MessageHandler create(Session session);
+
+        protected void sendObject(final Session session, Object msg) {
+            session.getAsyncRemote().sendObject(msg, new SendHandler() {
+                @Override
+                public void onResult(SendResult result) {
+                    Throwable e = result.getException();
+                    if (e != null) {
+                        onError(session, e);
+                    }
+                }
+            });
+        }
     }
 
     protected class WholeHandler extends MessageHandlerFactory {
@@ -162,11 +174,7 @@ public abstract class EndpointMeta {
                 public void onMessage(Object message) {
                     Object result = callMethod(method, extractors, session, true, message);
                     if (result != null) {
-                        try {
-                            session.getBasicRemote().sendObject(result);
-                        } catch (Exception e) {
-                            onError(session, e);
-                        }
+                        sendObject(session, result);
                     }
                 }
 
@@ -196,11 +204,7 @@ public abstract class EndpointMeta {
                 public void onMessage(Object partialMessage, boolean last) {
                     Object result = callMethod(method, extractors, session, true, partialMessage, last);
                     if (result != null) {
-                        try {
-                            session.getBasicRemote().sendObject(result);
-                        } catch (Exception e) {
-                            onError(session, e);
-                        }
+                        sendObject(session, result);
                     }
                 }
 

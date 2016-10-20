@@ -79,19 +79,4 @@ public @interface WebSocket {
      * @return an array of {@link java.lang.Class} objects.
      */
     Class<? extends Extension>[] extensions() default {};
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.METHOD})
-    @interface On {
-        /**
-         * 映射的action/event名称，如果为空则同方法名
-         *
-         * @return mapping name
-         */
-        String value() default "";
-
-        Class<? extends Encoder>[] encoders() default {};
-
-        Class<? extends Decoder>[] decoders() default {};
-    }
 }
