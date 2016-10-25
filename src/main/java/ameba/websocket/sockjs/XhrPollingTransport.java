@@ -6,8 +6,7 @@ import javax.ws.rs.core.Response;
 /**
  * @author icode
  */
-public class HtmlFileTransport implements Transport {
-
+public class XhrPollingTransport implements Transport {
     @Override
     public Response apply(ContainerRequestContext containerRequestContext) {
         return null;
