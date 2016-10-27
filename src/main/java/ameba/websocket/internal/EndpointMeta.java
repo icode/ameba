@@ -1,7 +1,8 @@
-package ameba.websocket;
+package ameba.websocket.internal;
 
 import ameba.i18n.Messages;
 import ameba.util.ClassUtils;
+import ameba.websocket.CloseReasons;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Primitives;
 import org.slf4j.Logger;

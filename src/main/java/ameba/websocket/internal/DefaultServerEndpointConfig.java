@@ -1,6 +1,5 @@
 package ameba.websocket.internal;
 
-import ameba.websocket.EndpointMeta;
 import ameba.websocket.WebSocket;
 import ameba.websocket.WebSocketEndpointProvider;
 import com.google.common.collect.Lists;

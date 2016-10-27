@@ -1,11 +1,11 @@
-package ameba.websocket;
+package ameba.websocket.internal;
 
 import javax.websocket.MessageHandler;
 
 /**
  * @author icode
  */
-interface AsyncMessageHandler extends MessageHandler.Partial {
+interface BasicMessageHandler extends MessageHandler.Whole {
 
     /**
      * Get type of handled message.
@@ -22,4 +22,3 @@ interface AsyncMessageHandler extends MessageHandler.Partial {
      */
     long getMaxMessageSize();
 }
-

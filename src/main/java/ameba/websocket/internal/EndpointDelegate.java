@@ -1,7 +1,5 @@
 package ameba.websocket.internal;
 
-import ameba.websocket.EndpointMeta;
-
 import javax.websocket.CloseReason;
 import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
