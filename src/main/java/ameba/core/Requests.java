@@ -831,6 +831,26 @@ public class Requests {
         return getRequest().getRawReqeustUri();
     }
 
+    public static int getRemotePort() {
+        return getRequest().getRemotePort();
+    }
+
+    public static String getLocalAddr() {
+        return getRequest().getLocalAddr();
+    }
+
+    public static int getLocalPort() {
+        return getRequest().getLocalPort();
+    }
+
+    public static String getRemoteHost() {
+        return getRequest().getRemoteHost();
+    }
+
+    public static String getLocalName() {
+        return getRequest().getLocalName();
+    }
+
     static class BindRequest implements Feature {
 
         @Inject

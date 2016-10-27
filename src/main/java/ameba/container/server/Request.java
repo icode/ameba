@@ -30,13 +30,17 @@ public abstract class Request extends ContainerRequest {
         super(baseUri, requestUri, httpMethod, securityContext, propertiesDelegate);
     }
 
-    /**
-     * <p>getRemoteAddr.</p>
-     *
-     * @return a {@link java.lang.String} object.
-     */
     public abstract String getRemoteAddr();
 
+    public abstract String getRemoteHost();
+
+    public abstract int getRemotePort();
+
+    public abstract String getLocalAddr();
+
+    public abstract String getLocalName();
+
+    public abstract int getLocalPort();
 
     public abstract URI getRawReqeustUri();
 
