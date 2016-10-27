@@ -52,7 +52,7 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
         }
         final WebSocketEndpointProvider provider = serviceLocator.getService(WebSocketEndpointProvider.class);
 
-        final EndpointMeta endpointMeta = provider.parseEndpointMeta(endpointClass, webSocketConf);
+        final EndpointMeta endpointMeta = provider.parseMeta(endpointClass, webSocketConf);
 
         final ServerEndpointConfig.Configurator cfgr =
                 Injections.getOrCreate(serviceLocator, webSocketConf.configurator());

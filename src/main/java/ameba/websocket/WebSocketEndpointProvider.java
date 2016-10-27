@@ -8,5 +8,5 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface WebSocketEndpointProvider {
-    EndpointMeta parseEndpointMeta(Class endpointClass, WebSocket webSocketConf);
+    EndpointMeta parseMeta(Class endpointClass, WebSocket webSocketConf);
 }
