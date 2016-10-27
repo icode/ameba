@@ -17,7 +17,7 @@ public class WebSocketBinder extends AbstractBinder {
     @Override
     protected void configure() {
         if (WebSocketAddon.isEnabled()) {
-            bind(new MessageScope()).to(MessageScope.class);
+
         }
     }
 }
