@@ -148,11 +148,12 @@ public class EbeanFeature implements Feature {
             config.setDataSource(DataSourceManager.getDataSource(name));//设置为druid数据源
             config.setJsonFactory(jsonFactory);
             config.setContainerConfig(containerConfig);
-            config.setResourceDirectory(null);
             config.setDisableClasspathSearch(true);
 
             if (name.equals(DataSourceManager.getDefaultDataSourceName())) {
                 config.setDefaultServer(true);
+            } else {
+                config.setDefaultServer(false);
             }
 
             Set<Class> classes = ModelManager.getModels(name);

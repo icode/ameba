@@ -524,7 +524,7 @@
         <jersey.version>2.23.2</jersey.version>
         <slf4j.version>1.7.21</slf4j.version>
         <logback.version>1.1.7</logback.version>
-        <ebean.version>8.6.1</ebean.version>
+        <ebean.version>8.7.1</ebean.version>
         <ebean.support.version>8.1.1</ebean.support.version>
         <druid.version>1.0.26</druid.version>
         <groovy.version>2.4.7</groovy.version>
