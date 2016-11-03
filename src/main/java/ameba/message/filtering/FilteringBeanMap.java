@@ -1,6 +1,6 @@
 package ameba.message.filtering;
 
-import ameba.message.internal.PathProperties;
+import ameba.message.internal.BeanPathProperties;
 import ameba.util.bean.BeanInvoker;
 import ameba.util.bean.BeanMap;
 import ameba.util.bean.BeanTransformer;
@@ -12,9 +12,9 @@ import java.util.Set;
  */
 public class FilteringBeanMap<T> extends BeanMap<T> {
     private static final BeanTransformer<FilteringBeanMap> TRANSFORMER = new Transformer();
-    private PathProperties pathProperties;
+    private BeanPathProperties pathProperties;
 
-    public FilteringBeanMap(T bean, final PathProperties pathProperties) {
+    public FilteringBeanMap(T bean, final BeanPathProperties pathProperties) {
         transformer = TRANSFORMER;
         this.pathProperties = pathProperties;
         this.bean = bean;
@@ -25,7 +25,7 @@ public class FilteringBeanMap<T> extends BeanMap<T> {
         this(bean, null);
     }
 
-    public static Object from(Object src, final PathProperties pathProperties) {
+    public static Object from(Object src, final BeanPathProperties pathProperties) {
         return new Transformer() {
             @Override
             protected FilteringBeanMap onTransform(Object obj) {
@@ -38,7 +38,7 @@ public class FilteringBeanMap<T> extends BeanMap<T> {
     protected Object transform(BeanInvoker invoker) throws Throwable {
         Object o = super.transform(invoker);
         if (o instanceof FilteringBeanMap) {
-            final PathProperties pathProperties = new PathProperties();
+            final BeanPathProperties pathProperties = new BeanPathProperties();
             if (this.pathProperties != null) {
                 pathProperties.put(null, pathProperties.getProperties(invoker.getPropertyName()));
                 ((FilteringBeanMap) o).pathProperties = pathProperties;

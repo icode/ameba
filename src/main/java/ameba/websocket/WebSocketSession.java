@@ -2,7 +2,8 @@ package ameba.websocket;
 
 import javax.websocket.CloseReason;
 import javax.websocket.Extension;
-import javax.ws.rs.core.HttpHeaders;
+import javax.websocket.Session;
+import javax.ws.rs.core.MultivaluedMap;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -10,6 +11,8 @@ import java.net.URI;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * @author icode
@@ -29,7 +32,7 @@ public interface WebSocketSession extends Closeable {
     /**
      * Return the headers used in the handshake request.
      */
-    HttpHeaders getHandshakeHeaders();
+    MultivaluedMap<String, String> getHandshakeHeaders();
 
     /**
      * Return the map with attributes associated with the WebSocket session.
@@ -74,7 +77,7 @@ public interface WebSocketSession extends Closeable {
      * Return the negotiated sub-protocol or {@code null} if none was specified or
      * negotiated successfully.
      */
-    String getAcceptedProtocol();
+    String getNegotiatedProtocol();
 
     /**
      * Get the configured maximum size for an incoming text message.
@@ -105,7 +108,7 @@ public interface WebSocketSession extends Closeable {
     /**
      * Send a WebSocket message
      */
-    void sendMessage(Object message) throws IOException;
+    Future<Void> sendMessage(Object message) throws IOException;
 
     /**
      * Return whether the connection is still open.
@@ -126,4 +129,15 @@ public interface WebSocketSession extends Closeable {
      */
     void close(CloseReason reason) throws IOException;
 
+    /**
+     * Return a copy of the Set of all the open web socket sessions that represent
+     * connections to the same endpoint to which this session represents a connection.
+     * The Set includes the session this method is called on. These
+     * sessions may not still be open at any point after the return of this method. For
+     * example, iterating over the set at a later time may yield one or more closed sessions. Developers
+     * should use session.isOpen() to check.
+     *
+     * @return the set of sessions, open at the time of return.
+     */
+    Set<Session> getOpenSessions();
 }

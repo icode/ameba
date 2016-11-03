@@ -11,7 +11,7 @@ public class PathPropertiesParser {
 
     // :(a,b,c(d,e,f))
 
-    private final PathProperties pathProps;
+    private final BeanPathProperties pathProps;
 
     private final String source;
 
@@ -22,14 +22,14 @@ public class PathPropertiesParser {
     private int pos;
     private int startPos;
 
-    private PathProperties.Props currentPathProps;
+    private BeanPathProperties.Props currentPathProps;
 
     private PathPropertiesParser(String src) {
 
         if (src.startsWith(":")) {
             src = src.substring(1);
         }
-        this.pathProps = new PathProperties();
+        this.pathProps = new BeanPathProperties();
         this.source = src;
         this.chars = src.toCharArray();
         this.eof = chars.length;
@@ -41,9 +41,9 @@ public class PathPropertiesParser {
     }
 
     /**
-     * Use {@link PathProperties#parse(String)}.
+     * Use {@link BeanPathProperties#parse(String)}.
      */
-    static PathProperties parse(String source) {
+    static BeanPathProperties parse(String source) {
         return new PathPropertiesParser(source).pathProps;
     }
 

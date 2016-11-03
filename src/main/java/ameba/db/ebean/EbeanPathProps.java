@@ -1,22 +1,23 @@
 package ameba.db.ebean;
 
-import ameba.message.internal.PathProperties;
+import ameba.message.internal.BeanPathProperties;
 import com.avaje.ebean.FetchPath;
 import com.avaje.ebean.Query;
 
+import java.util.Collection;
 import java.util.Set;
 
 /**
  * @author icode
  */
 public class EbeanPathProps implements FetchPath {
-    private PathProperties pathProperties;
+    private BeanPathProperties pathProperties;
 
-    public EbeanPathProps(PathProperties pathProperties) {
+    public EbeanPathProps(BeanPathProperties pathProperties) {
         this.pathProperties = pathProperties;
     }
 
-    public static EbeanPathProps of(PathProperties pathProperties) {
+    public static EbeanPathProps of(BeanPathProperties pathProperties) {
         return new EbeanPathProps(pathProperties);
     }
 
@@ -30,11 +31,15 @@ public class EbeanPathProps implements FetchPath {
         return pathProperties.getProperties(path);
     }
 
+    public Collection<BeanPathProperties.Props> getPathProps() {
+        return pathProperties.getPathProps();
+    }
+
     @Override
     public <T> void apply(final Query<T> query) {
-        pathProperties.each(new PathProperties.Each<PathProperties.Props>() {
+        pathProperties.each(new BeanPathProperties.Each<BeanPathProperties.Props>() {
             @Override
-            public void execute(PathProperties.Props props) {
+            public void execute(BeanPathProperties.Props props) {
                 String path = props.getPath();
                 String propsStr = props.getPropertiesAsString();
 

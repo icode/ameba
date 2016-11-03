@@ -1,7 +1,7 @@
 package ameba.message.filtering;
 
 import ameba.core.Requests;
-import ameba.message.internal.PathProperties;
+import ameba.message.internal.BeanPathProperties;
 import ameba.util.bean.BeanMap;
 import org.apache.commons.lang3.StringUtils;
 
@@ -13,13 +13,13 @@ import java.util.List;
  * @author icode
  */
 public class EntityFieldsUtils {
-    public static final String PATH_PROPS_PARSED = EntityFieldsUtils.class + ".PathProperties";
+    public static final String PATH_PROPS_PARSED = EntityFieldsUtils.class + ".BeanPathProperties";
 
     private EntityFieldsUtils() {
     }
 
     /**
-     * Parse and return a PathProperties format from UriInfo
+     * Parse and return a BeanPathProperties format from UriInfo
      *
      * @param uriInfo uri info
      * @return query fields
@@ -45,11 +45,11 @@ public class EntityFieldsUtils {
                 }
             }
         }
-        return builder.length() == 0 ? "(*)" : builder.toString();
+        return builder.length() == 0 ? null : builder.toString();
     }
 
     /**
-     * Parse and return a PathProperties format from UriInfo
+     * Parse and return a BeanPathProperties format from UriInfo
      *
      * @return query fields
      */
@@ -58,45 +58,52 @@ public class EntityFieldsUtils {
     }
 
     /**
-     * Parse and return a PathProperties from nested string format like
+     * Parse and return a BeanPathProperties from nested string format like
      * (a,b,c(d,e),f(g)) where "c" is a path containing "d" and "e" and "f" is a
      * path containing "g" and the root path contains "a","b","c" and "f".
      *
      * @param uriInfo uri info
      * @return path properties
      */
-    public static PathProperties parsePathProperties(UriInfo uriInfo) {
-        return PathProperties.parse(parseQueryFields(uriInfo));
+    public static BeanPathProperties parsePathProperties(UriInfo uriInfo) {
+        return BeanPathProperties.parse(parseQueryFields(uriInfo));
     }
 
     /**
-     * Parse and return a PathProperties from nested string format like
+     * Parse and return a BeanPathProperties from nested string format like
      * (a,b,c(d,e),f(g)) where "c" is a path containing "d" and "e" and "f" is a
      * path containing "g" and the root path contains "a","b","c" and "f".
      *
      * @return pah properties
      */
-    public static PathProperties parsePathProperties() {
-        PathProperties pathProperties = Requests.getProperty(PATH_PROPS_PARSED);
+    public static BeanPathProperties parsePathProperties() {
+        Object pathProperties = Requests.getProperty(PATH_PROPS_PARSED);
         if (pathProperties == null) {
-            pathProperties = PathProperties.parse(parseQueryFields());
-            Requests.setProperty(PATH_PROPS_PARSED, pathProperties);
+            String fields = parseQueryFields();
+            if (fields != null) {
+                pathProperties = BeanPathProperties.parse(fields);
+                Requests.setProperty(PATH_PROPS_PARSED, pathProperties);
+            } else {
+                Requests.setProperty(PATH_PROPS_PARSED, false);
+            }
+        } else if (pathProperties.equals(false)) {
+            return null;
         }
-        return pathProperties;
+        return (BeanPathProperties) pathProperties;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> BeanMap<T> filterBeanFields(T src, PathProperties pathProperties) {
+    public static <T> BeanMap<T> filterBeanFields(T src, BeanPathProperties pathProperties) {
         return (BeanMap<T>) FilteringBeanMap.from(src, pathProperties);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> BeanMap[] filterBeanFields(T[] src, PathProperties pathProperties) {
+    public static <T> BeanMap[] filterBeanFields(T[] src, BeanPathProperties pathProperties) {
         return (BeanMap[]) FilteringBeanMap.from(src, pathProperties);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Collection<BeanMap<T>> filterBeanFields(Collection<T> src, PathProperties pathProperties) {
+    public static <T> Collection<BeanMap<T>> filterBeanFields(Collection<T> src, BeanPathProperties pathProperties) {
         return (Collection<BeanMap<T>>) FilteringBeanMap.from(src, pathProperties);
     }
 

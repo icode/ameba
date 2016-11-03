@@ -8,6 +8,7 @@ import ameba.db.ebean.jackson.CommonBeanSerializer;
 import ameba.exception.UnprocessableEntityException;
 import ameba.i18n.Messages;
 import ameba.message.filtering.EntityFieldsUtils;
+import ameba.message.internal.BeanPathProperties;
 import com.avaje.ebean.FetchPath;
 import com.avaje.ebean.OrderBy;
 import com.avaje.ebean.Query;
@@ -37,7 +38,7 @@ import static com.avaje.ebean.OrderBy.Property;
  * @since 0.1.6e
  */
 public class EbeanUtils {
-    public static final String PATH_PROPS_PARSED = EbeanUtils.class + ".PathProperties";
+    public static final String PATH_PROPS_PARSED = EbeanUtils.class + ".BeanPathProperties";
 
 
     private EbeanUtils() {
@@ -75,18 +76,25 @@ public class EbeanUtils {
     }
 
     /**
-     * parse uri query param to PathProperties for Ebean.json().toJson()
+     * parse uri query param to BeanPathProperties for Ebean.json().toJson()
      *
-     * @return PathProperties
+     * @return BeanPathProperties
      * @see CommonBeanSerializer#serialize(Object, JsonGenerator, SerializerProvider)
      */
-    public static FetchPath getCurrentRequestPathProperties() {
-        FetchPath properties = Requests.getProperty(PATH_PROPS_PARSED);
+    public static FetchPath getRequestFetchPath() {
+        Object properties = Requests.getProperty(PATH_PROPS_PARSED);
         if (properties == null) {
-            properties = EbeanPathProps.of(EntityFieldsUtils.parsePathProperties());
-            Requests.setProperty(PATH_PROPS_PARSED, properties);
+            BeanPathProperties pathProperties = EntityFieldsUtils.parsePathProperties();
+            if (pathProperties == null) {
+                Requests.setProperty(PATH_PROPS_PARSED, false);
+            } else {
+                properties = EbeanPathProps.of(pathProperties);
+                Requests.setProperty(PATH_PROPS_PARSED, properties);
+            }
+        } else if (properties.equals(false)) {
+            return null;
         }
-        return properties;
+        return (FetchPath) properties;
     }
 
     public static <T> void appendOrder(OrderBy<T> orderBy, String orderByClause) {

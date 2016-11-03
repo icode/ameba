@@ -587,7 +587,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * Configure the "Find By Ids" query.
      * <p>
-     * This is only used when no PathProperties where set via UriOptions.
+     * This is only used when no BeanPathProperties where set via UriOptions.
      * </p>
      * <p>
      * This effectively controls the "default" query used to render this model.
@@ -665,7 +665,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * Configure the "Find" query.
      * <p>
-     * This is only used when no PathProperties where set via UriOptions.
+     * This is only used when no BeanPathProperties where set via UriOptions.
      * </p>
      * <p>
      * This effectively controls the "default" query used with the find all

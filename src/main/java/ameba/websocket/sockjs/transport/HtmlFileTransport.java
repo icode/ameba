@@ -1,7 +1,8 @@
-package ameba.websocket.sockjs;
+package ameba.websocket.sockjs.transport;
+
+import org.glassfish.jersey.server.ChunkedOutput;
 
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Response;
 
 /**
  * @author icode
@@ -9,7 +10,7 @@ import javax.ws.rs.core.Response;
 public class HtmlFileTransport implements Transport {
 
     @Override
-    public Response apply(ContainerRequestContext containerRequestContext) {
+    public ChunkedOutput apply(ContainerRequestContext containerRequestContext) {
         return null;
     }
 }

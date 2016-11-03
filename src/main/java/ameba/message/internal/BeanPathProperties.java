@@ -18,14 +18,14 @@ import java.util.*;
  *
  * @author icode
  */
-public class PathProperties {
+public class BeanPathProperties {
 
     private final Map<String, Props> pathMap;
 
     /**
-     * Construct an empty PathProperties.
+     * Construct an empty BeanPathProperties.
      */
-    public PathProperties() {
+    public BeanPathProperties() {
         this.pathMap = Maps.newLinkedHashMap();
         this.pathMap.put(null, new Props(this, null, null));
     }
@@ -33,7 +33,7 @@ public class PathProperties {
     /**
      * Construct for creating copy.
      */
-    private PathProperties(PathProperties orig) {
+    private BeanPathProperties(BeanPathProperties orig) {
         this.pathMap = new LinkedHashMap<>(orig.pathMap.size());
         Set<Map.Entry<String, Props>> entrySet = orig.pathMap.entrySet();
         for (Map.Entry<String, Props> e : entrySet) {
@@ -42,14 +42,14 @@ public class PathProperties {
     }
 
     /**
-     * Parse and return a PathProperties from nested string format like
+     * Parse and return a BeanPathProperties from nested string format like
      * (a,b,c(d,e),f(g)) where "c" is a path containing "d" and "e" and "f" is a
      * path containing "g" and the root path contains "a","b","c" and "f".
      *
      * @param source source path
      * @return path properties
      */
-    public static PathProperties parse(String source) {
+    public static BeanPathProperties parse(String source) {
         return PathPropertiesParser.parse(source);
     }
 
@@ -58,15 +58,15 @@ public class PathProperties {
      * <p>
      * For example, you may want to create a copy to add extra properties to a
      * path so that they are fetching in a ORM query but perhaps not rendered by
-     * default. That is, use a PathProperties for JSON or XML rendering, but
+     * default. That is, use a BeanPathProperties for JSON or XML rendering, but
      * create a copy, add some extra properties and then use that copy to define
      * an ORM query.
      * </p>
      *
      * @return path properties
      */
-    public PathProperties copy() {
-        return new PathProperties(this);
+    public BeanPathProperties copy() {
+        return new BeanPathProperties(this);
     }
 
     /**
@@ -171,21 +171,21 @@ public class PathProperties {
 
     public static class Props {
 
-        private final PathProperties owner;
+        private final BeanPathProperties owner;
 
         private final String parentPath;
         private final String path;
 
         private final Set<String> propSet;
 
-        private Props(PathProperties owner, String parentPath, String path, Set<String> propSet) {
+        private Props(BeanPathProperties owner, String parentPath, String path, Set<String> propSet) {
             this.owner = owner;
             this.path = path;
             this.parentPath = parentPath;
             this.propSet = propSet;
         }
 
-        private Props(PathProperties owner, String parentPath, String path) {
+        private Props(BeanPathProperties owner, String parentPath, String path) {
             this(owner, parentPath, path, new LinkedHashSet<String>());
         }
 
@@ -195,7 +195,7 @@ public class PathProperties {
          * @param newOwner new owner
          * @return properties
          */
-        public Props copy(PathProperties newOwner) {
+        public Props copy(BeanPathProperties newOwner) {
             return new Props(newOwner, parentPath, path, Sets.newLinkedHashSet(propSet));
         }
 

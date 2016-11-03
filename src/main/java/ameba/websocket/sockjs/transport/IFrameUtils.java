@@ -1,4 +1,4 @@
-package ameba.websocket.sockjs;
+package ameba.websocket.sockjs.transport;
 
 import com.google.common.base.Charsets;
 

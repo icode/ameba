@@ -7,7 +7,7 @@ import ameba.db.ebean.filter.EbeanExprInvoker;
 import ameba.db.ebean.filter.WhereExprApplier;
 import ameba.db.model.Finder;
 import ameba.message.filtering.EntityFieldsFilteringFeature;
-import ameba.message.internal.PathProperties;
+import ameba.message.internal.BeanPathProperties;
 import com.avaje.ebean.*;
 import com.avaje.ebean.bean.BeanCollection;
 import com.avaje.ebean.common.BeanList;
@@ -197,8 +197,8 @@ public class ModelInterceptor implements WriterInterceptor {
                 if (!s.startsWith(")")) {
                     s += ")";
                 }
-                PathProperties pathProperties = PathProperties.parse(s);
-                for (PathProperties.Props props : pathProperties.getPathProps()) {
+                BeanPathProperties pathProperties = BeanPathProperties.parse(s);
+                for (BeanPathProperties.Props props : pathProperties.getPathProps()) {
                     String path = props.getPath();
                     String propsStr = props.getPropertiesAsString();
 

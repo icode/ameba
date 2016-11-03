@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import javax.websocket.*;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Set;
 
 /**
@@ -26,13 +28,25 @@ public abstract class EndpointMeta {
     }
 
     static Class<?> getHandlerType(MessageHandler handler) {
-        if (handler instanceof AsyncMessageHandler) {
-            return ((AsyncMessageHandler) handler).getType();
-        } else if (handler instanceof BasicMessageHandler) {
-            return ((BasicMessageHandler) handler).getType();
+        if (handler instanceof TypeMessageHandler) {
+            return ((TypeMessageHandler) handler).getType();
         }
         Class<?> result = ClassUtils.getGenericClass(handler.getClass());
         return result == null ? Object.class : result;
+    }
+
+    protected static void checkMessageSize(Object message, long maxMessageSize) {
+        if (maxMessageSize != -1) {
+            final long messageSize =
+                    (message instanceof String ? ((String) message).getBytes(Charset.defaultCharset()).length
+                            : ((ByteBuffer) message).remaining());
+
+            if (messageSize > maxMessageSize) {
+                throw new MessageTooBigException(
+                        Messages.get("web.socket.error.message.too.long", maxMessageSize, messageSize)
+                );
+            }
+        }
     }
 
     public Class getEndpointClass() {
@@ -116,6 +130,10 @@ public abstract class EndpointMeta {
         }
     }
 
+    private Class getMessageType(Class type) {
+        return type == ameba.websocket.PongMessage.class ? PongMessage.class : type;
+    }
+
     protected interface ParameterExtractor {
         Object value(Session session, Object... paramValues) throws DecodeException;
     }
@@ -173,6 +191,7 @@ public abstract class EndpointMeta {
             return new BasicMessageHandler() {
                 @Override
                 public void onMessage(Object message) {
+                    checkMessageSize(message, getMaxMessageSize());
                     Object result = callMethod(method, extractors, session, true, message);
                     if (result != null) {
                         sendObject(session, result);
@@ -181,7 +200,7 @@ public abstract class EndpointMeta {
 
                 @Override
                 public Class<?> getType() {
-                    return type;
+                    return getMessageType(type);
                 }
 
                 @Override
@@ -203,6 +222,7 @@ public abstract class EndpointMeta {
 
                 @Override
                 public void onMessage(Object partialMessage, boolean last) {
+                    checkMessageSize(partialMessage, getMaxMessageSize());
                     Object result = callMethod(method, extractors, session, true, partialMessage, last);
                     if (result != null) {
                         sendObject(session, result);
@@ -211,7 +231,7 @@ public abstract class EndpointMeta {
 
                 @Override
                 public Class<?> getType() {
-                    return type;
+                    return getMessageType(type);
                 }
 
                 @Override

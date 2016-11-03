@@ -2,6 +2,8 @@ package ameba.websocket;
 
 import ameba.exception.AmebaException;
 
+import javax.websocket.CloseReason;
+
 /**
  * <p>WebSocketException class.</p>
  *
@@ -41,5 +43,14 @@ public class WebSocketException extends AmebaException {
      */
     public WebSocketException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    /**
+     * Get close reason.
+     *
+     * @return close reason used when processing this exception.
+     */
+    public CloseReason getCloseReason() {
+        return null;
     }
 }
