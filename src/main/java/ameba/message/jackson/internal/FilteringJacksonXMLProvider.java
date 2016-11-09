@@ -1,5 +1,9 @@
 package ameba.message.jackson.internal;
 
+import ameba.core.Application;
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.jaxrs.xml.XMLEndpointConfig;
@@ -8,7 +12,9 @@ import org.glassfish.jersey.message.filtering.spi.ObjectProvider;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
@@ -25,6 +31,17 @@ public class FilteringJacksonXMLProvider extends JacksonXMLProvider {
 
     @Inject
     private Provider<ObjectProvider<FilterProvider>> provider;
+    @Context
+    private UriInfo uriInfo;
+    @Inject
+    private Application.Mode mode;
+
+    @Override
+    protected JsonGenerator _createGenerator(ObjectWriter writer, OutputStream rawStream, JsonEncoding enc) throws IOException {
+        JsonGenerator generator = super._createGenerator(writer, rawStream, enc);
+        JacksonUtils.configureGenerator(uriInfo, generator, mode.isDev());
+        return generator;
+    }
 
     /**
      * {@inheritDoc}
