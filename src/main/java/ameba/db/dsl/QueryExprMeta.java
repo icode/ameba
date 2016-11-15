@@ -7,7 +7,6 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.text.ParsePosition;
@@ -87,7 +86,6 @@ public class QueryExprMeta {
                         StringUtils.join(
                                 Collections2.transform(arguments,
                                         new Function<Val, String>() {
-                                            @Nullable
                                             @Override
                                             public String apply(@NotNull Val input) {
                                                 if (input.object() == null) {

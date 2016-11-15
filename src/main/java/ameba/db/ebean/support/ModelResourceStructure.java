@@ -20,7 +20,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.internal.util.collection.Refs;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.persistence.OptimisticLockException;
 import javax.validation.Valid;
@@ -402,7 +401,6 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
 
         if (!idSet.isEmpty()) {
             idCollection.addAll(Collections2.transform(idSet, new Function<String, MODEL_ID>() {
-                @Nullable
                 @Override
                 public MODEL_ID apply(String input) {
                     return tryConvertId(input);
@@ -534,7 +532,6 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         idCollection.add(firstId);
         if (!idSet.isEmpty()) {
             idCollection.addAll(Collections2.transform(idSet, new Function<String, MODEL_ID>() {
-                @Nullable
                 @Override
                 public MODEL_ID apply(String input) {
                     return tryConvertId(input);

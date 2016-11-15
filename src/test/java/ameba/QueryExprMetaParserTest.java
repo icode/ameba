@@ -9,7 +9,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -39,9 +38,8 @@ public class QueryExprMetaParserTest {
         List<QueryExprMeta> queryExprMetaList = QueryDSL.parse(expr);
         logger.debug(
                 StringUtils.join(Collections2.transform(queryExprMetaList, new Function<QueryExprMeta, String>() {
-                    @Nullable
                     @Override
-                    public String apply(@Nullable QueryExprMeta input) {
+                    public String apply(QueryExprMeta input) {
                         return String.valueOf(input);
                     }
                 }), ""));
