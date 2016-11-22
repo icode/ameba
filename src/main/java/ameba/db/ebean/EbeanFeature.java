@@ -138,12 +138,12 @@ public class EbeanFeature implements Feature {
                     loadSettings(new PropertiesWrapper("db", name, properties));
                 }
             };
+            config.setName(name);
             config.setJsonInclude(JsonConfig.Include.NON_EMPTY);
             config.setPersistBatch(PersistBatch.ALL);
             config.setUpdateAllPropertiesInBatch(false);
             config.loadFromProperties(eBeanConfig);
             config.setPackages(null);
-            config.setName(name);
             config.setDataSourceJndiName(null);
             config.setDataSource(DataSourceManager.getDataSource(name));//设置为druid数据源
             config.setJsonFactory(jsonFactory);
