@@ -140,8 +140,8 @@ public class EbeanFeature implements Feature {
             };
             config.setJsonInclude(JsonConfig.Include.NON_EMPTY);
             config.setPersistBatch(PersistBatch.ALL);
-            config.loadFromProperties(eBeanConfig);
             config.setUpdateAllPropertiesInBatch(false);
+            config.loadFromProperties(eBeanConfig);
             config.setPackages(null);
             config.setName(name);
             config.setDataSourceJndiName(null);
