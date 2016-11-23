@@ -28,13 +28,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 /**
- * An abstract base class for implementations of {@link WebSocketSession}.
+ * An abstract base class for implementations of {@link ameba.websocket.WebSocketSession}.
  *
  * @author Rossen Stoyanchev
  * @author icode
+ * @version $Id: $Id
  */
 public abstract class AbstractWebSocketSession<T> implements NativeWebSocketSession {
 
+    /**
+     * Constant <code>logger</code>
+     */
     protected static final Logger logger = LoggerFactory.getLogger(NativeWebSocketSession.class);
     private final Map<String, Object> attributes = new ConcurrentHashMap<>();
     private T nativeSession;
@@ -53,16 +57,19 @@ public abstract class AbstractWebSocketSession<T> implements NativeWebSocketSess
     }
 
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, Object> getAttributes() {
         return this.attributes;
     }
 
+    /** {@inheritDoc} */
     @Override
     public T getNativeSession() {
         return this.nativeSession;
     }
 
+    /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
     public <R> R getNativeSession(Class<R> requiredType) {
@@ -74,15 +81,24 @@ public abstract class AbstractWebSocketSession<T> implements NativeWebSocketSess
         return null;
     }
 
+    /**
+     * <p>initializeNativeSession.</p>
+     *
+     * @param session a T object.
+     */
     public void initializeNativeSession(T session) {
         Assert.notNull(session, "session must not be null");
         this.nativeSession = session;
     }
 
+    /**
+     * <p>checkNativeSessionInitialized.</p>
+     */
     protected final void checkNativeSessionInitialized() {
         Assert.state(this.nativeSession != null, "WebSocket session is not yet initialized");
     }
 
+    /** {@inheritDoc} */
     @Override
     public final Future<Void> sendMessage(Object message) throws IOException {
 
@@ -104,21 +120,58 @@ public abstract class AbstractWebSocketSession<T> implements NativeWebSocketSess
         return sendObjectMessage(message);
     }
 
+    /**
+     * <p>sendTextMessage.</p>
+     *
+     * @param message a {@link ameba.websocket.TextMessage} object.
+     * @return a {@link java.util.concurrent.Future} object.
+     * @throws java.io.IOException if any.
+     */
     protected abstract Future<Void> sendTextMessage(TextMessage message) throws IOException;
 
+    /**
+     * <p>sendBinaryMessage.</p>
+     *
+     * @param message a {@link ameba.websocket.BinaryMessage} object.
+     * @return a {@link java.util.concurrent.Future} object.
+     * @throws java.io.IOException if any.
+     */
     protected abstract Future<Void> sendBinaryMessage(BinaryMessage message) throws IOException;
 
+    /**
+     * <p>sendPingMessage.</p>
+     *
+     * @param message a {@link ameba.websocket.PingMessage} object.
+     * @return a {@link java.util.concurrent.Future} object.
+     * @throws java.io.IOException if any.
+     */
     protected abstract Future<Void> sendPingMessage(PingMessage message) throws IOException;
 
+    /**
+     * <p>sendPongMessage.</p>
+     *
+     * @param message a {@link ameba.websocket.PongMessage} object.
+     * @return a {@link java.util.concurrent.Future} object.
+     * @throws java.io.IOException if any.
+     */
     protected abstract Future<Void> sendPongMessage(PongMessage message) throws IOException;
 
+    /**
+     * <p>sendObjectMessage.</p>
+     *
+     * @param message a {@link java.lang.Object} object.
+     * @return a {@link java.util.concurrent.Future} object.
+     * @throws java.io.IOException if any.
+     */
     protected abstract Future<Void> sendObjectMessage(Object message) throws IOException;
 
+    /** {@inheritDoc} */
     @Override
     public final void close() throws IOException {
         close(CloseReasons.NORMAL_CLOSURE.getCloseReason());
     }
 
+    /** {@inheritDoc} */
     @Override
     public final void close(CloseReason status) throws IOException {
         checkNativeSessionInitialized();
@@ -128,9 +181,16 @@ public abstract class AbstractWebSocketSession<T> implements NativeWebSocketSess
         closeInternal(status);
     }
 
+    /**
+     * <p>closeInternal.</p>
+     *
+     * @param status a {@link javax.websocket.CloseReason} object.
+     * @throws java.io.IOException if any.
+     */
     protected abstract void closeInternal(CloseReason status) throws IOException;
 
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         if (this.nativeSession != null) {

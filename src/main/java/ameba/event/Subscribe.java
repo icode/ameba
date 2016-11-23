@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

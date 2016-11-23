@@ -19,6 +19,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * <p>Abstract EventBus class.</p>
  *
  * @author icode
+ * @version $Id: $Id
  */
 public abstract class EventBus {
 
@@ -53,7 +54,7 @@ public abstract class EventBus {
      *
      * @param event    a {@link java.lang.Class} object.
      * @param listener a {@link ameba.event.Listener} object.
-     * @param <E>      a E object.
+     * @param <E> a E object.
      */
     public <E extends Event> void subscribe(Class<E> event, final Listener<E> listener) {
         subscribersByTypeLock.writeLock().lock();
@@ -184,8 +185,8 @@ public abstract class EventBus {
      * @param event     a {@link java.lang.Class} object.
      * @param listener  a {@link ameba.event.Listener} object.
      * @param subscribe a {@link ameba.event.Subscribe} object.
-     * @param <E>       a E object.
      * @since 0.1.6e
+     * @param <E> a E object.
      */
     protected <E extends Event> void subscribe(Class<E> event, final Listener<E> listener, Subscribe subscribe) {
         subscribe(event, listener);
@@ -196,7 +197,7 @@ public abstract class EventBus {
      *
      * @param event    a {@link java.lang.Class} object.
      * @param listener a {@link ameba.event.Listener} object.
-     * @param <E>      a E object.
+     * @param <E> a E object.
      */
     public <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener) {
         subscribersByTypeLock.writeLock().lock();
@@ -211,8 +212,8 @@ public abstract class EventBus {
      * <p>unsubscribe.</p>
      *
      * @param event a {@link java.lang.Class} object.
-     * @param <E>   a E object.
      * @since 0.1.6e
+     * @param <E> a E object.
      */
     public <E extends Event> void unsubscribe(Class<E> event) {
         subscribersByTypeLock.writeLock().lock();

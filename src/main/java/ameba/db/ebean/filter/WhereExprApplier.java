@@ -10,20 +10,36 @@ import com.avaje.ebean.Query;
 import com.avaje.ebeaninternal.server.expression.AbstractTextExpression;
 
 /**
+ * <p>WhereExprApplier class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class WhereExprApplier<O> implements ExprApplier<Expression> {
 
     private ExpressionList<O> expressionList;
 
+    /**
+     * <p>Constructor for WhereExprApplier.</p>
+     *
+     * @param expressions a {@link com.avaje.ebean.ExpressionList} object.
+     */
     public WhereExprApplier(ExpressionList<O> expressions) {
         this.expressionList = expressions;
     }
 
+    /**
+     * <p>create.</p>
+     *
+     * @param expressions a {@link com.avaje.ebean.ExpressionList} object.
+     * @param <O>         a O object.
+     * @return a {@link ameba.db.ebean.filter.WhereExprApplier} object.
+     */
     public static <O> WhereExprApplier<O> create(ExpressionList<O> expressions) {
         return new WhereExprApplier<>(expressions);
     }
 
+    /** {@inheritDoc} */
     @Override
     @SuppressWarnings("unchecked")
     public void apply(Expression expr) {

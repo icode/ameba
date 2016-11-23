@@ -4,6 +4,7 @@ package ameba.mvc.route;
  * 路由器实体
  *
  * @author icode
+ * @version $Id: $Id
  */
 public class Route {
     private String path;

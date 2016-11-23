@@ -20,12 +20,20 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * <p>DatabaseMigrationResolver class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class DatabaseMigrationResolver implements MigrationResolver {
 
     private Migration migration;
 
+    /**
+     * <p>Constructor for DatabaseMigrationResolver.</p>
+     *
+     * @param migration a {@link ameba.db.migration.Migration} object.
+     */
     public DatabaseMigrationResolver(Migration migration) {
         this.migration = migration;
     }
@@ -47,6 +55,9 @@ public class DatabaseMigrationResolver implements MigrationResolver {
         return hasher.hash().asInt();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Collection<ResolvedMigration> resolveMigrations() {
         List<ResolvedMigration> resolvedMigrations = Lists.newArrayList();

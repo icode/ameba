@@ -8,6 +8,7 @@ import java.util.List;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public interface SourceAttachment {
 
@@ -18,6 +19,11 @@ public interface SourceAttachment {
      */
     URL getSourceUrl();
 
+    /**
+     * <p>getSource.</p>
+     *
+     * @return a {@link java.util.List} object.
+     */
     List<String> getSource();
 
     /**

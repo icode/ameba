@@ -9,14 +9,15 @@ import javax.ws.rs.core.FeatureContext;
 
 /**
  * <p>
- * {@link Feature} used to add support for custom query parameter filtering for
+ * {@link javax.ws.rs.core.Feature} used to add support for custom query parameter filtering for
  * Entity Data Filtering feature. </p>
  * Note: This feature also registers the
- * {@link EntityFilteringFeature}.
+ * {@link org.glassfish.jersey.message.filtering.EntityFilteringFeature}.
  *
  * @author Andy Pemberton (pembertona at gmail.com)
  * @author icode
  * @see org.glassfish.jersey.message.filtering.EntityFilteringFeature
+ * @version $Id: $Id
  */
 public final class EntityFieldsFilteringFeature implements Feature {
 
@@ -25,6 +26,9 @@ public final class EntityFieldsFilteringFeature implements Feature {
      */
     public static final String QUERY_FIELDS_PARAM_NAME = "model.query.param.fields";
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean configure(final FeatureContext context) {
         final Configuration config = context.getConfiguration();

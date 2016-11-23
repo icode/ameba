@@ -36,8 +36,12 @@ import static com.avaje.ebean.OrderBy.Property;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public class EbeanUtils {
+    /**
+     * Constant <code>PATH_PROPS_PARSED="EbeanUtils.class + .BeanPathProperties"</code>
+     */
     public static final String PATH_PROPS_PARSED = EbeanUtils.class + ".BeanPathProperties";
 
 
@@ -97,6 +101,14 @@ public class EbeanUtils {
         return (FetchPath) properties;
     }
 
+    /**
+     * <p>appendOrder.</p>
+     *
+     * @param orderBy a {@link com.avaje.ebean.OrderBy} object.
+     * @param orderByClause a {@link java.lang.String} object.
+     * @param orderByClause a {@link java.lang.String} object.
+     * @param <T> a T object.
+     */
     public static <T> void appendOrder(OrderBy<T> orderBy, String orderByClause) {
 
         if (orderByClause == null) {
@@ -113,10 +125,24 @@ public class EbeanUtils {
         }
     }
 
+    /**
+     * <p>checkQuery.</p>
+     *
+     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     */
     public static void checkQuery(Query<?> query, ServiceLocator locator) {
         checkQuery(query, null, null, locator);
     }
 
+    /**
+     * <p>checkQuery.</p>
+     *
+     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param whitelist a {@link java.util.Set} object.
+     * @param blacklist a {@link java.util.Set} object.
+     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     */
     public static void checkQuery(Query<?> query, Set<String> whitelist,
                                   Set<String> blacklist, ServiceLocator locator) {
         ResourceInfo resource = locator.getService(ResourceInfo.class);
@@ -153,6 +179,14 @@ public class EbeanUtils {
         checkQuery((SpiQuery) query, wl, bl, locator.getService(Application.Mode.class).isProd());
     }
 
+    /**
+     * <p>checkQuery.</p>
+     *
+     * @param query a {@link com.avaje.ebeaninternal.api.SpiQuery} object.
+     * @param whitelist a {@link java.util.Set} object.
+     * @param blacklist a {@link java.util.Set} object.
+     * @param ignoreUnknown a boolean.
+     */
     public static void checkQuery(SpiQuery<?> query, Set<String> whitelist,
                                   Set<String> blacklist, boolean ignoreUnknown) {
         checkQuery(
@@ -164,6 +198,13 @@ public class EbeanUtils {
         );
     }
 
+    /**
+     * <p>checkQuery.</p>
+     *
+     * @param query a {@link com.avaje.ebeaninternal.api.SpiQuery} object.
+     * @param validation a {@link ameba.db.ebean.internal.ListExpressionValidation} object.
+     * @param ignoreUnknown a boolean.
+     */
     public static void checkQuery(SpiQuery<?> query, ListExpressionValidation validation, boolean ignoreUnknown) {
         if (query != null) {
             validate(query.getWhereExpressions(), validation, ignoreUnknown);
@@ -178,6 +219,13 @@ public class EbeanUtils {
         }
     }
 
+    /**
+     * <p>validate.</p>
+     *
+     * @param expressions a {@link com.avaje.ebeaninternal.api.SpiExpressionList} object.
+     * @param validation a {@link ameba.db.ebean.internal.ListExpressionValidation} object.
+     * @param ignoreUnknown a boolean.
+     */
     public static void validate(SpiExpressionList<?> expressions,
                                 ListExpressionValidation validation,
                                 boolean ignoreUnknown) {
@@ -192,6 +240,13 @@ public class EbeanUtils {
         }
     }
 
+    /**
+     * <p>validate.</p>
+     *
+     * @param orderBy a {@link com.avaje.ebean.OrderBy} object.
+     * @param validation a {@link ameba.db.ebean.internal.ListExpressionValidation} object.
+     * @param ignoreUnknown a boolean.
+     */
     public static void validate(OrderBy<?> orderBy,
                                 ListExpressionValidation validation,
                                 boolean ignoreUnknown) {

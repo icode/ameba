@@ -8,6 +8,7 @@ import java.util.List;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public abstract class AmebaExceptionWithJavaSource extends AmebaException implements SourceAttachment {
 
@@ -43,8 +44,18 @@ public abstract class AmebaExceptionWithJavaSource extends AmebaException implem
      * @param message   a {@link java.lang.String} object.
      * @param cause     a {@link java.lang.Throwable} object.
      * @param line      a {@link java.lang.Integer} object.
+     * @param lineIndex a {@link java.lang.Integer} object.
+     * @param lineIndex a {@link java.lang.Integer} object.
+     * @param lineIndex a {@link java.lang.Integer} object.
+     * @param lineIndex a {@link java.lang.Integer} object.
+     * @param sourceUrl url
+     * @param sourceUrl url
+     * @param sourceUrl url
+     * @param sourceUrl url
+     * @param sourceUrl url
      * @param sourceUrl url
      * @param source    a {@link java.util.List} object.
+     * @param lineIndex a {@link java.lang.Integer} object.
      * @param lineIndex a {@link java.lang.Integer} object.
      */
     public AmebaExceptionWithJavaSource(String message, Throwable cause, Integer line, Integer lineIndex,
@@ -64,22 +75,19 @@ public abstract class AmebaExceptionWithJavaSource extends AmebaException implem
         return sourceUrl;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public Integer getLineNumber() {
         return line;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public Integer getLineIndex() {
         return lineIndex;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<String> getSource() {
         return source;

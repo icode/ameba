@@ -15,12 +15,21 @@ import java.io.IOException;
 import java.util.List;
 
 /**
+ * <p>EbeanMigration class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class EbeanMigration implements Migration {
     private final ModelMigration dbMigration;
     private final SpiEbeanServer server;
 
+    /**
+     * <p>Constructor for EbeanMigration.</p>
+     *
+     * @param application a {@link ameba.core.Application} object.
+     * @param server      a {@link com.avaje.ebeaninternal.api.SpiEbeanServer} object.
+     */
     public EbeanMigration(Application application, SpiEbeanServer server) {
         boolean isDev = application.getMode().isDev();
         this.server = server;
@@ -45,11 +54,13 @@ public class EbeanMigration implements Migration {
         dbMigration.setPathToResources(_basePath);
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean hasChanged() {
         return !dbMigration.diff().isEmpty();
     }
 
+    /** {@inheritDoc} */
     @Override
     public ScriptInfo generate() {
         try {
@@ -60,6 +71,7 @@ public class EbeanMigration implements Migration {
         return dbMigration.getScriptInfo();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<ScriptInfo> allScript() {
         final List<ScriptInfo> scriptInfoList = Lists.newArrayList();
@@ -72,16 +84,19 @@ public class EbeanMigration implements Migration {
         return scriptInfoList;
     }
 
+    /** {@inheritDoc} */
     @Override
     public ScriptInfo getScript(String revision) {
         return server.find(ScriptInfo.class, revision);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void persist() {
         server.save(dbMigration.getScriptInfo());
     }
 
+    /** {@inheritDoc} */
     @Override
     public void reset() {
         dbMigration.rest();

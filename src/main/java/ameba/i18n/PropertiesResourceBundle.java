@@ -6,17 +6,30 @@ import java.io.IOException;
 import java.util.*;
 
 /**
+ * <p>PropertiesResourceBundle class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class PropertiesResourceBundle extends ResourceBundle {
     private Map<String, Object> lookup;
 
+    /**
+     * <p>Constructor for PropertiesResourceBundle.</p>
+     *
+     * @param properties a {@link java.util.Properties} object.
+     * @throws java.io.IOException if any.
+     */
     @SuppressWarnings("all")
     public PropertiesResourceBundle(Properties properties) throws IOException {
         lookup = Maps.newHashMap((Map) properties);
     }
 
     // Implements java.util.ResourceBundle.handleGetObject; inherits javadoc specification.
+
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings("all")
     public Object handleGetObject(String key) {
         if (key == null) {

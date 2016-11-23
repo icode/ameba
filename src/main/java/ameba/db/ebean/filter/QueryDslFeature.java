@@ -5,9 +5,15 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
 /**
+ * <p>QueryDslFeature class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class QueryDslFeature implements Feature {
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean configure(FeatureContext context) {
         Configuration cfg = context.getConfiguration();

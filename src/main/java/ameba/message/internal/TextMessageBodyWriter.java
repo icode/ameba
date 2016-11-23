@@ -26,6 +26,12 @@ import java.nio.charset.Charset;
 @ConstrainedTo(RuntimeType.SERVER)
 final class TextMessageBodyWriter implements MessageBodyWriter<Object> {
 
+    /**
+     * <p>getCharset.</p>
+     *
+     * @param m a {@link javax.ws.rs.core.MediaType} object.
+     * @return a {@link java.nio.charset.Charset} object.
+     */
     public static Charset getCharset(MediaType m) {
         String name = (m == null) ? null : m.getParameters().get(MediaType.CHARSET_PARAMETER);
         try {
@@ -35,6 +41,9 @@ final class TextMessageBodyWriter implements MessageBodyWriter<Object> {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isWriteable(final Class<?> type, final Type genericType, final Annotation[] annotations,
                                final MediaType mediaType) {
@@ -43,12 +52,14 @@ final class TextMessageBodyWriter implements MessageBodyWriter<Object> {
                 && mediaType.getSubtype().equals(MediaType.TEXT_PLAIN_TYPE.getSubtype());
     }
 
+    /** {@inheritDoc} */
     @Override
     public long getSize(final Object viewable, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType) {
         return -1;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void writeTo(final Object entity,
                         final Class<?> type,

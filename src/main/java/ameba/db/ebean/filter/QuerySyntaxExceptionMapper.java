@@ -10,13 +10,19 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Providers;
 
 /**
+ * <p>QuerySyntaxExceptionMapper class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 public class QuerySyntaxExceptionMapper implements ExceptionMapper<QuerySyntaxException> {
     @Inject
     private Providers providers;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Response toResponse(QuerySyntaxException exception) {
         return providers.getExceptionMapper(Throwable.class)

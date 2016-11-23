@@ -11,6 +11,7 @@ import ameba.event.SystemEventBus;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public abstract class Addon {
     private static EventBus EVENT_BUS;
@@ -49,7 +50,7 @@ public abstract class Addon {
      *
      * @param eventClass a {@link java.lang.Class} object.
      * @param listener   a {@link ameba.event.Listener} object.
-     * @param <E>        a E object.
+     * @param <E> a E object.
      */
     protected static <E extends Event> void subscribeEvent(Class<E> eventClass, final Listener<E> listener) {
         getEventBus().subscribe(eventClass, listener);
@@ -60,7 +61,7 @@ public abstract class Addon {
      *
      * @param eventClass a {@link java.lang.Class} object.
      * @param listener   a {@link ameba.event.Listener} object.
-     * @param <E>        a E object.
+     * @param <E> a E object.
      */
     protected static <E extends Event> void unsubscribeEvent(Class<E> eventClass, final Listener<E> listener) {
         getEventBus().unsubscribe(eventClass, listener);
@@ -80,7 +81,7 @@ public abstract class Addon {
      *
      * @param eventClass a {@link java.lang.Class} object.
      * @param listener   a {@link ameba.event.Listener} object.
-     * @param <E>        a E object.
+     * @param <E> a E object.
      */
     protected static <E extends Event> void subscribeSystemEvent(Class<E> eventClass, final Listener<E> listener) {
         SystemEventBus.subscribe(eventClass, listener);
@@ -91,7 +92,7 @@ public abstract class Addon {
      *
      * @param eventClass a {@link java.lang.Class} object.
      * @param listener   a {@link ameba.event.Listener} object.
-     * @param <E>        a E object.
+     * @param <E> a E object.
      */
     protected static <E extends Event> void unsubscribeSystemEvent(Class<E> eventClass, final Listener<E> listener) {
         SystemEventBus.unsubscribe(eventClass, listener);
@@ -140,6 +141,12 @@ public abstract class Addon {
     public void done(Application application) {
     }
 
+    /**
+     * <p>isEnabled.</p>
+     *
+     * @param application a {@link ameba.core.Application} object.
+     * @return a boolean.
+     */
     public boolean isEnabled(Application application) {
         return true;
     }

@@ -21,6 +21,7 @@ import java.util.List;
  * <p>Abstract Container class.</p>
  *
  * @author icode
+ * @version $Id: $Id
  */
 public abstract class Container {
     /**
@@ -154,7 +155,7 @@ public abstract class Container {
     /**
      * <p>reload.</p>
      *
-     * @throws Exception if any
+     * @throws java.lang.Exception if any
      * @since 0.1.6e
      */
     public void reload() throws Exception {
@@ -165,7 +166,7 @@ public abstract class Container {
     /**
      * <p>doReload.</p>
      *
-     * @throws Exception if any
+     * @throws java.lang.Exception if any
      */
     protected abstract void doReload() throws Exception;
 
@@ -186,6 +187,11 @@ public abstract class Container {
         doShutdown();
     }
 
+    /**
+     * <p>doShutdown.</p>
+     *
+     * @throws java.lang.Exception if any.
+     */
     public abstract void doShutdown() throws Exception;
 
     /**

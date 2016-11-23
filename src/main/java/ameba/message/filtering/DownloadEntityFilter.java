@@ -19,11 +19,17 @@ import java.net.URLEncoder;
 import java.util.Date;
 
 /**
+ * <p>DownloadEntityFilter class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 public class DownloadEntityFilter implements ContainerResponseFilter {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         Object entity = responseContext.getEntity();

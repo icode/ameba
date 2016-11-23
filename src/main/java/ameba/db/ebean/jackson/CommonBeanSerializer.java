@@ -18,6 +18,9 @@ import java.io.IOException;
  * <p>
  * Simply delegates to Ebean's JsonContext.
  * </p>
+ *
+ * @author icode
+ * @version $Id: $Id
  */
 public class CommonBeanSerializer<T> extends JsonSerializer<T> {
 
@@ -79,6 +82,8 @@ public class CommonBeanSerializer<T> extends JsonSerializer<T> {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Serialize entity beans or collections.
      */
     @Override

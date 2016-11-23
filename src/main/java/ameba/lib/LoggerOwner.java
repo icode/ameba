@@ -11,6 +11,7 @@ import java.util.Map;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public abstract class LoggerOwner {
     private static final Map<Class, Logger> LOGGER_MAP = Maps.newConcurrentMap();

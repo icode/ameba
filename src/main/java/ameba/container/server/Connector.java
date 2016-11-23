@@ -20,12 +20,16 @@ import static ameba.util.IOUtils.readByteArrayFromResource;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public class Connector {
     /**
      * Constant <code>CONNECTOR_CONF_PREFIX="connector."</code>
      */
     public static final String CONNECTOR_CONF_PREFIX = "connector.";
+    /**
+     * Constant <code>DEFAULT_NETWORK_HOST="0.0.0.0"</code>
+     */
     public static final String DEFAULT_NETWORK_HOST = "0.0.0.0";
     private static final Logger logger = LoggerFactory.getLogger(Connector.class);
     protected URI httpServerBaseUri;

@@ -16,13 +16,21 @@ import java.nio.charset.Charset;
 import java.util.Set;
 
 /**
+ * <p>Abstract EndpointMeta class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public abstract class EndpointMeta {
     private static final Logger logger = LoggerFactory.getLogger(EndpointMeta.class);
     protected final Set<MessageHandlerFactory> messageHandlerFactories = Sets.newLinkedHashSet();
     private Class endpointClass;
 
+    /**
+     * <p>Constructor for EndpointMeta.</p>
+     *
+     * @param endpointClass a {@link java.lang.Class} object.
+     */
     public EndpointMeta(Class endpointClass) {
         this.endpointClass = endpointClass;
     }
@@ -35,6 +43,12 @@ public abstract class EndpointMeta {
         return result == null ? Object.class : result;
     }
 
+    /**
+     * <p>checkMessageSize.</p>
+     *
+     * @param message        a {@link java.lang.Object} object.
+     * @param maxMessageSize a long.
+     */
     protected static void checkMessageSize(Object message, long maxMessageSize) {
         if (maxMessageSize != -1) {
             final long messageSize =
@@ -49,24 +63,74 @@ public abstract class EndpointMeta {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>endpointClass</code>.</p>
+     *
+     * @return a {@link java.lang.Class} object.
+     */
     public Class getEndpointClass() {
         return endpointClass;
     }
 
+    /**
+     * <p>getEndpoint.</p>
+     *
+     * @return a {@link java.lang.Object} object.
+     */
     public abstract Object getEndpoint();
 
+    /**
+     * <p>getOnCloseHandle.</p>
+     *
+     * @return a {@link java.lang.invoke.MethodHandle} object.
+     */
     public abstract MethodHandle getOnCloseHandle();
 
+    /**
+     * <p>getOnErrorHandle.</p>
+     *
+     * @return a {@link java.lang.invoke.MethodHandle} object.
+     */
     public abstract MethodHandle getOnErrorHandle();
 
+    /**
+     * <p>getOnOpenHandle.</p>
+     *
+     * @return a {@link java.lang.invoke.MethodHandle} object.
+     */
     public abstract MethodHandle getOnOpenHandle();
 
+    /**
+     * <p>getOnOpenParameters.</p>
+     *
+     * @return an array of {@link ameba.websocket.internal.EndpointMeta.ParameterExtractor} objects.
+     */
     public abstract ParameterExtractor[] getOnOpenParameters();
 
+    /**
+     * <p>getOnCloseParameters.</p>
+     *
+     * @return an array of {@link ameba.websocket.internal.EndpointMeta.ParameterExtractor} objects.
+     */
     public abstract ParameterExtractor[] getOnCloseParameters();
 
+    /**
+     * <p>getOnErrorParameters.</p>
+     *
+     * @return an array of {@link ameba.websocket.internal.EndpointMeta.ParameterExtractor} objects.
+     */
     public abstract ParameterExtractor[] getOnErrorParameters();
 
+    /**
+     * <p>callMethod.</p>
+     *
+     * @param method a {@link java.lang.invoke.MethodHandle} object.
+     * @param extractors an array of {@link ameba.websocket.internal.EndpointMeta.ParameterExtractor} objects.
+     * @param session a {@link javax.websocket.Session} object.
+     * @param callOnError a boolean.
+     * @param params a {@link java.lang.Object} object.
+     * @return a {@link java.lang.Object} object.
+     */
     protected Object callMethod(MethodHandle method, ParameterExtractor[] extractors, Session session,
                                 boolean callOnError, Object... params) {
         Object[] paramValues = new Object[extractors.length + 1];
@@ -98,6 +162,12 @@ public abstract class EndpointMeta {
         return null;
     }
 
+    /**
+     * <p>onOpen.</p>
+     *
+     * @param session a {@link javax.websocket.Session} object.
+     * @param configuration a {@link javax.websocket.EndpointConfig} object.
+     */
     @SuppressWarnings("unchecked")
     public void onOpen(Session session, EndpointConfig configuration) {
         for (MessageHandlerFactory f : messageHandlerFactories) {
@@ -116,12 +186,24 @@ public abstract class EndpointMeta {
         }
     }
 
+    /**
+     * <p>onClose.</p>
+     *
+     * @param session a {@link javax.websocket.Session} object.
+     * @param closeReason a {@link javax.websocket.CloseReason} object.
+     */
     public void onClose(Session session, CloseReason closeReason) {
         if (getOnCloseHandle() != null) {
             callMethod(getOnCloseHandle(), getOnCloseParameters(), session, true, closeReason);
         }
     }
 
+    /**
+     * <p>onError.</p>
+     *
+     * @param session a {@link javax.websocket.Session} object.
+     * @param thr a {@link java.lang.Throwable} object.
+     */
     public void onError(Session session, Throwable thr) {
         if (getOnErrorHandle() != null) {
             callMethod(getOnErrorHandle(), getOnErrorParameters(), session, false, thr);

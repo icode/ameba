@@ -13,17 +13,28 @@ import java.util.Set;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
 /**
+ * <p>PackageScanner class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class PackageScanner {
     private Set<String> scanPkgs;
     private List<String> acceptClasses = Lists.newArrayList();
     private Set<String> foundClasses = Sets.newHashSet();
 
+    /**
+     * <p>Constructor for PackageScanner.</p>
+     *
+     * @param scanPkgs a {@link java.util.Set} object.
+     */
     public PackageScanner(Set<String> scanPkgs) {
         this.scanPkgs = scanPkgs;
     }
 
+    /**
+     * <p>scan.</p>
+     */
     public void scan() {
         final PackageNamesScanner scanner = new PackageNamesScanner(
                 scanPkgs.toArray(new String[scanPkgs.size()]), true);
@@ -61,19 +72,37 @@ public class PackageScanner {
         }
     }
 
+    /**
+     * <p>clear.</p>
+     */
     public void clear() {
         acceptClasses.clear();
         foundClasses.clear();
     }
 
+    /**
+     * <p>Getter for the field <code>scanPkgs</code>.</p>
+     *
+     * @return a {@link java.util.Set} object.
+     */
     public Set<String> getScanPkgs() {
         return Collections.unmodifiableSet(scanPkgs);
     }
 
+    /**
+     * <p>Getter for the field <code>acceptClasses</code>.</p>
+     *
+     * @return a {@link java.util.List} object.
+     */
     public List<String> getAcceptClasses() {
         return Collections.unmodifiableList(acceptClasses);
     }
 
+    /**
+     * <p>Getter for the field <code>foundClasses</code>.</p>
+     *
+     * @return a {@link java.util.Set} object.
+     */
     public Set<String> getFoundClasses() {
         return Collections.unmodifiableSet(foundClasses);
     }

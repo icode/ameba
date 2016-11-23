@@ -25,6 +25,7 @@ import java.lang.reflect.Type;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 @Singleton
 public class FilteringJacksonXMLProvider extends JacksonXMLProvider {
@@ -36,6 +37,9 @@ public class FilteringJacksonXMLProvider extends JacksonXMLProvider {
     @Inject
     private Application.Mode mode;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected JsonGenerator _createGenerator(ObjectWriter writer, OutputStream rawStream, JsonEncoding enc) throws IOException {
         JsonGenerator generator = super._createGenerator(writer, rawStream, enc);
@@ -43,9 +47,7 @@ public class FilteringJacksonXMLProvider extends JacksonXMLProvider {
         return generator;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     protected XMLEndpointConfig _configForWriting(final XmlMapper mapper, final Annotation[] annotations,
                                                   final Class<?> defaultView) {
@@ -55,9 +57,7 @@ public class FilteringJacksonXMLProvider extends JacksonXMLProvider {
                 , annotations, defaultView);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void writeTo(final Object value,
                         final Class<?> type,

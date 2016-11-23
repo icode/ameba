@@ -21,6 +21,7 @@ import java.util.Set;
  *
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-07
+ * @version $Id: $Id
  */
 public class DataSourceManager extends Addon {
 

@@ -29,10 +29,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * <p>TemplateHelper class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class TemplateHelper {
+    /**
+     * Constant <code>TPL_ENGINE_DIR_PR="template.directory.engine."</code>
+     */
     public static final String TPL_ENGINE_DIR_PR = "template.directory.engine.";
+    /** Constant <code>TPL_DIR="template.directory"</code> */
     public static final String TPL_DIR = "template.directory";
     private static final Charset DEFAULT_ENCODING = Charset.forName("UTF-8");
 
@@ -69,7 +76,7 @@ public class TemplateHelper {
         final MediaType[] mediaTypes = producedTypes.toArray(new MediaType[producedTypes.size()]);
 
         final List<Variant> variants = VariantSelector.selectVariants(containerRequest, Variant.mediaTypes(mediaTypes)
-                .build(), varyHeaderValue == null ? Refs.<String>emptyRef() : varyHeaderValue);
+                .build(), varyHeaderValue == null ? Refs.emptyRef() : varyHeaderValue);
 
         return Lists.transform(variants, new Function<Variant, MediaType>() {
             @Override
@@ -122,6 +129,12 @@ public class TemplateHelper {
         return null;
     }
 
+    /**
+     * <p>getProduces.</p>
+     *
+     * @param annotations an array of {@link java.lang.annotation.Annotation} objects.
+     * @return an array of {@link java.lang.String} objects.
+     */
     public static String[] getProduces(final Annotation[] annotations) {
         if (annotations != null && annotations.length > 0) {
             for (Annotation annotation : annotations) {
@@ -153,6 +166,12 @@ public class TemplateHelper {
     }
 
 
+    /**
+     * <p>getBasePaths.</p>
+     *
+     * @param basePath a {@link java.lang.String} object.
+     * @return a {@link java.util.Collection} object.
+     */
     public static Collection<String> getBasePaths(String basePath) {
         return Collections2.transform(Lists.newArrayList(basePath.split(",")),
                 new Function<String, String>() {
@@ -163,6 +182,14 @@ public class TemplateHelper {
                 });
     }
 
+    /**
+     * <p>getExtends.</p>
+     *
+     * @param config a {@link javax.ws.rs.core.Configuration} object.
+     * @param module a {@link java.lang.String} object.
+     * @param defaultExtensions an array of {@link java.lang.String} objects.
+     * @return an array of {@link java.lang.String} objects.
+     */
     public static String[] getExtends(Configuration config, String module, String[] defaultExtensions) {
         String extension = getStringExtends(config, module);
 
@@ -181,6 +208,13 @@ public class TemplateHelper {
         return extensions;
     }
 
+    /**
+     * <p>getStringExtends.</p>
+     *
+     * @param config a {@link javax.ws.rs.core.Configuration} object.
+     * @param module a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
+     */
     public static String getStringExtends(Configuration config, String module) {
         Map<String, Object> map = config.getProperties();
         String extension = (String) map.get(AbstractTemplateProcessor.TEMPLATE_CONF_PREFIX + module + ".suffix");
@@ -199,6 +233,15 @@ public class TemplateHelper {
     }
 
 
+    /**
+     * <p>getTemplateEngineDirConfig.</p>
+     *
+     * @param value a {@link java.lang.String} object.
+     * @param engine a {@link java.lang.String} object.
+     * @param context a {@link javax.ws.rs.core.FeatureContext} object.
+     * @param tempConf a {@link java.util.Map} object.
+     * @return a {@link java.lang.String} object.
+     */
     public static String getTemplateEngineDirConfig(String value,
                                                     String engine,
                                                     FeatureContext context,
@@ -217,6 +260,13 @@ public class TemplateHelper {
         return value;
     }
 
+    /**
+     * <p>getBasePath.</p>
+     *
+     * @param properties a {@link java.util.Map} object.
+     * @param cfgSuffix a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
+     */
     public static String getBasePath(Map<String, Object> properties, String cfgSuffix) {
         String basePath = PropertiesHelper.getValue(properties,
                 MvcFeature.TEMPLATE_BASE_PATH + "." + cfgSuffix, String.class, null);

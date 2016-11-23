@@ -32,6 +32,7 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 @Priority(Integer.MAX_VALUE)
 @Singleton
@@ -152,9 +153,7 @@ public class OptionsMethodProcessor implements ModelProcessor {
         return ModelProcessorUtil.enhanceResourceModel(resourceModel, false, methodList, true).build();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
         return ModelProcessorUtil.enhanceResourceModel(subResourceModel, true, methodList, true).build();

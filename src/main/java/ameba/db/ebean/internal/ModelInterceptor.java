@@ -40,6 +40,7 @@ import java.util.concurrent.ExecutionException;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 @Singleton
 @Priority(Priorities.ENTITY_CODER)
@@ -174,6 +175,11 @@ public class ModelInterceptor implements WriterInterceptor {
      *
      * @param query       query
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
      */
     public static void applyFetchProperties(MultivaluedMap<String, String> queryParams, Query query) {
         List<String> selectables = queryParams.get(FIELDS_PARAM_NAME);
@@ -231,6 +237,11 @@ public class ModelInterceptor implements WriterInterceptor {
      * <p>applyOrderBy.</p>
      *
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
      * @param query       a {@link com.avaje.ebean.Query} object.
      */
     public static void applyOrderBy(MultivaluedMap<String, String> queryParams, Query query) {
@@ -243,6 +254,14 @@ public class ModelInterceptor implements WriterInterceptor {
         }
     }
 
+    /**
+     * <p>fetchRowCount.</p>
+     *
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param query       a {@link com.avaje.ebean.Query} object.
+     * @return a {@link com.avaje.ebean.FutureRowCount} object.
+     */
     public static FutureRowCount fetchRowCount(MultivaluedMap<String, String> queryParams, Query query) {
         String reqTotalCount = getSingleParam(queryParams.get(REQ_TOTAL_COUNT_PARAM_NAME));
         if (reqTotalCount != null && !"false".equalsIgnoreCase(reqTotalCount) && !"0".equals(reqTotalCount)) {
@@ -254,6 +273,11 @@ public class ModelInterceptor implements WriterInterceptor {
     /**
      * <p>applyPageList.</p>
      *
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
      * @param query       a {@link com.avaje.ebean.Query} object.
      * @return a {@link com.avaje.ebean.FutureRowCount} object.
@@ -267,6 +291,13 @@ public class ModelInterceptor implements WriterInterceptor {
         return futureRowCount;
     }
 
+    /**
+     * <p>applyPageConfig.</p>
+     *
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param query a {@link com.avaje.ebean.Query} object.
+     */
     public static void applyPageConfig(MultivaluedMap<String, String> queryParams, Query query) {
         Integer maxRows = getSingleIntegerParam(queryParams.get(PER_PAGE_PARAM_NAME));
 
@@ -299,7 +330,14 @@ public class ModelInterceptor implements WriterInterceptor {
      * /path?filter=p.in(1,2)c.eq('ddd')d.startWith('a')or(f.eq('a')g.startWith(2))
      *
      * @param queryParams uri query params
+     * @param queryParams uri query params
+     * @param queryParams uri query params
+     * @param queryParams uri query params
+     * @param queryParams uri query params
+     * @param queryParams uri query params
      * @param query       query
+     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param <T> a T object.
      */
     public static <T> void applyFilter(MultivaluedMap<String, String> queryParams,
                                        SpiQuery<T> query,
@@ -322,6 +360,11 @@ public class ModelInterceptor implements WriterInterceptor {
      * apply uri query parameter on query
      *
      * @param queryParams  uri query params
+     * @param queryParams  uri query params
+     * @param queryParams  uri query params
+     * @param queryParams  uri query params
+     * @param queryParams  uri query params
+     * @param queryParams  uri query params
      * @param query        Query
      * @param needPageList need page list
      * @return page list count or null
@@ -329,6 +372,259 @@ public class ModelInterceptor implements WriterInterceptor {
      * @see #applyFilter
      * @see #applyOrderBy
      * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @see #applyFetchProperties
+     * @see #applyFilter
+     * @see #applyOrderBy
+     * @see #applyPageList
+     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
      */
     @SuppressWarnings("unchecked")
     public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams,
@@ -354,8 +650,14 @@ public class ModelInterceptor implements WriterInterceptor {
      * <p>applyUriQuery.</p>
      *
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
      * @param query       a {@link com.avaje.ebean.Query} object.
      * @return a {@link com.avaje.ebean.FutureRowCount} object.
+     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
      */
     public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams,
                                                SpiQuery query,
@@ -436,9 +738,7 @@ public class ModelInterceptor implements WriterInterceptor {
                 || FutureList.class.isAssignableFrom(type);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
         Object o = context.getEntity();

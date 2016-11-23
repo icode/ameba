@@ -26,7 +26,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
+ * <p>ModelMigration class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class ModelMigration extends DbMigration {
     private static final String initialVersion = "1.0";
@@ -35,6 +38,11 @@ public class ModelMigration extends DbMigration {
     private CurrentModel currentModel;
     private ScriptInfo scriptInfo;
 
+    /**
+     * <p>diff.</p>
+     *
+     * @return a {@link com.avaje.ebean.dbmigration.model.ModelDiff} object.
+     */
     public ModelDiff diff() {
         if (diff != null) return diff;
 
@@ -89,6 +97,9 @@ public class ModelMigration extends DbMigration {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void generateMigration() throws IOException {
         setOffline();
@@ -128,16 +139,25 @@ public class ModelMigration extends DbMigration {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void writeExtraPlatformDdl(String fullVersion, CurrentModel currentModel,
                                          Migration dbMigration, File writePath) throws IOException {
         throw new UnsupportedOperationException("writeExtraPlatformDdl Unsupported");
     }
 
+    /** {@inheritDoc} */
     protected boolean writeMigrationXml(Migration dbMigration, File resourcePath, String fullVersion) {
         throw new UnsupportedOperationException("writeExtraPlatformDdl Unsupported");
     }
 
+    /**
+     * <p>writeMigrationXml.</p>
+     *
+     * @param dbMigration a {@link com.avaje.ebean.dbmigration.migration.Migration} object.
+     * @param version a {@link java.lang.String} object.
+     * @return a boolean.
+     */
     protected boolean writeMigrationXml(Migration dbMigration, String version) {
         if (migrationModel.isMigrationTableExist()) {
             scriptInfo = server.find(ScriptInfo.class, version);
@@ -160,6 +180,11 @@ public class ModelMigration extends DbMigration {
         return true;
     }
 
+    /**
+     * <p>createDdlWriter.</p>
+     *
+     * @return a {@link ameba.db.ebean.migration.PlatformDdlWriter} object.
+     */
     protected PlatformDdlWriter createDdlWriter() {
         return new PlatformDdlWriter(scriptInfo, (SpiServer) server);
     }
@@ -177,6 +202,11 @@ public class ModelMigration extends DbMigration {
         return version;
     }
 
+    /**
+     * <p>rest.</p>
+     *
+     * @return a {@link com.avaje.ebean.dbmigration.model.ModelDiff} object.
+     */
     public ModelDiff rest() {
         ModelDiff old = diff;
         diff = null;
@@ -186,6 +216,11 @@ public class ModelMigration extends DbMigration {
         return old;
     }
 
+    /**
+     * <p>Getter for the field <code>scriptInfo</code>.</p>
+     *
+     * @return a {@link ameba.db.migration.models.ScriptInfo} object.
+     */
     public ScriptInfo getScriptInfo() {
         return scriptInfo;
     }

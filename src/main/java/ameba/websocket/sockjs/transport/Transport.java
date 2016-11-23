@@ -6,7 +6,10 @@ import org.glassfish.jersey.server.ChunkedOutput;
 import javax.ws.rs.container.ContainerRequestContext;
 
 /**
+ * <p>Transport interface.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public interface Transport extends Inflector<ContainerRequestContext, ChunkedOutput> {
 

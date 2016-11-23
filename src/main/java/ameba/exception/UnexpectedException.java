@@ -5,6 +5,7 @@ package ameba.exception;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public class UnexpectedException extends AmebaException {
     /**

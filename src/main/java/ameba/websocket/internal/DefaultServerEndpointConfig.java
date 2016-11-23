@@ -22,6 +22,7 @@ import java.util.Map;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public class DefaultServerEndpointConfig implements ServerEndpointConfig {
 
@@ -97,57 +98,43 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
         return EndpointDelegate.class;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public String getPath() {
         return path;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public List<String> getSubprotocols() {
         return subprotocols;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public List<Extension> getExtensions() {
         return extensions;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public ServerEndpointConfig.Configurator getConfigurator() {
         return serverEndpointConfigurator;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public List<Class<? extends Encoder>> getEncoders() {
         return encoders;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public List<Class<? extends Decoder>> getDecoders() {
         return decoders;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public Map<String, Object> getUserProperties() {
         return userProperties;

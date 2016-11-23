@@ -36,8 +36,12 @@ import java.util.*;
  * WebSocket add on
  *
  * @author icode
+ * @version $Id: $Id
  */
 public class WebSocketAddon extends Addon {
+    /**
+     * Constant <code>WEB_SOCKET_ENABLED_CONF="websocket.enabled"</code>
+     */
     public static final String WEB_SOCKET_ENABLED_CONF = "websocket.enabled";
     private static final Logger logger = LoggerFactory.getLogger(WebSocketAddon.class);
     private static final List<Class> endpointClasses = Lists.newArrayList();
@@ -52,10 +56,26 @@ public class WebSocketAddon extends Addon {
         return enabled;
     }
 
+    /**
+     * <p>_getAnnotation.</p>
+     *
+     * @param annotationClass a {@link java.lang.Class} object.
+     * @param endpointClass a {@link java.lang.Class} object.
+     * @param <A> a A object.
+     * @return a A object.
+     */
     protected static <A> A _getAnnotation(Class<A> annotationClass, Class endpointClass) {
         return annotationClass.cast(endpointClass.getAnnotation(annotationClass));
     }
 
+    /**
+     * <p>getAnnotation.</p>
+     *
+     * @param annotationClass a {@link java.lang.Class} object.
+     * @param endpointClass a {@link java.lang.Class} object.
+     * @param <A> a A object.
+     * @return a A object.
+     */
     protected static <A> A getAnnotation(Class<A> annotationClass, Class endpointClass) {
         if (endpointClass == Object.class || endpointClass == null) return null;
         A annotation = _getAnnotation(annotationClass, endpointClass);
@@ -87,6 +107,7 @@ public class WebSocketAddon extends Addon {
         return annotation;
     }
 
+    /** {@inheritDoc} */
     public boolean isEnabled(Application application) {
         if (enabled == null) {
             enabled = !"false".equals(application.getSrcProperties().get(WEB_SOCKET_ENABLED_CONF));
@@ -99,6 +120,7 @@ public class WebSocketAddon extends Addon {
         return enabled;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setup(final Application application) {
         endpointClasses.clear();

@@ -64,6 +64,7 @@ import static ameba.util.IOUtils.*;
  *
  * @author icode
  * @since 13-8-6 下午8:42
+ * @version $Id: $Id
  */
 @Singleton
 public class Application {
@@ -99,6 +100,9 @@ public class Application {
     private Set<String> scanPackages;
     private String[] ids;
 
+    /**
+     * <p>Constructor for Application.</p>
+     */
     protected Application() {
     }
 
@@ -121,6 +125,12 @@ public class Application {
         configure();
     }
 
+    /**
+     * <p>parseIds2ConfigFile.</p>
+     *
+     * @param ids a {@link java.lang.String} object.
+     * @return a {@link java.util.Set} object.
+     */
     public static Set<String> parseIds2ConfigFile(String... ids) {
         Set<String> configFiles = Sets.newLinkedHashSet();
         configFiles.add(DEFAULT_APP_CONF);
@@ -149,6 +159,12 @@ public class Application {
         }
     }
 
+    /**
+     * <p>readModuleConfig.</p>
+     *
+     * @param properties a {@link java.util.Properties} object.
+     * @param isDev      a boolean.
+     */
     @SuppressWarnings("unchecked")
     public static void readModuleConfig(Properties properties, boolean isDev) {
         logger.info(Messages.get("info.module.load.conf"));
@@ -231,6 +247,12 @@ public class Application {
         closeQuietly(in);
     }
 
+    /**
+     * <p>readModeConfig.</p>
+     *
+     * @param properties a {@link java.util.Properties} object.
+     * @param mode a {@link ameba.core.Application.Mode} object.
+     */
     @SuppressWarnings("unchecked")
     public static void readModeConfig(Properties properties, Mode mode) {
 
@@ -253,6 +275,11 @@ public class Application {
         }
     }
 
+    /**
+     * <p>readDefaultConfig.</p>
+     *
+     * @return a {@link java.util.Properties} object.
+     */
     public static Properties readDefaultConfig() {
         Properties properties = new Props();
 
@@ -266,6 +293,13 @@ public class Application {
         return properties;
     }
 
+    /**
+     * <p>readAppConfig.</p>
+     *
+     * @param properties a {@link java.util.Properties} object.
+     * @param confFile a {@link java.lang.String} object.
+     * @return a {@link java.net.URL} object.
+     */
     public static URL readAppConfig(Properties properties, String confFile) {
         Enumeration<URL> urls = IOUtils.getResources(confFile);
         URL url = null;
@@ -296,6 +330,9 @@ public class Application {
         return url;
     }
 
+    /**
+     * <p>reconfigure.</p>
+     */
     public void reconfigure() {
         addons = Sets.newLinkedHashSet();
         excludes = Sets.newLinkedHashSet();
@@ -304,6 +341,9 @@ public class Application {
         configure();
     }
 
+    /**
+     * <p>configure.</p>
+     */
     @SuppressWarnings("unchecked")
     protected void configure() {
 
@@ -521,6 +561,11 @@ public class Application {
         return config;
     }
 
+    /**
+     * <p>addOnSetup.</p>
+     *
+     * @param configMap a {@link java.util.Map} object.
+     */
     protected void addOnSetup(Map<String, Object> configMap) {
         Set<SortEntry> addOnSorts = Sets.newTreeSet();
         for (String key : configMap.keySet()) {
@@ -576,6 +621,9 @@ public class Application {
         }
     }
 
+    /**
+     * <p>addOnDone.</p>
+     */
     protected void addOnDone() {
         for (Addon addon : addons) {
             try {
@@ -595,6 +643,11 @@ public class Application {
         return timestamp;
     }
 
+    /**
+     * <p>configureFeature.</p>
+     *
+     * @param configMap a {@link java.util.Map} object.
+     */
     protected void configureFeature(Map<String, Object> configMap) {
 
         logger.debug(Messages.get("info.feature.register"));
@@ -1213,6 +1266,11 @@ public class Application {
         return this;
     }
 
+    /**
+     * <p>isInitialized.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isInitialized() {
         return initialized;
     }
@@ -1459,10 +1517,20 @@ public class Application {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>srcProperties</code>.</p>
+     *
+     * @return a {@link java.util.Map} object.
+     */
     public Map<String, Object> getSrcProperties() {
         return srcProperties;
     }
 
+    /**
+     * <p>Getter for the field <code>excludes</code>.</p>
+     *
+     * @return a {@link java.util.Set} object.
+     */
     public Set<String> getExcludes() {
         return excludes;
     }

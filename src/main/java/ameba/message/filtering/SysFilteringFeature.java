@@ -7,9 +7,15 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
 /**
+ * <p>SysFilteringFeature class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class SysFilteringFeature implements Feature {
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean configure(FeatureContext context) {
         Configuration configuration = context.getConfiguration();

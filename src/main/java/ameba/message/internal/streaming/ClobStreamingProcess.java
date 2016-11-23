@@ -13,16 +13,23 @@ import java.sql.Clob;
 import java.sql.SQLException;
 
 /**
+ * <p>ClobStreamingProcess class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 public class ClobStreamingProcess implements StreamingProcess<Clob> {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isSupported(Object entity) {
         return entity instanceof Clob;
     }
 
+    /** {@inheritDoc} */
     @Override
     public long length(Clob entity) throws IOException {
         try {
@@ -32,6 +39,7 @@ public class ClobStreamingProcess implements StreamingProcess<Clob> {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void write(Clob entity, OutputStream output, Long pos, Long length) throws IOException {
         Reader reader;

@@ -26,6 +26,7 @@ import java.util.Objects;
  *
  * @author Rossen Stoyanchev
  * @author icode
+ * @version $Id: $Id
  */
 public abstract class AbstractWebSocketMessage<T> implements WebSocketMessage<T> {
 
@@ -61,6 +62,8 @@ public abstract class AbstractWebSocketMessage<T> implements WebSocketMessage<T>
 
     /**
      * Return the message payload, never be {@code null}.
+     *
+     * @return a T object.
      */
     public T getPayload() {
         return this.payload;
@@ -68,12 +71,17 @@ public abstract class AbstractWebSocketMessage<T> implements WebSocketMessage<T>
 
     /**
      * Whether this is the last part of a message sent as a series of partial messages.
+     *
+     * @return a boolean.
      */
     public boolean isLast() {
         return this.last;
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object other) {
         if (this == other) {
@@ -86,17 +94,24 @@ public abstract class AbstractWebSocketMessage<T> implements WebSocketMessage<T>
         return Objects.deepEquals(this.payload, otherMessage.payload);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         return Objects.hashCode(this.payload);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return getClass().getSimpleName() + " payload=[" + toStringPayload() +
                 "], byteCount=" + getPayloadLength() + ", last=" + isLast() + "]";
     }
 
+    /**
+     * <p>toStringPayload.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     protected abstract String toStringPayload();
 
 }

@@ -22,6 +22,9 @@ class FindDeserializers extends Deserializers.Base {
         this.jsonContext = jsonContext;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JsonDeserializer<?> findBeanDeserializer(JavaType type,
                                                     DeserializationConfig config,
@@ -33,6 +36,7 @@ class FindDeserializers extends Deserializers.Base {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public JsonDeserializer<?> findCollectionDeserializer(CollectionType type,
                                                           DeserializationConfig config,

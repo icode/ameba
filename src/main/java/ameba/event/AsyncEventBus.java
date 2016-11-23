@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>Abstract AsyncEventBus class.</p>
  *
  * @author icode
+ * @version $Id: $Id
  */
 public abstract class AsyncEventBus<E extends Event, S extends ActorRef> extends LookupEventBus<E, S, Class<? extends E>> {
 
@@ -37,26 +38,20 @@ public abstract class AsyncEventBus<E extends Event, S extends ActorRef> extends
         return a.compareTo(b);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public int mapSize() {
         return 128;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends E> classify(E event) {
         return (Class<? extends E>) event.getClass();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void publish(E event, S subscriber) {
         subscriber.tell(event, ActorRef.noSender());

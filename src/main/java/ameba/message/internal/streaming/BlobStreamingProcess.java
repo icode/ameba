@@ -12,16 +12,23 @@ import java.sql.Blob;
 import java.sql.SQLException;
 
 /**
+ * <p>BlobStreamingProcess class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 public class BlobStreamingProcess implements StreamingProcess<Blob> {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isSupported(Object entity) {
         return entity instanceof Blob;
     }
 
+    /** {@inheritDoc} */
     @Override
     public long length(Blob entity) throws IOException {
         try {
@@ -31,6 +38,7 @@ public class BlobStreamingProcess implements StreamingProcess<Blob> {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void write(Blob entity, OutputStream output, Long pos, Long length) throws IOException {
         InputStream in;

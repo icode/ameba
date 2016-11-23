@@ -29,6 +29,9 @@ class TemplateMethodInterceptor implements WriterInterceptor {
     @Context
     private Provider<ResourceInfo> resourceInfoProvider;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void aroundWriteTo(final WriterInterceptorContext context) throws IOException, WebApplicationException {
         final Object entity = context.getEntity();

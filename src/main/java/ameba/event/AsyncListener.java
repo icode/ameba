@@ -9,6 +9,7 @@ import scala.runtime.BoxedUnit;
  * <p>Abstract AsyncListener class.</p>
  *
  * @author icode
+ * @version $Id: $Id
  */
 public abstract class AsyncListener<E extends Event> implements Listener<E> {
 

@@ -15,7 +15,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * <p>EntityFieldsScopeResolver class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 public class EntityFieldsScopeResolver implements ScopeResolver {
@@ -47,6 +50,9 @@ public class EntityFieldsScopeResolver implements ScopeResolver {
         FIELDS_PARAM_NAME = paramName != null ? paramName : FIELDS_PARAM_NAME;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<String> resolve(final Annotation[] annotations) {
         final Set<String> scopes = new HashSet<>();

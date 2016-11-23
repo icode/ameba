@@ -26,10 +26,14 @@ import java.util.Map;
  *
  * @author ICode
  * @since 13-8-17 下午2:55
+ * @version $Id: $Id
  */
 @ConstrainedTo(RuntimeType.SERVER)
 public class AssetsFeature implements Feature {
 
+    /**
+     * Constant <code>ROOT_MAPPING_PATH="/*"</code>
+     */
     public static final String ROOT_MAPPING_PATH = "/*";
     private static final Map<String, String[]> assetsMap = Maps.newLinkedHashMap();
     private static final String ASSETS_CONF_PREFIX = "resource.assets.";
@@ -89,7 +93,7 @@ public class AssetsFeature implements Feature {
      *
      * @param name a {@link java.lang.String} object.
      * @param file a {@link java.lang.String} object.
-     * @return a {@link URL} object.
+     * @return a {@link java.net.URL} object.
      */
     public static URL lookupAsset(String name, String file) {
         URL url = null;
@@ -132,9 +136,7 @@ public class AssetsFeature implements Feature {
         return url;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public boolean configure(FeatureContext context) {
 

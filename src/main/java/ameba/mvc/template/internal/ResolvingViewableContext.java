@@ -31,14 +31,10 @@ import javax.ws.rs.core.MediaType;
 class ResolvingViewableContext implements ViewableContext {
 
     /**
+     * {@inheritDoc}
+     *
      * Resolve given {@link Viewable viewable} using {@link MediaType media type}, {@code resolving class} and
      * {@link TemplateProcessor template processor}.
-     *
-     * @param viewable          viewable to be resolved.
-     * @param mediaType         media type of te output.
-     * @param resourceClass     resolving class.
-     * @param templateProcessor template processor to be used.
-     * @return resolved viewable or {@code null} if the viewable cannot be resolved.
      */
     public ResolvedViewable resolveViewable(final Viewable viewable, final MediaType mediaType,
                                             final Class<?> resourceClass, final TemplateProcessor templateProcessor) {

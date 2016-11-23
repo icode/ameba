@@ -13,12 +13,18 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
+ * <p>CaptchaWriterInterceptor class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 public class CaptchaWriterInterceptor implements WriterInterceptor {
     private static final MediaType IMG_TYPE = MediaType.valueOf("image/png");
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
         Object entity = context.getEntity();

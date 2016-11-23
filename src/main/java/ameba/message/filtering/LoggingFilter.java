@@ -31,6 +31,7 @@ import java.util.logging.Logger;
  * @author Pavel Bucek (pavel.bucek at oracle.com)
  * @author Martin Matula
  * @author icode
+ * @version $Id: $Id
  */
 @PreMatching
 @Priority(Integer.MIN_VALUE)
@@ -192,6 +193,9 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
                 || mediaType.getSubtype().equals("xml"));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void filter(final ClientRequestContext context) throws IOException {
         final long id = _id.incrementAndGet();
@@ -212,6 +216,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void filter(final ClientRequestContext requestContext, final ClientResponseContext responseContext)
             throws IOException {
@@ -231,6 +236,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
         log(b);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void filter(final ContainerRequestContext context) throws IOException {
         final long id = _id.incrementAndGet();
@@ -249,6 +255,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
         log(b);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void filter(final ContainerRequestContext requestContext, final ContainerResponseContext responseContext)
             throws IOException {
@@ -268,6 +275,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void aroundWriteTo(final WriterInterceptorContext writerInterceptorContext)
             throws IOException, WebApplicationException {

@@ -16,17 +16,24 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 
 /**
+ * <p>MultiResourceBundleControl class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class MultiResourceBundleControl extends ResourceBundle.Control {
 
     boolean noCache = false;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long getTimeToLive(String baseName, Locale locale) {
         return noCache ? ResourceBundle.Control.TTL_DONT_CACHE : super.getTimeToLive(baseName, locale);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ResourceBundle newBundle(
             String baseName, Locale locale, String format, ClassLoader loader, boolean reload)

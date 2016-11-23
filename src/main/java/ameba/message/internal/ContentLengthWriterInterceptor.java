@@ -12,7 +12,10 @@ import javax.ws.rs.ext.WriterInterceptorContext;
 import java.io.IOException;
 
 /**
+ * <p>ContentLengthWriterInterceptor class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 @Priority(Integer.MIN_VALUE)
@@ -21,6 +24,9 @@ public class ContentLengthWriterInterceptor implements WriterInterceptor {
     @Inject
     private ServiceLocator locator;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
         if (!context.getHeaders().containsKey(HttpHeaders.CONTENT_LENGTH)) {

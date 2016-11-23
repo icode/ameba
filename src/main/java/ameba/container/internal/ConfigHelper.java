@@ -14,7 +14,10 @@ import javax.ws.rs.core.Application;
 import java.util.LinkedList;
 
 /**
+ * <p>ConfigHelper class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class ConfigHelper {
 
@@ -26,7 +29,7 @@ public class ConfigHelper {
 
     /**
      * Provides a single ContainerLifecycleListener instance based on the {@link ApplicationHandler application} configuration.
-     * This method looks for providers implementing {@link ContainerLifecycleListener} interface and aggregates them into
+     * This method looks for providers implementing {@link org.glassfish.jersey.server.spi.ContainerLifecycleListener} interface and aggregates them into
      * a single umbrella listener instance that is returned.
      *
      * @param applicationHandler actual application from where to get the listener.
@@ -78,11 +81,11 @@ public class ConfigHelper {
 
     /**
      * Gets the most internal wrapped {@link Application application} class. This method is similar to
-     * {@link ResourceConfig#getApplication()} except if provided application was created by wrapping multiple
-     * {@link ResourceConfig} instances this method returns the original application and not a resource config wrapper.
+     * {@link org.glassfish.jersey.server.ResourceConfig#getApplication()} except if provided application was created by wrapping multiple
+     * {@link org.glassfish.jersey.server.ResourceConfig} instances this method returns the original application and not a resource config wrapper.
      *
      * @param app jax-rs application
-     * @return the original {@link Application} subclass.
+     * @return the original {@link javax.ws.rs.core.Application} subclass.
      */
     public static Application getWrappedApplication(Application app) {
         while (app instanceof ResourceConfig) {

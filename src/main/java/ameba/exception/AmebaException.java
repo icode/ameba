@@ -11,6 +11,7 @@ import java.util.List;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public class AmebaException extends RuntimeException {
     /**
@@ -74,8 +75,8 @@ public class AmebaException extends RuntimeException {
                     source = new File(source, fN + ".java");
                     if (something == null) {
                         something = new InterestingSomething(stackTraceElement, source);
-                        something.setUsefulFiles(Lists.<File>newArrayList());
-                        something.setUsefulStackTraceElement(Lists.<StackTraceElement>newArrayList());
+                        something.setUsefulFiles(Lists.newArrayList());
+                        something.setUsefulStackTraceElement(Lists.newArrayList());
                     } else {
                         if (source.exists()) {
                             something.getUsefulStackTraceElements().add(stackTraceElement);
@@ -88,6 +89,12 @@ public class AmebaException extends RuntimeException {
         return something;
     }
 
+    /**
+     * <p>getInterestingSomething.</p>
+     *
+     * @param cause a {@link java.lang.Throwable} object.
+     * @return a {@link ameba.exception.AmebaException.InterestingSomething} object.
+     */
     public static InterestingSomething getInterestingSomething(Throwable cause) {
         return getInterestingSomething(cause, new File("src/main/java"));
     }

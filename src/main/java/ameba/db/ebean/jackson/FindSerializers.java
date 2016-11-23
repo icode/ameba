@@ -26,6 +26,9 @@ class FindSerializers extends Serializers.Base {
         this.jsonContext = jsonContext;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JsonSerializer<?> findSerializer(SerializationConfig config, JavaType type, BeanDescription beanDesc) {
 
@@ -36,6 +39,7 @@ class FindSerializers extends Serializers.Base {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public JsonSerializer<?> findCollectionSerializer(SerializationConfig config, CollectionType type, BeanDescription
             beanDesc, TypeSerializer elementTypeSerializer, JsonSerializer<Object> elementValueSerializer) {

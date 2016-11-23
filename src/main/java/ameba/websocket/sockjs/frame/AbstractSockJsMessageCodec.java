@@ -24,9 +24,13 @@ import ameba.util.Assert;
  *
  * @author Rossen Stoyanchev
  * @author icode
+ * @version $Id: $Id
  */
 public abstract class AbstractSockJsMessageCodec implements SockJsMessageCodec {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String encode(String... messages) {
         Assert.notNull(messages, "messages must not be null");
@@ -47,6 +51,9 @@ public abstract class AbstractSockJsMessageCodec implements SockJsMessageCodec {
 
     /**
      * Apply standard JSON string quoting (see http://www.json.org/).
+     *
+     * @param content a {@link java.lang.String} object.
+     * @return an array of char.
      */
     protected abstract char[] applyJsonQuoting(String content);
 

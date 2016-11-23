@@ -16,7 +16,10 @@
 
 package ameba.websocket.adapter.standard;
 
-import ameba.websocket.*;
+import ameba.websocket.BinaryMessage;
+import ameba.websocket.PingMessage;
+import ameba.websocket.PongMessage;
+import ameba.websocket.TextMessage;
 import ameba.websocket.adapter.AbstractWebSocketSession;
 import com.google.common.util.concurrent.Futures;
 import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap;
@@ -35,10 +38,11 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 /**
- * A {@link WebSocketSession} for use with the standard WebSocket for Java API.
+ * A {@link ameba.websocket.WebSocketSession} for use with the standard WebSocket for Java API.
  *
  * @author Rossen Stoyanchev
  * @author icode
+ * @version $Id: $Id
  */
 public class StandardWebSocketSession extends AbstractWebSocketSession<Session> {
 
@@ -87,95 +91,118 @@ public class StandardWebSocketSession extends AbstractWebSocketSession<Session> 
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getId() {
         checkNativeSessionInitialized();
         return this.id;
     }
 
+    /** {@inheritDoc} */
     @Override
     public URI getUri() {
         checkNativeSessionInitialized();
         return this.uri;
     }
 
+    /** {@inheritDoc} */
     @Override
     public MultivaluedMap<String, String> getHandshakeHeaders() {
         return this.handshakeHeaders;
     }
 
+    /** {@inheritDoc} */
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getAttribute(String key) {
         return (T) getAttributes().get(key);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setAttribute(String key, Object value) {
         getAttributes().put(key, value);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Extension> getExtensions() {
         checkNativeSessionInitialized();
         return this.extensions;
     }
 
+    /**
+     * <p>getPrincipal.</p>
+     *
+     * @return a {@link java.security.Principal} object.
+     */
     public Principal getPrincipal() {
         return this.user;
     }
 
+    /** {@inheritDoc} */
     @Override
     public InetSocketAddress getLocalAddress() {
         return this.localAddress;
     }
 
+    /** {@inheritDoc} */
     @Override
     public InetSocketAddress getRemoteAddress() {
         return this.remoteAddress;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getNegotiatedProtocol() {
         checkNativeSessionInitialized();
         return this.negotiatedProtocol;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getTextMessageSizeLimit() {
         checkNativeSessionInitialized();
         return getNativeSession().getMaxTextMessageBufferSize();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setTextMessageSizeLimit(int messageSizeLimit) {
         checkNativeSessionInitialized();
         getNativeSession().setMaxTextMessageBufferSize(messageSizeLimit);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getBinaryMessageSizeLimit() {
         checkNativeSessionInitialized();
         return getNativeSession().getMaxBinaryMessageBufferSize();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setBinaryMessageSizeLimit(int messageSizeLimit) {
         checkNativeSessionInitialized();
         getNativeSession().setMaxBinaryMessageBufferSize(messageSizeLimit);
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isOpen() {
         return (getNativeSession() != null && getNativeSession().isOpen());
     }
 
+    /** {@inheritDoc} */
     @Override
     public Set<Session> getOpenSessions() {
         checkNativeSessionInitialized();
         return getNativeSession().getOpenSessions();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void initializeNativeSession(Session session) {
         super.initializeNativeSession(session);
@@ -192,33 +219,39 @@ public class StandardWebSocketSession extends AbstractWebSocketSession<Session> 
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Future<Void> sendTextMessage(TextMessage message) {
         return getNativeSession().getAsyncRemote().sendText(message.getPayload());
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Future<Void> sendBinaryMessage(BinaryMessage message) {
         return getNativeSession().getAsyncRemote().sendBinary(message.getPayload());
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Future<Void> sendPingMessage(PingMessage message) throws IOException {
         getNativeSession().getAsyncRemote().sendPing(message.getPayload());
         return Futures.immediateFuture(null);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Future<Void> sendPongMessage(PongMessage message) throws IOException {
         getNativeSession().getAsyncRemote().sendPong(message.getPayload());
         return Futures.immediateFuture(null);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Future<Void> sendObjectMessage(Object message) {
         return getNativeSession().getAsyncRemote().sendObject(message);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void closeInternal(CloseReason status) throws IOException {
         checkNativeSessionInitialized();

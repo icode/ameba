@@ -28,6 +28,7 @@ import java.lang.reflect.Type;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public class JacksonUtils {
 
@@ -110,6 +111,13 @@ public class JacksonUtils {
         }
     }
 
+    /**
+     * <p>configureGenerator.</p>
+     *
+     * @param uriInfo   a {@link javax.ws.rs.core.UriInfo} object.
+     * @param generator a {@link com.fasterxml.jackson.core.JsonGenerator} object.
+     * @param isDev     a boolean.
+     */
     public static void configureGenerator(UriInfo uriInfo, JsonGenerator generator, boolean isDev) {
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         String pretty = params.getFirst("pretty");

@@ -17,7 +17,10 @@ import javax.ws.rs.ext.ExceptionMapper;
 import java.util.List;
 
 /**
+ * <p>ValidationExceptionMapper class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Priority(Priorities.USER)
 @Singleton
@@ -25,6 +28,9 @@ public class ValidationExceptionMapper implements ExceptionMapper<ConstraintViol
 
     private static final Logger logger = LoggerFactory.getLogger(ValidationExceptionMapper.class);
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Response toResponse(final ConstraintViolationException exception) {
         logger.trace(LocalizationMessages.CONSTRAINT_VIOLATIONS_ENCOUNTERED(), exception);

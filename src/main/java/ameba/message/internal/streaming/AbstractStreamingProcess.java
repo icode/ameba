@@ -10,11 +10,24 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
+ * <p>Abstract AbstractStreamingProcess class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public abstract class AbstractStreamingProcess<T> implements StreamingProcess<T> {
+    /**
+     * <p>getInputStream.</p>
+     *
+     * @param entity a T object.
+     * @return a {@link java.io.InputStream} object.
+     * @throws java.io.IOException if any.
+     */
     protected abstract InputStream getInputStream(T entity) throws IOException;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void write(T entity, OutputStream output, Long pos, Long length) throws IOException {
         InputStream in = getInputStream(entity);

@@ -22,7 +22,6 @@ import java.io.InputStream;
 /**
  * Encode and decode messages to and from a SockJS message frame,
  * essentially an array of JSON-encoded messages. For example:
- * <p>
  * <pre class="code">
  * a["message1","message2"]
  * </pre>
@@ -48,7 +47,7 @@ public interface SockJsMessageCodec {
      *
      * @param content the SockJS message frame
      * @return an array of messages, or {@code null} if none
-     * @throws IOException if the content could not be parsed
+     * @throws java.io.IOException if the content could not be parsed
      */
     String[] decode(String content) throws IOException;
 
@@ -57,7 +56,7 @@ public interface SockJsMessageCodec {
      *
      * @param content the SockJS message frame
      * @return an array of messages, or {@code null} if none
-     * @throws IOException if the content could not be parsed
+     * @throws java.io.IOException if the content could not be parsed
      */
     String[] decodeInputStream(InputStream content) throws IOException;
 

@@ -30,11 +30,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * <p>MigrationResource class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Path(MigrationResource.MIGRATION_BASE_URI)
 @Singleton
 public class MigrationResource {
+    /**
+     * Constant <code>MIGRATION_BASE_URI="/@db/migration/"</code>
+     */
     public static final String MIGRATION_BASE_URI = "/@db/migration/";
     private static final String MIGRATION_HTML;
 
@@ -54,6 +60,11 @@ public class MigrationResource {
     private Application application;
     private Map<String, MigrationFail> failMigrations;
 
+    /**
+     * <p>listInfo.</p>
+     *
+     * @return a {@link java.util.Map} object.
+     */
     @GET
     public Map<String, MigrationInfo[]> listInfo() {
         Map<String, MigrationInfo[]> infoMap = Maps.newLinkedHashMap();
@@ -64,6 +75,13 @@ public class MigrationResource {
         return infoMap;
     }
 
+    /**
+     * <p>info.</p>
+     *
+     * @param dbName a {@link java.lang.String} object.
+     * @param revision a {@link java.lang.String} object.
+     * @return a {@link javax.ws.rs.core.Response} object.
+     */
     @GET
     @Path("{dbName}/{revision}")
     public Response info(@PathParam("dbName") String dbName, @PathParam("revision") String revision) {
@@ -117,6 +135,11 @@ public class MigrationResource {
         return Response.ok(entity).build();
     }
 
+    /**
+     * <p>scripts.</p>
+     *
+     * @return a {@link java.util.Map} object.
+     */
     @GET
     @Path("scripts")
     public Map<String, List<ScriptInfo>> scripts() {
@@ -127,6 +150,12 @@ public class MigrationResource {
         return infoMap;
     }
 
+    /**
+     * <p>scripts.</p>
+     *
+     * @param dbName a {@link java.lang.String} object.
+     * @return a {@link java.util.List} object.
+     */
     @GET
     @Path("{dbName}/scripts")
     public List<ScriptInfo> scripts(@PathParam("dbName") String dbName) {
@@ -136,6 +165,13 @@ public class MigrationResource {
         return migration.allScript();
     }
 
+    /**
+     * <p>script.</p>
+     *
+     * @param dbName a {@link java.lang.String} object.
+     * @param revision a {@link java.lang.String} object.
+     * @return a {@link ameba.db.migration.models.ScriptInfo} object.
+     */
     @GET
     @Path("{dbName}/scripts/{revision}")
     public ScriptInfo script(@PathParam("dbName") String dbName, @PathParam("revision") String revision) {
@@ -150,6 +186,12 @@ public class MigrationResource {
     ////////   Database Migration   /////////
     /////////////////////////////////////////
 
+    /**
+     * <p>migrateView.</p>
+     *
+     * @param uuid a {@link java.lang.String} object.
+     * @return a {@link javax.ws.rs.core.Response} object.
+     */
     @GET
     @Path("{uuid}")// uuid or dbName
     public Response migrateView(@PathParam("uuid") String uuid) {
@@ -207,6 +249,13 @@ public class MigrationResource {
                 .build();
     }
 
+    /**
+     * <p>migrate.</p>
+     *
+     * @param desc a {@link java.lang.String} object.
+     * @param uuid a {@link java.lang.String} object.
+     * @return a {@link ameba.util.Result} object.
+     */
     @POST
     @Path("{uuid}")
     public Result migrate(@FormParam("description") String desc,
@@ -248,6 +297,12 @@ public class MigrationResource {
         }
     }
 
+    /**
+     * <p>repairView.</p>
+     *
+     * @param uuid a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
+     */
     @GET
     @Path("{uuid}/repair")
     @Produces("text/html")
@@ -286,6 +341,12 @@ public class MigrationResource {
         return sub.replace(MIGRATION_HTML);
     }
 
+    /**
+     * <p>repair.</p>
+     *
+     * @param uuid a {@link java.lang.String} object.
+     * @return a {@link ameba.util.Result} object.
+     */
     @POST
     @Path("{uuid}/repair")
     public Result repair(@PathParam("uuid") String uuid) {
@@ -390,6 +451,11 @@ public class MigrationResource {
         return futureMigrations;
     }
 
+    /**
+     * <p>Getter for the field <code>failMigrations</code>.</p>
+     *
+     * @return a {@link java.util.Map} object.
+     */
     public Map<String, MigrationFail> getFailMigrations() {
         return failMigrations;
     }

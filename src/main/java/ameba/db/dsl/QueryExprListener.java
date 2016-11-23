@@ -9,7 +9,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * <p>QueryExprListener class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class QueryExprListener extends QueryBaseListener {
 
@@ -17,10 +20,18 @@ public class QueryExprListener extends QueryBaseListener {
     private List<QueryExprMeta> queryExprMetaList = Lists.newArrayList();
     private QueryExprMeta queryExprMeta;
 
+    /**
+     * <p>Getter for the field <code>queryExprMetaList</code>.</p>
+     *
+     * @return a {@link java.util.List} object.
+     */
     public List<QueryExprMeta> getQueryExprMetaList() {
         return queryExprMetaList;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void exitSourceElements(QueryParser.SourceElementsContext ctx) {
         infoMap = null;
@@ -28,6 +39,7 @@ public class QueryExprListener extends QueryBaseListener {
         queryExprMetaList = Collections.unmodifiableList(queryExprMetaList);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void exitSourceElement(QueryParser.SourceElementContext ctx) {
         if (queryExprMeta != null) {
@@ -64,6 +76,7 @@ public class QueryExprListener extends QueryBaseListener {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void enterSourceElement(QueryParser.SourceElementContext ctx) {
         queryExprMeta = QueryExprMeta.create();
@@ -77,16 +90,19 @@ public class QueryExprListener extends QueryBaseListener {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void exitIdentifierName(QueryParser.IdentifierNameContext ctx) {
         queryExprMeta.operator(ctx.getText());
     }
 
+    /** {@inheritDoc} */
     @Override
     public void exitFieldExpression(QueryParser.FieldExpressionContext ctx) {
         queryExprMeta.field(ctx.getText());
     }
 
+    /** {@inheritDoc} */
     @Override
     public void exitLiteral(QueryParser.LiteralContext ctx) {
         String text = ctx.getText();
@@ -101,11 +117,18 @@ public class QueryExprListener extends QueryBaseListener {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void exitIdentifierVal(QueryParser.IdentifierValContext ctx) {
         queryExprMeta.arguments(Val.of(ctx.getText()));
     }
 
+    /**
+     * <p>getParentSourceElement.</p>
+     *
+     * @param node a {@link org.antlr.v4.runtime.ParserRuleContext} object.
+     * @return a {@link org.antlr.v4.runtime.ParserRuleContext} object.
+     */
     protected ParserRuleContext getParentSourceElement(ParserRuleContext node) {
         if (node == null) return null;
         ParserRuleContext parent = node.getParent();

@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
  *
  * @author Rossen Stoyanchev
  * @author icode
+ * @version $Id: $Id
  */
 public final class BinaryMessage extends AbstractWebSocketMessage<ByteBuffer> {
 
@@ -86,11 +87,15 @@ public final class BinaryMessage extends AbstractWebSocketMessage<ByteBuffer> {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getPayloadLength() {
         return getPayload().remaining();
     }
 
+    /** {@inheritDoc} */
     @Override
     protected String toStringPayload() {
         return getPayload().toString();

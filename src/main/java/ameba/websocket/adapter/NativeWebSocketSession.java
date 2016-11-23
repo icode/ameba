@@ -19,11 +19,12 @@ package ameba.websocket.adapter;
 import ameba.websocket.WebSocketSession;
 
 /**
- * A {@link WebSocketSession} that exposes the underlying, native WebSocketSession
+ * A {@link ameba.websocket.WebSocketSession} that exposes the underlying, native WebSocketSession
  * through a getter.
  *
  * @author Rossen Stoyanchev
  * @author icode
+ * @version $Id: $Id
  */
 public interface NativeWebSocketSession extends WebSocketSession {
 
@@ -39,6 +40,7 @@ public interface NativeWebSocketSession extends WebSocketSession {
      *
      * @param requiredType the required type of the session
      * @return the native session of the required type or {@code null}
+     * @param <T> a T object.
      */
     <T> T getNativeSession(Class<T> requiredType);
 

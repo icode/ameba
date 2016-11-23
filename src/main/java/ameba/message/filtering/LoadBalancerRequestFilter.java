@@ -11,13 +11,19 @@ import java.io.IOException;
 import java.util.List;
 
 /**
+ * <p>LoadBalancerRequestFilter class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @PreMatching
 @Priority(500)
 @Singleton
 public class LoadBalancerRequestFilter implements ContainerRequestFilter {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void filter(ContainerRequestContext ctx) throws IOException {
 

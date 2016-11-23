@@ -29,7 +29,7 @@ import java.util.Set;
 
 /**
  * @author icode
- * @since 1.6
+ * @since 0.1.6
  */
 @PreMatching
 @Singleton
@@ -199,9 +199,7 @@ class WebStatFilter implements ContainerRequestFilter, ContainerResponseFilter {
 //        }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         String requestURI = getRequestURI(requestContext);

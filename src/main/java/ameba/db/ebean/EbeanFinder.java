@@ -13,6 +13,7 @@ import java.util.Set;
  * Base-class for model-mapped models that provides convenience methods.
  *
  * @author sulijuan
+ * @version $Id: $Id
  */
 public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
@@ -98,14 +99,13 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return server().createQuery(getModelType());
     }
 
+    /** {@inheritDoc} */
     @Override
     public UpdateQuery<T> createUpdateQuery() {
         return server().update(this.getModelType());
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public SqlQuery createSqlQuery(String sql) {
         return server().createSqlQuery(sql);
     }
@@ -121,9 +121,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public Query<T> setPersistenceContextScope(PersistenceContextScope persistenceContextScope) {
         return query().setPersistenceContextScope(persistenceContextScope);
     }
@@ -137,9 +135,11 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Additionally specifies a <code>JoinConfig</code> to specify a 'query join' and/or define the lazy loading query.
      *
-     * @param path       a {@link java.lang.String} object.
+     * @param path a {@link java.lang.String} object.
      * @param joinConfig a {@link com.avaje.ebean.FetchConfig} object.
      * @return a {@link com.avaje.ebean.Query} object.
      */
@@ -148,9 +148,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public Query<T> apply(PathProperties pathProperties) {
         return query().apply(pathProperties);
     }
@@ -237,6 +235,8 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
+     *
+     * @return a {@link com.avaje.ebean.PagedList} object.
      */
     public PagedList<T> findPagedList() {
         return query().findPagedList();
@@ -271,30 +271,29 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return (M) query().findUnique();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void findEach(QueryEachConsumer<T> consumer) {
         query().findEach(consumer);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void findEachWhile(QueryEachWhileConsumer<T> consumer) {
         query().findEachWhile(consumer);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Version<T>> findVersions() {
         return query().findVersions();
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<Version<T>> findVersionsBetween(Timestamp start, Timestamp end) {
         return query().findVersionsBetween(start, end);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ExpressionList<T> text() {
         return query().text();
@@ -309,6 +308,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().getExpressionFactory();
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isAutoTuned() {
         return query().isAutoTuned();
@@ -406,9 +406,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().select(fetchProperties);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public Query<T> setAutoTune(boolean autoTune) {
         return query().setAutoTune(autoTune);
     }
@@ -425,6 +423,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().setLazyLoadBatchSize(lazyLoadBatchSize);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Query<T> setDisableReadAuditing() {
         return query().setDisableReadAuditing();
@@ -462,6 +461,11 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().setId(id);
     }
 
+    /**
+     * <p>getId.</p>
+     *
+     * @return a {@link java.lang.Object} object.
+     */
     public Object getId() {
         return query().getId();
     }
@@ -536,26 +540,31 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().setRawSql(rawSql);
     }
 
+    /** {@inheritDoc} */
     @Override
     public RawSql getRawSql() {
         return query().getRawSql();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Query<T> asOf(Timestamp asOf) {
         return query().asOf(asOf);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void cancel() {
         query().cancel();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Query<T> copyQuery() {
         return query().copy();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Query<T> setUseDocStore(boolean use) {
         return query().setUseDocStore(use);
@@ -603,10 +612,9 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     }
 
     /**
-     * Adds a single <code>Expression</code> to the <code>where</code> clause and returns the query.
+     * {@inheritDoc}
      *
-     * @param expression a {@link com.avaje.ebean.Expression} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * Adds a single <code>Expression</code> to the <code>where</code> clause and returns the query.
      */
     public Query<T> where(com.avaje.ebean.Expression expression) {
         return query().where(expression);
@@ -620,21 +628,25 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().setForUpdate(forUpdate);
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isForUpdate() {
         return query().isForUpdate();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Query<T> alias(String alias) {
         return query().alias(alias);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Class<T> getBeanType() {
         return query.getBeanType();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Query<T> setDisableLazyLoading(boolean disableLazyLoading) {
         return query().setDisableLazyLoading(disableLazyLoading);

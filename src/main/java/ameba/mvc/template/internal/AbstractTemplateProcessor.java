@@ -34,9 +34,13 @@ import java.util.concurrent.ConcurrentMap;
  * <p>Abstract AbstractTemplateProcessor class.</p>
  *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<T> {
+    /**
+     * Constant <code>TEMPLATE_CONF_PREFIX="template."</code>
+     */
     public static final String TEMPLATE_CONF_PREFIX = "template.";
     private static Logger logger = LoggerFactory.getLogger(AbstractTemplateProcessor.class);
     private final ConcurrentMap<String, T> cache;
@@ -71,7 +75,7 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
             cacheEnabled = PropertiesHelper.getValue(properties, MvcFeature.CACHE_TEMPLATES, false, null);
         }
 
-        this.cache = cacheEnabled ? DataStructures.<String, T>createConcurrentMap() : null;
+        this.cache = cacheEnabled ? DataStructures.createConcurrentMap() : null;
         this.encoding = TemplateHelper.getTemplateOutputEncoding(config, this.suffix);
 
         this.supportedExtensions = Sets.newHashSet(Collections2.transform(
@@ -132,6 +136,7 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
      * @param <F>            a F object.
      * @return a F object.
      */
+    @SuppressWarnings("unchecked")
     protected <F> F getTemplateObjectFactory(ServiceLocator serviceLocator, Class<F> type, Value<F> defaultValue) {
         Object objectFactoryProperty = this.config.getProperty(MvcFeature.TEMPLATE_OBJECT_FACTORY + this.suffix);
         if (objectFactoryProperty != null) {
@@ -139,16 +144,16 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
                 return type.cast(objectFactoryProperty);
             }
 
-            Class factoryClass = null;
+            Class<F> factoryClass = null;
             if (objectFactoryProperty instanceof String) {
-                factoryClass = (Class) ReflectionHelper.classForNamePA((String) objectFactoryProperty).run();
+                factoryClass = ReflectionHelper.<F>classForNamePA((String) objectFactoryProperty).run();
             } else if (objectFactoryProperty instanceof Class) {
-                factoryClass = (Class) objectFactoryProperty;
+                factoryClass = (Class<F>) objectFactoryProperty;
             }
 
             if (factoryClass != null) {
                 if (type.isAssignableFrom(factoryClass)) {
-                    return type.cast(serviceLocator.create(factoryClass));
+                    return serviceLocator.create(factoryClass);
                 }
 
                 logger.warn(LocalizationMessages.WRONG_TEMPLATE_OBJECT_FACTORY(factoryClass, type));
@@ -200,6 +205,11 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
         return this.encoding;
     }
 
+    /**
+     * <p>resolveJarFile.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     protected String resolveJarFile() {
         Class resourceClass = resourceInfo.getResourceClass();
         if (resourceClass == null) return null;
@@ -213,6 +223,13 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
         return null;
     }
 
+    /**
+     * <p>getNearTemplateURL.</p>
+     *
+     * @param jarFile a {@link java.lang.String} object.
+     * @param template a {@link java.lang.String} object.
+     * @return a {@link java.net.URL} object.
+     */
     protected URL getNearTemplateURL(String jarFile, String template) {
         if (jarFile != null) {
             Enumeration<URL> urls = IOUtils.getResources(template);
@@ -280,6 +297,12 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
         }
     }
 
+    /**
+     * <p>resolveReader.</p>
+     *
+     * @param url a {@link java.net.URL} object.
+     * @return a {@link java.io.InputStreamReader} object.
+     */
     protected InputStreamReader resolveReader(URL url) {
 
         if (url != null) {
@@ -294,9 +317,7 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public T resolve(String name, MediaType mediaType) {
         if (this.cache != null) {
@@ -331,9 +352,7 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
      */
     protected abstract T resolve(URL templateURL, Reader reader) throws Exception;
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void writeTo(T templateReference, Viewable viewable, MediaType mediaType,
                         MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException {

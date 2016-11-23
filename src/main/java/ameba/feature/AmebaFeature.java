@@ -15,6 +15,7 @@ import javax.ws.rs.core.Feature;
  * <p>Abstract AmebaFeature class.</p>
  *
  * @author icode
+ * @version $Id: $Id
  */
 public abstract class AmebaFeature extends LoggerOwner implements Feature {
 
@@ -84,7 +85,7 @@ public abstract class AmebaFeature extends LoggerOwner implements Feature {
      *
      * @param eventClass a {@link java.lang.Class} object.
      * @param listener   a {@link ameba.event.Listener} object.
-     * @param <E>        a E object.
+     * @param <E> a E object.
      */
     protected <E extends Event> void subscribeEvent(Class<E> eventClass, final Listener<E> listener) {
         locator.inject(listener);
@@ -97,9 +98,9 @@ public abstract class AmebaFeature extends LoggerOwner implements Feature {
      *
      * @param eventClass    a {@link java.lang.Class} object.
      * @param listenerClass a {@link java.lang.Class} object.
-     * @param <E>           a E object.
      * @return a {@link ameba.event.Listener} object.
      * @since 0.1.6e
+     * @param <E> a E object.
      */
     protected <E extends Event> Listener subscribeEvent(Class<E> eventClass, final Class<? extends Listener<E>> listenerClass) {
         Listener<E> listener = locator.createAndInitialize(listenerClass);
@@ -112,7 +113,7 @@ public abstract class AmebaFeature extends LoggerOwner implements Feature {
      *
      * @param eventClass a {@link java.lang.Class} object.
      * @param listener   a {@link ameba.event.Listener} object.
-     * @param <E>        a E object.
+     * @param <E> a E object.
      */
     protected <E extends Event> void unsubscribeEvent(Class<E> eventClass, final Listener<E> listener) {
         locator.preDestroy(listener);
@@ -124,8 +125,8 @@ public abstract class AmebaFeature extends LoggerOwner implements Feature {
      *
      * @param eventClass a {@link java.lang.Class} object.
      * @param listener   a {@link ameba.event.Listener} object.
-     * @param <E>        a E object.
      * @since 0.1.6e
+     * @param <E> a E object.
      */
     protected <E extends Event> void subscribeSystemEvent(Class<E> eventClass, final Listener<E> listener) {
         locator.inject(listener);
@@ -138,8 +139,8 @@ public abstract class AmebaFeature extends LoggerOwner implements Feature {
      *
      * @param eventClass a {@link java.lang.Class} object.
      * @param listener   a {@link ameba.event.Listener} object.
-     * @param <E>        a E object.
      * @since 0.1.6e
+     * @param <E> a E object.
      */
     protected <E extends Event> void unsubscribeSystemEvent(Class<E> eventClass, final Listener<E> listener) {
         locator.preDestroy(listener);
@@ -151,9 +152,9 @@ public abstract class AmebaFeature extends LoggerOwner implements Feature {
      *
      * @param eventClass    a {@link java.lang.Class} object.
      * @param listenerClass a {@link java.lang.Class} object.
-     * @param <E>           a E object.
      * @return a {@link ameba.event.Listener} object.
      * @since 0.1.6e
+     * @param <E> a E object.
      */
     protected <E extends Event> Listener subscribeSystemEvent(Class<E> eventClass, final Class<? extends Listener<E>> listenerClass) {
         Listener<E> listener = locator.createAndInitialize(listenerClass);

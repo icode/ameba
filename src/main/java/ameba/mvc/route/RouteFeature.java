@@ -17,6 +17,7 @@ import javax.ws.rs.core.FeatureContext;
  *
  * @author icode
  * @since 2013-08-07
+ * @version $Id: $Id
  */
 @Singleton
 @ConstrainedTo(RuntimeType.SERVER)

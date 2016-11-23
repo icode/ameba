@@ -27,6 +27,7 @@ import java.util.Set;
  *
  * @author icode
  * @since 2013-08-27
+ * @version $Id: $Id
  */
 @Singleton
 @Priority(Priorities.ENTITY_CODER)
@@ -49,6 +50,11 @@ public class NotFoundForward implements ContainerResponseFilter {
         return "/" + uriInfo.get().getPath();
     }
 
+    /**
+     * <p>mappedViewPath.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String mappedViewPath() {
         String path = getCurrentPath();
         //受保护目录,不允许直接访问
@@ -68,6 +74,9 @@ public class NotFoundForward implements ContainerResponseFilter {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void filter(ContainerRequestContext requestContext,
                        ContainerResponseContext responseContext) throws IOException {

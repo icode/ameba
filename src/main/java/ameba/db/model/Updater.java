@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public abstract class Updater<M extends Model> {
 
@@ -64,8 +65,8 @@ public abstract class Updater<M extends Model> {
      * Changes the model server.
      *
      * @param server a {@link java.lang.String} object.
-     * @param <E>    model
      * @return a {@link ameba.db.model.Updater} object.
+     * @param <E> a E object.
      */
     public abstract <E extends M> Updater<E> on(String server);
 
@@ -83,8 +84,18 @@ public abstract class Updater<M extends Model> {
      */
     public abstract SqlUpdate sqlUpdate();
 
+    /**
+     * <p>getUpdate.</p>
+     *
+     * @return a {@link com.avaje.ebean.Update} object.
+     */
     public abstract Update<M> getUpdate();
 
+    /**
+     * <p>createUpdate.</p>
+     *
+     * @return a {@link com.avaje.ebean.Update} object.
+     */
     public abstract Update<M> createUpdate();
 
     /**

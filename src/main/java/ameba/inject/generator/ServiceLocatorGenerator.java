@@ -9,9 +9,15 @@ import org.jvnet.hk2.external.generator.ServiceLocatorGeneratorImpl;
 import java.io.IOException;
 
 /**
+ * <p>ServiceLocatorGenerator class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class ServiceLocatorGenerator extends ServiceLocatorGeneratorImpl {
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ServiceLocator create(String name, ServiceLocator parent) {
         ServiceLocator retVal = super.create(name, parent);

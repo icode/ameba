@@ -16,7 +16,10 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * <p>ValidationHelper class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public final class ValidationHelper {
 

@@ -9,7 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
+ * <p>Download class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class Download implements Serializable {
     private Object entity;
@@ -19,53 +22,122 @@ public class Download implements Serializable {
     private MediaType mediaType;
     private Long lastModified;
 
+    /**
+     * <p>Constructor for Download.</p>
+     */
     protected Download() {
     }
 
+    /**
+     * <p>file.</p>
+     *
+     * @param file a {@link java.io.File} object.
+     * @return a {@link ameba.message.Download.Builder} object.
+     */
     public static Builder file(File file) {
         return new Builder().entity(file);
     }
 
+    /**
+     * <p>path.</p>
+     *
+     * @param path a {@link java.nio.file.Path} object.
+     * @return a {@link ameba.message.Download.Builder} object.
+     */
     public static Builder path(Path path) {
         return new Builder().entity(path);
     }
 
+    /**
+     * <p>bytes.</p>
+     *
+     * @param bytes an array of byte.
+     * @return a {@link ameba.message.Download.Builder} object.
+     */
     public static Builder bytes(byte[] bytes) {
         return new Builder().entity(bytes);
     }
 
+    /**
+     * <p>inputStream.</p>
+     *
+     * @param inputStream a {@link java.io.InputStream} object.
+     * @return a {@link ameba.message.Download.Builder} object.
+     */
     public static Builder inputStream(InputStream inputStream) {
         return new Builder().entity(inputStream);
     }
 
+    /**
+     * <p>reader.</p>
+     *
+     * @param reader a {@link java.io.Reader} object.
+     * @return a {@link ameba.message.Download.Builder} object.
+     */
     public static Builder reader(Reader reader) {
         return new Builder().entity(reader);
     }
 
+    /**
+     * <p>streamingOutput.</p>
+     *
+     * @param streamingOutput a {@link javax.ws.rs.core.StreamingOutput} object.
+     * @return a {@link ameba.message.Download.Builder} object.
+     */
     public static Builder streamingOutput(StreamingOutput streamingOutput) {
         return new Builder().entity(streamingOutput);
     }
 
+    /**
+     * <p>Getter for the field <code>entity</code>.</p>
+     *
+     * @return a {@link java.lang.Object} object.
+     */
     public Object getEntity() {
         return entity;
     }
 
+    /**
+     * <p>isAttachment.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isAttachment() {
         return attachment;
     }
 
+    /**
+     * <p>Getter for the field <code>fileName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getFileName() {
         return fileName;
     }
 
+    /**
+     * <p>Getter for the field <code>mediaType</code>.</p>
+     *
+     * @return a {@link javax.ws.rs.core.MediaType} object.
+     */
     public MediaType getMediaType() {
         return mediaType;
     }
 
+    /**
+     * <p>Getter for the field <code>etag</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getEtag() {
         return etag;
     }
 
+    /**
+     * <p>Getter for the field <code>lastModified</code>.</p>
+     *
+     * @return a {@link java.lang.Long} object.
+     */
     public Long getLastModified() {
         return lastModified;
     }

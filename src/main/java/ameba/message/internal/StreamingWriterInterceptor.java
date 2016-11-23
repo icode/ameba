@@ -20,7 +20,10 @@ import javax.ws.rs.ext.WriterInterceptorContext;
 import java.io.IOException;
 
 /**
+ * <p>StreamingWriterInterceptor class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 @Priority(Integer.MIN_VALUE + 100)
@@ -35,6 +38,9 @@ public class StreamingWriterInterceptor implements WriterInterceptor, ContainerR
     @Inject
     private ServiceLocator locator;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
         if (isWritable(context)) {
@@ -68,6 +74,12 @@ public class StreamingWriterInterceptor implements WriterInterceptor, ContainerR
         context.proceed();
     }
 
+    /**
+     * <p>isWritable.</p>
+     *
+     * @param context a {@link javax.ws.rs.ext.WriterInterceptorContext} object.
+     * @return a boolean.
+     */
     protected boolean isWritable(WriterInterceptorContext context) {
         return context.getEntity() != null
                 && !Boolean.FALSE.equals(requestProvider.get().getProperty(MessageHelper.STREAMING_RANGE_ENABLED))
@@ -75,6 +87,13 @@ public class StreamingWriterInterceptor implements WriterInterceptor, ContainerR
                 && !(context.getEntity() instanceof MediaStreaming);
     }
 
+    /**
+     * <p>applyStreaming.</p>
+     *
+     * @param requestContext a {@link javax.ws.rs.container.ContainerRequestContext} object.
+     * @param context a {@link javax.ws.rs.ext.WriterInterceptorContext} object.
+     * @throws java.io.IOException if any.
+     */
     protected void applyStreaming(ContainerRequestContext requestContext, WriterInterceptorContext context)
             throws IOException {
 
@@ -98,6 +117,7 @@ public class StreamingWriterInterceptor implements WriterInterceptor, ContainerR
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void filter(ContainerRequestContext requestContext,
                        ContainerResponseContext responseContext) throws IOException {

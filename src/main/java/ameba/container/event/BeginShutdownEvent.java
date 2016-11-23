@@ -4,9 +4,18 @@ import ameba.container.Container;
 import ameba.core.Application;
 
 /**
+ * <p>BeginShutdownEvent class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class BeginShutdownEvent extends ContainerEvent {
+    /**
+     * <p>Constructor for BeginShutdownEvent.</p>
+     *
+     * @param container a {@link ameba.container.Container} object.
+     * @param app       a {@link ameba.core.Application} object.
+     */
     public BeginShutdownEvent(Container container, Application app) {
         super(container, app);
     }

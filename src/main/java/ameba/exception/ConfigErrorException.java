@@ -9,6 +9,7 @@ import java.util.List;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public class ConfigErrorException extends AmebaExceptionWithJavaSource {
     private String key;
@@ -56,10 +57,18 @@ public class ConfigErrorException extends AmebaExceptionWithJavaSource {
         this.key = key;
     }
 
+    /**
+     * <p>Getter for the field <code>key</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getKey() {
         return key;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> getSource() {
         return Lists.newArrayList();

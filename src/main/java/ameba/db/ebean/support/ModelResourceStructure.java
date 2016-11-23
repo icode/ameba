@@ -38,6 +38,7 @@ import java.util.Set;
  * <p>Abstract ModelResourceStructure class.</p>
  *
  * @author icode
+ * @version $Id: $Id
  * @since 0.1.6e
  */
 public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends LoggerOwner {
@@ -72,26 +73,46 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         this.server = server;
     }
 
+    /**
+     * <p>Setter for the field <code>txScope</code>.</p>
+     *
+     * @param txScope a {@link com.avaje.ebean.TxScope} object.
+     */
     public void setTxScope(TxScope txScope) {
         this.txScope = txScope;
     }
 
+    /**
+     * <p>switchToSupportsScope.</p>
+     */
     public void switchToSupportsScope() {
         txScope = TxScope.supports();
     }
 
+    /**
+     * <p>switchToNotSupportedScope.</p>
+     */
     public void switchToNotSupportedScope() {
         txScope = TxScope.notSupported();
     }
 
+    /**
+     * <p>switchToRequiredScope.</p>
+     */
     public void switchToRequiredScope() {
         txScope = TxScope.required();
     }
 
+    /**
+     * <p>switchToRequiredNewScope.</p>
+     */
     public void switchToRequiredNewScope() {
         txScope = TxScope.requiresNew();
     }
 
+    /**
+     * <p>switchToMandatoryScope.</p>
+     */
     public void switchToMandatoryScope() {
         txScope = TxScope.mandatory();
     }
@@ -149,6 +170,9 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         }
     }
 
+    /**
+     * <p>flushBatch.</p>
+     */
     protected void flushBatch() {
         Transaction t = server.currentTransaction();
         if (t != null)
@@ -165,7 +189,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.POST
-     * @see AbstractModelResource#insert(MODEL)
+     * @see AbstractModelResource#insert
      */
     @SuppressWarnings("unchecked")
     public Response insert(@NotNull @Valid final MODEL model) throws Exception {
@@ -185,6 +209,12 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         return Response.created(buildLocationUri(id)).build();
     }
 
+    /**
+     * <p>matchedInsert.</p>
+     *
+     * @param model a MODEL object.
+     * @throws java.lang.Exception if any.
+     */
     protected void matchedInsert(final MODEL model) throws Exception {
 
     }
@@ -232,7 +262,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.PUT
-     * @see AbstractModelResource#replace(URI_ID, MODEL)
+     * @see AbstractModelResource#replace
      */
     public Response replace(@PathParam("id") final URI_ID id, @NotNull @Valid final MODEL model) throws Exception {
         final MODEL_ID mId = tryConvertId(id);
@@ -262,6 +292,13 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         return builder.build();
     }
 
+    /**
+     * <p>matchedReplace.</p>
+     *
+     * @param id    a MODEL_ID object.
+     * @param model a MODEL object.
+     * @throws java.lang.Exception if any.
+     */
     protected void matchedReplace(MODEL_ID id, final MODEL model) throws Exception {
 
     }
@@ -308,7 +345,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see ameba.core.ws.rs.PATCH
-     * @see AbstractModelResource#patch(URI_ID, MODEL)
+     * @see AbstractModelResource#patch
      */
     public Response patch(@PathParam("id") final URI_ID id, @NotNull final MODEL model) throws Exception {
         MODEL_ID mId = tryConvertId(id);
@@ -334,6 +371,13 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         });
     }
 
+    /**
+     * <p>matchedPatch.</p>
+     *
+     * @param id    a MODEL_ID object.
+     * @param model a MODEL object.
+     * @throws java.lang.Exception if any.
+     */
     protected void matchedPatch(final MODEL_ID id, final MODEL model) throws Exception {
 
     }
@@ -377,12 +421,18 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * <br>
      * logical delete status 202
      *
-     * @param id  The id use for path matching type
-     * @param ids The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
+     * @param id        The id use for path matching type
+     * @param ids       The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
+     * @param ids       The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
+     * @param ids       The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
+     * @param ids       The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
+     * @param ids       The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
+     * @param ids       The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
+     * @param permanent a boolean.
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.DELETE
-     * @see AbstractModelResource#deleteMultiple(URI_ID, PathSegment, boolean)
+     * @see AbstractModelResource#deleteMultiple
      */
     public Response deleteMultiple(@NotNull @PathParam("ids") URI_ID id,
                                    @NotNull @PathParam("ids") final PathSegment ids,
@@ -436,6 +486,15 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         return builder.build();
     }
 
+    /**
+     * <p>matchedDelete.</p>
+     *
+     * @param id        a MODEL_ID object.
+     * @param idSet     a {@link java.util.Set} object.
+     * @param idSet     a {@link java.util.Set} object.
+     * @param permanent a boolean.
+     * @throws java.lang.Exception if any.
+     */
     protected void matchedDelete(MODEL_ID id, Set<MODEL_ID> idSet, boolean permanent) throws Exception {
 
     }
@@ -444,6 +503,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * <p>preDeleteMultipleModel.</p>
      *
      * @param idCollection a {@link java.util.Set} object.
+     * @param permanent    a boolean.
      * @throws java.lang.Exception if any.
      */
     protected void preDeleteMultipleModel(Set<MODEL_ID> idCollection, boolean permanent) throws Exception {
@@ -454,6 +514,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * delete multiple Model
      *
      * @param idCollection model id collection
+     * @param permanent    a boolean.
      * @return if true delete from physical device, if logical delete return false, response status 202
      * @throws java.lang.Exception if any.
      */
@@ -470,6 +531,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * <p>postDeleteMultipleModel.</p>
      *
      * @param idCollection a {@link java.util.Set} object.
+     * @param permanent    a boolean.
      * @throws java.lang.Exception if any.
      */
     protected void postDeleteMultipleModel(Set<MODEL_ID> idCollection, boolean permanent) throws Exception {
@@ -479,7 +541,8 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>preDeleteModel.</p>
      *
-     * @param id a MODEL_ID object.
+     * @param id        a MODEL_ID object.
+     * @param permanent a boolean.
      * @throws java.lang.Exception if any.
      */
     protected void preDeleteModel(MODEL_ID id, boolean permanent) throws Exception {
@@ -489,7 +552,8 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * delete a model
      *
-     * @param id model id
+     * @param id        model id
+     * @param permanent a boolean.
      * @return if true delete from physical device, if logical delete return false, response status 202
      * @throws java.lang.Exception if any.
      */
@@ -505,7 +569,8 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>postDeleteModel.</p>
      *
-     * @param id a MODEL_ID object.
+     * @param id        a MODEL_ID object.
+     * @param permanent a boolean.
      * @throws java.lang.Exception if any.
      */
     protected void postDeleteModel(MODEL_ID id, boolean permanent) throws Exception {
@@ -515,8 +580,14 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * Find a model or model list given its Ids.
      *
-     * @param id  The id use for path matching type
-     * @param ids the id of the model.
+     * @param id             The id use for path matching type
+     * @param ids            the id of the model.
+     * @param ids            the id of the model.
+     * @param ids            the id of the model.
+     * @param ids            the id of the model.
+     * @param ids            the id of the model.
+     * @param ids            the id of the model.
+     * @param includeDeleted a boolean.
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.GET
@@ -577,6 +648,15 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         return Response.ok(model).build();
     }
 
+    /**
+     * <p>matchedFindByIds.</p>
+     *
+     * @param id             a MODEL_ID object.
+     * @param ids            a {@link java.util.Set} object.
+     * @param ids            a {@link java.util.Set} object.
+     * @param includeDeleted a boolean.
+     * @throws java.lang.Exception if any.
+     */
     protected void matchedFindByIds(MODEL_ID id, Set<MODEL_ID> ids, boolean includeDeleted) throws Exception {
         switchToSupportsScope();
     }
@@ -590,7 +670,8 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * This effectively controls the "default" query used to render this model.
      * </p>
      *
-     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param query          a {@link com.avaje.ebean.Query} object.
+     * @param includeDeleted a boolean.
      * @throws java.lang.Exception if any.
      */
     protected void configFindByIdsQuery(final Query<MODEL> query, boolean includeDeleted) throws Exception {
@@ -600,7 +681,8 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>processFoundModel.</p>
      *
-     * @param model a MODEL object.
+     * @param model          a MODEL object.
+     * @param includeDeleted a boolean.
      * @return a {@link java.lang.Object} object.
      * @throws java.lang.Exception if any.
      */
@@ -608,6 +690,14 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         return model;
     }
 
+    /**
+     * <p>processFoundByIdsModelList.</p>
+     *
+     * @param models         a {@link java.util.List} object.
+     * @param includeDeleted a boolean.
+     * @return a {@link java.lang.Object} object.
+     * @throws java.lang.Exception if any.
+     */
     protected Object processFoundByIdsModelList(final List<MODEL> models, boolean includeDeleted) throws Exception {
         return models;
     }
@@ -619,10 +709,11 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * the query.
      * </p>
      *
+     * @param includeDeleted a boolean.
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
      * @see javax.ws.rs.GET
-     * @see AbstractModelResource#find()
+     * @see AbstractModelResource#find
      */
     public Response find(@QueryParam("include_deleted") final boolean includeDeleted) throws Exception {
         matchedFind(includeDeleted);
@@ -655,6 +746,12 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         return response;
     }
 
+    /**
+     * <p>matchedFind.</p>
+     *
+     * @param includeDeleted a boolean.
+     * @throws java.lang.Exception if any.
+     */
     protected void matchedFind(boolean includeDeleted) throws Exception {
         switchToSupportsScope();
     }
@@ -669,7 +766,8 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * query.
      * </p>
      *
-     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param query          a {@link com.avaje.ebean.Query} object.
+     * @param includeDeleted a boolean.
      * @throws java.lang.Exception if any.
      */
     protected void configFindQuery(final Query<MODEL> query, boolean includeDeleted) throws Exception {
@@ -679,7 +777,8 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>processFoundModelList.</p>
      *
-     * @param list a {@link java.util.List} object.
+     * @param list           a {@link java.util.List} object.
+     * @param includeDeleted a boolean.
      * @return a {@link java.lang.Object} object.
      * @throws java.lang.Exception if any.
      */
@@ -687,6 +786,11 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         return list;
     }
 
+    /**
+     * <p>defaultFindOrderBy.</p>
+     *
+     * @param query a {@link com.avaje.ebean.Query} object.
+     */
     protected void defaultFindOrderBy(Query<MODEL> query) {
         if (StringUtils.isNotBlank(defaultFindOrderBy)) {
             // see if we should use the default orderBy clause
@@ -697,16 +801,16 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         }
     }
 
-    /***
-     *  find model history between start to end timestamp versions
+    /**
+     * find model history between start to end timestamp versions
+     * <p>
+     * need model mark {@code @History}
      *
-     *  need model mark {@History}
-     *
-     * @param id model id
+     * @param id    model id
      * @param start start timestamp
-     * @param end end timestamp
+     * @param end   end timestamp
      * @return history versions
-     * @throws Exception any error
+     * @throws java.lang.Exception any error
      */
     public Response fetchHistory(@PathParam("id") URI_ID id,
                                  @PathParam("start") final Timestamp start,
@@ -739,12 +843,29 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         return response;
     }
 
+    /**
+     * <p>matchedFetchHistory.</p>
+     *
+     * @param id    a MODEL_ID object.
+     * @param start a {@link java.sql.Timestamp} object.
+     * @param end   a {@link java.sql.Timestamp} object.
+     * @throws java.lang.Exception if any.
+     */
     protected void matchedFetchHistory(final MODEL_ID id,
                                        final Timestamp start,
                                        final Timestamp end) throws Exception {
         switchToSupportsScope();
     }
 
+    /**
+     * <p>configFetchHistoryQuery.</p>
+     *
+     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param id    a MODEL_ID object.
+     * @param start a {@link java.sql.Timestamp} object.
+     * @param end   a {@link java.sql.Timestamp} object.
+     * @throws java.lang.Exception if any.
+     */
     protected void configFetchHistoryQuery(final Query<MODEL> query,
                                            final MODEL_ID id,
                                            final Timestamp start,
@@ -752,6 +873,16 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
 
     }
 
+    /**
+     * <p>processFetchedHistoryModelList.</p>
+     *
+     * @param list  a {@link java.util.List} object.
+     * @param id    a MODEL_ID object.
+     * @param start a {@link java.sql.Timestamp} object.
+     * @param end   a {@link java.sql.Timestamp} object.
+     * @return a {@link java.lang.Object} object.
+     * @throws java.lang.Exception if any.
+     */
     protected Object processFetchedHistoryModelList(final List<Version<MODEL>> list,
                                                     final MODEL_ID id,
                                                     final Timestamp start,
@@ -759,6 +890,13 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         return list;
     }
 
+    /**
+     * <p>fetchHistory.</p>
+     *
+     * @param id a URI_ID object.
+     * @return a {@link javax.ws.rs.core.Response} object.
+     * @throws java.lang.Exception if any.
+     */
     public Response fetchHistory(@PathParam("id") URI_ID id) throws Exception {
         final MODEL_ID mId = tryConvertId(id);
         matchedFetchHistory(mId);
@@ -788,15 +926,36 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         return response;
     }
 
+    /**
+     * <p>matchedFetchHistory.</p>
+     *
+     * @param id a MODEL_ID object.
+     * @throws java.lang.Exception if any.
+     */
     protected void matchedFetchHistory(final MODEL_ID id) throws Exception {
         switchToSupportsScope();
     }
 
+    /**
+     * <p>configFetchHistoryQuery.</p>
+     *
+     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param id    a MODEL_ID object.
+     * @throws java.lang.Exception if any.
+     */
     protected void configFetchHistoryQuery(final Query<MODEL> query,
                                            final MODEL_ID id) throws Exception {
 
     }
 
+    /**
+     * <p>processFetchedHistoryModelList.</p>
+     *
+     * @param list a {@link java.util.List} object.
+     * @param id   a MODEL_ID object.
+     * @return a {@link java.lang.Object} object.
+     * @throws java.lang.Exception if any.
+     */
     protected Object processFetchedHistoryModelList(final List<Version<MODEL>> list,
                                                     final MODEL_ID id) throws Exception {
         return list;
@@ -808,7 +967,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @param id   model id
      * @param asOf Timestamp
      * @return history model
-     * @throws Exception any error
+     * @throws java.lang.Exception any error
      */
     public Response fetchHistoryAsOf(@PathParam("id") URI_ID id,
                                      @PathParam("asOf") final Timestamp asOf) throws Exception {
@@ -835,16 +994,40 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         return Response.ok(entity).build();
     }
 
+    /**
+     * <p>matchedFetchHistoryAsOf.</p>
+     *
+     * @param id   a MODEL_ID object.
+     * @param asOf a {@link java.sql.Timestamp} object.
+     * @throws java.lang.Exception if any.
+     */
     protected void matchedFetchHistoryAsOf(final MODEL_ID id, final Timestamp asOf) throws Exception {
         switchToSupportsScope();
     }
 
+    /**
+     * <p>configFetchHistoryAsOfQuery.</p>
+     *
+     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param id    a MODEL_ID object.
+     * @param asOf  a {@link java.sql.Timestamp} object.
+     * @throws java.lang.Exception if any.
+     */
     protected void configFetchHistoryAsOfQuery(final Query<MODEL> query,
                                                final MODEL_ID id,
                                                final Timestamp asOf) throws Exception {
 
     }
 
+    /**
+     * <p>processFetchedHistoryAsOfModel.</p>
+     *
+     * @param id    a MODEL_ID object.
+     * @param model a MODEL object.
+     * @param asOf  a {@link java.sql.Timestamp} object.
+     * @return a {@link java.lang.Object} object.
+     * @throws java.lang.Exception if any.
+     */
     protected Object processFetchedHistoryAsOfModel(final MODEL_ID id,
                                                     final MODEL model,
                                                     final Timestamp asOf) throws Exception {
@@ -869,6 +1052,12 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * <p>isEmptyEntity.</p>
+     *
+     * @param entity a {@link java.lang.Object} object.
+     * @return a boolean.
+     */
     protected boolean isEmptyEntity(Object entity) {
         return entity == null || (entity instanceof Collection && ((Collection) entity).isEmpty());
     }
@@ -895,10 +1084,21 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         return applyUriQuery(query, true);
     }
 
+    /**
+     * <p>applyPageConfig.</p>
+     *
+     * @param query a {@link com.avaje.ebean.Query} object.
+     */
     protected void applyPageConfig(Query query) {
         ModelInterceptor.applyPageConfig(uriInfo.getQueryParameters(), query);
     }
 
+    /**
+     * <p>fetchRowCount.</p>
+     *
+     * @param query a {@link com.avaje.ebean.Query} object.
+     * @return a {@link com.avaje.ebean.FutureRowCount} object.
+     */
     protected FutureRowCount fetchRowCount(Query query) {
         return ModelInterceptor.fetchRowCount(uriInfo.getQueryParameters(), query);
     }
@@ -918,8 +1118,8 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * <p>processTransactionError.</p>
      *
      * @param t        Transaction
-     * @param callable a {@link ModelResourceStructure.TxCallable} object.
-     * @param process  a {@link ModelResourceStructure.TxCallable} object.
+     * @param callable a {@link ameba.db.ebean.support.ModelResourceStructure.TxCallable} object.
+     * @param process  a {@link ameba.db.ebean.support.ModelResourceStructure.TxCallable} object.
      * @param <T>      model
      * @return model
      * @throws java.lang.Exception if any.
@@ -960,7 +1160,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>executeTx.</p>
      *
-     * @param r            a {@link ModelResourceStructure.TxRunnable} object.
+     * @param r            a {@link ameba.db.ebean.support.ModelResourceStructure.TxRunnable} object.
      * @param errorHandler error handler
      * @throws java.lang.Exception if any.
      */
@@ -990,6 +1190,11 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         } : null);
     }
 
+    /**
+     * <p>beginTransaction.</p>
+     *
+     * @return a {@link com.avaje.ebean.Transaction} object.
+     */
     protected Transaction beginTransaction() {
         return server.beginTransaction(txScope);
     }
@@ -997,7 +1202,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>executeTx.</p>
      *
-     * @param r a {@link ModelResourceStructure.TxRunnable} object.
+     * @param r a {@link ameba.db.ebean.support.ModelResourceStructure.TxRunnable} object.
      * @throws java.lang.Exception if any.
      */
     protected void executeTx(TxRunnable r) throws Exception {
@@ -1007,7 +1212,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>executeTx.</p>
      *
-     * @param c   a {@link ModelResourceStructure.TxCallable} object.
+     * @param c   a {@link ameba.db.ebean.support.ModelResourceStructure.TxCallable} object.
      * @param <O> a O object.
      * @return a O object.
      * @throws java.lang.Exception if any.
@@ -1017,6 +1222,15 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     }
 
 
+    /**
+     * <p>executeTx.</p>
+     *
+     * @param c            a {@link ameba.db.ebean.support.ModelResourceStructure.TxCallable} object.
+     * @param errorHandler a {@link ameba.db.ebean.support.ModelResourceStructure.TxCallable} object.
+     * @param <O>          a O object.
+     * @return a O object.
+     * @throws java.lang.Exception if any.
+     */
     @SuppressWarnings("unchecked")
     protected <O> O executeTx(final TxCallable<O> c, final TxCallable<O> errorHandler) throws Exception {
         Transaction transaction = beginTransaction();
@@ -1039,6 +1253,11 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         }, errorHandler);
     }
 
+    /**
+     * <p>configureTransDefault.</p>
+     *
+     * @param transaction a {@link com.avaje.ebean.Transaction} object.
+     */
     protected void configureTransDefault(Transaction transaction) {
 
     }
@@ -1062,6 +1281,12 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         }
     }
 
+    /**
+     * <p>buildLocationUri.</p>
+     *
+     * @param id a MODEL_ID object.
+     * @return a {@link java.net.URI} object.
+     */
     protected URI buildLocationUri(MODEL_ID id) {
         return buildLocationUri(id, false);
     }

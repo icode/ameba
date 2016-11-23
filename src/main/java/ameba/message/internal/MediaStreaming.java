@@ -14,11 +14,18 @@ import java.util.List;
 import java.util.Random;
 
 /**
+ * <p>MediaStreaming class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class MediaStreaming implements StreamingOutput {
 
+    /**
+     * Constant <code>RANGE="Range"</code>
+     */
     public static final String RANGE = "Range";
+    /** Constant <code>CONTENT_RANGE="Content-Range"</code> */
     public static final String CONTENT_RANGE = "Content-Range";
     private static final String EMPTY_LINE = "\r\n";
     private static final String MULTIPART_BYTERANGES = "multipart/byteranges; boundary=%s";
@@ -34,6 +41,15 @@ public class MediaStreaming implements StreamingOutput {
     private String range;
     private StreamingProcess<Object> streamingProcess;
 
+    /**
+     * <p>Constructor for MediaStreaming.</p>
+     *
+     * @param entity a {@link java.lang.Object} object.
+     * @param range a {@link java.lang.String} object.
+     * @param streamingProcess a {@link ameba.message.internal.StreamingProcess} object.
+     * @param contentType a {@link javax.ws.rs.core.MediaType} object.
+     * @param headers a {@link javax.ws.rs.core.MultivaluedMap} object.
+     */
     public MediaStreaming(Object entity,
                           String range,
                           StreamingProcess<Object> streamingProcess,
@@ -46,6 +62,7 @@ public class MediaStreaming implements StreamingOutput {
         this.range = range;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void write(OutputStream output) throws IOException, WebApplicationException {
         List<Range> ranges = Lists.newArrayList();

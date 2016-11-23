@@ -10,6 +10,7 @@ import com.avaje.ebean.Transaction;
  * Base-class for model-mapped models that provides convenience methods.
  *
  * @author sulijuan
+ * @version $Id: $Id
  */
 public class EbeanPersister<M extends Model> extends Persister<M> {
 
@@ -39,35 +40,43 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
         return new EbeanPersister<>(server, (E) getModel());
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void save() {
         server().save(getModel());
     }
 
+    /**
+     * <p>save.</p>
+     *
+     * @param transaction a {@link com.avaje.ebean.Transaction} object.
+     */
     public void save(Transaction transaction) {
         server().save(getModel(), transaction);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void update() {
         server().update(getModel());
     }
 
+    /**
+     * <p>update.</p>
+     *
+     * @param t a {@link com.avaje.ebean.Transaction} object.
+     */
     public void update(Transaction t) {
         server().update(getModel(), t);
     }
 
 
+    /** {@inheritDoc} */
     public void update(Transaction t, boolean deleteMissingChildren) {
         server().update(getModel(), t, deleteMissingChildren);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void update(boolean deleteMissingChildren) {
         Transaction t = server().currentTransaction();
@@ -75,44 +84,42 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
         server().update(getModel(), t, deleteMissingChildren);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void delete() {
         server().delete(getModel());
     }
 
+    /** {@inheritDoc} */
     @Override
     public void delete(Transaction t) {
         server().delete(getModel(), t);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void refresh() {
         server().refresh(getModel());
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public Persister<M> markAsDirty() {
         server().markAsDirty(getModel());
         return this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void insert() {
         server().insert(getModel());
     }
 
+    /**
+     * <p>insert.</p>
+     *
+     * @param t a {@link com.avaje.ebean.Transaction} object.
+     */
     public void insert(Transaction t) {
         server().insert(getModel(), t);
     }

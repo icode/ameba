@@ -20,12 +20,19 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
+ * <p>ValidationFeature class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public final class ValidationFeature implements Feature {
 
+    /**
+     * Constant <code>VALIDATION_MESSAGE_BUNDLE_NAME="Messages.BUNDLE_DIR + validationMessage"</code>
+     */
     public static final String VALIDATION_MESSAGE_BUNDLE_NAME = Messages.BUNDLE_DIR + "validationMessage";
 
+    /** {@inheritDoc} */
     @Override
     public boolean configure(final FeatureContext context) {
         // disable Jersey default BeanValidation feature

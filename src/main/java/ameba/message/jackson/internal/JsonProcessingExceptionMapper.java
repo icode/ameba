@@ -21,7 +21,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
 /**
+ * <p>JsonProcessingExceptionMapper class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 public class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProcessingException> {
@@ -32,6 +35,9 @@ public class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProces
     @Inject
     private Application.Mode mode;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Response toResponse(JsonProcessingException exception) {
         Throwable throwable = exception;

@@ -10,7 +10,10 @@ import javax.xml.bind.Unmarshaller;
 import java.io.StringReader;
 
 /**
+ * <p>MigrationResource class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class MigrationResource implements Comparable<MigrationResource> {
 
@@ -19,18 +22,27 @@ public class MigrationResource implements Comparable<MigrationResource> {
 
     /**
      * Construct with a migration xml file.
+     *
+     * @param info a {@link ameba.db.migration.models.ScriptInfo} object.
      */
     public MigrationResource(ScriptInfo info) {
         this.info = info;
         this.version = MigrationVersion.parse(info.getRevision());
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String toString() {
         return version.asString() + "->" + this.info.toString();
     }
 
     /**
      * Return the version associated with this resource.
+     *
+     * @return a {@link com.avaje.ebean.dbmigration.model.MigrationVersion} object.
      */
     public MigrationVersion getVersion() {
         return version;
@@ -38,6 +50,8 @@ public class MigrationResource implements Comparable<MigrationResource> {
 
     /**
      * Read and return the migration from the resource.
+     *
+     * @return a {@link com.avaje.ebean.dbmigration.migration.Migration} object.
      */
     public Migration read() {
         try (StringReader reader = new StringReader(info.getModelDiff())) {
@@ -49,11 +63,18 @@ public class MigrationResource implements Comparable<MigrationResource> {
         }
     }
 
+    /**
+     * <p>Getter for the field <code>info</code>.</p>
+     *
+     * @return a {@link ameba.db.migration.models.ScriptInfo} object.
+     */
     public ScriptInfo getInfo() {
         return info;
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Compare by underlying version.
      */
     @Override

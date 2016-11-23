@@ -25,7 +25,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * <p>CommonExprTransformer class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class CommonExprTransformer implements ExprTransformer<Expression, EbeanExprInvoker> {
 
@@ -34,6 +37,13 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return server.getExpressionFactory();
     }
 
+    /**
+     * <p>fillArgs.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @param args     an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param et       a {@link com.avaje.ebean.ExpressionList} object.
+     */
     public static void fillArgs(String operator, Val<Expression>[] args, ExpressionList<?> et) {
         for (Val<Expression> val : args) {
             if (val.object() instanceof Expression) {
@@ -44,6 +54,16 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         }
     }
 
+    /**
+     * <p>junction.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param type a {@link com.avaje.ebean.Junction.Type} object.
+     * @param invoker a {@link ameba.db.ebean.filter.EbeanExprInvoker} object.
+     * @param checkCount a int.
+     * @return a {@link com.avaje.ebean.Junction} object.
+     */
     public static Junction<?> junction(String operator, Val<Expression>[] args, Junction.Type type,
                                        EbeanExprInvoker invoker, int checkCount) {
         if (args.length > checkCount) {
@@ -55,6 +75,15 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator, checkCount));
     }
 
+    /**
+     * <p>filter.</p>
+     *
+     * @param field a {@link java.lang.String} object.
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param invoker a {@link ameba.db.ebean.filter.EbeanExprInvoker} object.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression filter(String field, String operator, Val<Expression>[] args, EbeanExprInvoker invoker) {
         if (args.length > 0) {
             SpiExpressionFactory queryEf = (SpiExpressionFactory) invoker.getServer().getExpressionFactory();
@@ -79,6 +108,15 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
     }
 
+    /**
+     * <p>select.</p>
+     *
+     * @param field a {@link java.lang.String} object.
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param invoker a {@link ameba.db.ebean.filter.EbeanExprInvoker} object.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression select(String field, String operator, Val<Expression>[] args, EbeanExprInvoker invoker) {
         if (args.length > 0) {
             EbeanServer server = invoker.getServer();
@@ -109,6 +147,13 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
     }
 
+    /**
+     * <p>having.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression having(String operator, Val<Expression>[] args) {
         if (args.length > 0) {
             return HavingExpression.of(transformArgsToList(operator, args));
@@ -117,6 +162,15 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
     }
 
 
+    /**
+     * <p>in.</p>
+     *
+     * @param field a {@link java.lang.String} object.
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param invoker a {@link ameba.db.ebean.filter.EbeanExprInvoker} object.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression in(String field, String operator, Val<Expression>[] args, EbeanExprInvoker invoker) {
         if (args.length == 1) {
             if (args[0].object() instanceof QueryExpression) {
@@ -127,6 +181,15 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return factory(invoker).in(field, args);
     }
 
+    /**
+     * <p>notIn.</p>
+     *
+     * @param field a {@link java.lang.String} object.
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param invoker a {@link ameba.db.ebean.filter.EbeanExprInvoker} object.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression notIn(String field, String operator, Val<Expression>[] args, EbeanExprInvoker invoker) {
         if (args.length == 1) {
             if (args[0].object() instanceof QueryExpression) {
@@ -137,6 +200,14 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return factory(invoker).notIn(field, args);
     }
 
+    /**
+     * <p>exists.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param invoker a {@link ameba.db.ebean.filter.EbeanExprInvoker} object.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression exists(String operator, Val<Expression>[] args, EbeanExprInvoker invoker) {
         if (args.length == 1) {
             if (args[0].object() instanceof QueryExpression) {
@@ -147,6 +218,14 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
     }
 
+    /**
+     * <p>notExists.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param invoker a {@link ameba.db.ebean.filter.EbeanExprInvoker} object.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression notExists(String operator, Val<Expression>[] args, EbeanExprInvoker invoker) {
         if (args.length == 1) {
             if (args[0].object() instanceof QueryExpression) {
@@ -157,6 +236,15 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
     }
 
+    /**
+     * <p>match.</p>
+     *
+     * @param field a {@link java.lang.String} object.
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param invoker a {@link ameba.db.ebean.filter.EbeanExprInvoker} object.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression match(String field, String operator, Val<Expression>[] args, EbeanExprInvoker invoker) {
         if (field != null) {
             //field.match(text)
@@ -276,6 +364,14 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         }
     }
 
+    /**
+     * <p>textQueryString.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param invoker a {@link ameba.db.ebean.filter.EbeanExprInvoker} object.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression textQueryString(String operator, Val<Expression>[] args, EbeanExprInvoker invoker) {
         checkTextOptions(operator, args);
         Map<String, Val<Expression>> ops = ((TextOptionsExpression) args[1].expr()).options;
@@ -359,6 +455,14 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return factory(invoker).textQueryString(args[0].string(), queryString);
     }
 
+    /**
+     * <p>textCommonTerms.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param invoker a {@link ameba.db.ebean.filter.EbeanExprInvoker} object.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression textCommonTerms(String operator, Val<Expression>[] args, EbeanExprInvoker invoker) {
         checkTextOptions(operator, args);
         Map<String, Val<Expression>> ops = ((TextOptionsExpression) args[1].expr()).options;
@@ -397,6 +501,14 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         }
     }
 
+    /**
+     * <p>textSimple.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param invoker a {@link ameba.db.ebean.filter.EbeanExprInvoker} object.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression textSimple(String operator, Val<Expression>[] args, EbeanExprInvoker invoker) {
         checkTextOptions(operator, args);
         Map<String, Val<Expression>> ops = ((TextOptionsExpression) args[1].expr()).options;
@@ -438,6 +550,13 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return factory(invoker).textSimple(args[0].string(), simple);
     }
 
+    /**
+     * <p>text.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression text(String operator, Val<Expression>[] args) {
         if (args.length < 1) {
             throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator, 0));
@@ -445,6 +564,14 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return TextExpression.of(transformArgsToList(operator, args));
     }
 
+    /**
+     * <p>map.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @param arg a {@link ameba.db.dsl.QueryExprMeta.Val} object.
+     * @param parent a {@link ameba.db.dsl.QueryExprMeta} object.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression map(String operator, Val<Expression> arg, QueryExprMeta parent) {
         if (parent == null) {
             throw new QuerySyntaxException(Messages.get("dsl.arguments.error5", operator));
@@ -454,6 +581,14 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return MapExpression.of(operator, arg);
     }
 
+    /**
+     * <p>fields.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param parent a {@link ameba.db.dsl.QueryExprMeta} object.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression fields(String operator, Val<Expression>[] args, QueryExprMeta parent) {
         if (args.length < 1) {
             throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator, 0));
@@ -467,6 +602,14 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return TextFieldsExpression.of(args);
     }
 
+    /**
+     * <p>options.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @param parent a {@link ameba.db.dsl.QueryExprMeta} object.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression options(String operator, Val<Expression>[] args, QueryExprMeta parent) {
         if (args.length < 1) {
             throw new QuerySyntaxException(Messages.get("dsl.arguments.error2", operator, 0));
@@ -486,6 +629,12 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return op;
     }
 
+    /**
+     * <p>distinct.</p>
+     *
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @return a {@link com.avaje.ebean.Expression} object.
+     */
     public static Expression distinct(Val<Expression>[] args) {
         boolean dis = true;
         if (args.length > 1) {
@@ -497,6 +646,12 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return new DistinctExpression(dis);
     }
 
+    /**
+     * <p>transformArgs.</p>
+     *
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @return a {@link java.lang.Object} object.
+     */
     public static Object transformArgs(Val<Expression>[] args) {
         Object[] objects = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
@@ -505,6 +660,13 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return objects;
     }
 
+    /**
+     * <p>transformArgsToList.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
+     * @return a {@link java.util.List} object.
+     */
     public static List<Expression> transformArgsToList(String operator, Val<Expression>[] args) {
         List<Expression> et = Lists.newArrayListWithCapacity(args.length);
         for (Val<Expression> e : args) {
@@ -517,6 +679,7 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         return et;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Transformed<Val<Expression>> transform(String field, String operator,
                                                   Val<Expression>[] args,

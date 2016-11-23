@@ -17,6 +17,7 @@ import java.util.*;
  * </p>
  *
  * @author icode
+ * @version $Id: $Id
  */
 public class BeanPathProperties {
 
@@ -78,6 +79,11 @@ public class BeanPathProperties {
         return pathMap.isEmpty();
     }
 
+    /**
+     * <p>toString.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String toString() {
         return pathMap.toString();
     }
@@ -104,6 +110,12 @@ public class BeanPathProperties {
         return props == null ? null : props.getProperties();
     }
 
+    /**
+     * <p>addToPath.</p>
+     *
+     * @param path     a {@link java.lang.String} object.
+     * @param property a {@link java.lang.String} object.
+     */
     public void addToPath(String path, String property) {
         Props props = pathMap.get(path);
         if (props == null) {
@@ -143,6 +155,11 @@ public class BeanPathProperties {
         return Sets.newLinkedHashSet(pathMap.keySet());
     }
 
+    /**
+     * <p>getPathProps.</p>
+     *
+     * @return a {@link java.util.Collection} object.
+     */
     public Collection<Props> getPathProps() {
         return pathMap.values();
     }
@@ -161,6 +178,11 @@ public class BeanPathProperties {
         }
     }
 
+    /**
+     * <p>getRootProperties.</p>
+     *
+     * @return a {@link ameba.message.internal.BeanPathProperties.Props} object.
+     */
     public Props getRootProperties() {
         return pathMap.get(null);
     }

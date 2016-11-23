@@ -19,7 +19,10 @@ import javax.ws.rs.ext.ExceptionMapper;
 import java.util.List;
 
 /**
+ * <p>PersistenceExceptionMapper class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceException> {
@@ -30,6 +33,9 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
     @Inject
     private Application.Mode mode;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Response toResponse(PersistenceException exception) {
         logger.error("Executing SQL error", exception);

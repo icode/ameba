@@ -25,6 +25,7 @@ import java.lang.reflect.Type;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 @Singleton
 public class FilteringJacksonJsonProvider extends JacksonJsonProvider {
@@ -36,6 +37,9 @@ public class FilteringJacksonJsonProvider extends JacksonJsonProvider {
     @Inject
     private Application.Mode mode;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected JsonGenerator _createGenerator(ObjectWriter writer, OutputStream rawStream, JsonEncoding enc) throws IOException {
         JsonGenerator generator = super._createGenerator(writer, rawStream, enc);
@@ -43,9 +47,7 @@ public class FilteringJacksonJsonProvider extends JacksonJsonProvider {
         return generator;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     protected JsonEndpointConfig _configForWriting(final ObjectMapper mapper, final Annotation[] annotations,
                                                    final Class<?> defaultView) {
@@ -55,9 +57,7 @@ public class FilteringJacksonJsonProvider extends JacksonJsonProvider {
                 , annotations, defaultView);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public void writeTo(final Object value,
                         final Class<?> type,

@@ -70,11 +70,15 @@ class TemplateModelProcessor implements ModelProcessor {
         this.extendedUriInfoProvider = extendedUriInfoProvider;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ResourceModel processResourceModel(final ResourceModel resourceModel, final Configuration configuration) {
         return processModel(resourceModel, false);
     }
 
+    /** {@inheritDoc} */
     @Override
     public ResourceModel processSubResource(final ResourceModel subResourceModel, final Configuration configuration) {
         return processModel(subResourceModel, true);

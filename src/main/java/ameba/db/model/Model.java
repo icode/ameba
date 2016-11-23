@@ -7,7 +7,10 @@ import javax.persistence.MappedSuperclass;
 import java.io.Serializable;
 
 /**
+ * <p>Abstract Model class.</p>
+ *
  * @author sulijuan
+ * @version $Id: $Id
  */
 @MappedSuperclass
 public abstract class Model implements Serializable {
@@ -19,8 +22,8 @@ public abstract class Model implements Serializable {
      *
      * @param server a {@link java.lang.String} object.
      * @param <ID>   a ID object.
-     * @param <T>    a T object.
      * @return a {@link ameba.db.model.Finder} object.
+     * @param <T> a T object.
      */
     protected static <ID, T extends Model> Finder<ID, T> _getFinder(String server) {
         throw new NotImplementedException("Model not enhanced!");
@@ -31,8 +34,8 @@ public abstract class Model implements Serializable {
      *
      * @param server a {@link java.lang.String} object.
      * @param <ID>   a ID object.
-     * @param <T>    a T object.
      * @return a {@link ameba.db.model.Finder} object.
+     * @param <T> a T object.
      */
     public static <ID, T extends Model> Finder<ID, T> withFinder(String server) {
         Finder<ID, T> finder = _getFinder(server);
@@ -46,8 +49,8 @@ public abstract class Model implements Serializable {
      * <p>withFinder.</p>
      *
      * @param <ID> a ID object.
-     * @param <T>  a T object.
      * @return a {@link ameba.db.model.Finder} object.
+     * @param <T> a T object.
      */
     public static <ID, T extends Model> Finder<ID, T> withFinder() {
         return withFinder(DataSourceManager.getDefaultDataSourceName());
@@ -58,9 +61,9 @@ public abstract class Model implements Serializable {
      *
      * @param server a {@link java.lang.String} object.
      * @param sql    a {@link java.lang.String} object.
-     * @param <M>    a M object.
      * @return a {@link ameba.db.model.Updater} object.
      * @since 0.1.6e
+     * @param <M> a M object.
      */
     protected static <M extends Model> Updater<M> _getUpdater(String server, String sql) {
         throw new NotImplementedException("Model not enhanced!");
@@ -71,9 +74,9 @@ public abstract class Model implements Serializable {
      *
      * @param server a {@link java.lang.String} object.
      * @param sql    a {@link java.lang.String} object.
-     * @param <M>    a M object.
      * @return a {@link ameba.db.model.Updater} object.
      * @since 0.1.6e
+     * @param <M> a M object.
      */
     public static <M extends Model> Updater<M> withUpdater(String server, String sql) {
         Updater<M> updater = _getUpdater(server, sql);
@@ -87,9 +90,9 @@ public abstract class Model implements Serializable {
      * <p>withUpdater.</p>
      *
      * @param sql a {@link java.lang.String} object.
-     * @param <M> a M object.
      * @return a {@link ameba.db.model.Updater} object.
      * @since 0.1.6e
+     * @param <M> a M object.
      */
     public static <M extends Model> Updater<M> withUpdater(String sql) {
         return withUpdater(DataSourceManager.getDefaultDataSourceName(), sql);
@@ -99,8 +102,8 @@ public abstract class Model implements Serializable {
      * <p>_getPersister.</p>
      *
      * @param server a {@link java.lang.String} object.
-     * @param <M>    a M object.
      * @return a {@link ameba.db.model.Persister} object.
+     * @param <M> a M object.
      */
     protected <M extends Model> Persister<M> _getPersister(String server) {
         throw new NotImplementedException("Model not enhanced!");
@@ -110,8 +113,8 @@ public abstract class Model implements Serializable {
      * <p>withPersister.</p>
      *
      * @param server a {@link java.lang.String} object.
-     * @param <M>    a M object.
      * @return a {@link ameba.db.model.Persister} object.
+     * @param <M> a M object.
      */
     public <M extends Model> Persister<M> withPersister(String server) {
         Persister<M> persister = _getPersister(server);
@@ -124,8 +127,8 @@ public abstract class Model implements Serializable {
     /**
      * <p>withPersister.</p>
      *
-     * @param <M> a M object.
      * @return a {@link ameba.db.model.Persister} object.
+     * @param <M> a M object.
      */
     public <M extends Model> Persister<M> withPersister() {
         return withPersister(DataSourceManager.getDefaultDataSourceName());

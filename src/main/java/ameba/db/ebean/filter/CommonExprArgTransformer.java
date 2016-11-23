@@ -11,7 +11,10 @@ import com.avaje.ebean.Expression;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
+ * <p>CommonExprArgTransformer class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class CommonExprArgTransformer implements ExprArgTransformer<Expression, EbeanExprInvoker> {
     private static final String[] OPT_STR_ARG = ArrayUtils.toArray(
@@ -20,6 +23,9 @@ public class CommonExprArgTransformer implements ExprArgTransformer<Expression, 
             "opAnd",
             "opOr");
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Transformed<Val<Expression>> transform(String field, String operator,
                                                   Val<Expression> arg, int index, int count,
@@ -63,7 +69,7 @@ public class CommonExprArgTransformer implements ExprArgTransformer<Expression, 
             case "option":
                 String argStr = arg.string();
                 if (ArrayUtils.contains(OPT_STR_ARG, argStr)) {
-                    arg = Val.<Expression>of(MapExpression.of(argStr, null));
+                    arg = Val.of(MapExpression.of(argStr, null));
                 }
                 break;
         }

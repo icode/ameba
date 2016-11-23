@@ -8,6 +8,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public class WebSocketBinder extends AbstractBinder {
 

@@ -10,9 +10,15 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * <p>EntityFieldsUtils class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class EntityFieldsUtils {
+    /**
+     * Constant <code>PATH_PROPS_PARSED="EntityFieldsUtils.class + .BeanPathProp"{trunked}</code>
+     */
     public static final String PATH_PROPS_PARSED = EntityFieldsUtils.class + ".BeanPathProperties";
 
     private EntityFieldsUtils() {
@@ -92,31 +98,76 @@ public class EntityFieldsUtils {
         return (BeanPathProperties) pathProperties;
     }
 
+    /**
+     * <p>filterBeanFields.</p>
+     *
+     * @param src a T object.
+     * @param pathProperties a {@link ameba.message.internal.BeanPathProperties} object.
+     * @param <T> a T object.
+     * @return a {@link ameba.util.bean.BeanMap} object.
+     */
     @SuppressWarnings("unchecked")
     public static <T> BeanMap<T> filterBeanFields(T src, BeanPathProperties pathProperties) {
         return (BeanMap<T>) FilteringBeanMap.from(src, pathProperties);
     }
 
+    /**
+     * <p>filterBeanFields.</p>
+     *
+     * @param src an array of T objects.
+     * @param pathProperties a {@link ameba.message.internal.BeanPathProperties} object.
+     * @param <T> a T object.
+     * @return an array of {@link ameba.util.bean.BeanMap} objects.
+     */
     @SuppressWarnings("unchecked")
     public static <T> BeanMap[] filterBeanFields(T[] src, BeanPathProperties pathProperties) {
         return (BeanMap[]) FilteringBeanMap.from(src, pathProperties);
     }
 
+    /**
+     * <p>filterBeanFields.</p>
+     *
+     * @param src a {@link java.util.Collection} object.
+     * @param pathProperties a {@link ameba.message.internal.BeanPathProperties} object.
+     * @param <T> a T object.
+     * @return a {@link java.util.Collection} object.
+     */
     @SuppressWarnings("unchecked")
     public static <T> Collection<BeanMap<T>> filterBeanFields(Collection<T> src, BeanPathProperties pathProperties) {
         return (Collection<BeanMap<T>>) FilteringBeanMap.from(src, pathProperties);
     }
 
+    /**
+     * <p>filterRequestFields.</p>
+     *
+     * @param src a T object.
+     * @param <T> a T object.
+     * @return a {@link ameba.util.bean.BeanMap} object.
+     */
     @SuppressWarnings("unchecked")
     public static <T> BeanMap<T> filterRequestFields(T src) {
         return (BeanMap<T>) FilteringBeanMap.from(src, parsePathProperties());
     }
 
+    /**
+     * <p>filterRequestFields.</p>
+     *
+     * @param src an array of T objects.
+     * @param <T> a T object.
+     * @return an array of {@link ameba.util.bean.BeanMap} objects.
+     */
     @SuppressWarnings("unchecked")
     public static <T> BeanMap[] filterRequestFields(T[] src) {
         return (BeanMap[]) FilteringBeanMap.from(src, parsePathProperties());
     }
 
+    /**
+     * <p>filterRequestFields.</p>
+     *
+     * @param src a {@link java.util.Collection} object.
+     * @param <T> a T object.
+     * @return a {@link java.util.Collection} object.
+     */
     @SuppressWarnings("unchecked")
     public static <T> Collection<BeanMap<T>> filterRequestFields(Collection<T> src) {
         return (Collection<BeanMap<T>>) FilteringBeanMap.from(src, parsePathProperties());

@@ -17,7 +17,10 @@ import java.io.IOException;
 import java.util.List;
 
 /**
+ * <p>StatusMapper class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 @Priority(Priorities.HEADER_DECORATOR - 1)
@@ -26,6 +29,9 @@ public class StatusMapper implements ContainerResponseFilter {
     @Context
     private Provider<MessageBodyWorkers> workersProvider;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void filter(ContainerRequestContext requestContext,
                        ContainerResponseContext responseContext) throws IOException {

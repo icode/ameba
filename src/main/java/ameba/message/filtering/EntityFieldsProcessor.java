@@ -14,12 +14,18 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * <p>EntityFieldsProcessor class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 @Priority(Integer.MAX_VALUE - 5000)
 public class EntityFieldsProcessor extends AbstractEntityProcessor {
 
+    /**
+     * {@inheritDoc}
+     */
     protected Result process(final String fieldName, final Class<?> fieldClass, final Annotation[] fieldAnnotations,
                              final Annotation[] annotations, final EntityGraph graph) {
 

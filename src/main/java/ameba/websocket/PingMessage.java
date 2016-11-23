@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
  *
  * @author Rossen Stoyanchev
  * @author icode
+ * @version $Id: $Id
  */
 public final class PingMessage extends AbstractWebSocketMessage<ByteBuffer> {
 
@@ -43,11 +44,15 @@ public final class PingMessage extends AbstractWebSocketMessage<ByteBuffer> {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getPayloadLength() {
         return (getPayload() != null ? getPayload().remaining() : 0);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected String toStringPayload() {
         return (getPayload() != null ? getPayload().toString() : null);

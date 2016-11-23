@@ -17,10 +17,14 @@ import java.util.List;
  * <p>Ameba class.</p>
  *
  * @author icode
+ * @version $Id: $Id
  */
 public class Ameba {
     private static final String LINE = System.getProperty("line.separator", "/n");
 
+    /**
+     * Constant <code>LOGO="LINE + LINE +    _                   _ "{trunked}</code>
+     */
     public static final String LOGO = LINE + LINE +
             "    _                   _           " + LINE +
             "   / \\   _ __ ___   ___| |__   __ _ " + LINE +

@@ -5,12 +5,13 @@ import org.glassfish.jersey.server.mvc.Viewable;
 import java.util.List;
 
 /**
- * {@link Viewable} implementation representing return value of enhancing methods added to
+ * {@link org.glassfish.jersey.server.mvc.Viewable} implementation representing return value of enhancing methods added to
  * {@link org.glassfish.jersey.server.model.Resource resources} annotated with {@link org.glassfish.jersey.server.mvc.Template}.
  *
  * @author Michal Gajdos (michal.gajdos at oracle.com)
  * @author icode
  * @see org.glassfish.jersey.server.mvc.Template
+ * @version $Id: $Id
  */
 public class ImplicitViewable extends Viewable {
 

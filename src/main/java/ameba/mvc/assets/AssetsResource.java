@@ -35,6 +35,7 @@ import java.util.jar.JarFile;
  *
  * @author ICode
  * @since 13-8-17 下午2:55
+ * @version $Id: $Id
  */
 @Path("assets")
 @Singleton
@@ -73,8 +74,8 @@ public class AssetsResource {
      * @param request  request
      * @param uriInfo  uriInfo
      * @return a {@link javax.ws.rs.core.Response} object.
-     * @throws URISyntaxException uri error
-     * @throws IOException        io error
+     * @throws java.net.URISyntaxException uri error
+     * @throws java.io.IOException        io error
      */
     @GET
     @Path("{file:.*}")

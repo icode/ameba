@@ -31,6 +31,7 @@ import java.util.Collections;
  *
  * @author ICode
  * @since 13-8-11 上午6:00
+ * @version $Id: $Id
  */
 @ConstrainedTo(RuntimeType.SERVER)
 public class JacksonFeature implements Feature {

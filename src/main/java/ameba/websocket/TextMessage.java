@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
  *
  * @author Rossen Stoyanchev
  * @author icode
+ * @version $Id: $Id
  */
 public final class TextMessage extends AbstractWebSocketMessage<String> {
 
@@ -65,15 +66,24 @@ public final class TextMessage extends AbstractWebSocketMessage<String> {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getPayloadLength() {
         return asBytes().length;
     }
 
+    /**
+     * <p>asBytes.</p>
+     *
+     * @return an array of byte.
+     */
     public byte[] asBytes() {
         return (this.bytes != null ? this.bytes : getPayload().getBytes(StandardCharsets.UTF_8));
     }
 
+    /** {@inheritDoc} */
     @Override
     protected String toStringPayload() {
         String payload = getPayload();

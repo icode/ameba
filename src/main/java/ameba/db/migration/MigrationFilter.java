@@ -21,7 +21,10 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
+ * <p>MigrationFilter class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @PreMatching
 @Priority(Integer.MIN_VALUE)
@@ -38,6 +41,9 @@ public class MigrationFilter implements ContainerRequestFilter {
     @Inject
     private MigrationResource resource;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void filter(ContainerRequestContext req) throws IOException {
         if (!ran) {

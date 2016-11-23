@@ -9,9 +9,13 @@ import java.nio.charset.StandardCharsets;
  * Represents a SockJS frame. Provides factory methods to create SockJS frames.
  *
  * @author icode
+ * @version $Id: $Id
  */
 public class SockJsFrame {
 
+    /**
+     * Constant <code>CHARSET</code>
+     */
     public static final Charset CHARSET = StandardCharsets.UTF_8;
 
     private static final SockJsFrame OPEN_FRAME = new SockJsFrame("o");
@@ -55,27 +59,61 @@ public class SockJsFrame {
         }
     }
 
+    /**
+     * <p>openFrame.</p>
+     *
+     * @return a {@link ameba.websocket.sockjs.frame.SockJsFrame} object.
+     */
     public static SockJsFrame openFrame() {
         return OPEN_FRAME;
     }
 
+    /**
+     * <p>heartbeatFrame.</p>
+     *
+     * @return a {@link ameba.websocket.sockjs.frame.SockJsFrame} object.
+     */
     public static SockJsFrame heartbeatFrame() {
         return HEARTBEAT_FRAME;
     }
 
+    /**
+     * <p>messageFrame.</p>
+     *
+     * @param codec a {@link ameba.websocket.sockjs.frame.SockJsMessageCodec} object.
+     * @param messages a {@link java.lang.String} object.
+     * @return a {@link ameba.websocket.sockjs.frame.SockJsFrame} object.
+     */
     public static SockJsFrame messageFrame(SockJsMessageCodec codec, String... messages) {
         String encoded = codec.encode(messages);
         return new SockJsFrame(encoded);
     }
 
+    /**
+     * <p>closeFrameGoAway.</p>
+     *
+     * @return a {@link ameba.websocket.sockjs.frame.SockJsFrame} object.
+     */
     public static SockJsFrame closeFrameGoAway() {
         return CLOSE_GO_AWAY_FRAME;
     }
 
+    /**
+     * <p>closeFrameAnotherConnectionOpen.</p>
+     *
+     * @return a {@link ameba.websocket.sockjs.frame.SockJsFrame} object.
+     */
     public static SockJsFrame closeFrameAnotherConnectionOpen() {
         return CLOSE_ANOTHER_CONNECTION_OPEN_FRAME;
     }
 
+    /**
+     * <p>closeFrame.</p>
+     *
+     * @param code a int.
+     * @param reason a {@link java.lang.String} object.
+     * @return a {@link ameba.websocket.sockjs.frame.SockJsFrame} object.
+     */
     public static SockJsFrame closeFrame(int code, String reason) {
         return new SockJsFrame("c[" + code + ",\"" + reason + "\"]");
     }
@@ -83,6 +121,8 @@ public class SockJsFrame {
 
     /**
      * Return the SockJS frame type.
+     *
+     * @return a {@link ameba.websocket.sockjs.frame.SockJsFrameType} object.
      */
     public SockJsFrameType getType() {
         return this.type;
@@ -90,6 +130,8 @@ public class SockJsFrame {
 
     /**
      * Return the SockJS frame content, never {@code null}.
+     *
+     * @return a {@link java.lang.String} object.
      */
     public String getContent() {
         return this.content;
@@ -97,6 +139,8 @@ public class SockJsFrame {
 
     /**
      * Return the SockJS frame content as a byte array.
+     *
+     * @return an array of byte.
      */
     public byte[] getContentBytes() {
         return this.content.getBytes(CHARSET);
@@ -106,6 +150,8 @@ public class SockJsFrame {
      * Return data contained in a SockJS "message" and "close" frames. Otherwise
      * for SockJS "open" and "close" frames, which do not contain data, return
      * {@code null}.
+     *
+     * @return a {@link java.lang.String} object.
      */
     public String getFrameData() {
         if (SockJsFrameType.OPEN == getType() || SockJsFrameType.HEARTBEAT == getType()) {
@@ -116,6 +162,7 @@ public class SockJsFrame {
     }
 
 
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object other) {
         if (this == other) {
@@ -127,11 +174,13 @@ public class SockJsFrame {
         return (this.type.equals(((SockJsFrame) other).type) && this.content.equals(((SockJsFrame) other).content));
     }
 
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         return this.content.hashCode();
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         String result = this.content;

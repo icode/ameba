@@ -23,7 +23,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * <p>MigrationFeature class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class MigrationFeature implements Feature {
 
@@ -35,21 +38,39 @@ public class MigrationFeature implements Feature {
     @Inject
     private Application.Mode mode;
 
+    /**
+     * <p>checkMigrationId.</p>
+     *
+     * @param uuid a {@link java.lang.String} object.
+     */
     public static void checkMigrationId(String uuid) {
         if (!MIGRATION_ID.equals(uuid)) {
             throw new NotFoundException();
         }
     }
 
+    /**
+     * <p>getMigrationId.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getMigrationId() {
         return MIGRATION_ID;
     }
 
 
+    /**
+     * <p>generateMigrationId.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String generateMigrationId() {
         return MIGRATION_ID = RandomStringUtils.randomAlphanumeric(RandomUtils.nextInt(20, 30));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean configure(FeatureContext context) {
         generateMigrationId();

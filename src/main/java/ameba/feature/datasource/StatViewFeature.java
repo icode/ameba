@@ -32,6 +32,7 @@ import java.util.UUID;
  *
  * @author ICode
  * @since 13-8-14 下午7:49
+ * @version $Id: $Id
  */
 public class StatViewFeature implements Feature {
     /**

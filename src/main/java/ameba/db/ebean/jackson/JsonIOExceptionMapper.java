@@ -11,7 +11,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
 /**
+ * <p>JsonIOExceptionMapper class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 public class JsonIOExceptionMapper implements ExceptionMapper<JsonIOException> {
@@ -19,6 +22,9 @@ public class JsonIOExceptionMapper implements ExceptionMapper<JsonIOException> {
     @Inject
     private Provider<ExceptionMappers> mappers;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Response toResponse(JsonIOException exception) {
         Throwable throwable = exception;

@@ -7,6 +7,7 @@ import org.glassfish.jersey.internal.util.PropertiesClass;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 @PropertiesClass
 public class ModelProperties {

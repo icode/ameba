@@ -15,7 +15,10 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * <p>QueryExprMeta class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class QueryExprMeta {
     private String field;
@@ -26,58 +29,122 @@ public class QueryExprMeta {
     private QueryExprMeta() {
     }
 
+    /**
+     * <p>create.</p>
+     *
+     * @return a {@link ameba.db.dsl.QueryExprMeta} object.
+     */
     public static QueryExprMeta create() {
         return new QueryExprMeta();
     }
 
+    /**
+     * <p>operator.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String operator() {
         return operator;
     }
 
+    /**
+     * <p>field.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String field() {
         return field;
     }
 
+    /**
+     * <p>arguments.</p>
+     *
+     * @return a {@link java.util.List} object.
+     */
     public List<Val<?>> arguments() {
         return arguments;
     }
 
+    /**
+     * <p>parent.</p>
+     *
+     * @return a {@link ameba.db.dsl.QueryExprMeta} object.
+     */
     public QueryExprMeta parent() {
         return parent;
     }
 
+    /**
+     * <p>field.</p>
+     *
+     * @param field a {@link java.lang.String} object.
+     * @return a {@link ameba.db.dsl.QueryExprMeta} object.
+     */
     protected QueryExprMeta field(String field) {
         this.field = field;
         return this;
     }
 
+    /**
+     * <p>operator.</p>
+     *
+     * @param operator a {@link java.lang.String} object.
+     * @return a {@link ameba.db.dsl.QueryExprMeta} object.
+     */
     protected QueryExprMeta operator(String operator) {
         this.operator = operator;
         return this;
     }
 
+    /**
+     * <p>arguments.</p>
+     *
+     * @param arguments a {@link java.util.List} object.
+     * @return a {@link ameba.db.dsl.QueryExprMeta} object.
+     */
     protected QueryExprMeta arguments(List<Val<?>> arguments) {
         this.arguments = arguments;
         return this;
     }
 
+    /**
+     * <p>arguments.</p>
+     *
+     * @param arguments a {@link ameba.db.dsl.QueryExprMeta.Val} object.
+     * @return a {@link ameba.db.dsl.QueryExprMeta} object.
+     */
     protected QueryExprMeta arguments(Val<?>... arguments) {
         if (this.arguments == null) this.arguments = Lists.newArrayList();
         Collections.addAll(this.arguments, arguments);
         return this;
     }
 
+    /**
+     * <p>arguments.</p>
+     *
+     * @param meta a {@link ameba.db.dsl.QueryExprMeta} object.
+     * @return a {@link ameba.db.dsl.QueryExprMeta} object.
+     */
     protected QueryExprMeta arguments(QueryExprMeta meta) {
         if (this.arguments == null) this.arguments = Lists.newArrayList();
         this.arguments.add(Val.of(meta));
         return this;
     }
 
+    /**
+     * <p>parent.</p>
+     *
+     * @param parent a {@link ameba.db.dsl.QueryExprMeta} object.
+     * @return a {@link ameba.db.dsl.QueryExprMeta} object.
+     */
     protected QueryExprMeta parent(QueryExprMeta parent) {
         this.parent = parent;
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return (field == null ? "" : field + ".") +

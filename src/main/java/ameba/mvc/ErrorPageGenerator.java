@@ -28,6 +28,7 @@ import java.util.Map;
  * 错误处理页面配置
  *
  * @author icode
+ * @version $Id: $Id
  */
 @Singleton
 public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
@@ -94,6 +95,16 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
         defaultErrorTemplate = template;
     }
 
+    /**
+     * <p>createViewable.</p>
+     *
+     * @param tplName      a {@link java.lang.String} object.
+     * @param request      a {@link javax.ws.rs.container.ContainerRequestContext} object.
+     * @param status       a int.
+     * @param exception    a {@link java.lang.Throwable} object.
+     * @param errorMessage a {@link ameba.message.error.ErrorMessage} object.
+     * @return a {@link org.glassfish.jersey.server.mvc.Viewable} object.
+     */
     protected Viewable createViewable(String tplName, ContainerRequestContext request,
                                       int status, Throwable exception, ErrorMessage errorMessage) {
         Error error = new Error(
@@ -105,6 +116,7 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
         return Viewables.newDefaultViewable(tplName, error);
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return ErrorMessage.class.isAssignableFrom(type)
@@ -112,6 +124,7 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
                 || mediaType.getSubtype().equals("xhtml+xml"));
     }
 
+    /** {@inheritDoc} */
     @Override
     public long getSize(ErrorMessage errorMessage,
                         Class<?> type, Type genericType,
@@ -119,10 +132,17 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
         return -1;
     }
 
+    /**
+     * <p>getErrorTemplate.</p>
+     *
+     * @param status a int.
+     * @return a {@link java.lang.String} object.
+     */
     protected String getErrorTemplate(int status) {
         return errorTemplateMap.get(status);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void writeTo(ErrorMessage errorMessage,
                         Class<?> type,
@@ -166,6 +186,15 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
         writeViewable(viewable, mediaType, httpHeaders, entityStream);
     }
 
+    /**
+     * <p>writeViewable.</p>
+     *
+     * @param viewable a {@link org.glassfish.jersey.server.mvc.Viewable} object.
+     * @param mediaType a {@link javax.ws.rs.core.MediaType} object.
+     * @param httpHeaders a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param entityStream a {@link java.io.OutputStream} object.
+     * @throws java.io.IOException if any.
+     */
     protected void writeViewable(Viewable viewable,
                                  MediaType mediaType,
                                  MultivaluedMap<String, Object> httpHeaders,

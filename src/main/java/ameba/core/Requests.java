@@ -24,6 +24,7 @@ import java.util.*;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public class Requests {
 
@@ -32,6 +33,11 @@ public class Requests {
     private Requests() {
     }
 
+    /**
+     * <p>getRequest.</p>
+     *
+     * @return a {@link ameba.container.server.Request} object.
+     */
     public static Request getRequest() {
         return (Request) requestProvider.get();
     }
@@ -169,6 +175,7 @@ public class Requests {
      *
      * @param name a {@link java.lang.String} object.
      * @return a {@link java.lang.Object} object.
+     * @param <T> a T object.
      */
     @SuppressWarnings("unchecked")
     public static <T> T getProperty(String name) {
@@ -819,34 +826,75 @@ public class Requests {
         return getRequest().getResponseWriter();
     }
 
+    /**
+     * <p>getRemoteRealAddr.</p>
+     *
+     * @param realIpHeader a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
+     */
     public static String getRemoteRealAddr(String realIpHeader) {
         return getRequest().getRemoteRealAddr(realIpHeader);
     }
 
+    /**
+     * <p>getRemoteRealAddr.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getRemoteRealAddr() {
         return getRequest().getRemoteRealAddr();
     }
 
+    /**
+     * <p>getRawReqeustUri.</p>
+     *
+     * @return a {@link java.net.URI} object.
+     */
     public static URI getRawReqeustUri() {
         return getRequest().getRawReqeustUri();
     }
 
+    /**
+     * <p>getRemotePort.</p>
+     *
+     * @return a int.
+     */
     public static int getRemotePort() {
         return getRequest().getRemotePort();
     }
 
+    /**
+     * <p>getLocalAddr.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getLocalAddr() {
         return getRequest().getLocalAddr();
     }
 
+    /**
+     * <p>getLocalPort.</p>
+     *
+     * @return a int.
+     */
     public static int getLocalPort() {
         return getRequest().getLocalPort();
     }
 
+    /**
+     * <p>getRemoteHost.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getRemoteHost() {
         return getRequest().getRemoteHost();
     }
 
+    /**
+     * <p>getLocalName.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public static String getLocalName() {
         return getRequest().getLocalName();
     }

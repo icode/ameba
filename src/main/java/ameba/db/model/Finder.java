@@ -13,6 +13,7 @@ import java.util.Set;
  * <p>Abstract Finder class.</p>
  *
  * @author icode
+ * @version $Id: $Id
  */
 public abstract class Finder<ID, T> {
 
@@ -56,8 +57,8 @@ public abstract class Finder<ID, T> {
     /**
      * <p>Getter for the field <code>modelType</code>.</p>
      *
-     * @param <M> a M object.
      * @return a {@link java.lang.Class} object.
+     * @param <M> a M object.
      */
     @SuppressWarnings("unchecked")
     public <M extends T> Class<M> getModelType() {
@@ -77,8 +78,8 @@ public abstract class Finder<ID, T> {
      * Changes the model server.
      *
      * @param server a {@link java.lang.String} object.
-     * @param <M>    model
      * @return a {@link ameba.db.model.Finder} object.
+     * @param <M> a M object.
      */
     @SuppressWarnings("unchecked")
     public abstract <M extends T> Finder<ID, M> on(String server);
@@ -87,8 +88,8 @@ public abstract class Finder<ID, T> {
      * Retrieves an entity by ID.
      *
      * @param id  a ID object.
-     * @param <M> model
      * @return a M object.
+     * @param <M> a M object.
      */
     public abstract <M extends T> M byId(ID id);
 
@@ -96,8 +97,8 @@ public abstract class Finder<ID, T> {
      * Retrieves an entity reference for this ID.
      *
      * @param id  a ID object.
-     * @param <M> model
      * @return a M object.
+     * @param <M> a M object.
      */
     public abstract <M extends T> M ref(ID id);
 
@@ -122,6 +123,11 @@ public abstract class Finder<ID, T> {
      */
     public abstract Query<T> createQuery();
 
+    /**
+     * <p>createUpdateQuery.</p>
+     *
+     * @return a {@link com.avaje.ebean.UpdateQuery} object.
+     */
     public abstract UpdateQuery<T> createUpdateQuery();
 
     /**
@@ -135,8 +141,8 @@ public abstract class Finder<ID, T> {
     /**
      * Returns the next identity value.
      *
-     *  @param <I> model id
      * @return a I object.
+     * @param <I> a I object.
      */
     public abstract <I extends ID> I nextId();
 
@@ -164,6 +170,11 @@ public abstract class Finder<ID, T> {
      */
     public abstract Query<T> setLazyLoadBatchSize(int size);
 
+    /**
+     * <p>setDisableReadAuditing.</p>
+     *
+     * @return a {@link com.avaje.ebean.Query} object.
+     */
     public abstract Query setDisableReadAuditing();
 
     /**
@@ -174,6 +185,12 @@ public abstract class Finder<ID, T> {
      */
     public abstract Query<T> select(String fetchProperties);
 
+    /**
+     * <p>setAutoTune.</p>
+     *
+     * @param autoTune a boolean.
+     * @return a {@link com.avaje.ebean.Query} object.
+     */
     public abstract Query<T> setAutoTune(boolean autoTune);
 
     /**
@@ -227,10 +244,27 @@ public abstract class Finder<ID, T> {
      */
     public abstract List<Object> findIds();
 
+    /**
+     * <p>findVersions.</p>
+     *
+     * @return a {@link java.util.List} object.
+     */
     public abstract List<Version<T>> findVersions();
 
+    /**
+     * <p>findVersionsBetween.</p>
+     *
+     * @param start a {@link java.sql.Timestamp} object.
+     * @param end   a {@link java.sql.Timestamp} object.
+     * @return a {@link java.util.List} object.
+     */
     public abstract List<Version<T>> findVersionsBetween(Timestamp start, Timestamp end);
 
+    /**
+     * <p>text.</p>
+     *
+     * @return a {@link com.avaje.ebean.ExpressionList} object.
+     */
     public abstract ExpressionList<T> text();
 
     /**
@@ -250,32 +284,32 @@ public abstract class Finder<ID, T> {
     /**
      * <p>findList.</p>
      *
-     * @param <M> a M object.
      * @return a {@link java.util.List} object.
+     * @param <M> a M object.
      */
     public abstract <M extends T> List<M> findList();
 
     /**
      * <p>findSet.</p>
      *
-     * @param <M> a M object.
      * @return a {@link java.util.Set} object.
+     * @param <M> a M object.
      */
     public abstract <M extends T> Set<M> findSet();
 
     /**
      * <p>findMap.</p>
      *
-     * @param <M> a M object.
      * @return a {@link java.util.Map} object.
+     * @param <M> a M object.
      */
     public abstract <M extends T> Map<?, M> findMap();
 
     /**
      * <p>findUnique.</p>
      *
-     * @param <M> a M object.
      * @return a M object.
+     * @param <M> a M object.
      */
     public abstract <M extends T> M findUnique();
 
@@ -340,6 +374,11 @@ public abstract class Finder<ID, T> {
      */
     public abstract Query<T> setId(Object id);
 
+    /**
+     * <p>getId.</p>
+     *
+     * @return a {@link java.lang.Object} object.
+     */
     public abstract Object getId();
 
     /**
@@ -441,6 +480,11 @@ public abstract class Finder<ID, T> {
      */
     public abstract ExpressionFactory getExpressionFactory();
 
+    /**
+     * <p>isAutoTuned.</p>
+     *
+     * @return a boolean.
+     */
     public abstract boolean isAutoTuned();
 
     /**
@@ -544,21 +588,68 @@ public abstract class Finder<ID, T> {
      */
     public abstract Query<T> setForUpdate(boolean forUpdate);
 
+    /**
+     * <p>isForUpdate.</p>
+     *
+     * @return a boolean.
+     */
     public abstract boolean isForUpdate();
 
+    /**
+     * <p>alias.</p>
+     *
+     * @param alias a {@link java.lang.String} object.
+     * @return a {@link com.avaje.ebean.Query} object.
+     */
     public abstract Query<T> alias(String alias);
 
+    /**
+     * <p>getBeanType.</p>
+     *
+     * @return a {@link java.lang.Class} object.
+     */
     public abstract Class<T> getBeanType();
 
+    /**
+     * <p>setDisableLazyLoading.</p>
+     *
+     * @param disableLazyLoading a boolean.
+     * @return a {@link com.avaje.ebean.Query} object.
+     */
     public abstract Query<T> setDisableLazyLoading(boolean disableLazyLoading);
 
+    /**
+     * <p>getRawSql.</p>
+     *
+     * @return a {@link com.avaje.ebean.RawSql} object.
+     */
     public abstract RawSql getRawSql();
 
+    /**
+     * <p>asOf.</p>
+     *
+     * @param asOf a {@link java.sql.Timestamp} object.
+     * @return a {@link com.avaje.ebean.Query} object.
+     */
     public abstract Query<T> asOf(Timestamp asOf);
 
+    /**
+     * <p>cancel.</p>
+     */
     public abstract void cancel();
 
+    /**
+     * <p>copyQuery.</p>
+     *
+     * @return a {@link com.avaje.ebean.Query} object.
+     */
     public abstract Query<T> copyQuery();
 
+    /**
+     * <p>setUseDocStore.</p>
+     *
+     * @param use a boolean.
+     * @return a {@link com.avaje.ebean.Query} object.
+     */
     public abstract Query<T> setUseDocStore(boolean use);
 }

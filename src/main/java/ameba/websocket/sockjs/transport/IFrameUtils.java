@@ -3,10 +3,19 @@ package ameba.websocket.sockjs.transport;
 import com.google.common.base.Charsets;
 
 /**
+ * <p>IFrameUtils class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class IFrameUtils {
 
+    /**
+     * <p>generateIFrame.</p>
+     *
+     * @param origin a {@link java.lang.String} object.
+     * @return an array of byte.
+     */
     public static byte[] generateIFrame(String origin) {
         return ("<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -26,6 +35,12 @@ public class IFrameUtils {
                 "</html>").getBytes(Charsets.UTF_8);
     }
 
+    /**
+     * <p>generateHtmlFile.</p>
+     *
+     * @param callback a {@link java.lang.String} object.
+     * @return an array of byte.
+     */
     public static byte[] generateHtmlFile(String callback) {
         return ("<!doctype html>\n" +
                 "<html><head>\n" +

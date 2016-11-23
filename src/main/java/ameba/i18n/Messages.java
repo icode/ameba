@@ -13,11 +13,18 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
+ * <p>Messages class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class Messages {
 
+    /**
+     * Constant <code>BUNDLE_DIR="conf/messages/"</code>
+     */
     public static final String BUNDLE_DIR = "conf/messages/";
+    /** Constant <code>BUNDLE_NAME="BUNDLE_DIR + message"</code> */
     public static final String BUNDLE_NAME = BUNDLE_DIR + "message";
     private static final Table<String, Locale, ResourceBundle> RESOURCE_BUNDLES = HashBasedTable.create();
     private static final MultiResourceBundleControl BUNDLE_CONTROL = new MultiResourceBundleControl();
@@ -25,15 +32,38 @@ public class Messages {
     private Messages() {
     }
 
+    /**
+     * <p>get.</p>
+     *
+     * @param key a {@link java.lang.String} object.
+     * @param args a {@link java.lang.Object} object.
+     * @return a {@link java.lang.String} object.
+     */
     public static String get(String key, Object... args) {
         return get(BUNDLE_NAME, key, args);
     }
 
 
+    /**
+     * <p>get.</p>
+     *
+     * @param locale a {@link java.util.Locale} object.
+     * @param key a {@link java.lang.String} object.
+     * @param args a {@link java.lang.Object} object.
+     * @return a {@link java.lang.String} object.
+     */
     public static String get(Locale locale, String key, Object... args) {
         return get(BUNDLE_NAME, getLocale(locale), key, args);
     }
 
+    /**
+     * <p>get.</p>
+     *
+     * @param bundleName a {@link java.lang.String} object.
+     * @param key a {@link java.lang.String} object.
+     * @param args an array of {@link java.lang.Object} objects.
+     * @return a {@link java.lang.String} object.
+     */
     public static String get(String bundleName, String key, Object[] args) {
         return get(bundleName, getLocale(), key, args);
     }
@@ -61,6 +91,13 @@ public class Messages {
         return locale;
     }
 
+    /**
+     * <p>getResourceBundle.</p>
+     *
+     * @param bundleName a {@link java.lang.String} object.
+     * @param locale a {@link java.util.Locale} object.
+     * @return a {@link java.util.ResourceBundle} object.
+     */
     public static ResourceBundle getResourceBundle(String bundleName, Locale locale) {
         ResourceBundle bundle = null;
 
@@ -94,6 +131,15 @@ public class Messages {
         return bundle;
     }
 
+    /**
+     * <p>get.</p>
+     *
+     * @param bundleName a {@link java.lang.String} object.
+     * @param locale a {@link java.util.Locale} object.
+     * @param key a {@link java.lang.String} object.
+     * @param args a {@link java.lang.Object} object.
+     * @return a {@link java.lang.String} object.
+     */
     public static String get(String bundleName, Locale locale, String key, Object... args) {
         try {
             ResourceBundle bundle = getResourceBundle(bundleName, locale);

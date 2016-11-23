@@ -12,6 +12,7 @@ import java.net.URI;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public abstract class Request extends ContainerRequest {
     /**
@@ -30,18 +31,53 @@ public abstract class Request extends ContainerRequest {
         super(baseUri, requestUri, httpMethod, securityContext, propertiesDelegate);
     }
 
+    /**
+     * <p>getRemoteAddr.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public abstract String getRemoteAddr();
 
+    /**
+     * <p>getRemoteHost.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public abstract String getRemoteHost();
 
+    /**
+     * <p>getRemotePort.</p>
+     *
+     * @return a int.
+     */
     public abstract int getRemotePort();
 
+    /**
+     * <p>getLocalAddr.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public abstract String getLocalAddr();
 
+    /**
+     * <p>getLocalName.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public abstract String getLocalName();
 
+    /**
+     * <p>getLocalPort.</p>
+     *
+     * @return a int.
+     */
     public abstract int getLocalPort();
 
+    /**
+     * <p>getRawReqeustUri.</p>
+     *
+     * @return a {@link java.net.URI} object.
+     */
     public abstract URI getRawReqeustUri();
 
 
@@ -86,6 +122,12 @@ public abstract class Request extends ContainerRequest {
         return getProxyRemoteAddr(null);
     }
 
+    /**
+     * <p>getRemoteRealAddr.</p>
+     *
+     * @param realIpHeader a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
+     */
     public String getRemoteRealAddr(String realIpHeader) {
         String host = getProxyRemoteAddr(realIpHeader);
         if (host == null || host.equals("unknown")) {
@@ -95,6 +137,11 @@ public abstract class Request extends ContainerRequest {
         return host;
     }
 
+    /**
+     * <p>getRemoteRealAddr.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getRemoteRealAddr() {
         return getRemoteRealAddr(null);
     }

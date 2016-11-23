@@ -17,7 +17,10 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 
 /**
+ * <p>Abstract ClassInfo class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public abstract class ClassInfo {
     private static final Logger logger = LoggerFactory.getLogger(ClassInfo.class);
@@ -26,14 +29,29 @@ public abstract class ClassInfo {
     private String fileName;
     private Object[] annotations;
 
+    /**
+     * <p>Constructor for ClassInfo.</p>
+     *
+     * @param fileName a {@link java.lang.String} object.
+     */
     public ClassInfo(String fileName) {
         this.fileName = fileName;
     }
 
+    /**
+     * <p>Getter for the field <code>fileName</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getFileName() {
         return fileName;
     }
 
+    /**
+     * <p>Getter for the field <code>ctClass</code>.</p>
+     *
+     * @return a {@link javassist.CtClass} object.
+     */
     public CtClass getCtClass() {
         if (ctClass == null && fileName.endsWith(".class")) {
             try {
@@ -45,10 +63,20 @@ public abstract class ClassInfo {
         return ctClass;
     }
 
+    /**
+     * <p>getClassName.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getClassName() {
         return getCtClass().getName();
     }
 
+    /**
+     * <p>Getter for the field <code>annotations</code>.</p>
+     *
+     * @return an array of {@link java.lang.Object} objects.
+     */
     public Object[] getAnnotations() {
         if (annotations == null) {
             try {
@@ -60,6 +88,12 @@ public abstract class ClassInfo {
         return annotations;
     }
 
+    /**
+     * <p>containsAnnotations.</p>
+     *
+     * @param annotationClass a {@link java.lang.Class} object.
+     * @return a boolean.
+     */
     @SuppressWarnings("unchecked")
     @SafeVarargs
     public final boolean containsAnnotations(Class<? extends Annotation>... annotationClass) {
@@ -77,6 +111,12 @@ public abstract class ClassInfo {
         return false;
     }
 
+    /**
+     * <p>accpet.</p>
+     *
+     * @param acceptable a {@link ameba.scanner.Acceptable} object.
+     * @return a boolean.
+     */
     public boolean accpet(Acceptable<CtClass> acceptable) {
         boolean accept = checkSuperClass(getCtClass(), acceptable);
         if (!accept)
@@ -112,14 +152,30 @@ public abstract class ClassInfo {
         return false;
     }
 
+    /**
+     * <p>isPublic.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isPublic() {
         return javassist.Modifier.isPublic(getCtClass().getModifiers());
     }
 
+    /**
+     * <p>toClass.</p>
+     *
+     * @return a {@link java.lang.Class} object.
+     */
     public Class toClass() {
         return getClassForName(getCtClass().getName());
     }
 
+    /**
+     * <p>getClassForName.</p>
+     *
+     * @param className a {@link java.lang.String} object.
+     * @return a {@link java.lang.Class} object.
+     */
     public Class getClassForName(final String className) {
         try {
             final OsgiRegistry osgiRegistry = ReflectionHelper.getOsgiRegistryInstance();
@@ -143,6 +199,12 @@ public abstract class ClassInfo {
         }
     }
 
+    /**
+     * <p>startsWithPackage.</p>
+     *
+     * @param pkgs a {@link java.lang.String} object.
+     * @return a boolean.
+     */
     public boolean startsWithPackage(String... pkgs) {
         for (String st : pkgs) {
             if (!st.endsWith(".")) st += ".";
@@ -154,7 +216,15 @@ public abstract class ClassInfo {
         return false;
     }
 
+    /**
+     * <p>getFileStream.</p>
+     *
+     * @return a {@link java.io.InputStream} object.
+     */
     public abstract InputStream getFileStream();
 
+    /**
+     * <p>closeFileStream.</p>
+     */
     public abstract void closeFileStream();
 }

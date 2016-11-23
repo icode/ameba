@@ -18,7 +18,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * <p>MigrationModel class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class MigrationModel {
     private static final Logger logger = LoggerFactory.getLogger(MigrationModel.class);
@@ -28,15 +31,28 @@ public class MigrationModel {
 
     private MigrationVersion lastVersion;
 
+    /**
+     * <p>Constructor for MigrationModel.</p>
+     *
+     * @param server a {@link com.avaje.ebeaninternal.api.SpiEbeanServer} object.
+     */
     public MigrationModel(SpiEbeanServer server) {
         this.server = server;
     }
 
+    /**
+     * <p>read.</p>
+     *
+     * @return a {@link com.avaje.ebean.dbmigration.model.ModelContainer} object.
+     */
     public ModelContainer read() {
         readMigrations();
         return model;
     }
 
+    /**
+     * <p>readMigrations.</p>
+     */
     protected void readMigrations() {
         final List<MigrationResource> resources = findMigrationResource();
 
@@ -54,6 +70,11 @@ public class MigrationModel {
         }
     }
 
+    /**
+     * <p>findMigrationResource.</p>
+     *
+     * @return a {@link java.util.List} object.
+     */
     protected List<MigrationResource> findMigrationResource() {
         final List<MigrationResource> resources = Lists.newArrayList();
         BeanDescriptor<ScriptInfo> beanDescriptor = server.getBeanDescriptor(ScriptInfo.class);
@@ -81,10 +102,21 @@ public class MigrationModel {
         return resources;
     }
 
+    /**
+     * <p>getNextVersion.</p>
+     *
+     * @param initialVersion a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
+     */
     public String getNextVersion(String initialVersion) {
         return lastVersion == null ? initialVersion : lastVersion.nextVersion();
     }
 
+    /**
+     * <p>isMigrationTableExist.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isMigrationTableExist() {
         return migrationTableExist;
     }

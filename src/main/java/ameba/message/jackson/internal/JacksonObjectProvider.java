@@ -25,6 +25,9 @@ import java.util.Stack;
  */
 final class JacksonObjectProvider extends AbstractObjectProvider<FilterProvider> {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public FilterProvider transform(final ObjectGraph graph) {
         // Root entity.
@@ -131,7 +134,7 @@ final class JacksonObjectProvider extends AbstractObjectProvider<FilterProvider>
                         if (valueToFilter instanceof Map) {
                             final Map<String, ?> map = (Map<String, ?>) valueToFilter;
                             return new FilteringPropertyFilter(Map.class, map.keySet(),
-                                    Collections.<String, FilteringPropertyFilter>emptyMap());
+                                    Collections.emptyMap());
                         }
                         return subfilter;
                     } else {

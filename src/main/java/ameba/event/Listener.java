@@ -7,6 +7,7 @@ import com.google.common.eventbus.Subscribe;
  * <p>Listener interface.</p>
  *
  * @author icode
+ * @version $Id: $Id
  */
 @JsonIgnoreType
 public interface Listener<E extends Event> {
@@ -16,5 +17,5 @@ public interface Listener<E extends Event> {
      * @param event a E object.
      */
     @Subscribe
-    public void onReceive(E event);
+    void onReceive(E event);
 }

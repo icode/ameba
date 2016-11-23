@@ -12,10 +12,16 @@ import javax.ws.rs.core.Response;
 import java.sql.Timestamp;
 
 /**
+ * <p>Abstract ModelResource class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public abstract class ModelResource<URI_ID, MODEL_ID, MODEL>
         extends ModelResourceStructure<URI_ID, MODEL_ID, MODEL> {
+    /**
+     * Constant <code>DATE_REGEX="^(\\d{4})(0[1-9]|1[012])(0[1-9]|[12][0-"{trunked}</code>
+     */
     protected static final String DATE_REGEX = "^(\\d{4})(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])" + //date yyyyMMDD
             "(T(2[0-3]|[01][0-9])([0-5][0-9]|0[0-9])([0-5][0-9]|0[0-9])(\\.\\d{1,3}))?" + //time 'T'HH:mm:ss.EEE
             "(Z|(-1[012]00|-0[0-9][0-3]0|[+ ]1[0-4]{2}[0-5]|[+ ]0[0-9][0-3][0-5]))?$";//time zone +0800
@@ -109,11 +115,9 @@ public abstract class ModelResource<URI_ID, MODEL_ID, MODEL>
     }
 
     /**
-     * Find a model or model list given its Ids.
+     * {@inheritDoc}
      *
-     * @param ids the id of the model.
-     * @return a {@link javax.ws.rs.core.Response} object.
-     * @throws java.lang.Exception if any.
+     * Find a model or model list given its Ids.
      */
     @GET
     @Path("{ids}")
@@ -124,30 +128,26 @@ public abstract class ModelResource<URI_ID, MODEL_ID, MODEL>
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Find the beans for this beanType.
      * <p>
      * This can use URL query parameters such as order and maxrows to configure
      * the query.
      * </p>
-     *
-     * @return a {@link javax.ws.rs.core.Response} object.
-     * @throws java.lang.Exception if any.
      */
     @GET
     public final Response find(@QueryParam("include_deleted") boolean includeDeleted) throws Exception {
         return super.find(includeDeleted);
     }
 
-    /***
+    /**
+     * {@inheritDoc}
+     *
+     *
      *  find model history between start to end timestamp versions
      *
-     *  need model mark {@History}
-     *
-     * @param id model id
-     * @param start start timestamp
-     * @param end end timestamp
-     * @return history versions
-     * @throws Exception any error
+     *  need model mark {@code @History}
      */
     @GET
     @Path("{id}/history/{start: " + DATE_REGEX + "}-{end: " + DATE_REGEX + "}")
@@ -162,7 +162,7 @@ public abstract class ModelResource<URI_ID, MODEL_ID, MODEL>
      *
      * @param id model id
      * @return history models
-     * @throws Exception any error
+     * @throws java.lang.Exception any error
      */
     @GET
     @Path("{id}/history")
@@ -171,12 +171,9 @@ public abstract class ModelResource<URI_ID, MODEL_ID, MODEL>
     }
 
     /**
-     * find history as of timestamp
+     * {@inheritDoc}
      *
-     * @param id   model id
-     * @param asOf Timestamp
-     * @return history model
-     * @throws Exception any error
+     * find history as of timestamp
      */
     @GET
     @Path("{id}/history/{asOf: " + DATE_REGEX + "}")//todo 正则匹配时间格式

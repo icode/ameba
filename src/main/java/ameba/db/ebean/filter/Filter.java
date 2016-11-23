@@ -6,7 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>Filter class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

@@ -18,7 +18,10 @@ import java.util.Date;
 import java.util.TimeZone;
 
 /**
+ * <p>ParamConverters class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 public class ParamConverters {
     private static final String SYS_TZ;
@@ -48,6 +51,12 @@ public class ParamConverters {
     private ParamConverters() {
     }
 
+    /**
+     * <p>parseTimestamp.</p>
+     *
+     * @param value a {@link java.lang.String} object.
+     * @return a {@link java.lang.Long} object.
+     */
     public static Long parseTimestamp(String value) {
         if (value.matches("^[0-9]+$")) {
             try {
@@ -59,6 +68,13 @@ public class ParamConverters {
         return null;
     }
 
+    /**
+     * <p>parseDate.</p>
+     *
+     * @param value a {@link java.lang.String} object.
+     * @param pos   a {@link java.text.ParsePosition} object.
+     * @return a {@link java.util.Date} object.
+     */
     public static Date parseDate(String value, ParsePosition pos) {
         Object instant = parseInstant(value);
         if (instant instanceof Long) {
@@ -71,6 +87,12 @@ public class ParamConverters {
         }
     }
 
+    /**
+     * <p>parseDate.</p>
+     *
+     * @param value a {@link java.lang.String} object.
+     * @return a {@link java.util.Date} object.
+     */
     public static Date parseDate(String value) {
         return parseDate(value, new ParsePosition(0));
     }
@@ -112,7 +134,14 @@ public class ParamConverters {
                     try {
                         return rawType.getEnumConstants()[Integer.parseInt(value)];
                     } catch (NumberFormatException e) {
-                        return rawType.cast(Enum.valueOf((Class) rawType, value.toUpperCase()));
+                        String eName = value.toUpperCase();
+                        Enum[] result = (Enum[]) rawType.getEnumConstants();
+                        for (Enum r : result) {
+                            if (r.name().equals(eName)) {
+                                return rawType.cast(r);
+                            }
+                        }
+                        return null;
                     }
                 }
 

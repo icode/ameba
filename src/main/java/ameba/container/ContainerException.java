@@ -6,6 +6,7 @@ import ameba.exception.AmebaException;
  * <p>ContainerException class.</p>
  *
  * @author icode
+ * @version $Id: $Id
  */
 public class ContainerException extends AmebaException {
     /**

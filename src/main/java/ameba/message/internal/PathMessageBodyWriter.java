@@ -17,21 +17,29 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
+ * <p>PathMessageBodyWriter class.</p>
+ *
  * @author icode
+ * @version $Id: $Id
  */
 @Produces({"application/octet-stream", "*/*"})
 @Singleton
 public class PathMessageBodyWriter implements MessageBodyWriter<Path> {
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return Path.class.isAssignableFrom(type);
     }
 
+    /** {@inheritDoc} */
     @Override
     public long getSize(Path path, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return -1;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void writeTo(Path path, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
                         MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)

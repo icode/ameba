@@ -11,6 +11,7 @@ import static ameba.message.internal.MediaType.APPLICATION_JSON_PATCH;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 public class HttpPatchProperties {
     /**

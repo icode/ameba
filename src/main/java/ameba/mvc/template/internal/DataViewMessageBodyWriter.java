@@ -90,6 +90,11 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
     @Context
     private Provider<MessageBodyWorkers> workersProvider;
 
+    /**
+     * <p>Constructor for DataViewMessageBodyWriter.</p>
+     *
+     * @param application a {@link ameba.core.Application} object.
+     */
     @Inject
     public DataViewMessageBodyWriter(Application application) {
         dataViewDisabled = "true".equals(application.getProperty(DISABLE_DATA_VIEW));
@@ -100,6 +105,9 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
         dataViewNull = PropertiesHelper.getValue(properties, DATA_VIEW_NULL_KEY, DEFAULT_DATA_NULL, null);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isWriteable(final Class<?> type, final Type genericType, final Annotation[] annotations,
                                final MediaType mediaType) {
@@ -125,12 +133,14 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
                 }));
     }
 
+    /** {@inheritDoc} */
     @Override
     public long getSize(final Object viewable, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType) {
         return -1;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void writeTo(final Object entity,
                         final Class<?> type,

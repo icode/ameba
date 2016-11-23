@@ -40,6 +40,7 @@ import java.util.Set;
  *
  * @author icode
  * @since 2013-08-07
+ * @version $Id: $Id
  */
 public class EbeanFeature implements Feature {
 

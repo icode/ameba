@@ -20,6 +20,7 @@ import java.io.OutputStream;
  *
  * @author icode
  * @since 0.1.6e
+ * @version $Id: $Id
  */
 @ConstrainedTo(RuntimeType.SERVER)
 @Produces({"application/json", "text/json"})
@@ -30,6 +31,9 @@ public class JacksonJsonProvider extends JacksonJaxbJsonProvider {
     @Inject
     private Application.Mode mode;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected JsonGenerator _createGenerator(ObjectWriter writer, OutputStream rawStream, JsonEncoding enc) throws IOException {
         JsonGenerator generator = super._createGenerator(writer, rawStream, enc);

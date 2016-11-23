@@ -7,6 +7,9 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Jackson module that uses Ebean's JsonContext for serializing and deserializing entity beans.
+ *
+ * @author icode
+ * @version $Id: $Id
  */
 public class JacksonEbeanModule extends SimpleModule {
 
@@ -17,6 +20,7 @@ public class JacksonEbeanModule extends SimpleModule {
 
     /**
      * Construct with a JsonContext obtained from an EbeanServer.
+     *
      * @param server ebean server
      * @param locator  service locator
      */
@@ -26,12 +30,17 @@ public class JacksonEbeanModule extends SimpleModule {
         this.locator = locator;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getModuleName() {
         return "jackson-datatype-ebean-server-" + server.getName();
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Register the Ebean specific serialisers and deserialisers.
      */
     @Override

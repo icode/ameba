@@ -48,18 +48,23 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Viewable> {
     @Context
     private Provider<ResourceInfo> resourceInfoProvider;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isWriteable(final Class<?> type, final Type genericType, final Annotation[] annotations,
                                final MediaType mediaType) {
         return Viewable.class.isAssignableFrom(type);
     }
 
+    /** {@inheritDoc} */
     @Override
     public long getSize(final Viewable viewable, final Class<?> type, final Type genericType,
                         final Annotation[] annotations, final MediaType mediaType) {
         return -1;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void writeTo(final Viewable viewable,
                         final Class<?> type,
