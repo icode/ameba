@@ -27,8 +27,8 @@ public class EventTest {
             eventBus.subscribe(TestEvent.class, new AsyncListener<TestEvent>() {
                 @Override
                 public void onReceive(TestEvent event) throws SuspendExecution, InterruptedException {
+                    Fiber.sleep(100);
                     logger.info("async receive message {} : {}", finalI, event.message);
-                    Fiber.sleep(500);
                 }
             });
 
