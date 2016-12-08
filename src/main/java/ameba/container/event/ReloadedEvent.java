@@ -7,7 +7,7 @@ import ameba.core.Application;
  * <p>ReloadedEvent class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class ReloadedEvent extends ContainerEvent {
     /**

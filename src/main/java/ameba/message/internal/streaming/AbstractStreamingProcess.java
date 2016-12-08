@@ -13,7 +13,7 @@ import java.io.OutputStream;
  * <p>Abstract AbstractStreamingProcess class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public abstract class AbstractStreamingProcess<T> implements StreamingProcess<T> {
     /**

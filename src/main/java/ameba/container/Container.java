@@ -21,7 +21,7 @@ import java.util.List;
  * <p>Abstract Container class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public abstract class Container {
     /**

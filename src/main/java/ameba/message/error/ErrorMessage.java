@@ -19,7 +19,7 @@ import java.util.List;
  * <p>ErrorMessage class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class ErrorMessage extends Result {
     /**

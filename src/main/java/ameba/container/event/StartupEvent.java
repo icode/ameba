@@ -7,7 +7,7 @@ import ameba.core.Application;
  * <p>StartupEvent class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class StartupEvent extends ContainerEvent {
     /**

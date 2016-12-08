@@ -16,7 +16,7 @@ import java.io.IOException;
  * <p>CaptchaWriterInterceptor class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class CaptchaWriterInterceptor implements WriterInterceptor {

@@ -8,7 +8,7 @@ import javax.ws.rs.container.ContainerRequestContext;
  * <p>EventSourceTransport class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class EventSourceTransport implements Transport {
     /**

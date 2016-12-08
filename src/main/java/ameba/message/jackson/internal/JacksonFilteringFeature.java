@@ -18,7 +18,7 @@ import javax.ws.rs.core.FeatureContext;
  * @author Michal Gajdos (michal.gajdos at oracle.com)
  * @author icode
  * @since 0.1.6e
- * @version $Id: $Id
+ *
  */
 public class JacksonFilteringFeature implements Feature {
 

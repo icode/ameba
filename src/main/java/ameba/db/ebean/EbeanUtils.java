@@ -36,7 +36,7 @@ import static com.avaje.ebean.OrderBy.Property;
  *
  * @author icode
  * @since 0.1.6e
- * @version $Id: $Id
+ *
  */
 public class EbeanUtils {
     /**
@@ -105,7 +105,6 @@ public class EbeanUtils {
      * <p>appendOrder.</p>
      *
      * @param orderBy a {@link com.avaje.ebean.OrderBy} object.
-     * @param orderByClause a {@link java.lang.String} object.
      * @param orderByClause a {@link java.lang.String} object.
      * @param <T> a T object.
      */

@@ -7,7 +7,7 @@ import javax.ws.rs.core.FeatureContext;
  * <p>ErrorProcessingFeature class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class ErrorProcessingFeature implements Feature {
     /**

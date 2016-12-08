@@ -114,12 +114,7 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
         String[] p;
         return !dataViewDisabled
                 && -1 != ListUtils.indexOf(requestProvider.get().getAcceptableMediaTypes(),
-                new Predicate<MediaType>() {
-                    @Override
-                    public boolean evaluate(MediaType mediaType) {
-                        return isSupportMediaType(mediaType);
-                    }
-                })
+                this::isSupportMediaType)
                 && ((p = TemplateHelper.getProduces(annotations)) == null
                 || -1 != ArrayUtils.indexOf(p,
                 new Predicate<String>() {

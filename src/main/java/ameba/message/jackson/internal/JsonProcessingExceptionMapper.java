@@ -24,7 +24,7 @@ import javax.ws.rs.ext.ExceptionMapper;
  * <p>JsonProcessingExceptionMapper class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProcessingException> {

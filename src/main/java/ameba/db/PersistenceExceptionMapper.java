@@ -22,7 +22,7 @@ import java.util.List;
  * <p>PersistenceExceptionMapper class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceException> {

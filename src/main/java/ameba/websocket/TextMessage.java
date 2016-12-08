@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
  *
  * @author Rossen Stoyanchev
  * @author icode
- * @version $Id: $Id
+ *
  */
 public final class TextMessage extends AbstractWebSocketMessage<String> {
 

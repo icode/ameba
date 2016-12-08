@@ -26,7 +26,7 @@ import java.util.Objects;
  *
  * @author Rossen Stoyanchev
  * @author icode
- * @version $Id: $Id
+ *
  */
 public abstract class AbstractWebSocketMessage<T> implements WebSocketMessage<T> {
 

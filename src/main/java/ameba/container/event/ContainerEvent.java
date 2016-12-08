@@ -8,7 +8,7 @@ import ameba.event.Event;
  * <p>ContainerEvent class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class ContainerEvent implements Event {
     private Container container;

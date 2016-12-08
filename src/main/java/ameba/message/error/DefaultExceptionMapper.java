@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @author icode
  * @since 13-8-17 下午2:00
- * @version $Id: $Id
+ *
  */
 @Singleton
 @Priority(Priorities.USER)

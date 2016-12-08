@@ -11,7 +11,7 @@ import ameba.event.SystemEventBus;
  *
  * @author icode
  * @since 0.1.6e
- * @version $Id: $Id
+ *
  */
 public abstract class Addon {
     private static EventBus EVENT_BUS;
@@ -24,12 +24,9 @@ public abstract class Addon {
 
     private static void init() {
         EVENT_BUS = EventBus.createMix();
-        SystemEventBus.subscribe(ShutdownEvent.class, new Listener<ShutdownEvent>() {
-            @Override
-            public void onReceive(ShutdownEvent event) {
-                synchronized (Addon.class) {
-                    EVENT_BUS = null;
-                }
+        SystemEventBus.subscribe(ShutdownEvent.class, event -> {
+            synchronized (Addon.class) {
+                EVENT_BUS = null;
             }
         });
     }

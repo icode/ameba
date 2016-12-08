@@ -16,7 +16,6 @@ import java.util.ResourceBundle;
  * <p>Messages class.</p>
  *
  * @author icode
- * @version $Id: $Id
  */
 public class Messages {
 
@@ -24,7 +23,9 @@ public class Messages {
      * Constant <code>BUNDLE_DIR="conf/messages/"</code>
      */
     public static final String BUNDLE_DIR = "conf/messages/";
-    /** Constant <code>BUNDLE_NAME="BUNDLE_DIR + message"</code> */
+    /**
+     * Constant <code>BUNDLE_NAME="BUNDLE_DIR + message"</code>
+     */
     public static final String BUNDLE_NAME = BUNDLE_DIR + "message";
     private static final Table<String, Locale, ResourceBundle> RESOURCE_BUNDLES = HashBasedTable.create();
     private static final MultiResourceBundleControl BUNDLE_CONTROL = new MultiResourceBundleControl();
@@ -35,7 +36,7 @@ public class Messages {
     /**
      * <p>get.</p>
      *
-     * @param key a {@link java.lang.String} object.
+     * @param key  a {@link java.lang.String} object.
      * @param args a {@link java.lang.Object} object.
      * @return a {@link java.lang.String} object.
      */
@@ -48,8 +49,8 @@ public class Messages {
      * <p>get.</p>
      *
      * @param locale a {@link java.util.Locale} object.
-     * @param key a {@link java.lang.String} object.
-     * @param args a {@link java.lang.Object} object.
+     * @param key    a {@link java.lang.String} object.
+     * @param args   a {@link java.lang.Object} object.
      * @return a {@link java.lang.String} object.
      */
     public static String get(Locale locale, String key, Object... args) {
@@ -60,8 +61,8 @@ public class Messages {
      * <p>get.</p>
      *
      * @param bundleName a {@link java.lang.String} object.
-     * @param key a {@link java.lang.String} object.
-     * @param args an array of {@link java.lang.Object} objects.
+     * @param key        a {@link java.lang.String} object.
+     * @param args       an array of {@link java.lang.Object} objects.
      * @return a {@link java.lang.String} object.
      */
     public static String get(String bundleName, String key, Object[] args) {
@@ -95,7 +96,7 @@ public class Messages {
      * <p>getResourceBundle.</p>
      *
      * @param bundleName a {@link java.lang.String} object.
-     * @param locale a {@link java.util.Locale} object.
+     * @param locale     a {@link java.util.Locale} object.
      * @return a {@link java.util.ResourceBundle} object.
      */
     public static ResourceBundle getResourceBundle(String bundleName, Locale locale) {
@@ -104,9 +105,7 @@ public class Messages {
         boolean isDev = false;
         if (Ameba.getApp() != null) {
             isDev = Ameba.getApp().getMode().isDev();
-            if (isDev) {
-                BUNDLE_CONTROL.noCache = isDev;
-            }
+            BUNDLE_CONTROL.noCache = isDev;
         }
         if (!isDev) {
             bundle = RESOURCE_BUNDLES.get(bundleName, locale);
@@ -135,9 +134,9 @@ public class Messages {
      * <p>get.</p>
      *
      * @param bundleName a {@link java.lang.String} object.
-     * @param locale a {@link java.util.Locale} object.
-     * @param key a {@link java.lang.String} object.
-     * @param args a {@link java.lang.Object} object.
+     * @param locale     a {@link java.util.Locale} object.
+     * @param key        a {@link java.lang.String} object.
+     * @param args       a {@link java.lang.Object} object.
      * @return a {@link java.lang.String} object.
      */
     public static String get(String bundleName, Locale locale, String key, Object... args) {

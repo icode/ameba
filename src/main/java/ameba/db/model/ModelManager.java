@@ -3,10 +3,7 @@ package ameba.db.model;
 import ameba.core.Addon;
 import ameba.core.Application;
 import ameba.db.DataSourceManager;
-import ameba.event.Listener;
-import ameba.scanner.Acceptable;
 import ameba.scanner.ClassFoundEvent;
-import ameba.scanner.ClassInfo;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +21,6 @@ import java.util.Set;
  *
  * @author icode
  * @since 0.1.6e
- * @version $Id: $Id
  */
 public class ModelManager extends Addon {
 
@@ -55,14 +51,14 @@ public class ModelManager extends Addon {
 
         Set<String> defaultModelsPkg = Sets.newLinkedHashSet();
         //db.default.models.pkg=
-        for (String key : config.keySet()) {
-            if (key.startsWith(MODULE_MODELS_KEY_PREFIX)) {
-                String modelPackages = (String) config.get(key);
-                if (StringUtils.isNotBlank(modelPackages)) {
-                    Collections.addAll(defaultModelsPkg, StringUtils.deleteWhitespace(modelPackages).split(","));
-                }
-            }
-        }
+        config.keySet().stream()
+                .filter(key -> key.startsWith(MODULE_MODELS_KEY_PREFIX))
+                .forEach(key -> {
+                    String modelPackages = (String) config.get(key);
+                    if (StringUtils.isNotBlank(modelPackages)) {
+                        Collections.addAll(defaultModelsPkg, StringUtils.deleteWhitespace(modelPackages).split(","));
+                    }
+                });
 
         for (String name : DataSourceManager.getDataSourceNames()) {
             String modelPackages = (String) config.get("db." + name + ".models");
@@ -80,27 +76,18 @@ public class ModelManager extends Addon {
 
                 final Set<Class> classes = Sets.newHashSet();
 
-                subscribeSystemEvent(ClassFoundEvent.class, new Listener<ClassFoundEvent>() {
-                    @Override
-                    public void onReceive(ClassFoundEvent event) {
-                        event.accept(new Acceptable<ClassInfo>() {
-                            @Override
-                            @SuppressWarnings("unchecked")
-                            public boolean accept(ClassInfo info) {
-                                if (info.startsWithPackage(startsPackages)) {
-                                    logger.trace("load class : {}", info.getClassName());
-                                    Class clazz = info.toClass();
-                                    if (info.containsAnnotations(Entity.class, Embeddable.class)
-                                            || Model.class.isAssignableFrom(clazz)) {
-                                        classes.add(clazz);
-                                    }
-                                    return true;
-                                }
-                                return false;
-                            }
-                        });
+                subscribeSystemEvent(ClassFoundEvent.class, event -> event.accept(info -> {
+                    if (info.startsWithPackage(startsPackages)) {
+                        logger.trace("load class : {}", info.getClassName());
+                        Class clazz = info.toClass();
+                        if (info.containsAnnotations(Entity.class, Embeddable.class)
+                                || Model.class.isAssignableFrom(clazz)) {
+                            classes.add(clazz);
+                        }
+                        return true;
                     }
-                });
+                    return false;
+                }));
 
                 modelMap.put(name, classes);
             }

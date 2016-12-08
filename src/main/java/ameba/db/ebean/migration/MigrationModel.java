@@ -1,7 +1,6 @@
 package ameba.db.ebean.migration;
 
 import ameba.db.migration.models.ScriptInfo;
-import com.avaje.ebean.QueryEachConsumer;
 import com.avaje.ebean.Transaction;
 import com.avaje.ebean.TxIsolation;
 import com.avaje.ebean.dbmigration.model.MigrationVersion;
@@ -21,7 +20,7 @@ import java.util.List;
  * <p>MigrationModel class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class MigrationModel {
     private static final Logger logger = LoggerFactory.getLogger(MigrationModel.class);
@@ -86,12 +85,7 @@ public class MigrationModel {
             migrationTableExist = resultSet.next();
             if (migrationTableExist) {
                 server.find(ScriptInfo.class)
-                        .findEach(new QueryEachConsumer<ScriptInfo>() {
-                            @Override
-                            public void accept(ScriptInfo bean) {
-                                resources.add(new MigrationResource(bean));
-                            }
-                        });
+                        .findEach(bean -> resources.add(new MigrationResource(bean)));
             }
             transaction.commit();
         } catch (Exception e) {

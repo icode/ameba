@@ -15,7 +15,7 @@ import java.sql.Timestamp;
  * <p>Abstract ModelResource class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public abstract class ModelResource<URI_ID, MODEL_ID, MODEL>
         extends ModelResourceStructure<URI_ID, MODEL_ID, MODEL> {

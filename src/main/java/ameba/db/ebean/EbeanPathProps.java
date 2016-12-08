@@ -11,7 +11,7 @@ import java.util.Set;
  * <p>EbeanPathProps class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class EbeanPathProps implements FetchPath {
     private BeanPathProperties pathProperties;
@@ -61,17 +61,14 @@ public class EbeanPathProps implements FetchPath {
     /** {@inheritDoc} */
     @Override
     public <T> void apply(final Query<T> query) {
-        pathProperties.each(new BeanPathProperties.Each<BeanPathProperties.Props>() {
-            @Override
-            public void execute(BeanPathProperties.Props props) {
-                String path = props.getPath();
-                String propsStr = props.getPropertiesAsString();
+        pathProperties.each(props -> {
+            String path = props.getPath();
+            String propsStr = props.getPropertiesAsString();
 
-                if (path == null || path.isEmpty()) {
-                    query.select(propsStr);
-                } else {
-                    query.fetch(path, propsStr);
-                }
+            if (path == null || path.isEmpty()) {
+                query.select(propsStr);
+            } else {
+                query.fetch(path, propsStr);
             }
         });
     }

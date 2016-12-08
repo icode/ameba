@@ -13,7 +13,7 @@ import java.util.Set;
  *
  * @author icode
  * @since 0.1.6e
- * @version $Id: $Id
+ *
  */
 @Contract
 public interface OptionsResponseGenerator {

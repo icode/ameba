@@ -11,7 +11,7 @@ import java.util.List;
  * @author Michal Gajdos (michal.gajdos at oracle.com)
  * @author icode
  * @see org.glassfish.jersey.server.mvc.Template
- * @version $Id: $Id
+ *
  */
 public class ImplicitViewable extends Viewable {
 

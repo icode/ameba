@@ -10,7 +10,7 @@ import javax.ws.rs.RuntimeType;
  * <p>ExprArgTransformer interface.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Contract
 @ConstrainedTo(RuntimeType.SERVER)

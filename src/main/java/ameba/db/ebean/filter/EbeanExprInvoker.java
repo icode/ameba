@@ -17,7 +17,7 @@ import java.util.Arrays;
  * <p>EbeanExprInvoker class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class EbeanExprInvoker extends QueryExprInvoker<Expression> {
 

@@ -4,7 +4,7 @@ package ameba.scanner;
  * <p>Acceptable interface.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public interface Acceptable<A> {
     /**

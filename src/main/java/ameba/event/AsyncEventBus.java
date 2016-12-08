@@ -1,158 +1,130 @@
 package ameba.event;
 
-import akka.actor.ActorRef;
-import akka.actor.Props;
-import akka.actor.UntypedActor;
-import akka.event.japi.LookupEventBus;
-import ameba.lib.Akka;
-import com.google.common.collect.Maps;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import ameba.container.event.ShutdownEvent;
+import co.paralleluniverse.actors.behaviors.EventHandler;
+import co.paralleluniverse.actors.behaviors.EventSource;
+import co.paralleluniverse.actors.behaviors.EventSourceActor;
+import co.paralleluniverse.fibers.SuspendExecution;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.SetMultimap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>Abstract AsyncEventBus class.</p>
  *
  * @author icode
- * @version $Id: $Id
  */
-public abstract class AsyncEventBus<E extends Event, S extends ActorRef> extends LookupEventBus<E, S, Class<? extends E>> {
+public class AsyncEventBus<E extends Event> implements EventBus<E> {
+    private static final Logger logger = LoggerFactory.getLogger(AsyncEventBus.class);
 
-    private AsyncEventBus() {
+    static {
+        System.setProperty("co.paralleluniverse.fibers.disableAgentWarning", "true");
     }
 
-    /**
-     * <p>create.</p>
-     *
-     * @return a {@link ameba.event.AsyncEventBus} object.
-     */
-    public static AsyncEventBus<Event, ActorRef> create() {
-        return new Sub();
-    }
+    private final SetMultimap<Class<E>, Handler> handlers = LinkedHashMultimap.create();
+    private EventSource<E> eventSource = new EventSourceActor<E>().spawn();
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int compareSubscribers(S a, S b) {
-        return a.compareTo(b);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int mapSize() {
-        return 128;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     @SuppressWarnings("unchecked")
-    public Class<? extends E> classify(E event) {
-        return (Class<? extends E>) event.getClass();
+    public AsyncEventBus() {
+        subscribe((Class<E>) ShutdownEvent.class, event -> shutdown());
     }
 
-    /** {@inheritDoc} */
+    public static <EV extends Event> AsyncEventBus<EV> create() {
+        return new AsyncEventBus<>();
+    }
+
     @Override
-    public void publish(E event, S subscriber) {
-        subscriber.tell(event, ActorRef.noSender());
+    public void subscribe(Class<E> event, Listener<E> listener) {
+        try {
+            Handler handler = handler(event, listener);
+            if (handlers.put(event, handler))
+                eventSource.addHandler(handler);
+        } catch (SuspendExecution | InterruptedException e) {
+            logger.error("subscribe event has error", e);
+        }
+    }
+
+    public void subscribe(Class<E> event, AsyncListener<E> listener) {
+        subscribe(event, (Listener<E>) listener);
+    }
+
+    @Override
+    public void unsubscribe(Class<E> event, Listener<E> listener) {
+        try {
+            Handler handler = handler(event, listener);
+            handlers.remove(event, handler);
+            eventSource.removeHandler(handler);
+        } catch (SuspendExecution | InterruptedException e) {
+            logger.error("unsubscribe event has error", e);
+        }
+    }
+
+    @Override
+    public void unsubscribe(Class<E> event) {
+        handlers.get(event).forEach(handler -> {
+            try {
+                eventSource.removeHandler(handler);
+            } catch (SuspendExecution | InterruptedException e) {
+                logger.error("unsubscribe event has error", e);
+            }
+        });
+        handlers.removeAll(event);
+    }
+
+    @Override
+    public void publish(E event) {
+        try {
+            eventSource.notify(event);
+        } catch (SuspendExecution e) {
+            logger.error("publish event has error", e);
+        }
     }
 
     /**
-     * <p>subscribe.</p>
-     *
-     * @param eventClass a {@link java.lang.Class} object.
-     * @param listener   a {@link ameba.event.AsyncListener} object.
-     * @return a boolean.
+     * shutdown event bus
      */
-    public abstract boolean subscribe(Class<? extends E> eventClass, final AsyncListener listener);
+    public void shutdown() {
+        eventSource.shutdown();
+    }
 
-    /**
-     * <p>unsubscribe.</p>
-     *
-     * @param eventClass a {@link java.lang.Class} object.
-     * @param listener   a {@link ameba.event.AsyncListener} object.
-     * @return a boolean.
-     */
-    public abstract boolean unsubscribe(Class<? extends E> eventClass, final AsyncListener listener);
+    public Handler handler(Class<E> event, Listener<E> listener) {
+        return new Handler(event, listener);
+    }
 
-    /**
-     * <p>unsubscribe.</p>
-     *
-     * @param eventClass a {@link java.lang.Class} object.
-     */
-    public abstract void unsubscribe(Class<? extends E> eventClass);
+    private class Handler implements EventHandler<E> {
 
-    private static class Sub extends AsyncEventBus<Event, ActorRef> {
+        private Class<E> event;
+        private Listener<E> listener;
 
-        private final EventActorMap eventActorMap = new EventActorMap();
-
-        public boolean subscribe(Class<? extends Event> eventClass, final AsyncListener listener) {
-            final ActorRef actor = Akka.system().actorOf(Props.create(EventHandler.class, listener));
-            boolean suc = subscribe(actor, eventClass);
-            if (suc) {
-                eventActorMap.put(eventClass, listener, actor);
-            }
-            return suc;
-        }
-
-        public boolean unsubscribe(Class<? extends Event> eventClass, final AsyncListener listener) {
-            Map<AsyncListener, ActorRef> eventEntry = eventActorMap.get(eventClass);
-            if (eventEntry != null) {
-                ActorRef actorRef = eventEntry.get(listener);
-                if (actorRef != null) {
-                    boolean suc = unsubscribe(actorRef, eventClass);
-                    if (suc) {
-                        eventEntry.remove(listener);
-                    }
-                    return suc;
-                }
-            }
-
-            return false;
+        Handler(Class<E> event, Listener<E> listener) {
+            this.event = event;
+            this.listener = listener;
         }
 
         @Override
-        public void unsubscribe(Class<? extends Event> eventClass) {
-            Map<AsyncListener, ActorRef> eventEntries = eventActorMap.get(eventClass);
-            if (eventEntries != null) {
-                for (ActorRef actorRef : eventEntries.values()) {
-                    unsubscribe(actorRef, eventClass);
-                }
-                eventActorMap.remove(eventClass);
-            }
+        public void handleEvent(E e) throws SuspendExecution, InterruptedException {
+            if (e != null && e.getClass() == event)
+                listener.onReceive(e);
         }
 
-        private static class EventActorMap extends ConcurrentHashMap<Class<? extends Event>, Map<AsyncListener, ActorRef>> {
+        @Override
+        @SuppressWarnings("unchecked")
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
 
-            public Map<AsyncListener, ActorRef> put(Class<? extends Event> key, AsyncListener listener, ActorRef actorRef) {
-                Map<AsyncListener, ActorRef> o = get(key);
-                if (o == null) {
-                    o = Maps.newConcurrentMap();
-                    put(key, o);
-                }
-                o.put(listener, actorRef);
-                return o;
-            }
+            Handler handler = (Handler) o;
 
+            if (event != null ? !event.equals(handler.event) : handler.event != null) return false;
+            return listener != null ? listener.equals(handler.listener) : handler.listener == null;
         }
 
-        public static class EventHandler extends UntypedActor {
-            AsyncListener listener;
-
-            public EventHandler(AsyncListener listener) {
-                this.listener = listener;
-                listener.actor = this;
-            }
-
-            @Override
-            @SuppressWarnings("unchecked")
-            public void onReceive(final Object message) {
-                if (message instanceof Event) {
-                    listener.onReceive((Event) message);
-                } else {
-                    unhandled(message);
-                }
-            }
+        @Override
+        public int hashCode() {
+            int result = event != null ? event.hashCode() : 0;
+            result = 31 * result + (listener != null ? listener.hashCode() : 0);
+            return result;
         }
     }
 }

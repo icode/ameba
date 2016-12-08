@@ -4,7 +4,7 @@ package ameba.db.dsl;
  * <p>Abstract Transformed class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public abstract class Transformed<R> {
     /**

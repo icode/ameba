@@ -11,7 +11,7 @@ import java.util.Set;
  * <p>ApplicationEvent class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class ApplicationEvent implements Event {
 

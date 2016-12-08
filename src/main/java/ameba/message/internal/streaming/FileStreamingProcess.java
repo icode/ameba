@@ -10,7 +10,7 @@ import java.nio.file.Files;
  * <p>FileStreamingProcess class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class FileStreamingProcess extends AbstractStreamingProcess<File> {

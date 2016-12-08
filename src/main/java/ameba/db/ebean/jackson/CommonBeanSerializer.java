@@ -20,7 +20,7 @@ import java.io.IOException;
  * </p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class CommonBeanSerializer<T> extends JsonSerializer<T> {
 

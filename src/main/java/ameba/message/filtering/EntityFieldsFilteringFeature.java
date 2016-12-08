@@ -17,7 +17,7 @@ import javax.ws.rs.core.FeatureContext;
  * @author Andy Pemberton (pembertona at gmail.com)
  * @author icode
  * @see org.glassfish.jersey.message.filtering.EntityFilteringFeature
- * @version $Id: $Id
+ *
  */
 public final class EntityFieldsFilteringFeature implements Feature {
 

@@ -9,7 +9,7 @@ import javax.persistence.Transient;
  * <p>ScriptInfo class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Entity
 public class ScriptInfo {

@@ -8,7 +8,7 @@ import java.io.InputStream;
  * <p>InputStreamingProcess class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class InputStreamingProcess extends AbstractStreamingProcess<InputStream> {

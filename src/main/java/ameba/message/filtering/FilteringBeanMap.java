@@ -11,7 +11,7 @@ import java.util.Set;
  * <p>FilteringBeanMap class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class FilteringBeanMap<T> extends BeanMap<T> {
     private static final BeanTransformer<FilteringBeanMap> TRANSFORMER = new Transformer();

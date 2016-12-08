@@ -16,7 +16,7 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
  * <p>PackageScanner class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class PackageScanner {
     private Set<String> scanPkgs;

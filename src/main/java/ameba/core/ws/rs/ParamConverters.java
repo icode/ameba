@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import org.glassfish.jersey.internal.inject.ExtractorException;
 import org.glassfish.jersey.message.internal.HttpDateFormat;
 import org.glassfish.jersey.server.internal.LocalizationMessages;
-import org.joda.time.*;
-import org.joda.time.format.ISODateTimeFormat;
 
 import javax.inject.Singleton;
 import javax.ws.rs.ext.ParamConverter;
@@ -14,6 +12,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.ParsePosition;
+import java.time.*;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -21,7 +20,6 @@ import java.util.TimeZone;
  * <p>ParamConverters class.</p>
  *
  * @author icode
- * @version $Id: $Id
  */
 public class ParamConverters {
     private static final String SYS_TZ;
@@ -76,9 +74,9 @@ public class ParamConverters {
      * @return a {@link java.util.Date} object.
      */
     public static Date parseDate(String value, ParsePosition pos) {
-        Object instant = parseInstant(value);
-        if (instant instanceof Long) {
-            return new Date((Long) instant);
+        Long timestamp = parseTimestamp(value);
+        if (timestamp != null) {
+            return new Date(timestamp);
         }
         try {
             return ISO8601Utils.parse(value, pos);
@@ -97,10 +95,10 @@ public class ParamConverters {
         return parseDate(value, new ParsePosition(0));
     }
 
-    private static Object parseInstant(String value) {
+    private static Instant parseInstant(String value) {
         Long timestamp = parseTimestamp(value);
         if (timestamp != null) {
-            return timestamp;
+            return Instant.ofEpochMilli(timestamp);
         }
         if (value.contains(" ")) {
             value = value.replace(" ", "+");
@@ -108,7 +106,7 @@ public class ParamConverters {
         if (!(value.contains("-") || value.contains("+")) && !value.endsWith("Z")) {
             value += SYS_TZ;
         }
-        return value;
+        return Instant.parse(value);
     }
 
     /**
@@ -201,18 +199,14 @@ public class ParamConverters {
         public <T> ParamConverter<T> getConverter(final Class<T> rawType,
                                                   final Type genericType,
                                                   final Annotation[] annotations) {
-            if (DateTime.class.isAssignableFrom(rawType)) {
-                return (ParamConverter<T>) new DateTimeParamConverter();
+            if (LocalDateTime.class.isAssignableFrom(rawType)) {
+                return (ParamConverter<T>) new LocalDateTimeParamConverter();
             } else if (Duration.class.isAssignableFrom(rawType)) {
                 return (ParamConverter<T>) new DurationParamConverter();
             } else if (Instant.class.isAssignableFrom(rawType)) {
                 return (ParamConverter<T>) new InstantParamConverter();
-            } else if (Interval.class.isAssignableFrom(rawType)) {
-                return (ParamConverter<T>) new IntervalParamConverter();
             } else if (LocalDate.class.isAssignableFrom(rawType)) {
                 return (ParamConverter<T>) new LocalDateParamConverter();
-            } else if (LocalDateTime.class.isAssignableFrom(rawType)) {
-                return (ParamConverter<T>) new LocalDateTimeParamConverter();
             } else if (LocalTime.class.isAssignableFrom(rawType)) {
                 return (ParamConverter<T>) new LocalTimeParamConverter();
             } else if (Period.class.isAssignableFrom(rawType)) {
@@ -244,23 +238,19 @@ public class ParamConverters {
         }
     }
 
-    public static class DateTimeParamConverter implements ParamConverter<DateTime> {
+    public static class DurationParamConverter implements ParamConverter<Duration> {
         @Override
-        public DateTime fromString(String value) {
+        public Duration fromString(String value) {
             if (value == null) {
                 throw new IllegalArgumentException(
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            try {
-                return new DateTime(parseInstant(value));
-            } catch (IllegalArgumentException e) {
-                return ISODateTimeFormat.dateTime().parseDateTime(value);
-            }
+            return Duration.parse(value);
         }
 
         @Override
-        public String toString(DateTime value) {
+        public String toString(Duration value) {
             if (value == null) {
                 throw new IllegalArgumentException(
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
@@ -270,19 +260,19 @@ public class ParamConverters {
         }
     }
 
-    public static class DurationParamConverter implements ParamConverter<Duration> {
+    public static class PeriodParamConverter implements ParamConverter<Period> {
         @Override
-        public Duration fromString(String value) {
+        public Period fromString(String value) {
             if (value == null) {
                 throw new IllegalArgumentException(
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return new Duration(parseInstant(value));
+            return Period.parse(value);
         }
 
         @Override
-        public String toString(Duration value) {
+        public String toString(Period value) {
             if (value == null) {
                 throw new IllegalArgumentException(
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
@@ -300,33 +290,11 @@ public class ParamConverters {
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return new Instant(parseInstant(value));
+            return parseInstant(value);
         }
 
         @Override
         public String toString(Instant value) {
-            if (value == null) {
-                throw new IllegalArgumentException(
-                        LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
-                );
-            }
-            return value.toString();
-        }
-    }
-
-    public static class IntervalParamConverter implements ParamConverter<Interval> {
-        @Override
-        public Interval fromString(String value) {
-            if (value == null) {
-                throw new IllegalArgumentException(
-                        LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
-                );
-            }
-            return new Interval(parseInstant(value));
-        }
-
-        @Override
-        public String toString(Interval value) {
             if (value == null) {
                 throw new IllegalArgumentException(
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
@@ -346,7 +314,7 @@ public class ParamConverters {
                 );
             }
 
-            return new LocalDate(parseInstant(value));
+            return LocalDate.from(parseInstant(value));
         }
 
         @Override
@@ -369,7 +337,7 @@ public class ParamConverters {
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return new LocalDateTime(parseInstant(value));
+            return LocalDateTime.from(parseInstant(value));
         }
 
         @Override
@@ -392,33 +360,11 @@ public class ParamConverters {
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
                 );
             }
-            return new LocalTime(parseInstant(value));
+            return LocalTime.from(parseInstant(value));
         }
 
         @Override
         public String toString(LocalTime value) {
-            if (value == null) {
-                throw new IllegalArgumentException(
-                        LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
-                );
-            }
-            return value.toString();
-        }
-    }
-
-    public static class PeriodParamConverter implements ParamConverter<Period> {
-        @Override
-        public Period fromString(String value) {
-            if (value == null) {
-                throw new IllegalArgumentException(
-                        LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")
-                );
-            }
-            return new Period(parseInstant(value));
-        }
-
-        @Override
-        public String toString(Period value) {
             if (value == null) {
                 throw new IllegalArgumentException(
                         LocalizationMessages.METHOD_PARAMETER_CANNOT_BE_NULL("value")

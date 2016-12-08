@@ -17,7 +17,7 @@ import java.util.Random;
  * <p>MediaStreaming class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class MediaStreaming implements StreamingOutput {
 

@@ -11,7 +11,7 @@ import java.io.IOException;
  * Deserialize entity bean collections for a given bean type.
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class BeanListTypeDeserializer extends JsonDeserializer {
 

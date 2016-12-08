@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
  * <p>Abstract Persister class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public abstract class Persister<M extends Model> {
 

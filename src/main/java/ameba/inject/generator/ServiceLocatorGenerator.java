@@ -12,7 +12,7 @@ import java.io.IOException;
  * <p>ServiceLocatorGenerator class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class ServiceLocatorGenerator extends ServiceLocatorGeneratorImpl {
     /**

@@ -19,7 +19,7 @@ import java.util.Set;
  * <p>Abstract EndpointMeta class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public abstract class EndpointMeta {
     private static final Logger logger = LoggerFactory.getLogger(EndpointMeta.class);
@@ -251,13 +251,10 @@ public abstract class EndpointMeta {
         abstract MessageHandler create(Session session);
 
         protected void sendObject(final Session session, Object msg) {
-            session.getAsyncRemote().sendObject(msg, new SendHandler() {
-                @Override
-                public void onResult(SendResult result) {
-                    Throwable e = result.getException();
-                    if (e != null) {
-                        onError(session, e);
-                    }
+            session.getAsyncRemote().sendObject(msg, result -> {
+                Throwable e = result.getException();
+                if (e != null) {
+                    onError(session, e);
                 }
             });
         }

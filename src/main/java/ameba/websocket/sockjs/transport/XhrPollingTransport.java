@@ -8,7 +8,7 @@ import javax.ws.rs.container.ContainerRequestContext;
  * <p>XhrPollingTransport class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class XhrPollingTransport implements Transport {
     /**

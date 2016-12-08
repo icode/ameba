@@ -20,7 +20,7 @@ import java.util.List;
  * <p>ValidationExceptionMapper class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Priority(Priorities.USER)
 @Singleton

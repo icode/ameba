@@ -17,7 +17,7 @@ import java.util.LinkedList;
  * <p>ConfigHelper class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class ConfigHelper {
 

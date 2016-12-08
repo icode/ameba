@@ -19,21 +19,18 @@ import static java.lang.invoke.MethodType.methodType;
  * <p>JerseyScopeDelegate class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class JerseyScopeDelegate {
-    private static final MethodHandles.Lookup lookup = new PrivilegedAction<MethodHandles.Lookup>() {
-        @Override
-        public MethodHandles.Lookup run() {
-            try {
-                Field field = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
-                field.setAccessible(true);
-                return (MethodHandles.Lookup) field.get(null);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new WebSocketException(e);
-            }
+    private static final MethodHandles.Lookup lookup = ((PrivilegedAction<MethodHandles.Lookup>) () -> {
+        try {
+            Field field = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
+            field.setAccessible(true);
+            return (MethodHandles.Lookup) field.get(null);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new WebSocketException(e);
         }
-    }.run();
+    }).run();
     private static final MethodHandle RETRIEVE_CURRENT_HANDLE = getMethodHandle(
             "retrieveCurrent",
             RequestScope.Instance.class

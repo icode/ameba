@@ -9,7 +9,7 @@ import javax.ws.rs.core.FeatureContext;
  * <p>ExtendedMessageFeature class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class ExtendedMessageFeature implements Feature {
     /**

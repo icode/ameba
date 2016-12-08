@@ -4,7 +4,7 @@ package ameba.db.dsl;
  * <p>ExprApplier interface.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public interface ExprApplier<T> {
     /**

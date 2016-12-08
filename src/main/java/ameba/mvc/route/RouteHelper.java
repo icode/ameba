@@ -9,13 +9,13 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 路由器帮助类
  *
  * @author icode
  * @since 13-8-9 下午7:45
- * @version $Id: $Id
  */
 @Singleton
 @Path("route")
@@ -37,9 +37,12 @@ public class RouteHelper {
             if (resource.getAllMethods().size() > 0) {
                 routeList.add(path);
             }
-            for (Resource res : resource.getChildResources()) {
-                routeList.add(path + (res.getPath().startsWith("/") ? "" : "/") + res.getPath());
-            }
+            routeList.addAll(
+                    resource.getChildResources()
+                            .stream()
+                            .map(res -> path + (res.getPath().startsWith("/") ? "" : "/") + res.getPath())
+                            .collect(Collectors.toList())
+            );
         }
         return routeList;
     }

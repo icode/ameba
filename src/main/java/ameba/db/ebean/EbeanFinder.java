@@ -8,12 +8,14 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * Base-class for model-mapped models that provides convenience methods.
  *
  * @author sulijuan
- * @version $Id: $Id
+ *
  */
 public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
@@ -272,13 +274,13 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     }
 
     /** {@inheritDoc} */
-    public void findEach(QueryEachConsumer<T> consumer) {
+    public void findEach(Consumer<T> consumer) {
         query().findEach(consumer);
     }
 
     /** {@inheritDoc} */
-    public void findEachWhile(QueryEachWhileConsumer<T> consumer) {
-        query().findEachWhile(consumer);
+    public void findEachWhile(Predicate<T> predicate) {
+        query().findEachWhile(predicate);
     }
 
     /** {@inheritDoc} */

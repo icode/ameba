@@ -9,7 +9,7 @@ import java.util.List;
  * <p>Abstract QueryExprInvoker class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public abstract class QueryExprInvoker<T> {
     private static final List<Val<?>> EMP_ARGS = Lists.newArrayListWithCapacity(0);

@@ -33,7 +33,6 @@ import java.util.Map;
  * <p>MigrationResource class.</p>
  *
  * @author icode
- * @version $Id: $Id
  */
 @Path(MigrationResource.MIGRATION_BASE_URI)
 @Singleton
@@ -78,7 +77,7 @@ public class MigrationResource {
     /**
      * <p>info.</p>
      *
-     * @param dbName a {@link java.lang.String} object.
+     * @param dbName   a {@link java.lang.String} object.
      * @param revision a {@link java.lang.String} object.
      * @return a {@link javax.ws.rs.core.Response} object.
      */
@@ -168,7 +167,7 @@ public class MigrationResource {
     /**
      * <p>script.</p>
      *
-     * @param dbName a {@link java.lang.String} object.
+     * @param dbName   a {@link java.lang.String} object.
      * @param revision a {@link java.lang.String} object.
      * @return a {@link ameba.db.migration.models.ScriptInfo} object.
      */
@@ -382,14 +381,15 @@ public class MigrationResource {
     private Map<String, Migration> getMigrations() {
         Map<String, Migration> migrations = Maps.newHashMap();
         Map<String, Object> properties = application.getProperties();
-        for (String dbName : DataSourceManager.getDataSourceNames()) {
-            if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
-                Migration migration = locator.getService(Migration.class, dbName);
-                if (migration.hasChanged()) {
-                    migrations.put(dbName, migration);
-                }
-            }
-        }
+        DataSourceManager.getDataSourceNames()
+                .stream()
+                .filter(dbName -> !"false".equals(properties.get("db." + dbName + ".migration.enabled")))
+                .forEach(dbName -> {
+                    Migration migration = locator.getService(Migration.class, dbName);
+                    if (migration.hasChanged()) {
+                        migrations.put(dbName, migration);
+                    }
+                });
         if (migrations.isEmpty()) {
             throw new NotFoundException();
         }

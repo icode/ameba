@@ -23,7 +23,7 @@ import java.io.IOException;
  * <p>StreamingWriterInterceptor class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 @Priority(Integer.MIN_VALUE + 100)

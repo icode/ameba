@@ -28,7 +28,7 @@ import java.util.Map;
  * 错误处理页面配置
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {

@@ -42,7 +42,7 @@ import java.util.concurrent.Future;
  *
  * @author Rossen Stoyanchev
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class StandardWebSocketSession extends AbstractWebSocketSession<Session> {
 

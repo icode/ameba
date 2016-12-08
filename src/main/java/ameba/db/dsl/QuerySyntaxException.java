@@ -6,7 +6,7 @@ import ameba.exception.AmebaException;
  * <p>QuerySyntaxException class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class QuerySyntaxException extends AmebaException {
     /**

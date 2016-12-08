@@ -29,7 +29,7 @@ import java.sql.SQLException;
  * <p>ModelMigration class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class ModelMigration extends DbMigration {
     private static final String initialVersion = "1.0";

@@ -9,7 +9,7 @@ import javax.websocket.Session;
  * <p>EndpointDelegate class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class EndpointDelegate extends Endpoint {
     private EndpointMeta meta;

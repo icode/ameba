@@ -16,7 +16,7 @@ import java.sql.SQLException;
  * <p>ClobStreamingProcess class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class ClobStreamingProcess implements StreamingProcess<Clob> {

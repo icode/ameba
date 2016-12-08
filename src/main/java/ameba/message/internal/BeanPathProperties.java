@@ -17,7 +17,7 @@ import java.util.*;
  * </p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class BeanPathProperties {
 
@@ -208,7 +208,7 @@ public class BeanPathProperties {
         }
 
         private Props(BeanPathProperties owner, String parentPath, String path) {
-            this(owner, parentPath, path, new LinkedHashSet<String>());
+            this(owner, parentPath, path, new LinkedHashSet<>());
         }
 
         /**

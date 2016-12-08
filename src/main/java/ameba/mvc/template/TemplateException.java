@@ -14,7 +14,7 @@ import java.util.List;
  * <p>TemplateException class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class TemplateException extends AmebaExceptionWithJavaSource {
 
@@ -43,19 +43,9 @@ public class TemplateException extends AmebaExceptionWithJavaSource {
      *
      * @param message   a {@link java.lang.String} object.
      * @param cause     a {@link java.lang.Throwable} object.
-     * @param line      a {@link java.lang.Integer} object.
-     * @param lineIndex a {@link java.lang.Integer} object.
-     * @param lineIndex a {@link java.lang.Integer} object.
-     * @param lineIndex a {@link java.lang.Integer} object.
-     * @param lineIndex a {@link java.lang.Integer} object.
-     * @param sourceUrl a {@link java.net.URL} object.
-     * @param sourceUrl a {@link java.net.URL} object.
-     * @param sourceUrl a {@link java.net.URL} object.
-     * @param sourceUrl a {@link java.net.URL} object.
-     * @param sourceUrl a {@link java.net.URL} object.
+     * @param line     a {@link java.lang.Integer} object.
      * @param sourceUrl a {@link java.net.URL} object.
      * @param source    a {@link java.util.List} object.
-     * @param lineIndex a {@link java.lang.Integer} object.
      * @param lineIndex a {@link java.lang.Integer} object.
      */
     public TemplateException(String message, Throwable cause, Integer line, Integer lineIndex,

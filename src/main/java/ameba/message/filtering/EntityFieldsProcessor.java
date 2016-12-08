@@ -17,7 +17,7 @@ import java.util.Set;
  * <p>EntityFieldsProcessor class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 @Priority(Integer.MAX_VALUE - 5000)

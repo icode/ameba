@@ -12,7 +12,7 @@ import java.util.List;
  * <p>QueryExprListener class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class QueryExprListener extends QueryBaseListener {
 

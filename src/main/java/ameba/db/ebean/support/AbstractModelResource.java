@@ -7,7 +7,7 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
  *
  * @author icode
  * @since 0.1.6e
- * @version $Id: $Id
+ *
  */
 public abstract class AbstractModelResource<URI_ID, MODEL>
         extends ModelResource<URI_ID, URI_ID, MODEL> {

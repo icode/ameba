@@ -32,7 +32,7 @@ import java.util.UUID;
  *
  * @author ICode
  * @since 13-8-14 下午7:49
- * @version $Id: $Id
+ *
  */
 public class StatViewFeature implements Feature {
     /**
@@ -116,7 +116,7 @@ public class StatViewFeature implements Feature {
     /**
      * 初始化jmx连接
      *
-     * @throws IOException
+     * @throws IOException IOException
      */
     private static void initJmxConn() throws IOException {
         if (jmxUrl != null) {
@@ -351,7 +351,7 @@ public class StatViewFeature implements Feature {
         }
 
         private Response returnResourceFile(String fileName) throws IOException {
-            Response.ResponseBuilder builder = null;
+            Response.ResponseBuilder builder;
             if (fileName.endsWith(".jpg")) {
                 byte[] bytes = Utils.readByteArrayFromResource(RESOURCE_PATH + fileName);
                 builder = Response.ok(bytes);

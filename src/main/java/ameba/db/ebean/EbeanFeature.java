@@ -40,7 +40,6 @@ import java.util.Set;
  *
  * @author icode
  * @since 2013-08-07
- * @version $Id: $Id
  */
 public class EbeanFeature implements Feature {
 
@@ -114,19 +113,7 @@ public class EbeanFeature implements Feature {
 
         final Configuration appConfig = context.getConfiguration();
 
-        final Properties eBeanConfig = new Properties();
-
         final JsonFactory jsonFactory = objectMapper.getFactory();
-
-        //读取过滤ebean配置
-        for (String key : appConfig.getPropertyNames()) {
-            if (key.startsWith("db.")) {
-                Object value = appConfig.getProperty(key);
-                if (null != value) {
-                    eBeanConfig.put(key, String.valueOf(value));
-                }
-            }
-        }
 
         ContainerConfig containerConfig = new ContainerConfig();
         Properties cp = new Properties();
@@ -143,7 +130,7 @@ public class EbeanFeature implements Feature {
             config.setJsonInclude(JsonConfig.Include.NON_EMPTY);
             config.setPersistBatch(PersistBatch.ALL);
             config.setUpdateAllPropertiesInBatch(false);
-            config.loadFromProperties(eBeanConfig);
+            config.loadFromProperties(cp);
             config.setPackages(null);
             config.setDataSourceJndiName(null);
             config.setDataSource(DataSourceManager.getDataSource(name));//设置为druid数据源
@@ -159,9 +146,7 @@ public class EbeanFeature implements Feature {
 
             Set<Class> classes = ModelManager.getModels(name);
             if (classes != null) {
-                for (Class clazz : classes) {
-                    config.addClass(clazz);
-                }
+                classes.forEach(config::addClass);
             }
             config.addClass(ScriptInfo.class);
 

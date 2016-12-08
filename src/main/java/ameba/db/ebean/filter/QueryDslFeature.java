@@ -8,7 +8,7 @@ import javax.ws.rs.core.FeatureContext;
  * <p>QueryDslFeature class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class QueryDslFeature implements Feature {
     /**

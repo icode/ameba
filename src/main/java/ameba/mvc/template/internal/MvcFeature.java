@@ -20,7 +20,7 @@ import static org.glassfish.jersey.server.mvc.MvcFeature.TEMPLATE_BASE_PATH;
  *
  * @author icode
  * @since 2013-08-07
- * @version $Id: $Id
+ *
  */
 @ConstrainedTo(RuntimeType.SERVER)
 public class MvcFeature implements Feature {

@@ -7,7 +7,7 @@ import ameba.core.Application;
  * <p>ShutdownEvent class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class ShutdownEvent extends ContainerEvent {
     /**

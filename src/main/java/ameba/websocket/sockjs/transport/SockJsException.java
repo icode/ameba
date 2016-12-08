@@ -6,7 +6,7 @@ import ameba.exception.AmebaException;
  * <p>SockJsException class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class SockJsException extends AmebaException {
     /**

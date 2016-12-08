@@ -27,7 +27,7 @@ import java.util.Set;
  *
  * @author icode
  * @since 2013-08-27
- * @version $Id: $Id
+ *
  */
 @Singleton
 @Priority(Priorities.ENTITY_CODER)

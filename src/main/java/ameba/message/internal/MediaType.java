@@ -6,7 +6,7 @@ import java.util.Map;
  * <p>MediaType class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class MediaType extends javax.ws.rs.core.MediaType {
     /**

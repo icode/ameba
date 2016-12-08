@@ -6,7 +6,6 @@ import ameba.container.event.ShutdownEvent;
  * <p>SystemEventBus class.</p>
  *
  * @author icode
- * @version $Id: $Id
  */
 public class SystemEventBus {
 
@@ -21,12 +20,9 @@ public class SystemEventBus {
 
     private static void init() {
         EVENT_BUS = EventBus.createMix();
-        EVENT_BUS.subscribe(ShutdownEvent.class, new Listener<ShutdownEvent>() {
-            @Override
-            public void onReceive(ShutdownEvent event) {
-                synchronized (SystemEventBus.class) {
-                    EVENT_BUS = null;
-                }
+        EVENT_BUS.subscribe(ShutdownEvent.class, event -> {
+            synchronized (SystemEventBus.class) {
+                EVENT_BUS = null;
             }
         });
     }
@@ -47,7 +43,7 @@ public class SystemEventBus {
      *
      * @param event    a {@link java.lang.Class} object.
      * @param listener a {@link ameba.event.Listener} object.
-     * @param <E> a E object.
+     * @param <E>      a E object.
      */
     public static <E extends Event> void subscribe(Class<E> event, final Listener<E> listener) {
         getEventBus().subscribe(event, listener);
@@ -68,7 +64,7 @@ public class SystemEventBus {
      *
      * @param event    a {@link java.lang.Class} object.
      * @param listener a {@link ameba.event.Listener} object.
-     * @param <E> a E object.
+     * @param <E>      a E object.
      */
     public static <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener) {
         getEventBus().unsubscribe(event, listener);

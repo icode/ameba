@@ -6,7 +6,7 @@ import javax.websocket.CloseReason;
  * <p>CloseReasons class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public enum CloseReasons {
 

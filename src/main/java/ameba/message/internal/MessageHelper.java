@@ -12,7 +12,7 @@ import javax.ws.rs.ext.RuntimeDelegate;
  * <p>MessageHelper class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class MessageHelper {
 

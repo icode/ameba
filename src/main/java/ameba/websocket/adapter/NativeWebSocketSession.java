@@ -24,7 +24,7 @@ import ameba.websocket.WebSocketSession;
  *
  * @author Rossen Stoyanchev
  * @author icode
- * @version $Id: $Id
+ *
  */
 public interface NativeWebSocketSession extends WebSocketSession {
 

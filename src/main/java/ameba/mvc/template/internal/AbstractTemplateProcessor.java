@@ -4,7 +4,6 @@ import ameba.exception.AmebaException;
 import ameba.mvc.template.TemplateException;
 import ameba.util.IOUtils;
 import com.google.common.base.Charsets;
-import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -34,7 +33,7 @@ import java.util.concurrent.ConcurrentMap;
  * <p>Abstract AbstractTemplateProcessor class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<T> {
@@ -79,12 +78,9 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
         this.encoding = TemplateHelper.getTemplateOutputEncoding(config, this.suffix);
 
         this.supportedExtensions = Sets.newHashSet(Collections2.transform(
-                Arrays.asList(supportedExtensions), new Function<String, String>() {
-                    @Override
-                    public String apply(String input) {
-                        input = input.toLowerCase();
-                        return input.startsWith(".") ? input : "." + input;
-                    }
+                Arrays.asList(supportedExtensions), input -> {
+                    input = input.toLowerCase();
+                    return input.startsWith(".") ? input : "." + input;
                 }));
 
     }
@@ -120,11 +116,7 @@ public abstract class AbstractTemplateProcessor<T> implements TemplateProcessor<
             }
         }
 
-        return Collections2.transform(this.supportedExtensions, new Function<String, String>() {
-            public String apply(String input) {
-                return templatePath + input;
-            }
-        });
+        return Collections2.transform(this.supportedExtensions, input -> templatePath + input);
     }
 
     /**

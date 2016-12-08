@@ -18,7 +18,7 @@ import java.util.Set;
  * <p>EntityFieldsScopeResolver class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class EntityFieldsScopeResolver implements ScopeResolver {

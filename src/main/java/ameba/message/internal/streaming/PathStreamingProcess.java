@@ -10,7 +10,7 @@ import java.nio.file.Path;
  * <p>PathStreamingProcess class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class PathStreamingProcess extends AbstractStreamingProcess<Path> {

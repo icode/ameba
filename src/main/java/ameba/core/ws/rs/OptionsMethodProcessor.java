@@ -32,7 +32,7 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
  *
  * @author icode
  * @since 0.1.6e
- * @version $Id: $Id
+ *
  */
 @Priority(Integer.MAX_VALUE)
 @Singleton
@@ -58,7 +58,7 @@ public class OptionsMethodProcessor implements ModelProcessor {
                 ServiceLocators.getRankedProviders(locator, OptionsResponseGenerator.class);
 
         generators = ServiceLocators
-                .sortRankedProviders(new RankedComparator<OptionsResponseGenerator>(), rankedProviders);
+                .sortRankedProviders(new RankedComparator<>(), rankedProviders);
     }
 
     /**

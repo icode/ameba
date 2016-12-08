@@ -20,7 +20,7 @@ import java.util.List;
  * <p>StatusMapper class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 @Priority(Priorities.HEADER_DECORATOR - 1)

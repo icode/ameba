@@ -22,7 +22,7 @@ import java.util.Date;
  * <p>DownloadEntityFilter class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class DownloadEntityFilter implements ContainerResponseFilter {

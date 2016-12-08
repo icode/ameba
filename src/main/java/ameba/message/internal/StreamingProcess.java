@@ -11,7 +11,7 @@ import java.io.OutputStream;
  * <p>StreamingProcess interface.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Contract
 @ConstrainedTo(RuntimeType.SERVER)

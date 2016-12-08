@@ -8,7 +8,7 @@ import javax.ws.rs.container.ContainerRequestContext;
  * <p>JsonpPollingTransport class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class JsonpPollingTransport implements Transport {
     /**

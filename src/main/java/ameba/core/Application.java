@@ -18,6 +18,7 @@ import ameba.scanner.PackageScanner;
 import ameba.util.*;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.gaffer.GafferUtil;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -64,7 +65,7 @@ import static ameba.util.IOUtils.*;
  *
  * @author icode
  * @since 13-8-6 下午8:42
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class Application {
@@ -434,11 +435,9 @@ public class Application {
             addExcludes(ex);
         }
 
-        for (String key : configMap.keySet()) {
-            if (key.startsWith(EXCLUDES_KEY_PREFIX)) {
-                addExcludes((String) configMap.get(key));
-            }
-        }
+        configMap.keySet().stream()
+                .filter(key -> key.startsWith(EXCLUDES_KEY_PREFIX))
+                .forEachOrdered(key -> addExcludes((String) configMap.get(key)));
 
         logger.debug(Messages.get("info.exclude.classes", excludes));
     }
@@ -476,7 +475,7 @@ public class Application {
 
                 out = FileUtils.openOutputStream(cacheFile);
 
-                IOUtils.writeLines(scanner.getAcceptClasses(), null, out);
+                IOUtils.writeLines(scanner.getAcceptClasses(), null, out, Charsets.UTF_8);
             } catch (IOException e) {
                 logger.error(Messages.get("info.write.class.cache.error"), e);
             } finally {
@@ -764,41 +763,31 @@ public class Application {
 
         final Set<ClassInfo> resources = Sets.newLinkedHashSet();
 
-        SystemEventBus.subscribe(ClassFoundEvent.class, new Listener<ClassFoundEvent>() {
-            @Override
-            public void onReceive(ClassFoundEvent event) {
-                event.accept(new Acceptable<ClassInfo>() {
+        SystemEventBus.subscribe(ClassFoundEvent.class, event -> event.accept(new Acceptable<ClassInfo>() {
 
-                    private boolean isResource(CtClass ctClass) {
-                        int modifiers = ctClass.getModifiers();
-                        return !javassist.Modifier.isAbstract(modifiers)
-                                && !javassist.Modifier.isInterface(modifiers)
-                                && !javassist.Modifier.isAnnotation(modifiers)
-                                && !javassist.Modifier.isEnum(modifiers);
-                    }
-
-                    @Override
-                    public boolean accept(ClassInfo info) {
-                        if (info.isPublic()) {
-                            CtClass thisClass = info.getCtClass();
-                            if (isResource(thisClass)) {
-                                if (info.accpet(new Acceptable<CtClass>() {
-                                    @Override
-                                    public boolean accept(CtClass ctClass) {
-                                        return ctClass.hasAnnotation(Path.class)
-                                                || ctClass.hasAnnotation(Provider.class);
-                                    }
-                                })) {
-                                    resources.add(info);
-                                    return true;
-                                }
-                            }
-                        }
-                        return false;
-                    }
-                });
+            private boolean isResource(CtClass ctClass) {
+                int modifiers = ctClass.getModifiers();
+                return !javassist.Modifier.isAbstract(modifiers)
+                        && !javassist.Modifier.isInterface(modifiers)
+                        && !javassist.Modifier.isAnnotation(modifiers)
+                        && !javassist.Modifier.isEnum(modifiers);
             }
-        });
+
+            @Override
+            public boolean accept(ClassInfo info) {
+                if (info.isPublic()) {
+                    CtClass thisClass = info.getCtClass();
+                    if (isResource(thisClass)) {
+                        if (info.accpet(ctClass -> ctClass.hasAnnotation(Path.class)
+                                || ctClass.hasAnnotation(Provider.class))) {
+                            resources.add(info);
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        }));
 
         addons.add(new Addon() {
             @Override
@@ -880,9 +869,7 @@ public class Application {
         map.put(ServerProperties.JSON_PROCESSING_FEATURE_DISABLE, "true");
 
         //移除转化需要的临时属性
-        for (String key : removeKeys) {
-            configMap.remove(key);
-        }
+        removeKeys.forEach(configMap::remove);
 
         //将转化的jersey配置放入临时配置对象
         configMap.putAll(map);
@@ -992,9 +979,7 @@ public class Application {
 
                     List<Connector> connectors = getConnectors();
                     if (connectors != null && connectors.size() > 0) {
-                        for (Connector connector : connectors) {
-                            appendVisitUrl(connector);
-                        }
+                        connectors.forEach(this::appendVisitUrl);
                     } else {
                         builder.append(LINE_SEPARATOR)
                                 .append(lineStart)
@@ -1593,12 +1578,7 @@ public class Application {
         @Override
         public RequestEventListener onRequest(org.glassfish.jersey.server.monitoring.RequestEvent requestEvent) {
             AmebaFeature.publishEvent(new RequestEvent(requestEvent));
-            return new RequestEventListener() {
-                @Override
-                public void onEvent(org.glassfish.jersey.server.monitoring.RequestEvent event) {
-                    AmebaFeature.publishEvent(new RequestEvent(event));
-                }
-            };
+            return event -> AmebaFeature.publishEvent(new RequestEvent(event));
         }
     }
 

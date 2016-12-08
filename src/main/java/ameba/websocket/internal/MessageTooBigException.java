@@ -9,7 +9,7 @@ import javax.websocket.CloseReason;
  * <p>MessageTooBigException class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class MessageTooBigException extends WebSocketException {
     private static final CloseReason CLOSE_REASON = CloseReasons.TOO_BIG.getCloseReason();

@@ -8,7 +8,7 @@ import org.glassfish.jersey.server.mvc.Viewable;
  *
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-20
- * @version $Id: $Id
+ *
  */
 public class Viewables {
 

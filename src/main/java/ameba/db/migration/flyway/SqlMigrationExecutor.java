@@ -12,7 +12,7 @@ import java.sql.Connection;
  * <p>SqlMigrationExecutor class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class SqlMigrationExecutor implements MigrationExecutor {
     private final ScriptInfo info;

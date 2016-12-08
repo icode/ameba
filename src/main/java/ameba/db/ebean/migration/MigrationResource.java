@@ -13,7 +13,7 @@ import java.io.StringReader;
  * <p>MigrationResource class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class MigrationResource implements Comparable<MigrationResource> {
 

@@ -13,7 +13,7 @@ import java.util.List;
  * <p>EntityFieldsUtils class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class EntityFieldsUtils {
     /**

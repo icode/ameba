@@ -20,7 +20,7 @@ import java.security.PrivilegedActionException;
  * <p>Abstract ClassInfo class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public abstract class ClassInfo {
     private static final Logger logger = LoggerFactory.getLogger(ClassInfo.class);

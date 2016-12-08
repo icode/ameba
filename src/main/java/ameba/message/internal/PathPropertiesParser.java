@@ -6,7 +6,7 @@ package ameba.message.internal;
  *
  * @author rbygrave
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class PathPropertiesParser {
 

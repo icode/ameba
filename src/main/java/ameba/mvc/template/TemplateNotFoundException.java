@@ -7,7 +7,7 @@ import java.util.List;
  * <p>TemplateNotFoundException class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class TemplateNotFoundException extends TemplateException {
     /**
@@ -35,19 +35,9 @@ public class TemplateNotFoundException extends TemplateException {
      *
      * @param message   a {@link java.lang.String} object.
      * @param cause     a {@link java.lang.Throwable} object.
-     * @param line      a {@link java.lang.Integer} object.
-     * @param lineIndex a {@link java.lang.Integer} object.
-     * @param lineIndex a {@link java.lang.Integer} object.
-     * @param lineIndex a {@link java.lang.Integer} object.
-     * @param lineIndex a {@link java.lang.Integer} object.
-     * @param sourceUrl a {@link java.net.URL} object.
-     * @param sourceUrl a {@link java.net.URL} object.
-     * @param sourceUrl a {@link java.net.URL} object.
-     * @param sourceUrl a {@link java.net.URL} object.
-     * @param sourceUrl a {@link java.net.URL} object.
+     * @param line a {@link java.lang.Integer} object.
      * @param sourceUrl a {@link java.net.URL} object.
      * @param source    a {@link java.util.List} object.
-     * @param lineIndex a {@link java.lang.Integer} object.
      * @param lineIndex a {@link java.lang.Integer} object.
      */
     public TemplateNotFoundException(String message, Throwable cause, Integer line, Integer lineIndex, URL sourceUrl, List<String> source) {

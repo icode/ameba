@@ -9,7 +9,7 @@ import java.io.InputStream;
  * <p>BytesStreamingProcess class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class BytesStreamingProcess extends AbstractStreamingProcess<byte[]> {

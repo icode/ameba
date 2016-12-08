@@ -15,7 +15,7 @@ import javax.ws.rs.core.Feature;
  * <p>Abstract AmebaFeature class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public abstract class AmebaFeature extends LoggerOwner implements Feature {
 
@@ -30,12 +30,9 @@ public abstract class AmebaFeature extends LoggerOwner implements Feature {
 
     private static void init() {
         EVENT_BUS = EventBus.createMix();
-        SystemEventBus.subscribe(ShutdownEvent.class, new Listener<ShutdownEvent>() {
-            @Override
-            public void onReceive(ShutdownEvent event) {
-                synchronized (AmebaFeature.class) {
-                    EVENT_BUS = null;
-                }
+        SystemEventBus.subscribe(ShutdownEvent.class, event -> {
+            synchronized (AmebaFeature.class) {
+                EVENT_BUS = null;
             }
         });
     }

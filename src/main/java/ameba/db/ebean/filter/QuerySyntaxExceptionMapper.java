@@ -13,7 +13,7 @@ import javax.ws.rs.ext.Providers;
  * <p>QuerySyntaxExceptionMapper class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class QuerySyntaxExceptionMapper implements ExceptionMapper<QuerySyntaxException> {

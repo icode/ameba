@@ -17,7 +17,7 @@ import java.util.List;
  * <p>Ameba class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class Ameba {
     private static final String LINE = System.getProperty("line.separator", "/n");
@@ -130,12 +130,7 @@ public class Ameba {
         }
 
         // register shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                shutdown();
-            }
-        }, "shutdownHook"));
+        Runtime.getRuntime().addShutdownHook(new Thread(Ameba::shutdown, "shutdownHook"));
 
         try {
             Thread.currentThread().join();

@@ -14,7 +14,7 @@ import javax.ws.rs.ext.ExceptionMapper;
  * <p>JsonIOExceptionMapper class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Singleton
 public class JsonIOExceptionMapper implements ExceptionMapper<JsonIOException> {

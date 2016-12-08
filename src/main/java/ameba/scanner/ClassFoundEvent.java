@@ -10,7 +10,7 @@ import java.io.InputStream;
  * <p>ClassFoundEvent class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class ClassFoundEvent implements Event {
     private static final Logger logger = LoggerFactory.getLogger(ClassFoundEvent.class);

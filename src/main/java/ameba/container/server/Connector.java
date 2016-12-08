@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static ameba.util.IOUtils.readByteArrayFromResource;
 
@@ -20,7 +21,7 @@ import static ameba.util.IOUtils.readByteArrayFromResource;
  *
  * @author icode
  * @since 0.1.6e
- * @version $Id: $Id
+ *
  */
 public class Connector {
     /**
@@ -139,9 +140,7 @@ public class Connector {
             }
         }
 
-        for (Map<String, String> prop : propertiesMap.values()) {
-            connectors.add(createDefault(prop));
-        }
+        connectors.addAll(propertiesMap.values().stream().map(Connector::createDefault).collect(Collectors.toList()));
         return connectors;
     }
 

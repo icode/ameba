@@ -4,21 +4,22 @@ import ameba.core.Application;
 import ameba.db.migration.Migration;
 import ameba.db.migration.models.ScriptInfo;
 import ameba.exception.AmebaException;
-import com.avaje.ebean.QueryEachConsumer;
 import com.avaje.ebean.config.DbMigrationConfig;
 import com.avaje.ebean.config.ServerConfig;
 import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.google.common.collect.Lists;
-import org.joda.time.DateTime;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static java.time.format.DateTimeFormatter.ofPattern;
 
 /**
  * <p>EbeanMigration class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class EbeanMigration implements Migration {
     private final ModelMigration dbMigration;
@@ -38,7 +39,7 @@ public class EbeanMigration implements Migration {
         ServerConfig config = server.getServerConfig();
         CharSequence ver = application.getApplicationVersion();
         String version;
-        String verIndex = DateTime.now().toString("yyyyMMddHHmmss");
+        String verIndex = LocalDateTime.now().format(ofPattern("yyyyMMddHHmmss"));
         if (ver instanceof Application.UnknownVersion) {
             version = verIndex;
         } else {
@@ -75,12 +76,7 @@ public class EbeanMigration implements Migration {
     @Override
     public List<ScriptInfo> allScript() {
         final List<ScriptInfo> scriptInfoList = Lists.newArrayList();
-        server.find(ScriptInfo.class).findEach(new QueryEachConsumer<ScriptInfo>() {
-            @Override
-            public void accept(ScriptInfo bean) {
-                scriptInfoList.add(bean);
-            }
-        });
+        server.find(ScriptInfo.class).findEach(scriptInfoList::add);
         return scriptInfoList;
     }
 

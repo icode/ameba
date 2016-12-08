@@ -1,8 +1,7 @@
 package ameba.event;
 
-import ameba.core.Addon;
-import ameba.core.Application;
-import ameba.lib.Akka;
+import co.paralleluniverse.fibers.Fiber;
+import co.paralleluniverse.fibers.SuspendExecution;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +15,6 @@ public class EventTest {
 
     @Test
     public void publish() {
-
-        Addon addon = new Akka.Addon();
-        addon.setup(new TestApp());
-
         EventBus eventBus = EventBus.createMix();
 
         eventBus.subscribe(new AnnotationSub());
@@ -31,8 +26,9 @@ public class EventTest {
             final int finalI = i;
             eventBus.subscribe(TestEvent.class, new AsyncListener<TestEvent>() {
                 @Override
-                public void onReceive(TestEvent event) {
+                public void onReceive(TestEvent event) throws SuspendExecution, InterruptedException {
                     logger.info("async receive message {} : {}", finalI, event.message);
+                    Fiber.sleep(500);
                 }
             });
 
@@ -137,11 +133,6 @@ public class EventTest {
 
         public TestEvent1(String message) {
             this.message = message;
-        }
-    }
-
-    private class TestApp extends Application {
-        public TestApp() {
         }
     }
 }

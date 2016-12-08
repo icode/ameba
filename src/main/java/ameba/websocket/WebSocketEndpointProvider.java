@@ -7,7 +7,7 @@ import org.jvnet.hk2.annotations.Contract;
  * <p>WebSocketEndpointProvider interface.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Contract
 public interface WebSocketEndpointProvider {

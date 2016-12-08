@@ -19,7 +19,7 @@ import java.util.ResourceBundle;
  * <p>MultiResourceBundleControl class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class MultiResourceBundleControl extends ResourceBundle.Control {
 
@@ -43,13 +43,13 @@ public class MultiResourceBundleControl extends ResourceBundle.Control {
         switch (format) {
             case "java.class":
                 try {
-                    Class<? extends ResourceBundle> bundleClass
-                            = (Class<? extends ResourceBundle>) loader.loadClass(bundleName);
+                    Class bundleClass
+                            = loader.loadClass(bundleName);
 
                     // If the class isn't a ResourceBundle subclass, throw a
                     // ClassCastException.
                     if (ResourceBundle.class.isAssignableFrom(bundleClass)) {
-                        bundle = bundleClass.newInstance();
+                        bundle = (ResourceBundle) bundleClass.newInstance();
                     } else {
                         throw new ClassCastException(bundleClass.getName()
                                 + " cannot be cast to ResourceBundle");

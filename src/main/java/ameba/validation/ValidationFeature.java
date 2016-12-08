@@ -16,14 +16,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 import javax.ws.rs.ext.ContextResolver;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 /**
  * <p>ValidationFeature class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public final class ValidationFeature implements Feature {
 
@@ -64,12 +62,7 @@ public final class ValidationFeature implements Feature {
         }
 
         private ResourceBundleLocator buildBundleLocator(final String name) {
-            return new ResourceBundleLocator() {
-                @Override
-                public ResourceBundle getResourceBundle(Locale locale) {
-                    return Messages.getResourceBundle(name, locale);
-                }
-            };
+            return locale -> Messages.getResourceBundle(name, locale);
         }
     }
 }

@@ -112,6 +112,7 @@ final class JacksonObjectProvider extends AbstractObjectProvider<FilterProvider>
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public PropertyFilter findPropertyFilter(final Object filterId, final Object valueToFilter) {
             if (filterId instanceof String) {
                 final String id = (String) filterId;

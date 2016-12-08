@@ -14,7 +14,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * <p>CommonExprArgTransformer class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class CommonExprArgTransformer implements ExprArgTransformer<Expression, EbeanExprInvoker> {
     private static final String[] OPT_STR_ARG = ArrayUtils.toArray(

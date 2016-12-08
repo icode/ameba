@@ -24,7 +24,7 @@ import java.util.Map;
  * <p>MigrationFilter class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @PreMatching
 @Priority(Integer.MIN_VALUE)

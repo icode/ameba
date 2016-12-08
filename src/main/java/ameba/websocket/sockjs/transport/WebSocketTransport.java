@@ -5,12 +5,11 @@ import org.glassfish.jersey.server.ChunkedOutput;
 import javax.ws.rs.container.ContainerRequestContext;
 
 /**
- * <p>XhrStreamingTransport class.</p>
+ * <p>WebSocketTransport class.</p>
  *
  * @author icode
- *
  */
-public class XhrStreamingTransport implements Transport {
+public class WebSocketTransport implements Transport {
     /**
      * {@inheritDoc}
      */

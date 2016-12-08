@@ -2,8 +2,6 @@ package ameba.feature.internal;
 
 import ameba.core.Addon;
 import ameba.core.Application;
-import ameba.event.Listener;
-import ameba.scanner.Acceptable;
 import ameba.scanner.ClassFoundEvent;
 import ameba.scanner.ClassInfo;
 import com.google.common.collect.Sets;
@@ -21,7 +19,7 @@ import java.util.Set;
  *
  * @author icode
  * @since 0.1.6e
- * @version $Id: $Id
+ *
  */
 public class LocalResourceAddon extends Addon {
     /**
@@ -31,22 +29,13 @@ public class LocalResourceAddon extends Addon {
     public void setup(final Application application) {
 
         final Set<ClassInfo> classInfoSet = Sets.newLinkedHashSet();
-        subscribeSystemEvent(ClassFoundEvent.class, new Listener<ClassFoundEvent>() {
-            @Override
-            public void onReceive(ClassFoundEvent event) {
-                event.accept(new Acceptable<ClassInfo>() {
-                    @Override
-                    @SuppressWarnings("unchecked")
-                    public final boolean accept(ClassInfo info) {
-                        if (info.containsAnnotations(Service.class)) {
-                            classInfoSet.add(info);
-                            return true;
-                        }
-                        return false;
-                    }
-                });
+        subscribeSystemEvent(ClassFoundEvent.class, event -> event.accept(info -> {
+            if (info.containsAnnotations(Service.class)) {
+                classInfoSet.add(info);
+                return true;
             }
-        });
+            return false;
+        }));
 
         final Feature localResource = new Feature() {
 

@@ -21,7 +21,7 @@ import java.io.OutputStream;
  *
  * @author icode
  * @since 0.1.6e
- * @version $Id: $Id
+ *
  */
 @ConstrainedTo(RuntimeType.SERVER)
 @Consumes({"text/xml", "application/xml"})

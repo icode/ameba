@@ -6,7 +6,7 @@ import com.google.common.base.Charsets;
  * <p>IFrameUtils class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class IFrameUtils {
 

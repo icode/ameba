@@ -9,7 +9,7 @@ import javax.ws.rs.core.Response;
  * <p>UnprocessableEntityException class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class UnprocessableEntityException extends ClientErrorException {
     /**

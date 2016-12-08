@@ -10,7 +10,7 @@ import java.util.List;
  * <p>ExceptionMapperUtils class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class ExceptionMapperUtils {
     private static final MediaType LOW_IE_DEFAULT_REQ_TYPE = new MediaType("application", "x-ms-application");

@@ -10,7 +10,7 @@ import java.util.List;
  * <p>QueryDSL class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class QueryDSL {
 

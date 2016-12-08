@@ -1,6 +1,5 @@
 package ameba.mvc.template.internal;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.ArrayUtils;
@@ -23,8 +22,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Variant;
 import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +31,7 @@ import java.util.Map;
  * <p>TemplateHelper class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class TemplateHelper {
     /**
@@ -78,12 +77,7 @@ public class TemplateHelper {
         final List<Variant> variants = VariantSelector.selectVariants(containerRequest, Variant.mediaTypes(mediaTypes)
                 .build(), varyHeaderValue == null ? Refs.emptyRef() : varyHeaderValue);
 
-        return Lists.transform(variants, new Function<Variant, MediaType>() {
-            @Override
-            public MediaType apply(final Variant variant) {
-                return MediaTypes.stripQualityParams(variant.getMediaType());
-            }
-        });
+        return Lists.transform(variants, variant -> MediaTypes.stripQualityParams(variant.getMediaType()));
     }
 
     /**
@@ -108,7 +102,7 @@ public class TemplateHelper {
                 && !extendedUriInfo.getMatchedResourceMethod().getProducedTypes().isEmpty()) {
             return extendedUriInfo.getMatchedResourceMethod().getProducedTypes();
         }
-        return Arrays.asList(MediaType.WILDCARD_TYPE);
+        return Collections.singletonList(MediaType.WILDCARD_TYPE);
     }
 
     /**
@@ -174,12 +168,7 @@ public class TemplateHelper {
      */
     public static Collection<String> getBasePaths(String basePath) {
         return Collections2.transform(Lists.newArrayList(basePath.split(",")),
-                new Function<String, String>() {
-                    @Override
-                    public String apply(String s) {
-                        return s.startsWith("/") ? s.substring(1) : s;
-                    }
-                });
+                s -> s.startsWith("/") ? s.substring(1) : s);
     }
 
     /**

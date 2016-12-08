@@ -9,7 +9,7 @@ import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
  * <p>Filters class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class Filters {
     private Filters() {

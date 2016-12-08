@@ -1,13 +1,11 @@
 package ameba.db.dsl;
 
 import ameba.core.ws.rs.ParamConverters;
-import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.text.ParsePosition;
 import java.util.Collections;
@@ -18,7 +16,7 @@ import java.util.List;
  * <p>QueryExprMeta class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class QueryExprMeta {
     private String field;
@@ -152,16 +150,13 @@ public class QueryExprMeta {
                 (arguments == null ? "" :
                         StringUtils.join(
                                 Collections2.transform(arguments,
-                                        new Function<Val, String>() {
-                                            @Override
-                                            public String apply(@NotNull Val input) {
-                                                if (input.object() == null) {
-                                                    return "nil";
-                                                } else if (input.object() instanceof String) {
-                                                    return "'" + input.string() + "'";
-                                                }
-                                                return input.object().toString();
+                                        input -> {
+                                            if (input.object() == null) {
+                                                return "nil";
+                                            } else if (input.object() instanceof String) {
+                                                return "'" + input.string() + "'";
                                             }
+                                            return input.object().toString();
                                         }), "!"
                         )
                 ) +

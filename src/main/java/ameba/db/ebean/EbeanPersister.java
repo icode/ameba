@@ -10,7 +10,7 @@ import com.avaje.ebean.Transaction;
  * Base-class for model-mapped models that provides convenience methods.
  *
  * @author sulijuan
- * @version $Id: $Id
+ *
  */
 public class EbeanPersister<M extends Model> extends Persister<M> {
 

@@ -14,7 +14,7 @@ import java.util.List;
  * <p>LoadBalancerRequestFilter class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @PreMatching
 @Priority(500)

@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author icode
  * @since 0.1.6e
- * @version $Id: $Id
+ *
  */
 public abstract class Updater<M extends Model> {
 

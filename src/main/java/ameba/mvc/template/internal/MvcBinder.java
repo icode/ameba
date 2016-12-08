@@ -13,7 +13,7 @@ import javax.ws.rs.ext.WriterInterceptor;
  *
  * @author Michal Gajdos (michal.gajdos at oracle.com)
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class MvcBinder extends AbstractBinder {
 

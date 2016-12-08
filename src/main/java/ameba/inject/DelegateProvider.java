@@ -6,7 +6,7 @@ import javax.inject.Provider;
  * <p>DelegateProvider class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class DelegateProvider<T> implements Provider<T> {
     private T target;

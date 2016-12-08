@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
  * Represents a SockJS frame. Provides factory methods to create SockJS frames.
  *
  * @author icode
- * @version $Id: $Id
  */
 public class SockJsFrame {
 
@@ -80,7 +79,7 @@ public class SockJsFrame {
     /**
      * <p>messageFrame.</p>
      *
-     * @param codec a {@link ameba.websocket.sockjs.frame.SockJsMessageCodec} object.
+     * @param codec    a {@link ameba.websocket.sockjs.frame.SockJsMessageCodec} object.
      * @param messages a {@link java.lang.String} object.
      * @return a {@link ameba.websocket.sockjs.frame.SockJsFrame} object.
      */
@@ -110,7 +109,7 @@ public class SockJsFrame {
     /**
      * <p>closeFrame.</p>
      *
-     * @param code a int.
+     * @param code   a int.
      * @param reason a {@link java.lang.String} object.
      * @return a {@link ameba.websocket.sockjs.frame.SockJsFrame} object.
      */
@@ -162,25 +161,27 @@ public class SockJsFrame {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (!(other instanceof SockJsFrame)) {
-            return false;
-        }
-        return (this.type.equals(((SockJsFrame) other).type) && this.content.equals(((SockJsFrame) other).content));
+        return this == other
+                || other instanceof SockJsFrame
+                && (this.type.equals(((SockJsFrame) other).type) && this.content.equals(((SockJsFrame) other).content));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         return this.content.hashCode();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         String result = this.content;

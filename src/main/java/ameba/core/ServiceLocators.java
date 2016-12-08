@@ -1,7 +1,6 @@
 package ameba.core;
 
 import com.google.common.collect.Maps;
-import jersey.repackaged.com.google.common.base.Function;
 import jersey.repackaged.com.google.common.collect.Collections2;
 import jersey.repackaged.com.google.common.collect.Lists;
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -16,13 +15,14 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>ServiceLocators class.</p>
  *
  * @author icode
  * @since 0.1.6e
- * @version $Id: $Id
+ *
  */
 public class ServiceLocators {
     private ServiceLocators() {
@@ -55,12 +55,8 @@ public class ServiceLocators {
                 ? locator.getAllServiceHandles(contract)
                 : locator.getAllServiceHandles(contract, qualifiers);
 
-        final ArrayList<ServiceHandle<T>> serviceHandles = new ArrayList<ServiceHandle<T>>();
-        for (final ServiceHandle handle : allServiceHandles) {
-            //noinspection unchecked
-            serviceHandles.add((ServiceHandle<T>) handle);
-        }
-        return serviceHandles;
+        //noinspection unchecked
+        return allServiceHandles.stream().map(handle -> handle).collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -114,11 +110,6 @@ public class ServiceLocators {
 
         Collections.sort(rankedProviders, comparator);
 
-        return Collections2.transform(rankedProviders, new Function<RankedProvider<T>, T>() {
-            @Override
-            public T apply(final RankedProvider<T> input) {
-                return input.getProvider();
-            }
-        });
+        return Collections2.transform(rankedProviders, RankedProvider::getProvider);
     }
 }

@@ -9,7 +9,7 @@ import java.util.Set;
  * <p>ListExpressionValidation class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class ListExpressionValidation extends SpiExpressionValidation {
     private final Set<String> blacklist;

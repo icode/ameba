@@ -38,7 +38,7 @@ import java.util.Set;
  * <p>Abstract ModelResourceStructure class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  * @since 0.1.6e
  */
 public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends LoggerOwner {

@@ -28,7 +28,7 @@ import java.util.Set;
  * <p>CommonExprTransformer class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class CommonExprTransformer implements ExprTransformer<Expression, EbeanExprInvoker> {
 
@@ -130,9 +130,7 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 Object o = args[i].object();
                 if (o instanceof HavingExpression) {
                     ExpressionList having = q.having();
-                    for (Expression he : ((HavingExpression) o).expressionList) {
-                        having.add(he);
-                    }
+                    ((HavingExpression) o).expressionList.forEach(having::add);
                 } else if (o instanceof DistinctExpression) {
                     et.setDistinct(((DistinctExpression) o).distinct);
                 } else if (o instanceof Expression) {
@@ -417,9 +415,6 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 case "lowerExp":
                     queryString.lowercaseExpandedTerms(ops.get(k).bool());
                     break;
-                case "positionIncr":
-                    queryString.enablePositionIncrements(ops.get(k).bool());
-                    break;
                 case "fuzzyMaxExp":
                     queryString.fuzzyMaxExpansions(ops.get(k).integer());
                     break;
@@ -440,9 +435,6 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                     break;
                 case "autoPhrase":
                     queryString.autoGeneratePhraseQueries(ops.get(k).bool());
-                    break;
-                case "maxDeterminized":
-                    queryString.maxDeterminizedStates(ops.get(k).integer());
                     break;
                 case "timeZone":
                     queryString.timeZone(ops.get(k).string());
@@ -776,6 +768,9 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
             case "not":
                 expr = junction(operator, args, Junction.Type.NOT, invoker, 0);
                 break;
+            case "and":
+                expr = junction(operator, args, Junction.Type.AND, invoker, 1);
+                break;
             case "or":
                 expr = junction(operator, args, Junction.Type.OR, invoker, 1);
                 break;
@@ -837,14 +832,12 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
             case "defaultField":
             case "leadingWildcard":
             case "lowerExp":
-            case "positionIncr":
             case "fuzzyMaxExp":
             case "fuzziness":
             case "fuzzyPreLen":
             case "phraseSlop":
             case "analyzeWildcard":
             case "autoPhrase":
-            case "maxDeterminized":
             case "timeZone":
             case "lowFreqAnd":
             case "highFreqAnd":

@@ -1,42 +1,25 @@
 package ameba.event;
 
-import akka.actor.ActorRef;
 import ameba.exception.AmebaException;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import co.paralleluniverse.fibers.SuspendExecution;
 
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * <p>Abstract EventBus class.</p>
  *
  * @author icode
- * @version $Id: $Id
  */
-public abstract class EventBus {
+public interface EventBus<E extends Event> {
 
-    private static final Logger logger = LoggerFactory.getLogger(EventBus.class);
-    private final SetMultimap<Class<?>, Listener> listeners = LinkedHashMultimap.create();
-    private final ReadWriteLock subscribersByTypeLock = new ReentrantReadWriteLock();
-
-    private EventBus() {
-    }
 
     /**
      * <p>createMix.</p>
      *
      * @return a {@link ameba.event.EventBus} object.
      */
-    public static EventBus createMix() {
-        return new Mixed();
+    static <EVENT extends Event> EventBus<EVENT> createMix() {
+        return new Mixed<>();
     }
 
     /**
@@ -44,9 +27,8 @@ public abstract class EventBus {
      *
      * @return a {@link ameba.event.EventBus} object.
      */
-    public static EventBus create() {
-        return new EventBus() {
-        };
+    static EventBus create() {
+        return new BasicEventBus();
     }
 
     /**
@@ -54,36 +36,12 @@ public abstract class EventBus {
      *
      * @param event    a {@link java.lang.Class} object.
      * @param listener a {@link ameba.event.Listener} object.
-     * @param <E> a E object.
      */
-    public <E extends Event> void subscribe(Class<E> event, final Listener<E> listener) {
-        subscribersByTypeLock.writeLock().lock();
-        try {
-            listeners.put(event, listener);
-        } finally {
-            subscribersByTypeLock.writeLock().unlock();
-        }
-    }
-
-    private List<Method> getAnnotatedMethods(Class<?> clazz) {
-//        Set<? extends Class<?>> supers = TypeToken.of(clazz).getTypes().rawTypes();
-        List<Method> identifiers = Lists.newArrayList();
-//        for (Class<?> superClazz : supers) {
-        for (Method superClazzMethod : clazz.getDeclaredMethods()) {
-            if (superClazzMethod.isAnnotationPresent(Subscribe.class)
-                    && !superClazzMethod.isBridge()) {
-                identifiers.add(superClazzMethod);
-            }
-        }
-//        }
-        return identifiers;
-    }
+    void subscribe(Class<E> event, final Listener<E> listener);
 
     /**
      * subscribe event by {@link ameba.event.Subscribe} annotation
      * <pre>
-     * {@code
-     *
      * class SubEevent {
      *     public SubEevent(){
      *         EventBus.subscribe(this);
@@ -99,7 +57,7 @@ public abstract class EventBus {
      *         ....
      *     }
      *     {@literal @Subscribe({ Container.ReloadEvent.class })}
-     *     private void doSome(MyEvent e){
+     *     private void doSome(ReloadEvent e){
      *         ....
      *     }
      * }
@@ -109,14 +67,12 @@ public abstract class EventBus {
      *         ....
      *     }
      * }
-     * }
      * </pre>
      *
      * @param obj class or instance
-     * @since 0.1.6e
      */
     @SuppressWarnings("unchecked")
-    public void subscribe(Object obj) {
+    default void subscribe(Object obj) {
         if (obj == null) {
             return;
         }
@@ -133,13 +89,12 @@ public abstract class EventBus {
             objClass = obj.getClass();
         }
         final Object finalObj = obj;
-        List<Method> methods = getAnnotatedMethods(objClass);
-        for (final Method method : methods) {
+        for (Method method : objClass.getDeclaredMethods()) {
             Subscribe subscribe = method.getAnnotation(Subscribe.class);
-            if (subscribe != null) {
+            if (subscribe != null && !method.isBridge()) {
                 Class[] argsClass = method.getParameterTypes();
-                final Class[] needEvent = new Class[argsClass.length];
-                Class<? extends Event>[] events = subscribe.value();
+                final Class<E>[] needEvent = new Class[argsClass.length];
+                Class<E>[] events = (Class<E>[]) subscribe.value();
 
                 for (int i = 0; i < argsClass.length; i++) {
                     if (Event.class.isAssignableFrom(argsClass[i])) {
@@ -152,44 +107,33 @@ public abstract class EventBus {
                 }
 
                 method.setAccessible(true);
-                for (final Class<? extends Event> event : events) {
+                for (final Class<E> event : events) {
                     if (event == null) continue;
-                    Listener listener = new Listener() {
-                        @Override
-                        public void onReceive(Event ev) {
-                            Object[] args = new Object[needEvent.length];
-                            try {
-                                for (int i = 0; i < needEvent.length; i++) {
-                                    if (needEvent[i] != null && needEvent[i].isAssignableFrom(event)) {
-                                        args[i] = ev;
-                                    }
+                    Listener<E> listener = ev -> {
+                        Object[] args = new Object[needEvent.length];
+                        try {
+                            for (int i = 0; i < needEvent.length; i++) {
+                                if (needEvent[i] != null && needEvent[i].isAssignableFrom(event)) {
+                                    args[i] = ev;
                                 }
-                                method.invoke(finalObj, args);
-                            } catch (IllegalAccessException e) {
-                                throw new AmebaException("handle event error, " + method.getName()
-                                        + " method must be not have arguments or extends from Event argument", e);
-                            } catch (Exception e) {
-                                throw new AmebaException("handle " + method.getName() + " event error. ", e);
                             }
+                            method.invoke(finalObj, args);
+                        } catch (IllegalAccessException e) {
+                            throw new AmebaException("handle event error, " + method.getName()
+                                    + " method must be not have arguments or extends from Event argument", e);
+                        } catch (Exception e) {
+                            throw new AmebaException("handle " + method.getName() + " event error. ", e);
                         }
                     };
-                    subscribe(event, listener, subscribe);
+                    subscribe(event, subscribe.async() ? new AsyncListener<E>() {
+                        @Override
+                        public void onReceive(E event) throws InterruptedException, SuspendExecution {
+                            listener.onReceive(event);
+                        }
+                    } : listener);
                 }
             }
         }
-    }
-
-    /**
-     * <p>subscribe.</p>
-     *
-     * @param event     a {@link java.lang.Class} object.
-     * @param listener  a {@link ameba.event.Listener} object.
-     * @param subscribe a {@link ameba.event.Subscribe} object.
-     * @since 0.1.6e
-     * @param <E> a E object.
-     */
-    protected <E extends Event> void subscribe(Class<E> event, final Listener<E> listener, Subscribe subscribe) {
-        subscribe(event, listener);
     }
 
     /**
@@ -197,97 +141,57 @@ public abstract class EventBus {
      *
      * @param event    a {@link java.lang.Class} object.
      * @param listener a {@link ameba.event.Listener} object.
-     * @param <E> a E object.
      */
-    public <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener) {
-        subscribersByTypeLock.writeLock().lock();
-        try {
-            listeners.remove(event, listener);
-        } finally {
-            subscribersByTypeLock.writeLock().unlock();
-        }
-    }
+    void unsubscribe(Class<E> event, final Listener<E> listener);
 
     /**
      * <p>unsubscribe.</p>
      *
      * @param event a {@link java.lang.Class} object.
-     * @since 0.1.6e
-     * @param <E> a E object.
      */
-    public <E extends Event> void unsubscribe(Class<E> event) {
-        subscribersByTypeLock.writeLock().lock();
-        try {
-            listeners.removeAll(event);
-        } finally {
-            subscribersByTypeLock.writeLock().unlock();
-        }
-    }
+    void unsubscribe(Class<E> event);
 
     /**
      * <p>publish.</p>
      *
      * @param event a {@link ameba.event.Event} object.
      */
-    @SuppressWarnings("unchecked")
-    public void publish(Event event) {
-        subscribersByTypeLock.readLock().lock();
-        Set<Listener> listenerSet = Sets.newCopyOnWriteArraySet(listeners.get(event.getClass()));
-        subscribersByTypeLock.readLock().unlock();
-        for (Listener listener : listenerSet) {
-            try {
-                listener.onReceive(event);
-            } catch (Exception e) {
-                logger.error(event.getClass().getName() + " event handler has a error", e);
-            }
-        }
-    }
+    void publish(E event);
 
-    public static class Mixed extends EventBus {
+    class Mixed<E extends Event> extends BasicEventBus<E> {
 
-        private final AsyncEventBus<Event, ActorRef> asyncEventBus;
+        private final AsyncEventBus<E> asyncEventBus;
 
         Mixed() {
             asyncEventBus = AsyncEventBus.create();
         }
 
-        public <E extends Event> void subscribe(Class<E> event, final Listener<E> listener) {
+        @Override
+        public void subscribe(Class<E> event, final Listener<E> listener) {
             if (listener instanceof AsyncListener) {
-                asyncEventBus.subscribe(event, (AsyncListener) listener);
+                asyncEventBus.subscribe(event, (AsyncListener<E>) listener);
             } else {
                 super.subscribe(event, listener);
             }
         }
 
-        @SuppressWarnings("unchecked")
-        protected <E extends Event> void subscribe(Class<E> event, final Listener<E> listener, Subscribe subscribe) {
-            if (subscribe.async()) {
-                asyncEventBus.subscribe(event, new AsyncListener<E>() {
-                    @Override
-                    public void onReceive(E event) {
-                        listener.onReceive(event);
-                    }
-                });
-            } else {
-                super.subscribe(event, listener);
-            }
-        }
-
-        public <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener) {
+        @Override
+        public void unsubscribe(Class<E> event, final Listener<E> listener) {
             if (listener instanceof AsyncListener) {
-                asyncEventBus.unsubscribe(event, (AsyncListener) listener);
+                asyncEventBus.unsubscribe(event, listener);
             } else {
                 super.unsubscribe(event, listener);
             }
         }
 
         @Override
-        public <E extends Event> void unsubscribe(Class<E> event) {
+        public void unsubscribe(Class<E> event) {
             super.unsubscribe(event);
             asyncEventBus.unsubscribe(event);
         }
 
-        public void publish(Event event) {
+        @Override
+        public void publish(E event) {
             if (event == null) return;
             asyncEventBus.publish(event);
             super.publish(event);

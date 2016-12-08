@@ -12,7 +12,7 @@ import com.avaje.ebean.Update;
  *
  * @author icode
  * @since 0.1.6e
- * @version $Id: $Id
+ *
  */
 public class EbeanUpdater<M extends Model> extends Updater<M> {
 

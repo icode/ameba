@@ -23,7 +23,7 @@ import java.util.List;
  * <p>DatabaseMigrationResolver class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class DatabaseMigrationResolver implements MigrationResolver {
 

@@ -1,7 +1,6 @@
 package ameba.validation;
 
 import ameba.message.error.ErrorMessage;
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import org.glassfish.jersey.server.validation.ValidationError;
@@ -19,7 +18,7 @@ import java.util.List;
  * <p>ValidationHelper class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public final class ValidationHelper {
 
@@ -39,18 +38,12 @@ public final class ValidationHelper {
     public static List<ErrorMessage.Error> constraintViolationToValidationErrors(
             final ConstraintViolationException violation) {
         return Lists.transform(Lists.newArrayList(violation.getConstraintViolations()),
-                new Function<ConstraintViolation<?>, ErrorMessage.Error>() {
-
-                    @Override
-                    public ErrorMessage.Error apply(final ConstraintViolation<?> violation) {
-                        return new ErrorMessage.Error(
-                                Hashing.murmur3_32().hashUnencodedChars(violation.getMessageTemplate()).toString(),
-                                violation.getMessage(),
-                                null,
-                                getViolationPath(violation)
-                        );
-                    }
-                });
+                violation1 -> new ErrorMessage.Error(
+                        Hashing.murmur3_32().hashUnencodedChars(violation1.getMessageTemplate()).toString(),
+                        violation1.getMessage(),
+                        null,
+                        getViolationPath(violation1)
+                ));
     }
 
     /**

@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  * @author Pavel Bucek (pavel.bucek at oracle.com)
  * @author Martin Matula
  * @author icode
- * @version $Id: $Id
+ *
  */
 @PreMatching
 @Priority(Integer.MIN_VALUE)
@@ -47,13 +47,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
     private static final String LOGGER_BUFFER_PROPERTY = LoggingFilter.class.getName() + ".loggerBuffer";
 
     private static final Comparator<Map.Entry<String, List<String>>> COMPARATOR =
-            new Comparator<Map.Entry<String, List<String>>>() {
-
-                @Override
-                public int compare(final Map.Entry<String, List<String>> o1, final Map.Entry<String, List<String>> o2) {
-                    return o1.getKey().compareToIgnoreCase(o2.getKey());
-                }
-            };
+            (o1, o2) -> o1.getKey().compareToIgnoreCase(o2.getKey());
 
     private static final int DEFAULT_MAX_ENTITY_SIZE = 8 * 1024;
 

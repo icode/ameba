@@ -26,7 +26,6 @@ import java.util.Map;
  * <p>MigrationFeature class.</p>
  *
  * @author icode
- * @version $Id: $Id
  */
 public class MigrationFeature implements Feature {
 
@@ -76,17 +75,18 @@ public class MigrationFeature implements Feature {
         generateMigrationId();
         Map<String, Object> properties = context.getConfiguration().getProperties();
         List<Migration> migrations = Lists.newArrayList();
-        for (String dbName : DataSourceManager.getDataSourceNames()) {
-            if (!"false".equals(properties.get("db." + dbName + ".migration.enabled"))) {
-                Flyway flyway = new Flyway();
-                flyway.setDataSource(DataSourceManager.getDataSource(dbName));
-                flyway.setBaselineOnMigrate(true);
-                bindFlyway(dbName, flyway);
-                Migration migration = locator.getService(Migration.class, dbName);
-                migrations.add(migration);
-                flyway.setResolvers(new DatabaseMigrationResolver(migration));
-            }
-        }
+        DataSourceManager.getDataSourceNames()
+                .stream()
+                .filter(dbName -> !"false".equals(properties.get("db." + dbName + ".migration.enabled")))
+                .forEach(dbName -> {
+                    Flyway flyway = new Flyway();
+                    flyway.setDataSource(DataSourceManager.getDataSource(dbName));
+                    flyway.setBaselineOnMigrate(true);
+                    bindFlyway(dbName, flyway);
+                    Migration migration = locator.getService(Migration.class, dbName);
+                    migrations.add(migration);
+                    flyway.setResolvers(new DatabaseMigrationResolver(migration));
+                });
 
         if (!migrations.isEmpty()) {
             context.register(MigrationFilter.class);

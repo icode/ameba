@@ -20,7 +20,7 @@ import java.nio.file.Path;
  * <p>PathMessageBodyWriter class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Produces({"application/octet-stream", "*/*"})
 @Singleton

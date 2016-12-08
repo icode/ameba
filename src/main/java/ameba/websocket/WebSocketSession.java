@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
  * <p>WebSocketSession interface.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public interface WebSocketSession extends Closeable {
 

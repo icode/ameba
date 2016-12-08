@@ -9,7 +9,7 @@ import java.util.*;
  * <p>PropertiesResourceBundle class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class PropertiesResourceBundle extends ResourceBundle {
     private Map<String, Object> lookup;

@@ -23,7 +23,7 @@ import java.nio.ByteBuffer;
  *
  * @author Rossen Stoyanchev
  * @author icode
- * @version $Id: $Id
+ *
  */
 public final class BinaryMessage extends AbstractWebSocketMessage<ByteBuffer> {
 

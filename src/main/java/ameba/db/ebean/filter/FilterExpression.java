@@ -9,7 +9,7 @@ import com.avaje.ebeaninternal.server.expression.FilterExpressionList;
  * <p>FilterExpression class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class FilterExpression<T> extends FilterExpressionList<T> {
     private String path;

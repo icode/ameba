@@ -11,7 +11,7 @@ import java.util.List;
  * <p>Migration interface.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 @Contract
 @ConstrainedTo(RuntimeType.SERVER)

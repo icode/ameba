@@ -7,7 +7,7 @@ import ameba.core.Application;
  * <p>BeginReloadEvent class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class BeginReloadEvent extends ContainerEvent {
 

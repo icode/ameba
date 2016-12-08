@@ -10,7 +10,7 @@ import java.io.Serializable;
  * <p>Abstract Model class.</p>
  *
  * @author sulijuan
- * @version $Id: $Id
+ *
  */
 @MappedSuperclass
 public abstract class Model implements Serializable {

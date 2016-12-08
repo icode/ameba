@@ -14,7 +14,7 @@ import javax.ws.rs.ext.ExceptionMapper;
  * <p>RequestEvent class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class RequestEvent implements Event {
     private org.glassfish.jersey.server.monitoring.RequestEvent event;

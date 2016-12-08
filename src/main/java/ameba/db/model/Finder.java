@@ -8,12 +8,14 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * <p>Abstract Finder class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public abstract class Finder<ID, T> {
 
@@ -270,16 +272,16 @@ public abstract class Finder<ID, T> {
     /**
      * <p>findEach.</p>
      *
-     * @param consumer a {@link com.avaje.ebean.QueryEachConsumer} object.
+     * @param consumer a Consumerobject.
      */
-    public abstract void findEach(QueryEachConsumer<T> consumer);
+    public abstract void findEach(Consumer<T> consumer);
 
     /**
      * <p>findEachWhile.</p>
      *
-     * @param consumer a {@link com.avaje.ebean.QueryEachWhileConsumer} object.
+     * @param predicate a Predicate object.
      */
-    public abstract void findEachWhile(QueryEachWhileConsumer<T> consumer);
+    public abstract void findEachWhile(Predicate<T> predicate);
 
     /**
      * <p>findList.</p>

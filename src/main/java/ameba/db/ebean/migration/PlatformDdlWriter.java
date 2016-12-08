@@ -15,7 +15,7 @@ import java.util.List;
  * <p>PlatformDdlWriter class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class PlatformDdlWriter {
 

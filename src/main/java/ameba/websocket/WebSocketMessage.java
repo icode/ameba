@@ -4,7 +4,7 @@ package ameba.websocket;
  * <p>WebSocketMessage interface.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public interface WebSocketMessage<T> {
 

@@ -12,7 +12,7 @@ import java.nio.file.Path;
  * <p>Download class.</p>
  *
  * @author icode
- * @version $Id: $Id
+ *
  */
 public class Download implements Serializable {
     private Object entity;
