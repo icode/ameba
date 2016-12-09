@@ -15,6 +15,7 @@ public interface EventBus<E extends Event> {
     /**
      * <p>createMix.</p>
      *
+     * @param <EVENT> event
      * @return a {@link ameba.event.EventBus} object.
      */
     static <EVENT extends Event> EventBus<EVENT> createMix() {
