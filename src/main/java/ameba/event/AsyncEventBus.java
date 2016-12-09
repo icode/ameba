@@ -8,6 +8,7 @@ import co.paralleluniverse.fibers.RuntimeSuspendExecution;
 import co.paralleluniverse.fibers.SuspendExecution;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,15 +68,16 @@ public class AsyncEventBus<E extends Event> implements EventBus<E> {
 
     @Override
     public void unsubscribe(Class<E> event) {
-        handlers.get(event).forEach(handler -> {
-            try {
-                eventSource.removeHandler(handler);
-            } catch (SuspendExecution e) {
-                throw RuntimeSuspendExecution.of(e);
-            } catch (InterruptedException e) {
-                logger.error("unsubscribe event has error", e);
-            }
-        });
+        Sets.newCopyOnWriteArraySet(handlers.get(event))
+                .forEach(handler -> {
+                    try {
+                        eventSource.removeHandler(handler);
+                    } catch (SuspendExecution e) {
+                        throw RuntimeSuspendExecution.of(e);
+                    } catch (InterruptedException e) {
+                        logger.error("unsubscribe event has error", e);
+                    }
+                });
         handlers.removeAll(event);
     }
 

@@ -2,6 +2,7 @@ package ameba.event;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,13 +27,13 @@ public class BasicEventBus<E extends Event> implements EventBus<E> {
 
     @SuppressWarnings("unchecked")
     public void publish(E event) {
-        listeners.get((Class<E>) event.getClass())
-                .forEach(listener -> {
+        Sets.newCopyOnWriteArraySet(listeners.get((Class<E>) event.getClass()))
+                .forEach((listener -> {
                     try {
                         listener.onReceive(event);
                     } catch (Exception e) {
                         logger.error(event.getClass().getName() + " event handler has a error", e);
                     }
-                });
+                }));
     }
 }
