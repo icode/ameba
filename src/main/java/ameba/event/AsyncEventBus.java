@@ -24,7 +24,7 @@ public class AsyncEventBus<E extends Event> implements EventBus<E> {
     }
 
     private final SetMultimap<Class<E>, Handler> handlers = LinkedHashMultimap.create();
-    private final EventSource<E> eventSource = new EventSourceActor<E>().spawn();
+    private final EventSource<E> eventSource = new EventSourceActor<E>(AsyncEventBus.class.getName()).spawn();
 
     @SuppressWarnings("unchecked")
     public AsyncEventBus() {
