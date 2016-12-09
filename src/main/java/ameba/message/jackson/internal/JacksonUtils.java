@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 import org.glassfish.jersey.internal.util.ReflectionHelper;
 import org.glassfish.jersey.message.filtering.spi.ObjectProvider;
@@ -28,7 +27,6 @@ import java.lang.reflect.Type;
  *
  * @author icode
  * @since 0.1.6e
- *
  */
 public class JacksonUtils {
 
@@ -96,8 +94,7 @@ public class JacksonUtils {
      * @param mode   App mode
      */
     public static void configureMapper(ObjectMapper mapper, Application.Mode mode) {
-        mapper.registerModule(new JodaModule())
-                .registerModule(new GuavaModule());
+        mapper.registerModule(new GuavaModule());
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
                 .enable(SerializationFeature.WRITE_ENUMS_USING_INDEX)
                 .disable(

@@ -336,17 +336,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-joda</artifactId>
-            <version>${jackson.provider.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>joda-time</artifactId>
-                    <groupId>joda-time</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
 
         <dependency>
             <groupId>com.thoughtworks.paranamer</groupId>
