@@ -1,6 +1,7 @@
 package ameba.event;
 
 import co.paralleluniverse.fibers.Fiber;
+import co.paralleluniverse.fibers.RuntimeSuspendExecution;
 import co.paralleluniverse.fibers.SuspendExecution;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -26,8 +27,14 @@ public class EventTest {
             final int finalI = i;
             eventBus.subscribe(TestEvent.class, new AsyncListener<TestEvent>() {
                 @Override
-                public void onReceive(TestEvent event) throws SuspendExecution, InterruptedException {
-                    Fiber.sleep(100);
+                public void onReceive(TestEvent event) {
+                    try {
+                        Fiber.sleep(100);
+                    } catch (SuspendExecution e) {
+                        throw RuntimeSuspendExecution.of(e);
+                    } catch (InterruptedException e) {
+                        logger.error("error", e);
+                    }
                     logger.info("async receive message {} : {}", finalI, event.message);
                 }
             });

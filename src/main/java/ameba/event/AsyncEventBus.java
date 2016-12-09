@@ -4,6 +4,7 @@ import ameba.container.event.ShutdownEvent;
 import co.paralleluniverse.actors.behaviors.EventHandler;
 import co.paralleluniverse.actors.behaviors.EventSource;
 import co.paralleluniverse.actors.behaviors.EventSourceActor;
+import co.paralleluniverse.fibers.RuntimeSuspendExecution;
 import co.paralleluniverse.fibers.SuspendExecution;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
@@ -23,7 +24,7 @@ public class AsyncEventBus<E extends Event> implements EventBus<E> {
     }
 
     private final SetMultimap<Class<E>, Handler> handlers = LinkedHashMultimap.create();
-    private EventSource<E> eventSource = new EventSourceActor<E>().spawn();
+    private final EventSource<E> eventSource = new EventSourceActor<E>().spawn();
 
     @SuppressWarnings("unchecked")
     public AsyncEventBus() {
@@ -40,7 +41,9 @@ public class AsyncEventBus<E extends Event> implements EventBus<E> {
             Handler handler = handler(event, listener);
             if (handlers.put(event, handler))
                 eventSource.addHandler(handler);
-        } catch (SuspendExecution | InterruptedException e) {
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        } catch (InterruptedException e) {
             logger.error("subscribe event has error", e);
         }
     }
@@ -55,7 +58,9 @@ public class AsyncEventBus<E extends Event> implements EventBus<E> {
             Handler handler = handler(event, listener);
             handlers.remove(event, handler);
             eventSource.removeHandler(handler);
-        } catch (SuspendExecution | InterruptedException e) {
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        } catch (InterruptedException e) {
             logger.error("unsubscribe event has error", e);
         }
     }
@@ -65,7 +70,9 @@ public class AsyncEventBus<E extends Event> implements EventBus<E> {
         handlers.get(event).forEach(handler -> {
             try {
                 eventSource.removeHandler(handler);
-            } catch (SuspendExecution | InterruptedException e) {
+            } catch (SuspendExecution e) {
+                throw RuntimeSuspendExecution.of(e);
+            } catch (InterruptedException e) {
                 logger.error("unsubscribe event has error", e);
             }
         });
@@ -77,7 +84,7 @@ public class AsyncEventBus<E extends Event> implements EventBus<E> {
         try {
             eventSource.notify(event);
         } catch (SuspendExecution e) {
-            logger.error("publish event has error", e);
+            throw RuntimeSuspendExecution.of(e);
         }
     }
 

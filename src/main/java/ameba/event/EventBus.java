@@ -1,7 +1,6 @@
 package ameba.event;
 
 import ameba.exception.AmebaException;
-import co.paralleluniverse.fibers.SuspendExecution;
 
 import java.lang.reflect.Method;
 
@@ -127,7 +126,7 @@ public interface EventBus<E extends Event> {
                     };
                     subscribe(event, subscribe.async() ? new AsyncListener<E>() {
                         @Override
-                        public void onReceive(E event) throws InterruptedException, SuspendExecution {
+                        public void onReceive(E event) {
                             listener.onReceive(event);
                         }
                     } : listener);

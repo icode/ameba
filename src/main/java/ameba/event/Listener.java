@@ -1,6 +1,5 @@
 package ameba.event;
 
-import co.paralleluniverse.fibers.SuspendExecution;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 
 /**
@@ -15,5 +14,5 @@ public interface Listener<E extends Event> {
      *
      * @param event a E object.
      */
-    void onReceive(E event) throws SuspendExecution, InterruptedException;
+    void onReceive(E event);
 }
