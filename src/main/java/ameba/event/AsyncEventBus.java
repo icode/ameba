@@ -6,42 +6,42 @@ import co.paralleluniverse.actors.behaviors.EventSource;
 import co.paralleluniverse.actors.behaviors.EventSourceActor;
 import co.paralleluniverse.fibers.RuntimeSuspendExecution;
 import co.paralleluniverse.fibers.SuspendExecution;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 /**
  * <p>Abstract AsyncEventBus class.</p>
  *
  * @author icode
  */
-public class AsyncEventBus<E extends Event> implements EventBus<E> {
+public class AsyncEventBus<Event extends ameba.event.Event> implements EventBus<Event> {
     private static final Logger logger = LoggerFactory.getLogger(AsyncEventBus.class);
 
     static {
         System.setProperty("co.paralleluniverse.fibers.disableAgentWarning", "true");
     }
 
-    private final SetMultimap<Class<E>, Handler> handlers = LinkedHashMultimap.create();
-    private final EventSource<E> eventSource = new EventSourceActor<E>(AsyncEventBus.class.getName()).spawn();
+    private final Map<Class<? extends Event>, EventSource<? extends Event>> eventSourceMap = Maps.newConcurrentMap();
 
     @SuppressWarnings("unchecked")
-    public AsyncEventBus() {
-        subscribe((Class<E>) ShutdownEvent.class, event -> shutdown());
+    protected AsyncEventBus() {
+        subscribe((Class<Event>) ShutdownEvent.class, event -> shutdown());
     }
 
-    public static <EV extends Event> AsyncEventBus<EV> create() {
+    public static <Event extends ameba.event.Event> AsyncEventBus<Event> create() {
         return new AsyncEventBus<>();
     }
 
     @Override
-    public void subscribe(Class<E> event, Listener<E> listener) {
+    @SuppressWarnings("unchecked")
+    public <E extends Event> void subscribe(Class<E> event, Listener<E> listener) {
         try {
-            Handler handler = handler(event, listener);
-            if (handlers.put(event, handler))
-                eventSource.addHandler(handler);
+            eventSourceMap.computeIfAbsent(
+                    event, k -> new EventSourceActor<E>(AsyncEventBus.class.getName()).spawn()
+            ).addHandler(handler(event, listener));
         } catch (SuspendExecution e) {
             throw RuntimeSuspendExecution.of(e);
         } catch (InterruptedException e) {
@@ -49,44 +49,46 @@ public class AsyncEventBus<E extends Event> implements EventBus<E> {
         }
     }
 
-    public void subscribe(Class<E> event, AsyncListener<E> listener) {
+    public <E extends Event> void subscribe(Class<E> event, AsyncListener<E> listener) {
         subscribe(event, (Listener<E>) listener);
     }
 
     @Override
-    public void unsubscribe(Class<E> event, Listener<E> listener) {
-        try {
-            Handler handler = handler(event, listener);
-            handlers.remove(event, handler);
-            eventSource.removeHandler(handler);
-        } catch (SuspendExecution e) {
-            throw RuntimeSuspendExecution.of(e);
-        } catch (InterruptedException e) {
-            logger.error("unsubscribe event has error", e);
+    @SuppressWarnings("unchecked")
+    public <E extends Event> void unsubscribe(Class<E> event, Listener<E> listener) {
+        EventSource<? extends Event> eventSource = eventSourceMap.get(event);
+        if (eventSource != null) {
+            try {
+                eventSource.removeHandler(handler(event, listener));
+            } catch (SuspendExecution e) {
+                throw RuntimeSuspendExecution.of(e);
+            } catch (InterruptedException e) {
+                logger.error("unsubscribe event has error", e);
+            }
         }
     }
 
     @Override
-    public void unsubscribe(Class<E> event) {
-        Sets.newCopyOnWriteArraySet(handlers.get(event))
-                .forEach(handler -> {
-                    try {
-                        eventSource.removeHandler(handler);
-                    } catch (SuspendExecution e) {
-                        throw RuntimeSuspendExecution.of(e);
-                    } catch (InterruptedException e) {
-                        logger.error("unsubscribe event has error", e);
-                    }
-                });
-        handlers.removeAll(event);
+    public <E extends Event> void unsubscribe(Class<E> event) {
+        EventSource eventSource = eventSourceMap.remove(event);
+        if (eventSource != null) {
+            eventSource.shutdown();
+        }
     }
 
     @Override
-    public void publish(E event) {
-        try {
-            eventSource.notify(event);
-        } catch (SuspendExecution e) {
-            throw RuntimeSuspendExecution.of(e);
+    @SuppressWarnings("unchecked")
+    public <E extends Event> void publish(E event) {
+        if (event != null) {
+            EventSource<Event> eventSource = (EventSource<Event>) eventSourceMap.get(event.getClass());
+
+            if (eventSource != null) {
+                try {
+                    eventSource.notify(event);
+                } catch (SuspendExecution e) {
+                    throw RuntimeSuspendExecution.of(e);
+                }
+            }
         }
     }
 
@@ -94,14 +96,14 @@ public class AsyncEventBus<E extends Event> implements EventBus<E> {
      * shutdown event bus
      */
     public void shutdown() {
-        eventSource.shutdown();
+        eventSourceMap.values().forEach(EventSource::shutdown);
     }
 
-    public Handler handler(Class<E> event, Listener<E> listener) {
-        return new Handler(event, listener);
+    private <E extends Event> EventHandler handler(Class<E> event, Listener<E> listener) {
+        return new Handler<>(event, listener);
     }
 
-    private class Handler implements EventHandler<E> {
+    private class Handler<E extends ameba.event.Event> implements EventHandler<E> {
 
         private Class<E> event;
         private Listener<E> listener;
@@ -112,9 +114,8 @@ public class AsyncEventBus<E extends Event> implements EventBus<E> {
         }
 
         @Override
-        public void handleEvent(E e) throws SuspendExecution, InterruptedException {
-            if (e != null && e.getClass() == event)
-                listener.onReceive(e);
+        public void handleEvent(E event) throws SuspendExecution, InterruptedException {
+            listener.onReceive(event);
         }
 
         @Override

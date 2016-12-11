@@ -23,11 +23,7 @@ public abstract class LoggerOwner {
      */
     protected Logger logger() {
         Class thisClass = this.getClass();
-        Logger logger = LOGGER_MAP.get(thisClass);
-        if (logger == null) {
-            logger = LoggerFactory.getLogger(thisClass);
-            LOGGER_MAP.put(thisClass, logger);
-        }
+        Logger logger = LOGGER_MAP.computeIfAbsent(thisClass, k -> LoggerFactory.getLogger(thisClass));
         return logger;
     }
 }

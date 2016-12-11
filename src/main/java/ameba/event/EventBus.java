@@ -9,16 +9,16 @@ import java.lang.reflect.Method;
  *
  * @author icode
  */
-public interface EventBus<E extends Event> {
+public interface EventBus<Event extends ameba.event.Event> {
 
 
     /**
      * <p>createMix.</p>
      *
-     * @param <EVENT> event
+     * @param <Event> event
      * @return a {@link ameba.event.EventBus} object.
      */
-    static <EVENT extends Event> EventBus<EVENT> createMix() {
+    static <Event extends ameba.event.Event> EventBus<Event> createMix() {
         return new Mixed<>();
     }
 
@@ -37,7 +37,7 @@ public interface EventBus<E extends Event> {
      * @param event    a {@link java.lang.Class} object.
      * @param listener a {@link ameba.event.Listener} object.
      */
-    void subscribe(Class<E> event, final Listener<E> listener);
+    <E extends Event> void subscribe(Class<E> event, Listener<E> listener);
 
     /**
      * subscribe event by {@link ameba.event.Subscribe} annotation
@@ -93,11 +93,11 @@ public interface EventBus<E extends Event> {
             Subscribe subscribe = method.getAnnotation(Subscribe.class);
             if (subscribe != null && !method.isBridge()) {
                 Class[] argsClass = method.getParameterTypes();
-                final Class<E>[] needEvent = new Class[argsClass.length];
-                Class<E>[] events = (Class<E>[]) subscribe.value();
+                final Class<Event>[] needEvent = new Class[argsClass.length];
+                Class<Event>[] events = (Class<Event>[]) subscribe.value();
 
                 for (int i = 0; i < argsClass.length; i++) {
-                    if (Event.class.isAssignableFrom(argsClass[i])) {
+                    if (ameba.event.Event.class.isAssignableFrom(argsClass[i])) {
                         needEvent[i] = argsClass[i];
                     }
                 }
@@ -107,9 +107,9 @@ public interface EventBus<E extends Event> {
                 }
 
                 method.setAccessible(true);
-                for (final Class<E> event : events) {
+                for (final Class<Event> event : events) {
                     if (event == null) continue;
-                    Listener<E> listener = ev -> {
+                    Listener<Event> listener = ev -> {
                         Object[] args = new Object[needEvent.length];
                         try {
                             for (int i = 0; i < needEvent.length; i++) {
@@ -125,9 +125,9 @@ public interface EventBus<E extends Event> {
                             throw new AmebaException("handle " + method.getName() + " event error. ", e);
                         }
                     };
-                    subscribe(event, subscribe.async() ? new AsyncListener<E>() {
+                    subscribe(event, subscribe.async() ? new AsyncListener<Event>() {
                         @Override
-                        public void onReceive(E event) {
+                        public void onReceive(Event event) {
                             listener.onReceive(event);
                         }
                     } : listener);
@@ -142,32 +142,32 @@ public interface EventBus<E extends Event> {
      * @param event    a {@link java.lang.Class} object.
      * @param listener a {@link ameba.event.Listener} object.
      */
-    void unsubscribe(Class<E> event, final Listener<E> listener);
+    <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener);
 
     /**
      * <p>unsubscribe.</p>
      *
      * @param event a {@link java.lang.Class} object.
      */
-    void unsubscribe(Class<E> event);
+    <E extends Event> void unsubscribe(Class<E> event);
 
     /**
      * <p>publish.</p>
      *
      * @param event a {@link ameba.event.Event} object.
      */
-    void publish(E event);
+    <E extends Event> void publish(E event);
 
-    class Mixed<E extends Event> extends BasicEventBus<E> {
+    class Mixed<Event extends ameba.event.Event> extends BasicEventBus<Event> {
 
-        private final AsyncEventBus<E> asyncEventBus;
+        private final AsyncEventBus<Event> asyncEventBus;
 
         Mixed() {
             asyncEventBus = AsyncEventBus.create();
         }
 
         @Override
-        public void subscribe(Class<E> event, final Listener<E> listener) {
+        public <E extends Event> void subscribe(Class<E> event, final Listener<E> listener) {
             if (listener instanceof AsyncListener) {
                 asyncEventBus.subscribe(event, (AsyncListener<E>) listener);
             } else {
@@ -176,7 +176,7 @@ public interface EventBus<E extends Event> {
         }
 
         @Override
-        public void unsubscribe(Class<E> event, final Listener<E> listener) {
+        public <E extends Event> void unsubscribe(Class<E> event, final Listener<E> listener) {
             if (listener instanceof AsyncListener) {
                 asyncEventBus.unsubscribe(event, listener);
             } else {
@@ -185,13 +185,13 @@ public interface EventBus<E extends Event> {
         }
 
         @Override
-        public void unsubscribe(Class<E> event) {
-            super.unsubscribe(event);
+        public <E extends Event> void unsubscribe(Class<E> event) {
             asyncEventBus.unsubscribe(event);
+            super.unsubscribe(event);
         }
 
         @Override
-        public void publish(E event) {
+        public <E extends Event> void publish(E event) {
             if (event == null) return;
             asyncEventBus.publish(event);
             super.publish(event);

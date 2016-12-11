@@ -16,6 +16,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author icode
  */
+@SuppressWarnings("ALL")
 public class Fibers {
     private Fibers() {
     }
@@ -218,6 +219,7 @@ public class Fibers {
      *
      * @param fibers to combine
      */
+    @SuppressWarnings("unchecked")
     public static <V> List<V> get(Fiber<V>... fibers) throws InterruptedException {
         return FiberUtil.get(fibers);
     }
@@ -242,6 +244,7 @@ public class Fibers {
      * @param unit   the time is in
      * @param fibers to combine
      */
+    @SuppressWarnings("unchecked")
     public static <V> List<V> get(long time, TimeUnit unit, Fiber<V>... fibers) throws InterruptedException, TimeoutException {
         return FiberUtil.get(time, unit, fibers);
     }

@@ -2,7 +2,6 @@ package ameba;
 
 import ameba.db.dsl.QueryDSL;
 import ameba.db.dsl.QueryExprMeta;
-import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
@@ -37,11 +36,6 @@ public class QueryExprMetaParserTest {
                 "  )l.w2.f.g.or";
         List<QueryExprMeta> queryExprMetaList = QueryDSL.parse(expr);
         logger.debug(
-                StringUtils.join(Collections2.transform(queryExprMetaList, new Function<QueryExprMeta, String>() {
-                    @Override
-                    public String apply(QueryExprMeta input) {
-                        return String.valueOf(input);
-                    }
-                }), ""));
+                StringUtils.join(Collections2.transform(queryExprMetaList, String::valueOf), ""));
     }
 }

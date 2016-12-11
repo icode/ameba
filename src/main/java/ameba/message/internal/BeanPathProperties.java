@@ -117,11 +117,7 @@ public class BeanPathProperties {
      * @param property a {@link java.lang.String} object.
      */
     public void addToPath(String path, String property) {
-        Props props = pathMap.get(path);
-        if (props == null) {
-            props = new Props(this, null, path);
-            pathMap.put(path, props);
-        }
+        Props props = pathMap.computeIfAbsent(path, k -> new Props(this, null, path));
         props.getProperties().add(property);
     }
 

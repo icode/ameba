@@ -12,7 +12,6 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.avaje.ebeaninternal.api.SpiQuery;
 import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.avaje.ebeaninternal.server.deploy.BeanProperty;
-import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +37,6 @@ import java.util.Set;
  * <p>Abstract ModelResourceStructure class.</p>
  *
  * @author icode
- *
  * @since 0.1.6e
  */
 public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends LoggerOwner {
@@ -196,13 +194,10 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         matchedInsert(model);
         setForInsertId(model);
 
-        executeTx(new TxRunnable() {
-            @Override
-            public void run(Transaction t) throws Exception {
-                preInsertModel(model);
-                insertModel(model);
-                postInsertModel(model);
-            }
+        executeTx(t -> {
+            preInsertModel(model);
+            insertModel(model);
+            postInsertModel(model);
         });
         MODEL_ID id = (MODEL_ID) this.server.getBeanId(model);
 
@@ -272,22 +267,16 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         EbeanUtils.forceUpdateAllProperties(server, model);
 
         final Response.ResponseBuilder builder = Response.noContent();
-        executeTx(new TxRunnable() {
-            @Override
-            public void run(Transaction t) throws Exception {
-                preReplaceModel(model);
-                replaceModel(model);
-                postReplaceModel(model);
-            }
-        }, new TxRunnable() {
-            @Override
-            public void run(Transaction t) throws Exception {
-                logger().debug("not found model record, insert a model record.");
-                preInsertModel(model);
-                insertModel(model);
-                postInsertModel(model);
-                builder.status(Response.Status.CREATED).location(buildLocationUri(mId, true));
-            }
+        executeTx(t -> {
+            preReplaceModel(model);
+            replaceModel(model);
+            postReplaceModel(model);
+        }, t -> {
+            logger().debug("not found model record, insert a model record.");
+            preInsertModel(model);
+            insertModel(model);
+            postInsertModel(model);
+            builder.status(Response.Status.CREATED).location(buildLocationUri(mId, true));
         });
         return builder.build();
     }
@@ -354,20 +343,14 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         descriptor.convertSetId(mId, (EntityBean) model);
         final Response.ResponseBuilder builder = Response.noContent()
                 .contentLocation(uriInfo.getAbsolutePath());
-        return executeTx(new TxCallable<Response>() {
-            @Override
-            public Response call(Transaction t) throws Exception {
-                prePatchModel(model);
-                patchModel(model);
-                postPatchModel(model);
-                return builder.build();
-            }
-        }, new TxCallable<Response>() {
-            @Override
-            public Response call(Transaction t) {
-                // id 无法对应数据。实体对象和补丁都正确，但无法处理请求，所以返回422
-                return builder.status(422).build();
-            }
+        return executeTx(t -> {
+            prePatchModel(model);
+            patchModel(model);
+            postPatchModel(model);
+            return builder.build();
+        }, t -> {
+            // id 无法对应数据。实体对象和补丁都正确，但无法处理请求，所以返回422
+            return builder.status(422).build();
         });
     }
 
@@ -439,48 +422,32 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
                                    @QueryParam("permanent") final boolean permanent) throws Exception {
         Set<String> idSet = ids.getMatrixParameters().keySet();
         final Response.ResponseBuilder builder = Response.noContent();
-        final TxRunnable failProcess = new TxRunnable() {
-            @Override
-            public void run(Transaction t) {
-                builder.status(Response.Status.NOT_FOUND);
-            }
-        };
+        final TxRunnable failProcess = t -> builder.status(Response.Status.NOT_FOUND);
         final MODEL_ID firstId = tryConvertId(ids.getPath());
         final Set<MODEL_ID> idCollection = Sets.newLinkedHashSet();
         idCollection.add(firstId);
 
         if (!idSet.isEmpty()) {
-            idCollection.addAll(Collections2.transform(idSet, new Function<String, MODEL_ID>() {
-                @Override
-                public MODEL_ID apply(String input) {
-                    return tryConvertId(input);
-                }
-            }));
+            idCollection.addAll(Collections2.transform(idSet, this::tryConvertId));
         }
         matchedDelete(firstId, idCollection, permanent);
         if (!idSet.isEmpty()) {
-            executeTx(new TxRunnable() {
-                @Override
-                public void run(Transaction t) throws Exception {
-                    preDeleteMultipleModel(idCollection, permanent);
-                    boolean p = deleteMultipleModel(idCollection, permanent);
-                    if (!p) {
-                        builder.status(Response.Status.ACCEPTED);
-                    }
-                    postDeleteMultipleModel(idCollection, p);
+            executeTx(t -> {
+                preDeleteMultipleModel(idCollection, permanent);
+                boolean p = deleteMultipleModel(idCollection, permanent);
+                if (!p) {
+                    builder.status(Response.Status.ACCEPTED);
                 }
+                postDeleteMultipleModel(idCollection, p);
             }, failProcess);
         } else {
-            executeTx(new TxRunnable() {
-                @Override
-                public void run(Transaction t) throws Exception {
-                    preDeleteModel(firstId, permanent);
-                    boolean p = deleteModel(firstId, permanent);
-                    if (!p) {
-                        builder.status(Response.Status.ACCEPTED);
-                    }
-                    postDeleteModel(firstId, p);
+            executeTx(t -> {
+                preDeleteModel(firstId, permanent);
+                boolean p = deleteModel(firstId, permanent);
+                if (!p) {
+                    builder.status(Response.Status.ACCEPTED);
                 }
+                postDeleteModel(firstId, p);
             }, failProcess);
         }
         return builder.build();
@@ -602,43 +569,29 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         final Set<MODEL_ID> idCollection = Sets.newLinkedHashSet();
         idCollection.add(firstId);
         if (!idSet.isEmpty()) {
-            idCollection.addAll(Collections2.transform(idSet, new Function<String, MODEL_ID>() {
-                @Override
-                public MODEL_ID apply(String input) {
-                    return tryConvertId(input);
-                }
-            }));
+            idCollection.addAll(Collections2.transform(idSet, this::tryConvertId));
         }
         matchedFindByIds(firstId, idCollection, includeDeleted);
         Object model;
         if (includeDeleted) {
             query.setIncludeSoftDeletes();
         }
-        final TxRunnable configureQuery = new TxRunnable() {
-            @Override
-            public void run(Transaction t) throws Exception {
-                configDefaultQuery(query);
-                configFindByIdsQuery(query, includeDeleted);
-                applyUriQuery(query, false);
-            }
+        final TxRunnable configureQuery = t -> {
+            configDefaultQuery(query);
+            configFindByIdsQuery(query, includeDeleted);
+            applyUriQuery(query, false);
         };
         if (!idSet.isEmpty()) {
-            model = executeTx(new TxCallable() {
-                @Override
-                public Object call(Transaction t) throws Exception {
-                    configureQuery.run(t);
-                    List<MODEL> m = query.where().idIn(idCollection.toArray()).findList();
-                    return processFoundByIdsModelList(m, includeDeleted);
-                }
+            model = executeTx(t -> {
+                configureQuery.run(t);
+                List<MODEL> m = query.where().idIn(idCollection.toArray()).findList();
+                return processFoundByIdsModelList(m, includeDeleted);
             });
         } else {
-            model = executeTx(new TxCallable<Object>() {
-                @Override
-                public Object call(Transaction t) throws Exception {
-                    configureQuery.run(t);
-                    MODEL m = query.setId(firstId).findUnique();
-                    return processFoundByIdModel(m, includeDeleted);
-                }
+            model = executeTx(t -> {
+                configureQuery.run(t);
+                MODEL m = query.setId(firstId).findUnique();
+                return processFoundByIdModel(m, includeDeleted);
             });
         }
 
@@ -727,15 +680,12 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
 
         final Ref<FutureRowCount> rowCount = Refs.emptyRef();
 
-        Object entity = executeTx(new TxCallable<Object>() {
-            @Override
-            public Object call(Transaction t) throws Exception {
-                configDefaultQuery(query);
-                configFindQuery(query, includeDeleted);
-                rowCount.set(applyUriQuery(query));
-                List<MODEL> list = query.findList();
-                return processFoundModelList(list, includeDeleted);
-            }
+        Object entity = executeTx(t -> {
+            configDefaultQuery(query);
+            configFindQuery(query, includeDeleted);
+            rowCount.set(applyUriQuery(query));
+            List<MODEL> list = query.findList();
+            return processFoundModelList(list, includeDeleted);
         });
 
         if (isEmptyEntity(entity)) {
@@ -822,17 +772,14 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         defaultFindOrderBy(query);
 
         final Ref<FutureRowCount> rowCount = Refs.emptyRef();
-        Object entity = executeTx(new TxCallable<Object>() {
-            @Override
-            public Object call(Transaction t) throws Exception {
-                configDefaultQuery(query);
-                configFetchHistoryQuery(query, mId, start, end);
-                applyUriQuery(query, false);
-                applyPageConfig(query);
-                List<Version<MODEL>> list = query.findVersionsBetween(start, end);
-                rowCount.set(fetchRowCount(query));
-                return processFetchedHistoryModelList(list, mId, start, end);
-            }
+        Object entity = executeTx(t -> {
+            configDefaultQuery(query);
+            configFetchHistoryQuery(query, mId, start, end);
+            applyUriQuery(query, false);
+            applyPageConfig(query);
+            List<Version<MODEL>> list = query.findVersionsBetween(start, end);
+            rowCount.set(fetchRowCount(query));
+            return processFetchedHistoryModelList(list, mId, start, end);
         });
 
         if (isEmptyEntity(entity)) {
@@ -905,17 +852,14 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         defaultFindOrderBy(query);
 
         final Ref<FutureRowCount> rowCount = Refs.emptyRef();
-        Object entity = executeTx(new TxCallable<Object>() {
-            @Override
-            public Object call(Transaction t) throws Exception {
-                configDefaultQuery(query);
-                configFetchHistoryQuery(query, mId);
-                applyUriQuery(query, false);
-                applyPageConfig(query);
-                List<Version<MODEL>> list = query.findVersions();
-                rowCount.set(fetchRowCount(query));
-                return processFetchedHistoryModelList(list, mId);
-            }
+        Object entity = executeTx(t -> {
+            configDefaultQuery(query);
+            configFetchHistoryQuery(query, mId);
+            applyUriQuery(query, false);
+            applyPageConfig(query);
+            List<Version<MODEL>> list = query.findVersions();
+            rowCount.set(fetchRowCount(query));
+            return processFetchedHistoryModelList(list, mId);
         });
 
         if (isEmptyEntity(entity)) {
@@ -977,15 +921,12 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
 
         defaultFindOrderBy(query);
 
-        Object entity = executeTx(new TxCallable<Object>() {
-            @Override
-            public Object call(Transaction t) throws Exception {
-                configDefaultQuery(query);
-                configFetchHistoryAsOfQuery(query, mId, asOf);
-                applyUriQuery(query, false);
-                MODEL model = query.asOf(asOf).setId(mId).findUnique();
-                return processFetchedHistoryAsOfModel(mId, model, asOf);
-            }
+        Object entity = executeTx(t -> {
+            configDefaultQuery(query);
+            configFetchHistoryAsOfQuery(query, mId, asOf);
+            applyUriQuery(query, false);
+            MODEL model = query.asOf(asOf).setId(mId).findUnique();
+            return processFetchedHistoryAsOfModel(mId, model, asOf);
         });
 
         if (isEmptyEntity(entity)) {
@@ -1167,26 +1108,20 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     protected void executeTx(final TxRunnable r, final TxRunnable errorHandler) throws Exception {
         Transaction transaction = beginTransaction();
         configureTransDefault(transaction);
-        processTransactionError(transaction, new TxCallable() {
-            @Override
-            public Object call(Transaction t) throws Exception {
-                try {
-                    r.run(t);
-                    t.commit();
-                } catch (Throwable e) {
-                    t.rollback(e);
-                    throw e;
-                } finally {
-                    t.end();
-                }
-                return null;
+        processTransactionError(transaction, t -> {
+            try {
+                r.run(t);
+                t.commit();
+            } catch (Throwable e) {
+                t.rollback(e);
+                throw e;
+            } finally {
+                t.end();
             }
-        }, errorHandler != null ? new TxCallable() {
-            @Override
-            public Object call(Transaction t) throws Exception {
-                errorHandler.run(t);
-                return null;
-            }
+            return null;
+        }, errorHandler != null ? (TxCallable) t -> {
+            errorHandler.run(t);
+            return null;
         } : null);
     }
 
@@ -1235,21 +1170,18 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     protected <O> O executeTx(final TxCallable<O> c, final TxCallable<O> errorHandler) throws Exception {
         Transaction transaction = beginTransaction();
         configureTransDefault(transaction);
-        return processTransactionError(transaction, new TxCallable<O>() {
-            @Override
-            public O call(Transaction t) throws Exception {
-                Object o = null;
-                try {
-                    o = c.call(t);
-                    t.commit();
-                } catch (Throwable e) {
-                    t.rollback(e);
-                    throw e;
-                } finally {
-                    t.end();
-                }
-                return (O) o;
+        return processTransactionError(transaction, t -> {
+            Object o = null;
+            try {
+                o = c.call(t);
+                t.commit();
+            } catch (Throwable e) {
+                t.rollback(e);
+                throw e;
+            } finally {
+                t.end();
             }
+            return (O) o;
         }, errorHandler);
     }
 

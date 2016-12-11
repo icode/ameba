@@ -168,22 +168,19 @@ class TemplateModelProcessor implements ModelProcessor {
             }
 
             // Handler instances.
-            Errors.process(new Producer<Void>() {
-                @Override
-                public Void call() {
-                    for (final Object handlerInstance : resource.getHandlerInstances()) {
-                        final Class<?> handlerInstanceClass = handlerInstance.getClass();
+            Errors.process((Producer<Void>) () -> {
+                for (final Object handlerInstance : resource.getHandlerInstances()) {
+                    final Class<?> handlerInstanceClass = handlerInstance.getClass();
 
-                        if (!resource.getHandlerClasses().contains(handlerInstanceClass)) {
-                            createEnhancingMethods(handlerInstanceClass, handlerInstance, newMethods);
-                        } else {
-                            Errors.warning(resource,
-                                    LocalizationMessages.TEMPLATE_HANDLER_ALREADY_ENHANCED(handlerInstanceClass));
-                        }
+                    if (!resource.getHandlerClasses().contains(handlerInstanceClass)) {
+                        createEnhancingMethods(handlerInstanceClass, handlerInstance, newMethods);
+                    } else {
+                        Errors.warning(resource,
+                                LocalizationMessages.TEMPLATE_HANDLER_ALREADY_ENHANCED(handlerInstanceClass));
                     }
-
-                    return null;
                 }
+
+                return null;
             });
         }
 

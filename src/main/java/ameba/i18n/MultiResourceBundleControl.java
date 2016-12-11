@@ -65,36 +65,34 @@ public class MultiResourceBundleControl extends ResourceBundle.Control {
                 Properties properties;
                 try {
                     properties = AccessController.doPrivileged(
-                            new PrivilegedExceptionAction<Properties>() {
-                                public Properties run() throws IOException {
-                                    Properties properties = null;
-                                    Enumeration<URL> urls = classLoader.getResources(resourceName);
-                                    if (urls != null && urls.hasMoreElements()) {
-                                        properties = new Properties();
-                                        while (urls.hasMoreElements()) {
-                                            URL url = urls.nextElement();
-                                            if (url.getPath().endsWith("/classes/" + resourceName)) continue;
-                                            URLConnection connection = url.openConnection();
-                                            if (connection != null) {
-                                                // Disable caches to get fresh data for
-                                                // reloading.
-                                                if (reloadFlag) {
-                                                    connection.setUseCaches(false);
-                                                }
-                                                InputStreamReader reader = null;
-                                                try {
-                                                    reader = new InputStreamReader(
-                                                            connection.getInputStream(),
-                                                            Charsets.UTF_8);
-                                                    properties.load(reader);
-                                                } finally {
-                                                    IOUtils.closeQuietly(reader);
-                                                }
+                            (PrivilegedExceptionAction<Properties>) () -> {
+                                Properties properties1 = null;
+                                Enumeration<URL> urls = classLoader.getResources(resourceName);
+                                if (urls != null && urls.hasMoreElements()) {
+                                    properties1 = new Properties();
+                                    while (urls.hasMoreElements()) {
+                                        URL url = urls.nextElement();
+                                        if (url.getPath().endsWith("/classes/" + resourceName)) continue;
+                                        URLConnection connection = url.openConnection();
+                                        if (connection != null) {
+                                            // Disable caches to get fresh data for
+                                            // reloading.
+                                            if (reloadFlag) {
+                                                connection.setUseCaches(false);
+                                            }
+                                            InputStreamReader reader = null;
+                                            try {
+                                                reader = new InputStreamReader(
+                                                        connection.getInputStream(),
+                                                        Charsets.UTF_8);
+                                                properties1.load(reader);
+                                            } finally {
+                                                IOUtils.closeQuietly(reader);
                                             }
                                         }
                                     }
-                                    return properties;
                                 }
+                                return properties1;
                             });
                 } catch (PrivilegedActionException e) {
                     throw (IOException) e.getException();

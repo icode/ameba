@@ -78,11 +78,7 @@ public class DataSourceManager extends Addon {
             //db.[DataSourceName].[ConfigKey]
             String[] keys = key.split("\\.");
             if (keys.length > 2 && "db".equals(keys[0])) {
-                Map<String, String> sourceConfig = map.get(keys[1]);
-                if (null == sourceConfig) {
-                    sourceConfig = Maps.newHashMap();
-                    map.put(keys[1], sourceConfig);
-                }
+                Map<String, String> sourceConfig = map.computeIfAbsent(keys[1], k -> Maps.newHashMap());
                 if (StringUtils.isNotBlank(keys[2])) {
                     sourceConfig.put(keys[2], String.valueOf(config.get(key)));
                 }

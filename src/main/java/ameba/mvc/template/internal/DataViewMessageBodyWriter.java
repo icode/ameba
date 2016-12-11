@@ -117,14 +117,11 @@ final class DataViewMessageBodyWriter implements MessageBodyWriter<Object> {
                 this::isSupportMediaType)
                 && ((p = TemplateHelper.getProduces(annotations)) == null
                 || -1 != ArrayUtils.indexOf(p,
-                new Predicate<String>() {
-                    @Override
-                    public boolean evaluate(String stringType) {
-                        if (stringType.equals(MediaType.WILDCARD)) return true;
+                (Predicate<String>) stringType -> {
+                    if (stringType.equals(MediaType.WILDCARD)) return true;
 
-                        MediaType mediaType = MediaType.valueOf(stringType);
-                        return isSupportMediaType(mediaType);
-                    }
+                    MediaType mediaType1 = MediaType.valueOf(stringType);
+                    return isSupportMediaType(mediaType1);
                 }));
     }
 

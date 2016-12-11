@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
  * @since 0.1.6e
  *
  */
+@SuppressWarnings("ALL")
 public class ServiceLocators {
     private ServiceLocators() {
     }
