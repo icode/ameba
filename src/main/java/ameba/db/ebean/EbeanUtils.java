@@ -9,27 +9,27 @@ import ameba.exception.UnprocessableEntityException;
 import ameba.i18n.Messages;
 import ameba.message.filtering.EntityFieldsUtils;
 import ameba.message.internal.BeanPathProperties;
-import com.avaje.ebean.FetchPath;
-import com.avaje.ebean.OrderBy;
-import com.avaje.ebean.Query;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebeaninternal.api.SpiEbeanServer;
-import com.avaje.ebeaninternal.api.SpiExpression;
-import com.avaje.ebeaninternal.api.SpiExpressionList;
-import com.avaje.ebeaninternal.api.SpiQuery;
-import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.ebean.FetchPath;
+import io.ebean.OrderBy;
+import io.ebean.Query;
+import io.ebean.bean.EntityBean;
+import io.ebean.bean.EntityBeanIntercept;
+import io.ebeaninternal.api.SpiEbeanServer;
+import io.ebeaninternal.api.SpiExpression;
+import io.ebeaninternal.api.SpiExpressionList;
+import io.ebeaninternal.api.SpiQuery;
+import io.ebeaninternal.server.deploy.BeanDescriptor;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.ws.rs.container.ResourceInfo;
 import java.util.*;
 
-import static com.avaje.ebean.OrderBy.Property;
+import static io.ebean.OrderBy.Property;
 
 /**
  * <p>EbeanUtils class.</p>
@@ -51,7 +51,7 @@ public class EbeanUtils {
     /**
      * <p>forceUpdateAllProperties.</p>
      *
-     * @param server a {@link com.avaje.ebeaninternal.api.SpiEbeanServer} object.
+     * @param server a {@link io.ebeaninternal.api.SpiEbeanServer} object.
      * @param model  a T object.
      * @param <T>    a T object.
      */
@@ -63,7 +63,7 @@ public class EbeanUtils {
     /**
      * <p>forceUpdateAllProperties.</p>
      *
-     * @param beanDescriptor a {@link com.avaje.ebeaninternal.server.deploy.BeanDescriptor} object.
+     * @param beanDescriptor a {@link io.ebeaninternal.server.deploy.BeanDescriptor} object.
      * @param model          a T object.
      * @param <T>            a T object.
      */
@@ -104,7 +104,7 @@ public class EbeanUtils {
     /**
      * <p>appendOrder.</p>
      *
-     * @param orderBy a {@link com.avaje.ebean.OrderBy} object.
+     * @param orderBy a {@link io.ebean.OrderBy} object.
      * @param orderByClause a {@link java.lang.String} object.
      * @param <T> a T object.
      */
@@ -127,7 +127,7 @@ public class EbeanUtils {
     /**
      * <p>checkQuery.</p>
      *
-     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param query a {@link io.ebean.Query} object.
      * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
      */
     public static void checkQuery(Query<?> query, ServiceLocator locator) {
@@ -137,7 +137,7 @@ public class EbeanUtils {
     /**
      * <p>checkQuery.</p>
      *
-     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param query a {@link io.ebean.Query} object.
      * @param whitelist a {@link java.util.Set} object.
      * @param blacklist a {@link java.util.Set} object.
      * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
@@ -181,7 +181,7 @@ public class EbeanUtils {
     /**
      * <p>checkQuery.</p>
      *
-     * @param query a {@link com.avaje.ebeaninternal.api.SpiQuery} object.
+     * @param query a {@link io.ebeaninternal.api.SpiQuery} object.
      * @param whitelist a {@link java.util.Set} object.
      * @param blacklist a {@link java.util.Set} object.
      * @param ignoreUnknown a boolean.
@@ -200,7 +200,7 @@ public class EbeanUtils {
     /**
      * <p>checkQuery.</p>
      *
-     * @param query a {@link com.avaje.ebeaninternal.api.SpiQuery} object.
+     * @param query a {@link io.ebeaninternal.api.SpiQuery} object.
      * @param validation a {@link ameba.db.ebean.internal.ListExpressionValidation} object.
      * @param ignoreUnknown a boolean.
      */
@@ -221,7 +221,7 @@ public class EbeanUtils {
     /**
      * <p>validate.</p>
      *
-     * @param expressions a {@link com.avaje.ebeaninternal.api.SpiExpressionList} object.
+     * @param expressions a {@link io.ebeaninternal.api.SpiExpressionList} object.
      * @param validation a {@link ameba.db.ebean.internal.ListExpressionValidation} object.
      * @param ignoreUnknown a boolean.
      */
@@ -242,7 +242,7 @@ public class EbeanUtils {
     /**
      * <p>validate.</p>
      *
-     * @param orderBy a {@link com.avaje.ebean.OrderBy} object.
+     * @param orderBy a {@link io.ebean.OrderBy} object.
      * @param validation a {@link ameba.db.ebean.internal.ListExpressionValidation} object.
      * @param ignoreUnknown a boolean.
      */

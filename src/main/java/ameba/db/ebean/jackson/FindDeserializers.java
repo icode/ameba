@@ -1,10 +1,10 @@
 package ameba.db.ebean.jackson;
 
-import com.avaje.ebean.text.json.JsonContext;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.Deserializers;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.type.CollectionType;
+import io.ebean.text.json.JsonContext;
 
 import java.util.Collection;
 

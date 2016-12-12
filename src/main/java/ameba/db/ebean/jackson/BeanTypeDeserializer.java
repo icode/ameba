@@ -1,9 +1,9 @@
 package ameba.db.ebean.jackson;
 
-import com.avaje.ebean.text.json.JsonContext;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import io.ebean.text.json.JsonContext;
 
 import java.io.IOException;
 
@@ -22,7 +22,7 @@ public class BeanTypeDeserializer extends JsonDeserializer {
     /**
      * <p>Constructor for BeanTypeDeserializer.</p>
      *
-     * @param jsonContext a {@link com.avaje.ebean.text.json.JsonContext} object.
+     * @param jsonContext a {@link io.ebean.text.json.JsonContext} object.
      * @param beanType    a {@link java.lang.Class} object.
      */
     public BeanTypeDeserializer(JsonContext jsonContext, Class<?> beanType) {

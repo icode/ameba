@@ -4,9 +4,9 @@ import ameba.core.ServiceLocators;
 import ameba.db.dsl.*;
 import ameba.db.dsl.QueryExprMeta.Val;
 import ameba.i18n.Messages;
-import com.avaje.ebean.Expression;
-import com.avaje.ebeaninternal.api.SpiEbeanServer;
-import com.avaje.ebeaninternal.api.SpiQuery;
+import io.ebean.Expression;
+import io.ebeaninternal.api.SpiEbeanServer;
+import io.ebeaninternal.api.SpiQuery;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.model.internal.RankedComparator;
 import org.glassfish.jersey.model.internal.RankedProvider;
@@ -28,7 +28,7 @@ public class EbeanExprInvoker extends QueryExprInvoker<Expression> {
     /**
      * <p>Constructor for EbeanExprInvoker.</p>
      *
-     * @param query   a {@link com.avaje.ebeaninternal.api.SpiQuery} object.
+     * @param query   a {@link io.ebeaninternal.api.SpiQuery} object.
      * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
      */
     public EbeanExprInvoker(SpiQuery<?> query, ServiceLocator locator) {
@@ -40,7 +40,7 @@ public class EbeanExprInvoker extends QueryExprInvoker<Expression> {
     /**
      * <p>Getter for the field <code>server</code>.</p>
      *
-     * @return a {@link com.avaje.ebeaninternal.api.SpiEbeanServer} object.
+     * @return a {@link io.ebeaninternal.api.SpiEbeanServer} object.
      */
     public SpiEbeanServer getServer() {
         return server;
@@ -49,7 +49,7 @@ public class EbeanExprInvoker extends QueryExprInvoker<Expression> {
     /**
      * <p>Getter for the field <code>query</code>.</p>
      *
-     * @return a {@link com.avaje.ebeaninternal.api.SpiQuery} object.
+     * @return a {@link io.ebeaninternal.api.SpiQuery} object.
      */
     public SpiQuery<?> getQuery() {
         return query;

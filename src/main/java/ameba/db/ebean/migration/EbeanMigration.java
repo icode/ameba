@@ -4,10 +4,10 @@ import ameba.core.Application;
 import ameba.db.migration.Migration;
 import ameba.db.migration.models.ScriptInfo;
 import ameba.exception.AmebaException;
-import com.avaje.ebean.config.DbMigrationConfig;
-import com.avaje.ebean.config.ServerConfig;
-import com.avaje.ebeaninternal.api.SpiEbeanServer;
 import com.google.common.collect.Lists;
+import io.ebean.config.DbMigrationConfig;
+import io.ebean.config.ServerConfig;
+import io.ebeaninternal.api.SpiEbeanServer;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -29,7 +29,7 @@ public class EbeanMigration implements Migration {
      * <p>Constructor for EbeanMigration.</p>
      *
      * @param application a {@link ameba.core.Application} object.
-     * @param server      a {@link com.avaje.ebeaninternal.api.SpiEbeanServer} object.
+     * @param server      a {@link io.ebeaninternal.api.SpiEbeanServer} object.
      */
     public EbeanMigration(Application application, SpiEbeanServer server) {
         boolean isDev = application.getMode().isDev();

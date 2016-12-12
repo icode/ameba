@@ -7,7 +7,7 @@ import ameba.db.dsl.QuerySyntaxException;
 import ameba.db.dsl.Transformed;
 import ameba.db.ebean.filter.CommonExprTransformer.MapExpression;
 import ameba.i18n.Messages;
-import com.avaje.ebean.Expression;
+import io.ebean.Expression;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**

@@ -1,6 +1,5 @@
 package ameba.db.ebean.jackson;
 
-import com.avaje.ebean.text.json.JsonContext;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -8,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.fasterxml.jackson.databind.type.CollectionType;
+import io.ebean.text.json.JsonContext;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;

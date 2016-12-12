@@ -1,7 +1,7 @@
 package ameba.db.ebean.jackson;
 
-import com.avaje.ebean.text.json.JsonIOException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.ebean.text.json.JsonIOException;
 import org.glassfish.jersey.spi.ExceptionMappers;
 
 import javax.inject.Inject;

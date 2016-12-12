@@ -1,7 +1,7 @@
 package ameba.db.model;
 
-import com.avaje.ebean.SqlUpdate;
-import com.avaje.ebean.Update;
+import io.ebean.SqlUpdate;
+import io.ebean.Update;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -80,21 +80,21 @@ public abstract class Updater<M extends Model> {
     /**
      * <p>sqlUpdate.</p>
      *
-     * @return a {@link com.avaje.ebean.SqlUpdate} object.
+     * @return a {@link io.ebean.SqlUpdate} object.
      */
     public abstract SqlUpdate sqlUpdate();
 
     /**
      * <p>getUpdate.</p>
      *
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public abstract Update<M> getUpdate();
 
     /**
      * <p>createUpdate.</p>
      *
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public abstract Update<M> createUpdate();
 
@@ -107,7 +107,7 @@ public abstract class Updater<M extends Model> {
      * </p>
      *
      * @param notifyCache a boolean.
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public abstract Update<M> setNotifyCache(boolean notifyCache);
 
@@ -120,7 +120,7 @@ public abstract class Updater<M extends Model> {
      * </p>
      *
      * @param secs the timeout in seconds. Zero implies unlimited.
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public abstract Update<M> setTimeout(int secs);
 
@@ -142,7 +142,7 @@ public abstract class Updater<M extends Model> {
      *
      * @param position the index position of the parameter starting with 1.
      * @param value    the parameter value to bind.
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public abstract Update<M> set(int position, Object value);
 
@@ -151,7 +151,7 @@ public abstract class Updater<M extends Model> {
      *
      * @param position the index position of the parameter starting with 1.
      * @param value    the parameter value to bind.
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public abstract Update<M> setParameter(int position, Object value);
 
@@ -164,7 +164,7 @@ public abstract class Updater<M extends Model> {
      *
      * @param position a int.
      * @param jdbcType a int.
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public abstract Update<M> setNull(int position, int jdbcType);
 
@@ -173,7 +173,7 @@ public abstract class Updater<M extends Model> {
      *
      * @param position a int.
      * @param jdbcType a int.
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public abstract Update<M> setNullParameter(int position, int jdbcType);
 
@@ -185,7 +185,7 @@ public abstract class Updater<M extends Model> {
      *
      * @param name  the parameter name.
      * @param value the parameter value.
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public abstract Update<M> set(String name, Object value);
 
@@ -194,7 +194,7 @@ public abstract class Updater<M extends Model> {
      *
      * @param name  a {@link java.lang.String} object.
      * @param param a {@link java.lang.Object} object.
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public abstract Update<M> setParameter(String name, Object param);
 
@@ -207,7 +207,7 @@ public abstract class Updater<M extends Model> {
      *
      * @param name     the parameter name.
      * @param jdbcType the type of the property being bound.
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public abstract Update<M> setNull(String name, int jdbcType);
 
@@ -216,7 +216,7 @@ public abstract class Updater<M extends Model> {
      *
      * @param name     a {@link java.lang.String} object.
      * @param jdbcType a int.
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public abstract Update<M> setNullParameter(String name, int jdbcType);
 

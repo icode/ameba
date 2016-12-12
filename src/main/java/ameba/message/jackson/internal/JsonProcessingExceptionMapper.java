@@ -24,7 +24,6 @@ import javax.ws.rs.ext.ExceptionMapper;
  * <p>JsonProcessingExceptionMapper class.</p>
  *
  * @author icode
- *
  */
 @Singleton
 public class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProcessingException> {
@@ -43,14 +42,9 @@ public class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProces
         Throwable throwable = exception;
         while (throwable != null) {
             if (throwable instanceof PersistenceException) {
-                throwable = throwable.getCause();
-                break;
+                return exceptionMappers.get().findMapping(throwable).toResponse(throwable);
             }
             throwable = throwable.getCause();
-        }
-
-        if (throwable != null) {
-            return exceptionMappers.get().findMapping(throwable).toResponse(throwable);
         }
 
         logger.debug("Json Processing error", exception);

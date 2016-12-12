@@ -1,7 +1,7 @@
 package ameba.db.model;
 
-import com.avaje.ebean.*;
-import com.avaje.ebean.text.PathProperties;
+import io.ebean.*;
+import io.ebean.text.PathProperties;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Timestamp;
@@ -114,7 +114,7 @@ public abstract class Finder<ID, T> {
     /**
      * <p>query.</p>
      *
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> query();
 
@@ -128,7 +128,7 @@ public abstract class Finder<ID, T> {
     /**
      * <p>createUpdateQuery.</p>
      *
-     * @return a {@link com.avaje.ebean.UpdateQuery} object.
+     * @return a {@link io.ebean.UpdateQuery} object.
      */
     public abstract UpdateQuery<T> createUpdateQuery();
 
@@ -136,7 +136,7 @@ public abstract class Finder<ID, T> {
      * <p>createSqlQuery.</p>
      *
      * @param sql a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.SqlQuery} object.
+     * @return a {@link io.ebean.SqlQuery} object.
      */
     public abstract SqlQuery createSqlQuery(String sql);
 
@@ -151,16 +151,16 @@ public abstract class Finder<ID, T> {
     /**
      * <p>setRawSql.</p>
      *
-     * @param rawSql a {@link com.avaje.ebean.RawSql} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @param rawSql a {@link io.ebean.RawSql} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setRawSql(RawSql rawSql);
 
     /**
      * <p>setPersistenceContextScope.</p>
      *
-     * @param scope a {@link com.avaje.ebean.PersistenceContextScope} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @param scope a {@link io.ebean.PersistenceContextScope} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setPersistenceContextScope(PersistenceContextScope scope);
 
@@ -168,14 +168,14 @@ public abstract class Finder<ID, T> {
      * <p>setLazyLoadBatchSize.</p>
      *
      * @param size a int.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setLazyLoadBatchSize(int size);
 
     /**
      * <p>setDisableReadAuditing.</p>
      *
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query setDisableReadAuditing();
 
@@ -183,7 +183,7 @@ public abstract class Finder<ID, T> {
      * <p>select.</p>
      *
      * @param fetchProperties a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> select(String fetchProperties);
 
@@ -191,7 +191,7 @@ public abstract class Finder<ID, T> {
      * <p>setAutoTune.</p>
      *
      * @param autoTune a boolean.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setAutoTune(boolean autoTune);
 
@@ -200,7 +200,7 @@ public abstract class Finder<ID, T> {
      *
      * @param path            a {@link java.lang.String} object.
      * @param fetchProperties a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> fetch(String path, String fetchProperties);
 
@@ -209,8 +209,8 @@ public abstract class Finder<ID, T> {
      *
      * @param assocProperty   a {@link java.lang.String} object.
      * @param fetchProperties a {@link java.lang.String} object.
-     * @param fetchConfig     a {@link com.avaje.ebean.FetchConfig} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @param fetchConfig     a {@link io.ebean.FetchConfig} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> fetch(String assocProperty, String fetchProperties, FetchConfig fetchConfig);
 
@@ -218,7 +218,7 @@ public abstract class Finder<ID, T> {
      * <p>fetch.</p>
      *
      * @param path a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> fetch(String path);
 
@@ -226,16 +226,16 @@ public abstract class Finder<ID, T> {
      * <p>fetch.</p>
      *
      * @param path       a {@link java.lang.String} object.
-     * @param joinConfig a {@link com.avaje.ebean.FetchConfig} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @param joinConfig a {@link io.ebean.FetchConfig} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> fetch(String path, FetchConfig joinConfig);
 
     /**
      * <p>apply.</p>
      *
-     * @param pathProperties a {@link com.avaje.ebean.text.PathProperties} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @param pathProperties a {@link io.ebean.text.PathProperties} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> apply(PathProperties pathProperties);
 
@@ -265,7 +265,7 @@ public abstract class Finder<ID, T> {
     /**
      * <p>text.</p>
      *
-     * @return a {@link com.avaje.ebean.ExpressionList} object.
+     * @return a {@link io.ebean.ExpressionList} object.
      */
     public abstract ExpressionList<T> text();
 
@@ -325,28 +325,28 @@ public abstract class Finder<ID, T> {
     /**
      * <p>findFutureCount.</p>
      *
-     * @return a {@link com.avaje.ebean.FutureRowCount} object.
+     * @return a {@link io.ebean.FutureRowCount} object.
      */
     public abstract FutureRowCount<T> findFutureCount();
 
     /**
      * <p>findFutureIds.</p>
      *
-     * @return a {@link com.avaje.ebean.FutureIds} object.
+     * @return a {@link io.ebean.FutureIds} object.
      */
     public abstract FutureIds<T> findFutureIds();
 
     /**
      * <p>findFutureList.</p>
      *
-     * @return a {@link com.avaje.ebean.FutureList} object.
+     * @return a {@link io.ebean.FutureList} object.
      */
     public abstract FutureList<T> findFutureList();
 
     /**
      * <p>findPagedList.</p>
      *
-     * @return a {@link com.avaje.ebean.PagedList} object.
+     * @return a {@link io.ebean.PagedList} object.
      */
     public abstract PagedList<T> findPagedList();
 
@@ -355,7 +355,7 @@ public abstract class Finder<ID, T> {
      *
      * @param name  a {@link java.lang.String} object.
      * @param value a {@link java.lang.Object} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setParameter(String name, Object value);
 
@@ -364,7 +364,7 @@ public abstract class Finder<ID, T> {
      *
      * @param position a int.
      * @param value    a {@link java.lang.Object} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setParameter(int position, Object value);
 
@@ -372,7 +372,7 @@ public abstract class Finder<ID, T> {
      * <p>setId.</p>
      *
      * @param id a {@link java.lang.Object} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setId(Object id);
 
@@ -386,15 +386,15 @@ public abstract class Finder<ID, T> {
     /**
      * <p>where.</p>
      *
-     * @param expression a {@link com.avaje.ebean.Expression} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @param expression a {@link io.ebean.Expression} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> where(Expression expression);
 
     /**
      * <p>where.</p>
      *
-     * @return a {@link com.avaje.ebean.ExpressionList} object.
+     * @return a {@link io.ebean.ExpressionList} object.
      */
     public abstract ExpressionList<T> where();
 
@@ -402,22 +402,22 @@ public abstract class Finder<ID, T> {
      * <p>filterMany.</p>
      *
      * @param propertyName a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.ExpressionList} object.
+     * @return a {@link io.ebean.ExpressionList} object.
      */
     public abstract ExpressionList<T> filterMany(String propertyName);
 
     /**
      * <p>having.</p>
      *
-     * @return a {@link com.avaje.ebean.ExpressionList} object.
+     * @return a {@link io.ebean.ExpressionList} object.
      */
     public abstract ExpressionList<T> having();
 
     /**
      * <p>having.</p>
      *
-     * @param addExpressionToHaving a {@link com.avaje.ebean.Expression} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @param addExpressionToHaving a {@link io.ebean.Expression} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> having(Expression addExpressionToHaving);
 
@@ -425,7 +425,7 @@ public abstract class Finder<ID, T> {
      * <p>orderBy.</p>
      *
      * @param orderByClause a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> orderBy(String orderByClause);
 
@@ -433,37 +433,37 @@ public abstract class Finder<ID, T> {
      * <p>order.</p>
      *
      * @param orderByClause a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> order(String orderByClause);
 
     /**
      * <p>order.</p>
      *
-     * @return a {@link com.avaje.ebean.OrderBy} object.
+     * @return a {@link io.ebean.OrderBy} object.
      */
     public abstract OrderBy<T> order();
 
     /**
      * <p>orderBy.</p>
      *
-     * @return a {@link com.avaje.ebean.OrderBy} object.
+     * @return a {@link io.ebean.OrderBy} object.
      */
     public abstract OrderBy<T> orderBy();
 
     /**
      * <p>setOrder.</p>
      *
-     * @param orderBy a {@link com.avaje.ebean.OrderBy} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @param orderBy a {@link io.ebean.OrderBy} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setOrder(OrderBy<T> orderBy);
 
     /**
      * <p>setOrderBy.</p>
      *
-     * @param orderBy a {@link com.avaje.ebean.OrderBy} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @param orderBy a {@link io.ebean.OrderBy} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setOrderBy(OrderBy<T> orderBy);
 
@@ -471,14 +471,14 @@ public abstract class Finder<ID, T> {
      * <p>setDistinct.</p>
      *
      * @param isDistinct a boolean.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setDistinct(boolean isDistinct);
 
     /**
      * <p>getExpressionFactory.</p>
      *
-     * @return a {@link com.avaje.ebean.ExpressionFactory} object.
+     * @return a {@link io.ebean.ExpressionFactory} object.
      */
     public abstract ExpressionFactory getExpressionFactory();
 
@@ -507,7 +507,7 @@ public abstract class Finder<ID, T> {
      * <p>setFirstRow.</p>
      *
      * @param firstRow a int.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setFirstRow(int firstRow);
 
@@ -522,7 +522,7 @@ public abstract class Finder<ID, T> {
      * <p>setMaxRows.</p>
      *
      * @param maxRows a int.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setMaxRows(int maxRows);
 
@@ -530,7 +530,7 @@ public abstract class Finder<ID, T> {
      * <p>setMapKey.</p>
      *
      * @param mapKey a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setMapKey(String mapKey);
 
@@ -538,7 +538,7 @@ public abstract class Finder<ID, T> {
      * <p>setUseCache.</p>
      *
      * @param useBeanCache a boolean.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setUseCache(boolean useBeanCache);
 
@@ -546,7 +546,7 @@ public abstract class Finder<ID, T> {
      * <p>setUseQueryCache.</p>
      *
      * @param useQueryCache a boolean.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setUseQueryCache(boolean useQueryCache);
 
@@ -554,7 +554,7 @@ public abstract class Finder<ID, T> {
      * <p>setReadOnly.</p>
      *
      * @param readOnly a boolean.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setReadOnly(boolean readOnly);
 
@@ -562,7 +562,7 @@ public abstract class Finder<ID, T> {
      * <p>setLoadBeanCache.</p>
      *
      * @param loadBeanCache a boolean.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setLoadBeanCache(boolean loadBeanCache);
 
@@ -570,7 +570,7 @@ public abstract class Finder<ID, T> {
      * <p>setTimeout.</p>
      *
      * @param secs a int.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setTimeout(int secs);
 
@@ -578,7 +578,7 @@ public abstract class Finder<ID, T> {
      * <p>setBufferFetchSizeHint.</p>
      *
      * @param fetchSize a int.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setBufferFetchSizeHint(int fetchSize);
 
@@ -586,7 +586,7 @@ public abstract class Finder<ID, T> {
      * <p>setForUpdate.</p>
      *
      * @param forUpdate a boolean.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setForUpdate(boolean forUpdate);
 
@@ -601,7 +601,7 @@ public abstract class Finder<ID, T> {
      * <p>alias.</p>
      *
      * @param alias a {@link java.lang.String} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> alias(String alias);
 
@@ -616,14 +616,14 @@ public abstract class Finder<ID, T> {
      * <p>setDisableLazyLoading.</p>
      *
      * @param disableLazyLoading a boolean.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setDisableLazyLoading(boolean disableLazyLoading);
 
     /**
      * <p>getRawSql.</p>
      *
-     * @return a {@link com.avaje.ebean.RawSql} object.
+     * @return a {@link io.ebean.RawSql} object.
      */
     public abstract RawSql getRawSql();
 
@@ -631,7 +631,7 @@ public abstract class Finder<ID, T> {
      * <p>asOf.</p>
      *
      * @param asOf a {@link java.sql.Timestamp} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> asOf(Timestamp asOf);
 
@@ -643,7 +643,7 @@ public abstract class Finder<ID, T> {
     /**
      * <p>copyQuery.</p>
      *
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> copyQuery();
 
@@ -651,7 +651,7 @@ public abstract class Finder<ID, T> {
      * <p>setUseDocStore.</p>
      *
      * @param use a boolean.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public abstract Query<T> setUseDocStore(boolean use);
 }

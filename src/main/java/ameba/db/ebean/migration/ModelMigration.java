@@ -2,19 +2,19 @@ package ameba.db.ebean.migration;
 
 import ameba.db.migration.models.ScriptInfo;
 import ameba.exception.AmebaException;
-import com.avaje.ebean.dbmigration.DbMigration;
-import com.avaje.ebean.dbmigration.DbOffline;
-import com.avaje.ebean.dbmigration.ddlgeneration.DdlHandler;
-import com.avaje.ebean.dbmigration.ddlgeneration.DdlWrite;
-import com.avaje.ebean.dbmigration.migration.Migration;
-import com.avaje.ebean.dbmigration.model.CurrentModel;
-import com.avaje.ebean.dbmigration.model.MConfiguration;
-import com.avaje.ebean.dbmigration.model.ModelContainer;
-import com.avaje.ebean.dbmigration.model.ModelDiff;
-import com.avaje.ebean.plugin.SpiServer;
-import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
-import com.avaje.ebeaninternal.util.JdbcClose;
-import org.avaje.dbmigration.ddl.DdlRunner;
+import io.ebean.dbmigration.DbMigration;
+import io.ebean.dbmigration.DbOffline;
+import io.ebean.dbmigration.ddl.DdlRunner;
+import io.ebean.dbmigration.ddlgeneration.DdlHandler;
+import io.ebean.dbmigration.ddlgeneration.DdlWrite;
+import io.ebean.dbmigration.migration.Migration;
+import io.ebean.dbmigration.model.CurrentModel;
+import io.ebean.dbmigration.model.MConfiguration;
+import io.ebean.dbmigration.model.ModelContainer;
+import io.ebean.dbmigration.model.ModelDiff;
+import io.ebean.plugin.SpiServer;
+import io.ebeaninternal.server.deploy.BeanDescriptor;
+import io.ebeaninternal.util.JdbcClose;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -41,7 +41,7 @@ public class ModelMigration extends DbMigration {
     /**
      * <p>diff.</p>
      *
-     * @return a {@link com.avaje.ebean.dbmigration.model.ModelDiff} object.
+     * @return a {@link io.ebean.dbmigration.model.ModelDiff} object.
      */
     public ModelDiff diff() {
         if (diff != null) return diff;
@@ -154,7 +154,7 @@ public class ModelMigration extends DbMigration {
     /**
      * <p>writeMigrationXml.</p>
      *
-     * @param dbMigration a {@link com.avaje.ebean.dbmigration.migration.Migration} object.
+     * @param dbMigration a {@link io.ebean.dbmigration.migration.Migration} object.
      * @param version a {@link java.lang.String} object.
      * @return a boolean.
      */
@@ -205,7 +205,7 @@ public class ModelMigration extends DbMigration {
     /**
      * <p>rest.</p>
      *
-     * @return a {@link com.avaje.ebean.dbmigration.model.ModelDiff} object.
+     * @return a {@link io.ebean.dbmigration.model.ModelDiff} object.
      */
     public ModelDiff rest() {
         ModelDiff old = diff;

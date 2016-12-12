@@ -1,6 +1,6 @@
 package ameba.db.model;
 
-import com.avaje.ebean.Transaction;
+import io.ebean.Transaction;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -71,7 +71,7 @@ public abstract class Persister<M extends Model> {
     /**
      * <p>update.</p>
      *
-     * @param t a {@link com.avaje.ebean.Transaction} object.
+     * @param t a {@link io.ebean.Transaction} object.
      */
     public abstract void update(Transaction t);
 
@@ -85,7 +85,7 @@ public abstract class Persister<M extends Model> {
     /**
      * <p>update.</p>
      *
-     * @param t                     a {@link com.avaje.ebean.Transaction} object.
+     * @param t                     a {@link io.ebean.Transaction} object.
      * @param deleteMissingChildren a boolean.
      */
     public abstract void update(Transaction t, boolean deleteMissingChildren);
@@ -103,7 +103,7 @@ public abstract class Persister<M extends Model> {
      * <p>update.</p>
      *
      * @param server a {@link java.lang.String} object.
-     * @param t a {@link com.avaje.ebean.Transaction} object.
+     * @param t a {@link io.ebean.Transaction} object.
      * @param deleteMissingChildren a boolean.
      */
     public void update(String server, Transaction t, boolean deleteMissingChildren) {
@@ -123,7 +123,7 @@ public abstract class Persister<M extends Model> {
     /**
      * <p>insert.</p>
      *
-     * @param t a {@link com.avaje.ebean.Transaction} object.
+     * @param t a {@link io.ebean.Transaction} object.
      */
     public abstract void insert(Transaction t);
 
@@ -131,7 +131,7 @@ public abstract class Persister<M extends Model> {
      * <p>insert.</p>
      *
      * @param server a {@link java.lang.String} object.
-     * @param t a {@link com.avaje.ebean.Transaction} object.
+     * @param t a {@link io.ebean.Transaction} object.
      */
     public void insert(String server, Transaction t) {
         on(server).insert(t);
@@ -159,7 +159,7 @@ public abstract class Persister<M extends Model> {
     /**
      * <p>delete.</p>
      *
-     * @param t a {@link com.avaje.ebean.Transaction} object.
+     * @param t a {@link io.ebean.Transaction} object.
      */
     public abstract void delete(Transaction t);
 
@@ -167,7 +167,7 @@ public abstract class Persister<M extends Model> {
      * <p>delete.</p>
      *
      * @param server a {@link java.lang.String} object.
-     * @param t a {@link com.avaje.ebean.Transaction} object.
+     * @param t a {@link io.ebean.Transaction} object.
      */
     public void delete(String server, Transaction t) {
         on(server).delete(t);

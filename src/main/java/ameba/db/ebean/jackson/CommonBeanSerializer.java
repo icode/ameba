@@ -3,13 +3,13 @@ package ameba.db.ebean.jackson;
 import ameba.db.ebean.EbeanPathProps;
 import ameba.db.ebean.EbeanUtils;
 import ameba.message.internal.BeanPathProperties;
-import com.avaje.ebean.FetchPath;
-import com.avaje.ebean.text.PathProperties;
-import com.avaje.ebean.text.json.JsonContext;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonStreamContext;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import io.ebean.FetchPath;
+import io.ebean.text.PathProperties;
+import io.ebean.text.json.JsonContext;
 
 import java.io.IOException;
 

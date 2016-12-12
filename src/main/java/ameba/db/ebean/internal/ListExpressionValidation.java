@@ -1,7 +1,7 @@
 package ameba.db.ebean.internal;
 
-import com.avaje.ebean.plugin.BeanType;
-import com.avaje.ebeaninternal.api.SpiExpressionValidation;
+import io.ebean.plugin.BeanType;
+import io.ebeaninternal.api.SpiExpressionValidation;
 
 import java.util.Set;
 
@@ -20,7 +20,7 @@ public class ListExpressionValidation extends SpiExpressionValidation {
     /**
      * <p>Constructor for ListExpressionValidation.</p>
      *
-     * @param desc      a {@link com.avaje.ebean.plugin.BeanType} object.
+     * @param desc      a {@link io.ebean.plugin.BeanType} object.
      * @param whitelist a {@link java.util.Set} object.
      * @param blacklist a {@link java.util.Set} object.
      */

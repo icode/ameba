@@ -1,6 +1,6 @@
 package ameba.db.ebean.support;
 
-import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import io.ebeaninternal.api.SpiEbeanServer;
 
 /**
  * <p>Abstract AbstractModelResource class.</p>
@@ -24,7 +24,7 @@ public abstract class AbstractModelResource<URI_ID, MODEL>
      * <p>Constructor for AbstractModelResource.</p>
      *
      * @param modelType a {@link java.lang.Class} object.
-     * @param server    a {@link com.avaje.ebeaninternal.api.SpiEbeanServer} object.
+     * @param server    a {@link io.ebeaninternal.api.SpiEbeanServer} object.
      */
     public AbstractModelResource(Class<MODEL> modelType, SpiEbeanServer server) {
         super(modelType, server);

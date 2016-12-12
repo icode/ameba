@@ -1,9 +1,9 @@
 package ameba.db.ebean.filter;
 
-import com.avaje.ebean.ExpressionFactory;
-import com.avaje.ebean.Query;
-import com.avaje.ebeaninternal.server.expression.FilterExprPath;
-import com.avaje.ebeaninternal.server.expression.FilterExpressionList;
+import io.ebean.ExpressionFactory;
+import io.ebean.Query;
+import io.ebeaninternal.server.expression.FilterExprPath;
+import io.ebeaninternal.server.expression.FilterExpressionList;
 
 /**
  * <p>FilterExpression class.</p>
@@ -18,8 +18,8 @@ public class FilterExpression<T> extends FilterExpressionList<T> {
      * <p>Constructor for FilterExpression.</p>
      *
      * @param path      a {@link java.lang.String} object.
-     * @param expr      a {@link com.avaje.ebean.ExpressionFactory} object.
-     * @param rootQuery a {@link com.avaje.ebean.Query} object.
+     * @param expr      a {@link io.ebean.ExpressionFactory} object.
+     * @param rootQuery a {@link io.ebean.Query} object.
      */
     public FilterExpression(String path, ExpressionFactory expr, Query<T> rootQuery) {
         super(new FilterExprPath(path), expr, rootQuery);

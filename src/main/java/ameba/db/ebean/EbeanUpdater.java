@@ -2,10 +2,10 @@ package ameba.db.ebean;
 
 import ameba.db.model.Model;
 import ameba.db.model.Updater;
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.SqlUpdate;
-import com.avaje.ebean.Update;
+import io.ebean.Ebean;
+import io.ebean.EbeanServer;
+import io.ebean.SqlUpdate;
+import io.ebean.Update;
 
 /**
  * <p>EbeanUpdater class.</p>
@@ -34,7 +34,7 @@ public class EbeanUpdater<M extends Model> extends Updater<M> {
     /**
      * <p>Getter for the field <code>update</code>.</p>
      *
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public Update<M> getUpdate() {
         if (update == null)
@@ -45,7 +45,7 @@ public class EbeanUpdater<M extends Model> extends Updater<M> {
     /**
      * <p>createUpdate.</p>
      *
-     * @return a {@link com.avaje.ebean.Update} object.
+     * @return a {@link io.ebean.Update} object.
      */
     public Update<M> createUpdate() {
         return server.createUpdate(getModelType(), getSqlOrName());

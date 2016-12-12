@@ -1,8 +1,8 @@
 package ameba.db.ebean;
 
 import ameba.message.internal.BeanPathProperties;
-import com.avaje.ebean.FetchPath;
-import com.avaje.ebean.Query;
+import io.ebean.FetchPath;
+import io.ebean.Query;
 
 import java.util.Collection;
 import java.util.Set;

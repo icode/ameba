@@ -1,12 +1,12 @@
 package ameba.db.ebean.migration;
 
 import ameba.db.migration.models.ScriptInfo;
-import com.avaje.ebean.dbmigration.ddlgeneration.DdlHandler;
-import com.avaje.ebean.dbmigration.ddlgeneration.DdlWrite;
-import com.avaje.ebean.dbmigration.migration.ChangeSet;
-import com.avaje.ebean.dbmigration.migration.ChangeSetType;
-import com.avaje.ebean.dbmigration.migration.Migration;
-import com.avaje.ebean.plugin.SpiServer;
+import io.ebean.dbmigration.ddlgeneration.DdlHandler;
+import io.ebean.dbmigration.ddlgeneration.DdlWrite;
+import io.ebean.dbmigration.migration.ChangeSet;
+import io.ebean.dbmigration.migration.ChangeSetType;
+import io.ebean.dbmigration.migration.Migration;
+import io.ebean.plugin.SpiServer;
 
 import java.io.IOException;
 import java.util.List;
@@ -26,7 +26,7 @@ public class PlatformDdlWriter {
      * <p>Constructor for PlatformDdlWriter.</p>
      *
      * @param scriptInfo a {@link ameba.db.migration.models.ScriptInfo} object.
-     * @param server     a {@link com.avaje.ebean.plugin.SpiServer} object.
+     * @param server     a {@link io.ebean.plugin.SpiServer} object.
      */
     public PlatformDdlWriter(ScriptInfo scriptInfo, SpiServer server) {
         this.scriptInfo = scriptInfo;
@@ -36,8 +36,8 @@ public class PlatformDdlWriter {
     /**
      * <p>processMigration.</p>
      *
-     * @param dbMigration a {@link com.avaje.ebean.dbmigration.migration.Migration} object.
-     * @param write a {@link com.avaje.ebean.dbmigration.ddlgeneration.DdlWrite} object.
+     * @param dbMigration a {@link io.ebean.dbmigration.migration.Migration} object.
+     * @param write a {@link io.ebean.dbmigration.ddlgeneration.DdlWrite} object.
      * @throws java.io.IOException if any.
      */
     public void processMigration(Migration dbMigration, DdlWrite write) throws IOException {
@@ -65,7 +65,7 @@ public class PlatformDdlWriter {
     /**
      * <p>writePlatformDdl.</p>
      *
-     * @param write a {@link com.avaje.ebean.dbmigration.ddlgeneration.DdlWrite} object.
+     * @param write a {@link io.ebean.dbmigration.ddlgeneration.DdlWrite} object.
      * @throws java.io.IOException if any.
      */
     protected void writePlatformDdl(DdlWrite write) throws IOException {
@@ -77,7 +77,7 @@ public class PlatformDdlWriter {
     /**
      * Write the 'Apply' DDL buffers to the writer.
      *
-     * @param write a {@link com.avaje.ebean.dbmigration.ddlgeneration.DdlWrite} object.
+     * @param write a {@link io.ebean.dbmigration.ddlgeneration.DdlWrite} object.
      * @throws java.io.IOException if any.
      */
     protected void writeApplyDdl(DdlWrite write) throws IOException {
@@ -94,7 +94,7 @@ public class PlatformDdlWriter {
     /**
      * Return the platform specific DdlHandler (to generate DDL).
      *
-     * @return a {@link com.avaje.ebean.dbmigration.ddlgeneration.DdlHandler} object.
+     * @return a {@link io.ebean.dbmigration.ddlgeneration.DdlHandler} object.
      */
     protected DdlHandler handler() {
         return server.getDatabasePlatform().createDdlHandler(server.getServerConfig());

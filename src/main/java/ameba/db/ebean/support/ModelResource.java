@@ -1,8 +1,8 @@
 package ameba.db.ebean.support;
 
 import ameba.core.ws.rs.PATCH;
-import com.avaje.ebean.Ebean;
-import com.avaje.ebeaninternal.api.SpiEbeanServer;
+import io.ebean.Ebean;
+import io.ebeaninternal.api.SpiEbeanServer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -39,7 +39,7 @@ public abstract class ModelResource<URI_ID, MODEL_ID, MODEL>
      * <p>Constructor for AbstractModelResource.</p>
      *
      * @param modelType a {@link java.lang.Class} object.
-     * @param server    a {@link com.avaje.ebeaninternal.api.SpiEbeanServer} object.
+     * @param server    a {@link io.ebeaninternal.api.SpiEbeanServer} object.
      */
     public ModelResource(Class<MODEL> modelType, SpiEbeanServer server) {
         super(modelType, server);

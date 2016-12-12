@@ -2,9 +2,9 @@ package ameba.db.ebean;
 
 import ameba.db.model.Model;
 import ameba.db.model.Persister;
-import com.avaje.ebean.Ebean;
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.Transaction;
+import io.ebean.Ebean;
+import io.ebean.EbeanServer;
+import io.ebean.Transaction;
 
 /**
  * Base-class for model-mapped models that provides convenience methods.
@@ -49,7 +49,7 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
     /**
      * <p>save.</p>
      *
-     * @param transaction a {@link com.avaje.ebean.Transaction} object.
+     * @param transaction a {@link io.ebean.Transaction} object.
      */
     public void save(Transaction transaction) {
         server().save(getModel(), transaction);
@@ -64,7 +64,7 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
     /**
      * <p>update.</p>
      *
-     * @param t a {@link com.avaje.ebean.Transaction} object.
+     * @param t a {@link io.ebean.Transaction} object.
      */
     public void update(Transaction t) {
         server().update(getModel(), t);
@@ -118,7 +118,7 @@ public class EbeanPersister<M extends Model> extends Persister<M> {
     /**
      * <p>insert.</p>
      *
-     * @param t a {@link com.avaje.ebean.Transaction} object.
+     * @param t a {@link io.ebean.Transaction} object.
      */
     public void insert(Transaction t) {
         server().insert(getModel(), t);

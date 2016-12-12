@@ -8,12 +8,12 @@ import ameba.db.ebean.filter.WhereExprApplier;
 import ameba.db.model.Finder;
 import ameba.message.filtering.EntityFieldsFilteringFeature;
 import ameba.message.internal.BeanPathProperties;
-import com.avaje.ebean.*;
-import com.avaje.ebean.bean.BeanCollection;
-import com.avaje.ebean.common.BeanList;
-import com.avaje.ebeaninternal.api.SpiQuery;
-import com.avaje.ebeaninternal.server.querydefn.OrmQueryDetail;
-import com.avaje.ebeaninternal.server.querydefn.OrmQueryProperties;
+import io.ebean.*;
+import io.ebean.bean.BeanCollection;
+import io.ebean.common.BeanList;
+import io.ebeaninternal.api.SpiQuery;
+import io.ebeaninternal.server.querydefn.OrmQueryDetail;
+import io.ebeaninternal.server.querydefn.OrmQueryProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -232,7 +232,7 @@ public class ModelInterceptor implements WriterInterceptor {
      * <p>applyOrderBy.</p>
      *
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
-     * @param query       a {@link com.avaje.ebean.Query} object.
+     * @param query       a {@link io.ebean.Query} object.
      */
     public static void applyOrderBy(MultivaluedMap<String, String> queryParams, Query query) {
         List<String> orders = queryParams.get(SORT_PARAM_NAME);
@@ -248,8 +248,8 @@ public class ModelInterceptor implements WriterInterceptor {
      * <p>fetchRowCount.</p>
      *
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
-     * @param query       a {@link com.avaje.ebean.Query} object.
-     * @return a {@link com.avaje.ebean.FutureRowCount} object.
+     * @param query       a {@link io.ebean.Query} object.
+     * @return a {@link io.ebean.FutureRowCount} object.
      */
     public static FutureRowCount fetchRowCount(MultivaluedMap<String, String> queryParams, Query query) {
         String reqTotalCount = getSingleParam(queryParams.get(REQ_TOTAL_COUNT_PARAM_NAME));
@@ -263,8 +263,8 @@ public class ModelInterceptor implements WriterInterceptor {
      * <p>applyPageList.</p>
      *
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
-     * @param query       a {@link com.avaje.ebean.Query} object.
-     * @return a {@link com.avaje.ebean.FutureRowCount} object.
+     * @param query       a {@link io.ebean.Query} object.
+     * @return a {@link io.ebean.FutureRowCount} object.
      */
     public static FutureRowCount applyPageList(MultivaluedMap<String, String> queryParams, Query query) {
 
@@ -279,7 +279,7 @@ public class ModelInterceptor implements WriterInterceptor {
      * <p>applyPageConfig.</p>
      *
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
-     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param query a {@link io.ebean.Query} object.
      */
     public static void applyPageConfig(MultivaluedMap<String, String> queryParams, Query query) {
         Integer maxRows = getSingleIntegerParam(queryParams.get(PER_PAGE_PARAM_NAME));
@@ -371,8 +371,8 @@ public class ModelInterceptor implements WriterInterceptor {
      * <p>applyUriQuery.</p>
      *
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
-     * @param query       a {@link com.avaje.ebean.Query} object.
-     * @return a {@link com.avaje.ebean.FutureRowCount} object.
+     * @param query       a {@link io.ebean.Query} object.
+     * @return a {@link io.ebean.FutureRowCount} object.
      * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
      */
     public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams,
@@ -385,8 +385,8 @@ public class ModelInterceptor implements WriterInterceptor {
      * <p>applyRowCountHeader.</p>
      *
      * @param headerParams a {@link javax.ws.rs.core.MultivaluedMap} object.
-     * @param query        a {@link com.avaje.ebean.Query} object.
-     * @param rowCount     a {@link com.avaje.ebean.FutureRowCount} object.
+     * @param query        a {@link io.ebean.Query} object.
+     * @param rowCount     a {@link io.ebean.FutureRowCount} object.
      */
     public static void applyRowCountHeader(MultivaluedMap<String, Object> headerParams, Query query, FutureRowCount rowCount) {
         if (rowCount != null) {

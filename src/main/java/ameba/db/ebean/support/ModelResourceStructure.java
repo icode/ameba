@@ -5,15 +5,15 @@ import ameba.db.ebean.internal.ModelInterceptor;
 import ameba.exception.UnprocessableEntityException;
 import ameba.i18n.Messages;
 import ameba.lib.LoggerOwner;
-import com.avaje.ebean.*;
-import com.avaje.ebean.bean.EntityBean;
-import com.avaje.ebean.bean.EntityBeanIntercept;
-import com.avaje.ebeaninternal.api.SpiEbeanServer;
-import com.avaje.ebeaninternal.api.SpiQuery;
-import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
-import com.avaje.ebeaninternal.server.deploy.BeanProperty;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
+import io.ebean.*;
+import io.ebean.bean.EntityBean;
+import io.ebean.bean.EntityBeanIntercept;
+import io.ebeaninternal.api.SpiEbeanServer;
+import io.ebeaninternal.api.SpiQuery;
+import io.ebeaninternal.server.deploy.BeanDescriptor;
+import io.ebeaninternal.server.deploy.BeanProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.util.collection.Ref;
@@ -64,7 +64,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * <p>Constructor for ModelResourceStructure.</p>
      *
      * @param modelType a {@link java.lang.Class} object.
-     * @param server    a {@link com.avaje.ebeaninternal.api.SpiEbeanServer} object.
+     * @param server    a {@link io.ebeaninternal.api.SpiEbeanServer} object.
      */
     public ModelResourceStructure(Class<MODEL> modelType, SpiEbeanServer server) {
         this.modelType = modelType;
@@ -74,7 +74,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>Setter for the field <code>txScope</code>.</p>
      *
-     * @param txScope a {@link com.avaje.ebean.TxScope} object.
+     * @param txScope a {@link io.ebean.TxScope} object.
      */
     public void setTxScope(TxScope txScope) {
         this.txScope = txScope;
@@ -118,7 +118,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>getModelBeanDescriptor.</p>
      *
-     * @return a {@link com.avaje.ebeaninternal.server.deploy.BeanDescriptor} object.
+     * @return a {@link io.ebeaninternal.server.deploy.BeanDescriptor} object.
      */
     protected BeanDescriptor getModelBeanDescriptor() {
         if (descriptor == null) {
@@ -623,7 +623,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * This effectively controls the "default" query used to render this model.
      * </p>
      *
-     * @param query          a {@link com.avaje.ebean.Query} object.
+     * @param query          a {@link io.ebean.Query} object.
      * @param includeDeleted a boolean.
      * @throws java.lang.Exception if any.
      */
@@ -716,7 +716,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * query.
      * </p>
      *
-     * @param query          a {@link com.avaje.ebean.Query} object.
+     * @param query          a {@link io.ebean.Query} object.
      * @param includeDeleted a boolean.
      * @throws java.lang.Exception if any.
      */
@@ -739,7 +739,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>defaultFindOrderBy.</p>
      *
-     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param query a {@link io.ebean.Query} object.
      */
     protected void defaultFindOrderBy(Query<MODEL> query) {
         if (StringUtils.isNotBlank(defaultFindOrderBy)) {
@@ -807,7 +807,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>configFetchHistoryQuery.</p>
      *
-     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param query a {@link io.ebean.Query} object.
      * @param id    a MODEL_ID object.
      * @param start a {@link java.sql.Timestamp} object.
      * @param end   a {@link java.sql.Timestamp} object.
@@ -883,7 +883,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>configFetchHistoryQuery.</p>
      *
-     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param query a {@link io.ebean.Query} object.
      * @param id    a MODEL_ID object.
      * @throws java.lang.Exception if any.
      */
@@ -949,7 +949,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>configFetchHistoryAsOfQuery.</p>
      *
-     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param query a {@link io.ebean.Query} object.
      * @param id    a MODEL_ID object.
      * @param asOf  a {@link java.sql.Timestamp} object.
      * @throws java.lang.Exception if any.
@@ -1018,8 +1018,8 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>applyUriQuery.</p>
      *
-     * @param query a {@link com.avaje.ebean.Query} object.
-     * @return a {@link com.avaje.ebean.FutureRowCount} object.
+     * @param query a {@link io.ebean.Query} object.
+     * @return a {@link io.ebean.FutureRowCount} object.
      */
     protected FutureRowCount applyUriQuery(final Query<MODEL> query) {
         return applyUriQuery(query, true);
@@ -1028,7 +1028,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>applyPageConfig.</p>
      *
-     * @param query a {@link com.avaje.ebean.Query} object.
+     * @param query a {@link io.ebean.Query} object.
      */
     protected void applyPageConfig(Query query) {
         ModelInterceptor.applyPageConfig(uriInfo.getQueryParameters(), query);
@@ -1037,8 +1037,8 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>fetchRowCount.</p>
      *
-     * @param query a {@link com.avaje.ebean.Query} object.
-     * @return a {@link com.avaje.ebean.FutureRowCount} object.
+     * @param query a {@link io.ebean.Query} object.
+     * @return a {@link io.ebean.FutureRowCount} object.
      */
     protected FutureRowCount fetchRowCount(Query query) {
         return ModelInterceptor.fetchRowCount(uriInfo.getQueryParameters(), query);
@@ -1048,8 +1048,8 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * <p>applyRowCountHeader.</p>
      *
      * @param headerParams a {@link javax.ws.rs.core.MultivaluedMap} object.
-     * @param query        a {@link com.avaje.ebean.Query} object.
-     * @param rowCount     a {@link com.avaje.ebean.FutureRowCount} object.
+     * @param query        a {@link io.ebean.Query} object.
+     * @param rowCount     a {@link io.ebean.FutureRowCount} object.
      */
     protected void applyRowCountHeader(MultivaluedMap<String, Object> headerParams, Query query, FutureRowCount rowCount) {
         ModelInterceptor.applyRowCountHeader(headerParams, query, rowCount);
@@ -1128,7 +1128,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>beginTransaction.</p>
      *
-     * @return a {@link com.avaje.ebean.Transaction} object.
+     * @return a {@link io.ebean.Transaction} object.
      */
     protected Transaction beginTransaction() {
         return server.beginTransaction(txScope);
@@ -1188,7 +1188,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     /**
      * <p>configureTransDefault.</p>
      *
-     * @param transaction a {@link com.avaje.ebean.Transaction} object.
+     * @param transaction a {@link io.ebean.Transaction} object.
      */
     protected void configureTransDefault(Transaction transaction) {
 

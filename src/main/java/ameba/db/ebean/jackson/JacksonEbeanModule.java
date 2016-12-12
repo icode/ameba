@@ -1,8 +1,8 @@
 package ameba.db.ebean.jackson;
 
-import com.avaje.ebean.EbeanServer;
-import com.avaje.ebean.text.json.JsonContext;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import io.ebean.EbeanServer;
+import io.ebean.text.json.JsonContext;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**

@@ -4,10 +4,10 @@ import ameba.db.dsl.ExprApplier;
 import ameba.db.ebean.filter.CommonExprTransformer.DistinctExpression;
 import ameba.db.ebean.filter.CommonExprTransformer.HavingExpression;
 import ameba.db.ebean.filter.CommonExprTransformer.TextExpression;
-import com.avaje.ebean.Expression;
-import com.avaje.ebean.ExpressionList;
-import com.avaje.ebean.Query;
-import com.avaje.ebeaninternal.server.expression.AbstractTextExpression;
+import io.ebean.Expression;
+import io.ebean.ExpressionList;
+import io.ebean.Query;
+import io.ebeaninternal.server.expression.AbstractTextExpression;
 
 /**
  * <p>WhereExprApplier class.</p>
@@ -22,7 +22,7 @@ public class WhereExprApplier<O> implements ExprApplier<Expression> {
     /**
      * <p>Constructor for WhereExprApplier.</p>
      *
-     * @param expressions a {@link com.avaje.ebean.ExpressionList} object.
+     * @param expressions a {@link io.ebean.ExpressionList} object.
      */
     public WhereExprApplier(ExpressionList<O> expressions) {
         this.expressionList = expressions;
@@ -31,7 +31,7 @@ public class WhereExprApplier<O> implements ExprApplier<Expression> {
     /**
      * <p>create.</p>
      *
-     * @param expressions a {@link com.avaje.ebean.ExpressionList} object.
+     * @param expressions a {@link io.ebean.ExpressionList} object.
      * @param <O>         a O object.
      * @return a {@link ameba.db.ebean.filter.WhereExprApplier} object.
      */

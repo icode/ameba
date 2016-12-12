@@ -1,8 +1,8 @@
 package ameba.db.ebean;
 
 import ameba.db.model.Finder;
-import com.avaje.ebean.*;
-import com.avaje.ebean.text.PathProperties;
+import io.ebean.*;
+import io.ebean.text.PathProperties;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -38,7 +38,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * <p>query.</p>
      *
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public Query<T> query() {
         if (query == null) {
@@ -85,7 +85,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Creates a filter for sorting and filtering lists of entities locally without going back to the database.
      *
-     * @return a {@link com.avaje.ebean.Filter} object.
+     * @return a {@link io.ebean.Filter} object.
      */
     public Filter<T> filter() {
         return server().filter(getModelType());
@@ -94,7 +94,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Creates a query.
      *
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @return a {@link io.ebean.Query} object.
      * @since 0.1.6e
      */
     public Query<T> createQuery() {
@@ -142,8 +142,8 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * Additionally specifies a <code>JoinConfig</code> to specify a 'query join' and/or define the lazy loading query.
      *
      * @param path a {@link java.lang.String} object.
-     * @param joinConfig a {@link com.avaje.ebean.FetchConfig} object.
-     * @return a {@link com.avaje.ebean.Query} object.
+     * @param joinConfig a {@link io.ebean.FetchConfig} object.
+     * @return a {@link io.ebean.Query} object.
      */
     public Query<T> fetch(String path, FetchConfig joinConfig) {
         return query().fetch(path, joinConfig);
@@ -182,7 +182,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Executes a find IDs query in a background thread.
      *
-     * @return a {@link com.avaje.ebean.FutureIds} object.
+     * @return a {@link io.ebean.FutureIds} object.
      */
     public FutureIds<T> findFutureIds() {
         return query().findFutureIds();
@@ -191,7 +191,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Executes a find list query in a background thread.
      *
-     * @return a {@link com.avaje.ebean.FutureList} object.
+     * @return a {@link io.ebean.FutureList} object.
      */
     public FutureList<T> findFutureList() {
         return query().findFutureList();
@@ -200,7 +200,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Executes a find row count query in a background thread.
      *
-     * @return a {@link com.avaje.ebean.FutureRowCount} object.
+     * @return a {@link io.ebean.FutureRowCount} object.
      */
     public FutureRowCount<T> findFutureCount() {
         return query().findFutureCount();
@@ -238,7 +238,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * {@inheritDoc}
      *
-     * @return a {@link com.avaje.ebean.PagedList} object.
+     * @return a {@link io.ebean.PagedList} object.
      */
     public PagedList<T> findPagedList() {
         return query().findPagedList();
@@ -304,7 +304,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Returns the <code>ExpressionFactory</code> used by this query.
      *
-     * @return a {@link com.avaje.ebean.ExpressionFactory} object.
+     * @return a {@link io.ebean.ExpressionFactory} object.
      */
     public ExpressionFactory getExpressionFactory() {
         return query().getExpressionFactory();
@@ -346,7 +346,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Returns the query's <code>having</code> clause.
      *
-     * @return a {@link com.avaje.ebean.ExpressionList} object.
+     * @return a {@link io.ebean.ExpressionList} object.
      */
     public ExpressionList<T> having() {
         return query().having();
@@ -383,7 +383,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * Returns the <code>order by</code> clause so that you can append an ascending or descending property to the <code>order by</code> clause.
      * This is exactly the same as {@link #order}.
      *
-     * @return a {@link com.avaje.ebean.OrderBy} object.
+     * @return a {@link io.ebean.OrderBy} object.
      */
     public OrderBy<T> orderBy() {
         return query().orderBy();
@@ -501,7 +501,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * <p>
      * Replaces any existing <code>order by</code> clause using an <code>OrderBy</code> object.
      * </p>
-     * This is exactly the same as {@link #setOrderBy(com.avaje.ebean.OrderBy)}.
+     * This is exactly the same as {@link #setOrderBy(io.ebean.OrderBy)}.
      */
     public Query<T> setOrder(OrderBy<T> orderBy) {
         return query().setOrder(orderBy);
@@ -512,7 +512,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * <p>
      * Set an OrderBy object to replace any existing <code>order by</code> clause.
      * </p>
-     * This is exactly the same as {@link #setOrder(com.avaje.ebean.OrderBy)}.
+     * This is exactly the same as {@link #setOrder(io.ebean.OrderBy)}.
      */
     public Query<T> setOrderBy(OrderBy<T> orderBy) {
         return query().setOrderBy(orderBy);
@@ -607,7 +607,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     /**
      * Adds expressions to the <code>where</code> clause with the ability to chain on the <code>ExpressionList</code>.
      *
-     * @return a {@link com.avaje.ebean.ExpressionList} object.
+     * @return a {@link io.ebean.ExpressionList} object.
      */
     public ExpressionList<T> where() {
         return query().where();
@@ -618,7 +618,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      *
      * Adds a single <code>Expression</code> to the <code>where</code> clause and returns the query.
      */
-    public Query<T> where(com.avaje.ebean.Expression expression) {
+    public Query<T> where(io.ebean.Expression expression) {
         return query().where(expression);
     }
 

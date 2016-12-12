@@ -1,13 +1,13 @@
 package ameba.db.ebean.migration;
 
 import ameba.db.migration.models.ScriptInfo;
-import com.avaje.ebean.Transaction;
-import com.avaje.ebean.TxIsolation;
-import com.avaje.ebean.dbmigration.model.MigrationVersion;
-import com.avaje.ebean.dbmigration.model.ModelContainer;
-import com.avaje.ebeaninternal.api.SpiEbeanServer;
-import com.avaje.ebeaninternal.server.deploy.BeanDescriptor;
 import com.google.common.collect.Lists;
+import io.ebean.Transaction;
+import io.ebean.TxIsolation;
+import io.ebean.dbmigration.model.MigrationVersion;
+import io.ebean.dbmigration.model.ModelContainer;
+import io.ebeaninternal.api.SpiEbeanServer;
+import io.ebeaninternal.server.deploy.BeanDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ public class MigrationModel {
     /**
      * <p>Constructor for MigrationModel.</p>
      *
-     * @param server a {@link com.avaje.ebeaninternal.api.SpiEbeanServer} object.
+     * @param server a {@link io.ebeaninternal.api.SpiEbeanServer} object.
      */
     public MigrationModel(SpiEbeanServer server) {
         this.server = server;
@@ -42,7 +42,7 @@ public class MigrationModel {
     /**
      * <p>read.</p>
      *
-     * @return a {@link com.avaje.ebean.dbmigration.model.ModelContainer} object.
+     * @return a {@link io.ebean.dbmigration.model.ModelContainer} object.
      */
     public ModelContainer read() {
         readMigrations();
