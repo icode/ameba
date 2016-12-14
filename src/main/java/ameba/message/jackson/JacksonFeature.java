@@ -31,7 +31,6 @@ import java.util.Collections;
  *
  * @author ICode
  * @since 13-8-11 上午6:00
- *
  */
 @ConstrainedTo(RuntimeType.SERVER)
 public class JacksonFeature implements Feature {
@@ -69,14 +68,26 @@ public class JacksonFeature implements Feature {
                     {
                         final XmlMapper xmlMapper = new XmlMapper();
                         JacksonUtils.configureMapper(xmlMapper, mode);
-                        bind((ContextResolver<XmlMapper>) type -> xmlMapper).to(new TypeLiteral<ContextResolver<XmlMapper>>() {
+                        // 不能用 jdk lambda，否则无法绑定
+                        bind(new ContextResolver<XmlMapper>() {
+                            @Override
+                            public XmlMapper getContext(Class<?> type) {
+                                return xmlMapper;
+                            }
+                        }).to(new TypeLiteral<ContextResolver<XmlMapper>>() {
                         });
                         bind(xmlMapper).to(XmlMapper.class).proxy(false);
                     }
                     {
                         final ObjectMapper objectMapper = new ObjectMapper();
                         JacksonUtils.configureMapper(objectMapper, mode);
-                        bind((ContextResolver<ObjectMapper>) type -> objectMapper).to(new TypeLiteral<ContextResolver<ObjectMapper>>() {
+                        // 不能用 jdk lambda，否则无法绑定
+                        bind(new ContextResolver<ObjectMapper>() {
+                            @Override
+                            public ObjectMapper getContext(Class<?> type) {
+                                return objectMapper;
+                            }
+                        }).to(new TypeLiteral<ContextResolver<ObjectMapper>>() {
                         });
                         bind(objectMapper).to(ObjectMapper.class).proxy(false);
                     }
