@@ -162,8 +162,8 @@ public class EbeanFeature implements Feature {
 
             JacksonEbeanModule module = new JacksonEbeanModule(server, locator);
 
-            objectMapper.registerModules(module);
-            xmlMapper.registerModules(module);
+            objectMapper.registerModule(module);
+            xmlMapper.registerModule(module);
 
             SERVERS.add(server);
         }
