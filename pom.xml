@@ -6,7 +6,7 @@
     <groupId>org.amebastack</groupId>
     <artifactId>ameba</artifactId>
     <packaging>jar</packaging>
-    <version>0.1.12</version>
+    <version>0.1.13-SNAPSHOT</version>
     <name>Ameba-Framework</name>
     <description>A useful Java framework!</description>
 
@@ -373,6 +373,16 @@
             <artifactId>quasar-core</artifactId>
             <version>${quasar.version}</version>
             <classifier>jdk8</classifier>
+            <exclusions>
+                <exclusion>
+                    <artifactId>HdrHistogram</artifactId>
+                    <groupId>org.hdrhistogram</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>LatencyUtils</artifactId>
+                    <groupId>org.latencyutils</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

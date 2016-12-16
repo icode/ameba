@@ -4,6 +4,7 @@ import ameba.container.event.*;
 import ameba.container.server.Connector;
 import ameba.core.Application;
 import ameba.event.SystemEventBus;
+import ameba.i18n.Messages;
 import ameba.util.ClassUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -21,7 +22,6 @@ import java.util.List;
  * <p>Abstract Container class.</p>
  *
  * @author icode
- *
  */
 public abstract class Container {
     /**
@@ -56,7 +56,7 @@ public abstract class Container {
     public static Container create(Application application) throws IllegalAccessException, InstantiationException {
 
         String provider = (String) application.getProperty("container.provider");
-        logger.debug("HTTP容器实现 {}", provider);
+        logger.debug(Messages.get("info.container.provider", provider));
         try {
             Class<Container> ContainerClass = (Class<Container>) ClassUtils.getClass(provider);
             Constructor<Container> constructor = ContainerClass.<Container>getDeclaredConstructor(Application.class);
@@ -83,19 +83,20 @@ public abstract class Container {
             @Override
             public void onStartup(org.glassfish.jersey.server.spi.Container container) {
                 SystemEventBus.publish(new StartupEvent(Container.this, application));
-                logger.trace("应用容器已经启动");
+                logger.trace(Messages.get("info.container.startup"));
             }
 
             @Override
             public void onReload(org.glassfish.jersey.server.spi.Container container) {
                 SystemEventBus.publish(new ReloadedEvent(Container.this, application));
-                logger.trace("应用容器已重新加载");
+                logger.trace(Messages.get("info.container.reload"));
             }
 
             @Override
             public void onShutdown(org.glassfish.jersey.server.spi.Container container) {
+                logger.info("Container onShutdown");
                 SystemEventBus.publish(new ShutdownEvent(Container.this, application));
-                logger.trace("应用容器已关闭");
+                logger.trace(Messages.get("info.container.shutdown"));
             }
         });
     }
@@ -147,7 +148,7 @@ public abstract class Container {
      * @throws java.lang.Exception if any.
      */
     public void start() throws Exception {
-        logger.trace("应用容器启动中...");
+        logger.trace(Messages.get("info.container.starting"));
         SystemEventBus.publish(new StartEvent(this, application));
         doStart();
     }

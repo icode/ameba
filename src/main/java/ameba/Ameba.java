@@ -101,6 +101,9 @@ public class Ameba {
      */
     public static void main(String[] args) {
 
+        // register shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(Ameba::shutdown, "AmebaShutdownHook"));
+
         List<String> list = Lists.newArrayList();
 
         String idCommand = "--#";
@@ -128,9 +131,6 @@ public class Ameba {
             shutdown();
             System.exit(500);
         }
-
-        // register shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread(Ameba::shutdown, "shutdownHook"));
 
         try {
             Thread.currentThread().join();

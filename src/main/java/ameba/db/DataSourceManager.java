@@ -1,8 +1,10 @@
 package ameba.db;
 
+import ameba.container.event.ShutdownEvent;
 import ameba.core.Addon;
 import ameba.core.Application;
 import ameba.db.model.ModelManager;
+import ameba.event.SystemEventBus;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 import com.google.common.collect.Maps;
@@ -21,7 +23,6 @@ import java.util.Set;
  *
  * @author 张立鑫 IntelligentCode
  * @since 2013-08-07
- *
  */
 public class DataSourceManager extends Addon {
 
@@ -100,6 +101,14 @@ public class DataSourceManager extends Addon {
                 logger.error("配置数据源出错", e);
             }
         }
+
+        SystemEventBus.subscribe(ShutdownEvent.class,
+                (ShutdownEvent event) -> {
+                    dataSourceMap.forEach((name, dataSource) -> {
+                        if (!dataSource.isClosed()) dataSource.close();
+                    });
+                    dataSourceMap.clear();
+                });
 
         app.register(new AbstractBinder() {
             @Override

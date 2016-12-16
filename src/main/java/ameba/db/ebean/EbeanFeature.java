@@ -1,5 +1,6 @@
 package ameba.db.ebean;
 
+import ameba.container.event.ShutdownEvent;
 import ameba.core.Application;
 import ameba.db.DataSourceManager;
 import ameba.db.PersistenceExceptionMapper;
@@ -10,6 +11,7 @@ import ameba.db.ebean.migration.EbeanMigration;
 import ameba.db.migration.Migration;
 import ameba.db.migration.models.ScriptInfo;
 import ameba.db.model.ModelManager;
+import ameba.event.SystemEventBus;
 import ameba.i18n.Messages;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -80,7 +82,7 @@ public class EbeanFeature implements Feature {
      */
     public static final String FILTER_PARAM_NAME = "model.query.param.filter";
     private static final Logger logger = LoggerFactory.getLogger(EbeanFeature.class);
-    private static final List<EbeanServer> SERVERS = Lists.newArrayList();
+    private static final List<EbeanServer> servers = Lists.newArrayList();
     @Inject
     private ServiceLocator locator;
     @Context
@@ -105,15 +107,6 @@ public class EbeanFeature implements Feature {
 
         context.register(ModelInterceptor.class)
                 .register(JsonIOExceptionMapper.class);
-
-        for (EbeanServer server : SERVERS) {
-            try {
-                server.shutdown(true, true);
-            } catch (Exception e) {
-                logger.warn("shutdown old Ebean server has a error", e);
-            }
-        }
-        SERVERS.clear();
 
         final Configuration appConfig = context.getConfiguration();
 
@@ -165,13 +158,18 @@ public class EbeanFeature implements Feature {
             objectMapper.registerModule(module);
             xmlMapper.registerModule(module);
 
-            SERVERS.add(server);
+            servers.add(server);
         }
+
+        SystemEventBus.subscribe(ShutdownEvent.class, event -> {
+            servers.forEach(server -> server.shutdown(true, true));
+            servers.clear();
+        });
 
         ServiceLocatorUtilities.bind(locator, new AbstractBinder() {
             @Override
             protected void configure() {
-                for (EbeanServer server : SERVERS) {
+                for (EbeanServer server : servers) {
                     String name = server.getName();
                     createBuilder(server).named(name);
 
