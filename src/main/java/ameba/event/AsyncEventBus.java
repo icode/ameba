@@ -20,10 +20,6 @@ import java.util.Map;
 public class AsyncEventBus<Event extends ameba.event.Event> implements EventBus<Event> {
     private static final Logger logger = LoggerFactory.getLogger(AsyncEventBus.class);
 
-    static {
-        System.setProperty("co.paralleluniverse.fibers.disableAgentWarning", "true");
-    }
-
     private final Map<Class<? extends Event>, EventSource<? extends Event>> eventSourceMap = Maps.newConcurrentMap();
 
     @SuppressWarnings("unchecked")

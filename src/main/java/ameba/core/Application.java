@@ -57,6 +57,7 @@ import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.stream.Stream;
 
 import static ameba.util.IOUtils.*;
 
@@ -65,7 +66,6 @@ import static ameba.util.IOUtils.*;
  *
  * @author icode
  * @since 13-8-6 下午8:42
- *
  */
 @Singleton
 public class Application {
@@ -252,7 +252,7 @@ public class Application {
      * <p>readModeConfig.</p>
      *
      * @param properties a {@link java.util.Properties} object.
-     * @param mode a {@link ameba.core.Application.Mode} object.
+     * @param mode       a {@link ameba.core.Application.Mode} object.
      */
     @SuppressWarnings("unchecked")
     public static void readModeConfig(Properties properties, Mode mode) {
@@ -298,7 +298,7 @@ public class Application {
      * <p>readAppConfig.</p>
      *
      * @param properties a {@link java.util.Properties} object.
-     * @param confFile a {@link java.lang.String} object.
+     * @param confFile   a {@link java.lang.String} object.
      * @return a {@link java.net.URL} object.
      */
     public static URL readAppConfig(Properties properties, String confFile) {
@@ -391,6 +391,8 @@ public class Application {
         properties.putAll(appProperties);
 
         srcProperties.putAll((Map) properties);
+
+        setEnvironmentConfig(srcProperties);
 
         addOnSetup(srcProperties);
 
@@ -832,21 +834,25 @@ public class Application {
         subscribeResourceEvent();
     }
 
-    private void convertJerseyConfig(Map<String, Object> configMap) {
-        Field[] declaredFields = ServerProperties.class.getDeclaredFields();
-        Map<String, Field> staticFieldsMap = Maps.newLinkedHashMap();
-        for (Field field : declaredFields) {
-            if (Modifier.isStatic(field.getModifiers())) {
-                staticFieldsMap.put(field.getName(), field);
+    private void setEnvironmentConfig(Map<String, Object> configMap) {
+        configMap.forEach((key, value) -> {
+            if (key.startsWith("env.") && value instanceof String) {
+                System.setProperty(key.substring(4), (String) value);
             }
-        }
+        });
+    }
+
+    private void convertJerseyConfig(Map<String, Object> configMap) {
+        Map<String, Field> staticFieldsMap = Maps.newLinkedHashMap();
+        Stream.of(ServerProperties.class.getDeclaredFields())
+                .filter((field) -> Modifier.isStatic(field.getModifiers()))
+                .forEach((field) -> staticFieldsMap.put(field.getName(), field));
 
         List<String> removeKeys = Lists.newArrayList();
-
         Map<String, Object> map = Maps.newLinkedHashMap();
 
         //进行jersey配置项转化
-        for (String key : configMap.keySet()) {
+        configMap.forEach((key, value) -> {
             if (key.startsWith(JERSEY_CONF_NAME_PREFIX)) {
                 String name = key.substring(JERSEY_CONF_NAME_PREFIX.length());
                 //转化键到jersey配置
@@ -855,14 +861,14 @@ public class Application {
                 if (null != filed) {
                     filed.setAccessible(true);
                     try {
-                        map.put((String) filed.get(null), configMap.get(key));
+                        map.put((String) filed.get(null), value);
                         removeKeys.add(key);
                     } catch (IllegalAccessException e) {
                         logger.error(Messages.get("info.config.error.key", key), e);
                     }
                 }
             }
-        }
+        });
 
         map.put(ServerProperties.PROCESSING_RESPONSE_ERRORS_ENABLED, "true");
         map.put(ServerProperties.MOXY_JSON_FEATURE_DISABLE, "true");
