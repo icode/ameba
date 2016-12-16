@@ -673,18 +673,6 @@ public class Fibers {
         return Fibers.<V>create(name).start();
     }
 
-    /**
-     * Creates a new child Fiber subclassing the Fiber class and overriding the {@link Fiber#run() run} method.
-     * This constructor may only be called from within another fiber. This fiber will use the same fork/join pool as the creating fiber.
-     * The new fiber has no name, and uses the default initial stack size.
-     *
-     * @throws NullPointerException     when proto is null
-     * @throws IllegalArgumentException when stackSize is &lt;= 0
-     */
-    public static <V> Fiber<V> start() {
-        return Fibers.<V>create().start();
-    }
-
     public static <V> Fiber<V> start(Fiber fiber, SuspendableCallable<V> target) {
         return create(fiber, target).start();
     }
