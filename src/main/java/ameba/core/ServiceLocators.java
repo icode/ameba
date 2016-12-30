@@ -3,6 +3,7 @@ package ameba.core;
 import com.google.common.collect.Maps;
 import jersey.repackaged.com.google.common.collect.Collections2;
 import jersey.repackaged.com.google.common.collect.Lists;
+import jersey.repackaged.com.google.common.collect.Sets;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -10,6 +11,7 @@ import org.glassfish.jersey.message.MessageBodyWorkers;
 import org.glassfish.jersey.model.internal.RankedComparator;
 import org.glassfish.jersey.model.internal.RankedProvider;
 import org.glassfish.jersey.server.mvc.Viewable;
+import org.jvnet.hk2.annotations.Contract;
 
 import javax.ws.rs.ext.MessageBodyWriter;
 import java.lang.annotation.Annotation;
@@ -112,5 +114,38 @@ public class ServiceLocators {
         Collections.sort(rankedProviders, comparator);
 
         return Collections2.transform(rankedProviders, RankedProvider::getProvider);
+    }
+
+    public static Set<Class<?>> getProviderContracts(final Class<?> clazz) {
+        final Set<Class<?>> contracts = Sets.newIdentityHashSet();
+        computeProviderContracts(clazz, contracts);
+        return contracts;
+    }
+
+    private static void computeProviderContracts(final Class<?> clazz, final Set<Class<?>> contracts) {
+        for (final Class<?> contract : getImplementedContracts(clazz)) {
+            if (isSupportedContract(contract)) {
+                contracts.add(contract);
+            }
+            computeProviderContracts(contract, contracts);
+        }
+    }
+
+    private static Iterable<Class<?>> getImplementedContracts(final Class<?> clazz) {
+        final Collection<Class<?>> list = new LinkedList<>();
+
+        Collections.addAll(list, clazz.getInterfaces());
+
+        final Class<?> superclass = clazz.getSuperclass();
+        if (superclass != null) {
+            list.add(superclass);
+        }
+
+        return list;
+    }
+
+    public static boolean isSupportedContract(final Class<?> type) {
+        return type.isAnnotationPresent(Contract.class)
+                || type.isAnnotationPresent(org.glassfish.jersey.spi.Contract.class);
     }
 }

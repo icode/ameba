@@ -78,6 +78,12 @@ public class ParamConverters {
         if (timestamp != null) {
             return new Date(timestamp);
         }
+        if (value.contains(" ")) {
+            value = value.replace(" ", "+");
+        }
+        if (!(value.contains("-") || value.contains("+")) && !value.endsWith("Z")) {
+            value += SYS_TZ;
+        }
         try {
             return ISO8601Utils.parse(value, pos);
         } catch (ParseException e) {
@@ -96,17 +102,7 @@ public class ParamConverters {
     }
 
     private static Instant parseInstant(String value) {
-        Long timestamp = parseTimestamp(value);
-        if (timestamp != null) {
-            return Instant.ofEpochMilli(timestamp);
-        }
-        if (value.contains(" ")) {
-            value = value.replace(" ", "+");
-        }
-        if (!(value.contains("-") || value.contains("+")) && !value.endsWith("Z")) {
-            value += SYS_TZ;
-        }
-        return Instant.parse(value);
+        return parseDate(value).toInstant();
     }
 
     /**

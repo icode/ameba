@@ -493,6 +493,12 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         }
     }
 
+    private static void checkOneArgLength(String operator, Val<Expression>[] args) {
+        if (args.length != 1) {
+            throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
+        }
+    }
+
     /**
      * <p>textSimple.</p>
      *
@@ -642,9 +648,9 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
      * <p>transformArgs.</p>
      *
      * @param args an array of {@link ameba.db.dsl.QueryExprMeta.Val} objects.
-     * @return a {@link java.lang.Object} object.
+     * @return array {@link java.lang.Object} object.
      */
-    public static Object transformArgs(Val<Expression>[] args) {
+    public static Object[] transformArgs(Val<Expression>[] args) {
         Object[] objects = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
             objects[i] = args[i].object();
@@ -682,27 +688,37 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
         Object expr = null;
         switch (operator) {
             case "eq":
+                checkOneArgLength(operator, args);
                 expr = factory.eq(field, args[0].object());
                 break;
             case "ne":
+                checkOneArgLength(operator, args);
                 expr = factory.ne(field, args[0].object());
                 break;
             case "ieq":
+                checkOneArgLength(operator, args);
                 expr = factory.ieq(field, args[0].string());
                 break;
             case "between":
+                if (args.length != 2) {
+                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error1", operator));
+                }
                 expr = factory.between(field, args[0].object(), args[1].object());
                 break;
             case "gt":
+                checkOneArgLength(operator, args);
                 expr = factory.gt(field, args[0].object());
                 break;
             case "ge":
+                checkOneArgLength(operator, args);
                 expr = factory.ge(field, args[0].object());
                 break;
             case "lt":
+                checkOneArgLength(operator, args);
                 expr = factory.lt(field, args[0].object());
                 break;
             case "le":
+                checkOneArgLength(operator, args);
                 expr = factory.le(field, args[0].object());
                 break;
             case "isNull":
@@ -712,21 +728,27 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 expr = factory.isNotNull(field);
                 break;
             case "startsWith":
+                checkOneArgLength(operator, args);
                 expr = factory.startsWith(field, args[0].string());
                 break;
             case "istartsWith":
+                checkOneArgLength(operator, args);
                 expr = factory.istartsWith(field, args[0].string());
                 break;
             case "endsWith":
+                checkOneArgLength(operator, args);
                 expr = factory.endsWith(field, args[0].string());
                 break;
             case "iendsWith":
+                checkOneArgLength(operator, args);
                 expr = factory.iendsWith(field, args[0].string());
                 break;
             case "contains":
+                checkOneArgLength(operator, args);
                 expr = factory.contains(field, args[0].string());
                 break;
             case "icontains":
+                checkOneArgLength(operator, args);
                 expr = factory.icontains(field, args[0].string());
                 break;
             case "empty":
@@ -736,19 +758,18 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                 expr = factory.isNotEmpty(field);
                 break;
             case "id":
-                expr = factory.idEq(args[0]);
+                checkOneArgLength(operator, args);
+                expr = factory.idEq(args[0].object());
                 break;
             case "idIn":
                 expr = factory.idIn(transformArgs(args));
                 break;
             case "date":
-                if (args.length != 1) {
-                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
-                }
+                checkOneArgLength(operator, args);
                 if (parent == null) {
                     throw new QuerySyntaxException(Messages.get("dsl.arguments.error5", operator));
                 }
-                expr = ParamConverters.parseDate(args[0].string());
+                expr = ParamConverters.parseDate(args[0].object().toString());
                 break;
             case "having":
                 expr = having(operator, args);
@@ -843,9 +864,7 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
             case "highFreqAnd":
             case "minMatchLowFreq":
             case "minMatchHighFreq":
-                if (args.length != 1) {
-                    throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));
-                }
+                checkOneArgLength(operator, args);
                 expr = map(operator, args[0], parent);
                 break;
         }
