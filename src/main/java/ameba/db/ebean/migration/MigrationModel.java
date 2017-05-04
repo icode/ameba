@@ -20,7 +20,6 @@ import java.util.List;
  * <p>MigrationModel class.</p>
  *
  * @author icode
- *
  */
 public class MigrationModel {
     private static final Logger logger = LoggerFactory.getLogger(MigrationModel.class);
@@ -79,10 +78,15 @@ public class MigrationModel {
         BeanDescriptor<ScriptInfo> beanDescriptor = server.getBeanDescriptor(ScriptInfo.class);
         Transaction transaction = server.createTransaction(TxIsolation.READ_COMMITED);
         try (Connection connection = transaction.getConnection()) {
-            ResultSet resultSet = connection.getMetaData().getTables(
-                    null, null, beanDescriptor.getBaseTable(), null
-            );
-            migrationTableExist = resultSet.next();
+            String tableName = beanDescriptor.getBaseTable();
+            ResultSet rs = connection.getMetaData()
+                    .getTables(null, null, "%", null);
+            while (rs.next()) {
+                if (tableName.equalsIgnoreCase(rs.getString(3))) {
+                    migrationTableExist = true;
+                    break;
+                }
+            }
             if (migrationTableExist) {
                 server.find(ScriptInfo.class)
                         .findEach(bean -> resources.add(new MigrationResource(bean)));
@@ -106,11 +110,6 @@ public class MigrationModel {
         return lastVersion == null ? initialVersion : lastVersion.nextVersion();
     }
 
-    /**
-     * <p>isMigrationTableExist.</p>
-     *
-     * @return a boolean.
-     */
     public boolean isMigrationTableExist() {
         return migrationTableExist;
     }

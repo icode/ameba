@@ -1,11 +1,8 @@
 package ameba.db.ebean.migration;
 
 import ameba.db.migration.models.ScriptInfo;
-import ameba.exception.AmebaException;
 import io.ebean.dbmigration.DbMigration;
 import io.ebean.dbmigration.DbOffline;
-import io.ebean.dbmigration.ddl.DdlRunner;
-import io.ebean.dbmigration.ddlgeneration.DdlHandler;
 import io.ebean.dbmigration.ddlgeneration.DdlWrite;
 import io.ebean.dbmigration.migration.Migration;
 import io.ebean.dbmigration.model.CurrentModel;
@@ -13,8 +10,6 @@ import io.ebean.dbmigration.model.MConfiguration;
 import io.ebean.dbmigration.model.ModelContainer;
 import io.ebean.dbmigration.model.ModelDiff;
 import io.ebean.plugin.SpiServer;
-import io.ebeaninternal.server.deploy.BeanDescriptor;
-import io.ebeaninternal.util.JdbcClose;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -22,14 +17,11 @@ import javax.xml.bind.Marshaller;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * <p>ModelMigration class.</p>
  *
  * @author icode
- *
  */
 public class ModelMigration extends DbMigration {
     private static final String initialVersion = "1.0";
@@ -56,28 +48,8 @@ public class ModelMigration extends DbMigration {
 
             currentModel = new CurrentModel(server, constraintNaming);
             ModelContainer current = currentModel.read();
-
             diff = new ModelDiff(migrated);
             diff.compareTo(current);
-
-            if (!migrationModel.isMigrationTableExist()) {
-                DdlRunner runner = new DdlRunner(false, "create_migration_info_table.ddl");
-                DdlHandler handler = server.getDatabasePlatform().createDdlHandler(server.getServerConfig());
-                BeanDescriptor<ScriptInfo> beanDescriptor = server.getBeanDescriptor(ScriptInfo.class);
-                DdlWrite write = new DdlWrite(new MConfiguration(), currentModel.read());
-                handler.generate(write, current.getTable(beanDescriptor.getBaseTable()).createTable());
-                String ddl = write.apply().getBuffer() +
-                        write.applyForeignKeys().getBuffer() +
-                        write.applyHistory().getBuffer();
-                Connection connection = server.createTransaction().getConnection();
-                try {
-                    runner.runAll(ddl, connection);
-                } finally {
-                    JdbcClose.close(connection);
-                }
-            }
-        } catch (IOException | SQLException e) {
-            throw new AmebaException(e);
         } finally {
             if (!online) {
                 DbOffline.reset();
@@ -102,15 +74,15 @@ public class ModelMigration extends DbMigration {
      */
     @Override
     public void generateMigration() throws IOException {
+        if (scriptInfo != null) {
+            return;
+        }
+        if (diff == null) {
+            diff();
+        }
+
         setOffline();
         try {
-            if (scriptInfo != null) {
-                return;
-            }
-            if (diff == null) {
-                diff();
-            }
-
             if (diff.isEmpty()) {
                 logger.info("no changes detected - no migration written");
                 return;
@@ -120,7 +92,7 @@ public class ModelMigration extends DbMigration {
 
             String version = getVersion(migrationModel);
             logger.info("generating migration:{}", version);
-            if (!writeMigrationXml(dbMigration, version)) {
+            if (!writeMigration(dbMigration, version)) {
                 logger.warn("migration already exists, not generating DDL");
             } else {
                 if (databasePlatform != null) {
@@ -131,7 +103,6 @@ public class ModelMigration extends DbMigration {
                     writer.processMigration(dbMigration, write);
                 }
             }
-
         } finally {
             if (!online) {
                 DbOffline.reset();
@@ -139,26 +110,30 @@ public class ModelMigration extends DbMigration {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void writeExtraPlatformDdl(String fullVersion, CurrentModel currentModel,
                                          Migration dbMigration, File writePath) throws IOException {
         throw new UnsupportedOperationException("writeExtraPlatformDdl Unsupported");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected boolean writeMigrationXml(Migration dbMigration, File resourcePath, String fullVersion) {
         throw new UnsupportedOperationException("writeExtraPlatformDdl Unsupported");
     }
 
     /**
-     * <p>writeMigrationXml.</p>
+     * <p>writeMigration.</p>
      *
      * @param dbMigration a {@link io.ebean.dbmigration.migration.Migration} object.
-     * @param version a {@link java.lang.String} object.
+     * @param version     a {@link java.lang.String} object.
      * @return a boolean.
      */
-    protected boolean writeMigrationXml(Migration dbMigration, String version) {
+    protected boolean writeMigration(Migration dbMigration, String version) {
         if (migrationModel.isMigrationTableExist()) {
             scriptInfo = server.find(ScriptInfo.class, version);
             if (scriptInfo != null) {

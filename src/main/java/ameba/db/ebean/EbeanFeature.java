@@ -127,6 +127,7 @@ public class EbeanFeature implements Feature {
             config.setJsonInclude(JsonConfig.Include.NON_EMPTY);
             config.setPersistBatch(PersistBatch.ALL);
             config.setUpdateAllPropertiesInBatch(false);
+            config.setH2ProductionMode(true);
             config.loadFromProperties(cp);
             config.setPackages(null);
             config.setDataSourceJndiName(null);
@@ -141,11 +142,11 @@ public class EbeanFeature implements Feature {
                 config.setDefaultServer(false);
             }
 
+            config.addClass(ScriptInfo.class);
             Set<Class> classes = ModelManager.getModels(name);
             if (classes != null) {
                 classes.forEach(config::addClass);
             }
-            config.addClass(ScriptInfo.class);
 
             logger.debug(Messages.get("info.db.connect", name));
 

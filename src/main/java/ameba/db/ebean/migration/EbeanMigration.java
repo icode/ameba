@@ -6,7 +6,6 @@ import ameba.db.migration.models.ScriptInfo;
 import ameba.exception.AmebaException;
 import com.google.common.collect.Lists;
 import io.ebean.config.DbMigrationConfig;
-import io.ebean.config.ServerConfig;
 import io.ebeaninternal.api.SpiEbeanServer;
 
 import java.io.IOException;
@@ -34,20 +33,19 @@ public class EbeanMigration implements Migration {
     public EbeanMigration(Application application, SpiEbeanServer server) {
         boolean isDev = application.getMode().isDev();
         this.server = server;
-        String _basePath = (isDev ? "src/main" : "temp") + "/";
-        DbMigrationConfig migrationConfig = new DbMigrationConfig();
-        ServerConfig config = server.getServerConfig();
+        String _basePath = (isDev ? "src/main/resources" : "temp") + "/" + "ameba/db/migration/" + server.getName();
+        DbMigrationConfig migrationConfig = server.getServerConfig().getMigrationConfig();
         CharSequence ver = application.getApplicationVersion();
         String version;
         String verIndex = LocalDateTime.now().format(ofPattern("yyyyMMddHHmmss"));
         if (ver instanceof Application.UnknownVersion) {
             version = verIndex;
         } else {
-            version = String.valueOf(ver) + "_" + verIndex;
+            version = String.valueOf(ver).replace("-SNAPSHOT", "") + "_" + verIndex;
         }
         migrationConfig.setVersion(version);
-        migrationConfig.setMigrationPath("ameba/db/migration/" + server.getName());
-        config.setMigrationConfig(migrationConfig);
+        migrationConfig.setMigrationPath(_basePath);
+        migrationConfig.setRunMigration(false);
 
         dbMigration = new ModelMigration();
         dbMigration.setPlatform(server.getDatabasePlatform());
