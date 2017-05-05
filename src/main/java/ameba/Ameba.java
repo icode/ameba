@@ -47,7 +47,7 @@ public class Ameba {
      *
      * @return a InjectionManager object.
      */
-    public static InjectionManager getServiceLocator() {
+    public static InjectionManager getInjectionManager() {
         return container.getInjectionManager();
     }
 
