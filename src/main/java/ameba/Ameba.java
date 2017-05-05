@@ -7,7 +7,7 @@ import ameba.i18n.Messages;
 import ameba.util.IOUtils;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,12 +43,12 @@ public class Ameba {
     }
 
     /**
-     * <p>getServiceLocator.</p>
+     * <p>getInjectionManager.</p>
      *
-     * @return a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @return a InjectionManager object.
      */
-    public static ServiceLocator getServiceLocator() {
-        return container.getServiceLocator();
+    public static InjectionManager getServiceLocator() {
+        return container.getInjectionManager();
     }
 
     /**

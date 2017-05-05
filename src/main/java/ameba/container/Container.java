@@ -6,8 +6,8 @@ import ameba.core.Application;
 import ameba.event.SystemEventBus;
 import ameba.i18n.Messages;
 import ameba.util.ClassUtils;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 import org.slf4j.Logger;
@@ -111,11 +111,11 @@ public abstract class Container {
     }
 
     /**
-     * <p>getServiceLocator.</p>
+     * <p>getInjectionManager.</p>
      *
-     * @return a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @return a InjectionManager object.
      */
-    public abstract ServiceLocator getServiceLocator();
+    public abstract InjectionManager getInjectionManager();
 
     /**
      * <p>prepare.</p>
