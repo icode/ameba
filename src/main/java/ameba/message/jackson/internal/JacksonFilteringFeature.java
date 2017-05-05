@@ -2,8 +2,7 @@ package ameba.message.jackson.internal;
 
 
 import com.fasterxml.jackson.databind.ser.FilterProvider;
-import org.glassfish.hk2.api.TypeLiteral;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.message.filtering.spi.ObjectGraphTransformer;
 import org.glassfish.jersey.message.filtering.spi.ObjectProvider;
 
@@ -11,6 +10,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
+import javax.ws.rs.core.GenericType;
 
 /**
  * {@link javax.ws.rs.core.Feature} adding support for Entity Data Filtering into Jackson media module.
@@ -42,10 +42,10 @@ public class JacksonFilteringFeature implements Feature {
         protected void configure() {
             bindAsContract(JacksonObjectProvider.class)
                     // FilteringObjectProvider.
-                    .to(new TypeLiteral<ObjectProvider<FilterProvider>>() {
+                    .to(new GenericType<ObjectProvider<FilterProvider>>() {
                     })
                             // FilteringGraphTransformer.
-                    .to(new TypeLiteral<ObjectGraphTransformer<FilterProvider>>() {
+                    .to(new GenericType<ObjectGraphTransformer<FilterProvider>>() {
                     })
                             // Scope.
                     .in(Singleton.class);

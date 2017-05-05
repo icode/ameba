@@ -1,7 +1,7 @@
 package ameba.websocket.internal;
 
 import ameba.websocket.WebSocketAddon;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 /**
  * <p>WebSocketBinder class.</p>

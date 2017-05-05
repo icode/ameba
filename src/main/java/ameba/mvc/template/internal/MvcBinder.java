@@ -1,6 +1,6 @@
 package ameba.mvc.template.internal;
 
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.model.ModelProcessor;
 import org.glassfish.jersey.server.mvc.spi.ViewableContext;
 

@@ -202,6 +202,10 @@
                     <artifactId>jersey-media-jaxb</artifactId>
                     <groupId>org.glassfish.jersey.media</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>validation-api</artifactId>
+                    <groupId>javax.validation</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!-- bean validation -->
@@ -225,6 +229,10 @@
                 <exclusion>
                     <artifactId>hk2-locator</artifactId>
                     <groupId>org.glassfish.hk2</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>validation-api</artifactId>
+                    <groupId>javax.validation</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -533,7 +541,7 @@
         <flyway.version>4.0.3</flyway.version>
         <antlr.version>4.6</antlr.version>
         <quasar.version>0.7.7</quasar.version>
-        <bean.validator.version>6.0.0.Alpha2</bean.validator.version>
+        <bean.validator.version>5.4.1.Final</bean.validator.version>
         <ebean.support.dir>ameba/db/ebean/support</ebean.support.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>

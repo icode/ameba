@@ -9,8 +9,8 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.internal.inject.InstanceBinding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,7 +124,7 @@ public class DataSourceManager extends Addon {
                 }
             }
 
-            private ScopedBindingBuilder<DruidDataSource> createBuilder(DruidDataSource dataSource) {
+            private InstanceBinding<DruidDataSource> createBuilder(DruidDataSource dataSource) {
                 return bind(dataSource)
                         .to(DruidDataSource.class)
                         .to(DataSource.class)

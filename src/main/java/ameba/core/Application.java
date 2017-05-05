@@ -27,7 +27,7 @@ import javassist.CtClass;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.model.ContractProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ResourceFinder;

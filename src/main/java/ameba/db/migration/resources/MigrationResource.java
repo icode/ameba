@@ -289,7 +289,7 @@ public class MigrationResource {
                 failMigrations.put(dbName, MigrationFail.create(flyway, err, migration));
             }
         }
-        if (failMigrations.isEmpty()) {
+        if (failMigrations == null || failMigrations.isEmpty()) {
             return Result.success();
         } else {
             return Result.failure();

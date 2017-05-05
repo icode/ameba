@@ -6,7 +6,7 @@ import ameba.core.Application;
 import ameba.event.SystemEventBus;
 import ameba.i18n.Messages;
 import ameba.util.ClassUtils;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
