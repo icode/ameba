@@ -519,21 +519,21 @@
         <ameba.utils.version>0.1.11</ameba.utils.version>
         <osgi.version>4.2.0</osgi.version>
         <paranamer.version>2.8</paranamer.version>
-        <jersey.version>2.26-b02</jersey.version>
-        <slf4j.version>1.7.23</slf4j.version>
-        <logback.version>1.2.1</logback.version>
-        <ebean.version>10.2.1</ebean.version>
-        <ebean.support.version>10.1.7</ebean.support.version>
-        <druid.version>1.0.28</druid.version>
-        <groovy.version>2.4.7</groovy.version>
-        <hk2.version>2.5.0-b32</hk2.version>
+        <jersey.version>2.26-b03</jersey.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <logback.version>1.2.2</logback.version>
+        <ebean.version>10.2.2</ebean.version>
+        <ebean.support.version>10.2.1</ebean.support.version>
+        <druid.version>1.0.29</druid.version>
+        <groovy.version>2.4.11</groovy.version>
+        <hk2.version>2.5.0-b36</hk2.version>
         <javax.websocket.version>1.1</javax.websocket.version>
-        <jackson.core.version>2.8.5</jackson.core.version>
-        <jackson.provider.version>2.8.5</jackson.provider.version>
+        <jackson.core.version>2.8.8</jackson.core.version>
+        <jackson.provider.version>2.8.8</jackson.provider.version>
         <flyway.version>4.0.3</flyway.version>
         <antlr.version>4.6</antlr.version>
         <quasar.version>0.7.7</quasar.version>
-        <bean.validator.version>5.4.0.Final</bean.validator.version>
+        <bean.validator.version>6.0.0.Alpha2</bean.validator.version>
         <ebean.support.dir>ameba/db/ebean/support</ebean.support.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>

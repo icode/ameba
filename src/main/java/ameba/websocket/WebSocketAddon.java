@@ -2,19 +2,17 @@ package ameba.websocket;
 
 import ameba.core.Addon;
 import ameba.core.Application;
+import ameba.core.ServiceLocators;
 import ameba.i18n.Messages;
 import ameba.scanner.ClassFoundEvent;
 import ameba.websocket.internal.DefaultServerEndpointConfig;
 import ameba.websocket.internal.WebSocketBinder;
 import com.google.common.collect.Lists;
-import jersey.repackaged.com.google.common.collect.Sets;
-import org.glassfish.hk2.api.DynamicConfiguration;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder;
-import org.glassfish.jersey.internal.inject.Injections;
+import org.glassfish.jersey.internal.inject.Binding;
+import org.glassfish.jersey.internal.inject.Bindings;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.process.internal.RequestScoped;
-import org.jvnet.hk2.annotations.Contract;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +23,7 @@ import javax.websocket.server.ServerContainer;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 import java.lang.annotation.Annotation;
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.List;
 
 
 /**
@@ -136,44 +133,10 @@ public class WebSocketAddon extends Addon {
     }
 
     private static class WebSocketFeature implements Feature {
-
         @Inject
-        private ServiceLocator serviceLocator;
+        private InjectionManager injectionManager;
         @Inject
         private ServerContainer serverContainer;
-
-        public static Set<Class<?>> getProviderContracts(final Class<?> clazz) {
-            final Set<Class<?>> contracts = Sets.newIdentityHashSet();
-            computeProviderContracts(clazz, contracts);
-            return contracts;
-        }
-
-        private static void computeProviderContracts(final Class<?> clazz, final Set<Class<?>> contracts) {
-            for (final Class<?> contract : getImplementedContracts(clazz)) {
-                if (isSupportedContract(contract)) {
-                    contracts.add(contract);
-                }
-                computeProviderContracts(contract, contracts);
-            }
-        }
-
-        private static Iterable<Class<?>> getImplementedContracts(final Class<?> clazz) {
-            final Collection<Class<?>> list = new LinkedList<>();
-
-            Collections.addAll(list, clazz.getInterfaces());
-
-            final Class<?> superclass = clazz.getSuperclass();
-            if (superclass != null) {
-                list.add(superclass);
-            }
-
-            return list;
-        }
-
-        public static boolean isSupportedContract(final Class<?> type) {
-            return type.isAnnotationPresent(Contract.class)
-                    || type.isAnnotationPresent(org.glassfish.jersey.spi.Contract.class);
-        }
 
         /**
          * {@inheritDoc}
@@ -182,8 +145,6 @@ public class WebSocketAddon extends Addon {
         @SuppressWarnings("unchecked")
         public boolean configure(FeatureContext context) {
             context.register(new WebSocketBinder());
-            final DynamicConfiguration dc = Injections.getConfiguration(serviceLocator);
-
             if (serverContainer == null) {
                 logger.warn(Messages.get("web.socket.server.unsupported"));
             }
@@ -192,12 +153,11 @@ public class WebSocketAddon extends Addon {
                 WebSocket webSocket = getAnnotation(WebSocket.class, endpointClass);
                 if (webSocket == null) continue;
                 Class<? extends Annotation> scope = getScope(endpointClass);
-                final ScopedBindingBuilder<?> bindingBuilder = Injections.newBinder(endpointClass)
-                        .to(endpointClass).in(scope);
-                getProviderContracts(endpointClass).forEach((Consumer<Class>) bindingBuilder::to);
-                Injections.addBinding(bindingBuilder, dc);
+                final Binding binding = Bindings.service(endpointClass).to(endpointClass).in(scope);
+                ServiceLocators.getProviderContracts(endpointClass).forEach(binding::to);
+                injectionManager.register(binding);
                 DefaultServerEndpointConfig endpointConfig = new DefaultServerEndpointConfig(
-                        serviceLocator,
+                        injectionManager,
                         endpointClass,
                         webSocket
                 );
@@ -212,7 +172,6 @@ public class WebSocketAddon extends Addon {
                     // create resource use modelProcessor
                 }
             }
-            dc.commit();
 
             return true;
         }

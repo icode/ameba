@@ -1,7 +1,7 @@
 package ameba.message.internal;
 
 import ameba.core.Requests;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.internal.inject.Providers;
 import org.glassfish.jersey.message.internal.HeaderUtils;
 
@@ -41,24 +41,24 @@ public class MessageHelper {
     /**
      * <p>getStreamingProcesses.</p>
      *
-     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param manager InjectionManager.
      * @return a {@link java.lang.Iterable} object.
      */
-    public static Iterable<StreamingProcess> getStreamingProcesses(ServiceLocator locator) {
-        return Providers.getAllProviders(locator, StreamingProcess.class);
+    public static Iterable<StreamingProcess> getStreamingProcesses(InjectionManager manager) {
+        return Providers.getAllProviders(manager, StreamingProcess.class);
     }
 
     /**
      * <p>getStreamingProcess.</p>
      *
      * @param entity a T object.
-     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param manager manager
      * @param <T> a T object.
      * @return a {@link ameba.message.internal.StreamingProcess} object.
      */
     @SuppressWarnings("unchecked")
-    public static <T> StreamingProcess<T> getStreamingProcess(T entity, ServiceLocator locator) {
-        for (StreamingProcess process : getStreamingProcesses(locator)) {
+    public static <T> StreamingProcess<T> getStreamingProcess(T entity, InjectionManager manager) {
+        for (StreamingProcess process : getStreamingProcesses(manager)) {
             if (process.isSupported(entity)) {
                 return process;
             }

@@ -3,7 +3,7 @@ package ameba.mvc.template.internal;
 import ameba.exception.UnprocessableEntityException;
 import groovy.lang.Singleton;
 import jersey.repackaged.com.google.common.collect.Sets;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.internal.inject.Providers;
 import org.glassfish.jersey.server.mvc.spi.TemplateProcessor;
 
@@ -36,13 +36,13 @@ public class NotFoundForward implements ContainerResponseFilter {
     @Context
     private Provider<UriInfo> uriInfo;
     @Inject
-    private ServiceLocator serviceLocator;
+    private InjectionManager injectionManager;
 
     private Set<TemplateProcessor> getTemplateProcessors() {
         Set<TemplateProcessor> templateProcessors = Sets.newLinkedHashSet();
 
-        templateProcessors.addAll(Providers.getCustomProviders(serviceLocator, TemplateProcessor.class));
-        templateProcessors.addAll(Providers.getProviders(serviceLocator, TemplateProcessor.class));
+        templateProcessors.addAll(Providers.getCustomProviders(injectionManager, TemplateProcessor.class));
+        templateProcessors.addAll(Providers.getProviders(injectionManager, TemplateProcessor.class));
         return templateProcessors;
     }
 

@@ -1,8 +1,7 @@
 package ameba.container.internal;
 
 import com.google.common.collect.Iterables;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.internal.inject.Injections;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.internal.inject.Providers;
 import org.glassfish.jersey.server.ApplicationHandler;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -38,7 +37,7 @@ public class ConfigHelper {
     public static LifecycleListener getContainerLifecycleListener(final ApplicationHandler applicationHandler) {
 
         final Iterable<ContainerLifecycleListener> listeners = Iterables.concat(
-                Providers.getAllProviders(applicationHandler.getServiceLocator(), ContainerLifecycleListener.class),
+                Providers.getAllProviders(applicationHandler.getInjectionManager(), ContainerLifecycleListener.class),
                 new LinkedList<ContainerLifecycleListener>() {{
                     add(new ServiceLocatorShutdownListener());
                 }});
@@ -103,12 +102,12 @@ public class ConfigHelper {
         @Override
         public void onShutdown(final Container container) {
             final ApplicationHandler handler = container.getApplicationHandler();
-            final ServiceLocator locator = handler.getServiceLocator();
+            final InjectionManager injectionManager = handler.getInjectionManager();
 
             // Call @PreDestroy method on Application.
-            locator.preDestroy(getWrappedApplication(handler.getConfiguration()));
+            injectionManager.preDestroy(getWrappedApplication(handler.getConfiguration()));
             // Shutdown ServiceLocator.
-            Injections.shutdownLocator(locator);
+            injectionManager.shutdown();
         }
     }
 

@@ -1,12 +1,9 @@
 package ameba.lib;
 
 import ameba.websocket.WebSocketException;
-import org.glassfish.hk2.api.ActiveDescriptor;
-import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.jersey.internal.util.Producer;
 import org.glassfish.jersey.process.internal.RequestScope;
 
-import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
@@ -119,61 +116,12 @@ public class JerseyScopeDelegate {
     }
 
     /**
-     * <p>Getter for the field <code>scope</code>.</p>
-     *
-     * @return a {@link java.lang.Class} object.
-     */
-    public Class<? extends Annotation> getScope() {
-        return scope.getScope();
-    }
-
-    /**
-     * <p>findOrCreate.</p>
-     *
-     * @param activeDescriptor a {@link org.glassfish.hk2.api.ActiveDescriptor} object.
-     * @param root             a {@link org.glassfish.hk2.api.ServiceHandle} object.
-     * @param <U>              a U object.
-     * @return a U object.
-     */
-    public <U> U findOrCreate(ActiveDescriptor<U> activeDescriptor, ServiceHandle<?> root) {
-        return scope.findOrCreate(activeDescriptor, root);
-    }
-
-    /**
-     * <p>containsKey.</p>
-     *
-     * @param descriptor a {@link org.glassfish.hk2.api.ActiveDescriptor} object.
-     * @return a boolean.
-     */
-    public boolean containsKey(ActiveDescriptor<?> descriptor) {
-        return scope.containsKey(descriptor);
-    }
-
-    /**
-     * <p>supportsNullCreation.</p>
-     *
-     * @return a boolean.
-     */
-    public boolean supportsNullCreation() {
-        return scope.supportsNullCreation();
-    }
-
-    /**
      * <p>isActive.</p>
      *
      * @return a boolean.
      */
     public boolean isActive() {
         return scope.isActive();
-    }
-
-    /**
-     * <p>destroyOne.</p>
-     *
-     * @param descriptor a {@link org.glassfish.hk2.api.ActiveDescriptor} object.
-     */
-    public void destroyOne(ActiveDescriptor<?> descriptor) {
-        scope.destroyOne(descriptor);
     }
 
     /**
@@ -184,6 +132,10 @@ public class JerseyScopeDelegate {
      */
     public RequestScope.Instance referenceCurrent() throws IllegalStateException {
         return scope.referenceCurrent();
+    }
+
+    public RequestScope.Instance current() {
+        return scope.current();
     }
 
     /**

@@ -1,7 +1,7 @@
 package ameba.message.internal;
 
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -35,8 +35,9 @@ public class StreamingWriterInterceptor implements WriterInterceptor, ContainerR
     private static final String RESP_PROP_N = StreamingWriterInterceptor.class.getName() + ".responseContext";
     @Inject
     private Provider<ContainerRequestContext> requestProvider;
+
     @Inject
-    private ServiceLocator locator;
+    private InjectionManager manager;
 
     /**
      * {@inheritDoc}
@@ -98,7 +99,7 @@ public class StreamingWriterInterceptor implements WriterInterceptor, ContainerR
             throws IOException {
 
         Object entity = context.getEntity();
-        StreamingProcess<Object> process = MessageHelper.getStreamingProcess(context.getEntity(), locator);
+        StreamingProcess<Object> process = MessageHelper.getStreamingProcess(context.getEntity(), manager);
 
         if (process != null) {
             ContainerResponseContext responseContext =

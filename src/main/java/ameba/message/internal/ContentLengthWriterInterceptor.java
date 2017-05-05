@@ -1,6 +1,6 @@
 package ameba.message.internal;
 
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -22,7 +22,7 @@ import java.io.IOException;
 public class ContentLengthWriterInterceptor implements WriterInterceptor {
 
     @Inject
-    private ServiceLocator locator;
+    private InjectionManager manager;
 
     /**
      * {@inheritDoc}
@@ -31,7 +31,7 @@ public class ContentLengthWriterInterceptor implements WriterInterceptor {
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
         if (!context.getHeaders().containsKey(HttpHeaders.CONTENT_LENGTH)) {
             Object entity = context.getEntity();
-            StreamingProcess<Object> process = MessageHelper.getStreamingProcess(entity, locator);
+            StreamingProcess<Object> process = MessageHelper.getStreamingProcess(entity, manager);
 
             if (process != null) {
                 long length = process.length(entity);

@@ -1,7 +1,7 @@
 package ameba.mvc.template.internal;
 
 import jersey.repackaged.com.google.common.collect.Sets;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.internal.inject.Providers;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ExtendedUriInfo;
@@ -40,7 +40,7 @@ import java.util.Set;
 final class ViewableMessageBodyWriter implements MessageBodyWriter<Viewable> {
 
     @Inject
-    private ServiceLocator serviceLocator;
+    private InjectionManager injectionManager;
     @Context
     private Provider<ExtendedUriInfo> extendedUriInfoProvider;
     @Context
@@ -173,8 +173,8 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Viewable> {
     private Set<TemplateProcessor> getTemplateProcessors() {
         final Set<TemplateProcessor> templateProcessors = Sets.newLinkedHashSet();
 
-        templateProcessors.addAll(Providers.getCustomProviders(serviceLocator, TemplateProcessor.class));
-        templateProcessors.addAll(Providers.getProviders(serviceLocator, TemplateProcessor.class));
+        templateProcessors.addAll(Providers.getCustomProviders(injectionManager, TemplateProcessor.class));
+        templateProcessors.addAll(Providers.getProviders(injectionManager, TemplateProcessor.class));
 
         return templateProcessors;
     }
@@ -188,10 +188,10 @@ final class ViewableMessageBodyWriter implements MessageBodyWriter<Viewable> {
      */
     private ViewableContext getViewableContext() {
         final Set<ViewableContext> customProviders =
-                Providers.getCustomProviders(serviceLocator, ViewableContext.class);
+                Providers.getCustomProviders(injectionManager, ViewableContext.class);
         if (!customProviders.isEmpty()) {
             return customProviders.iterator().next();
         }
-        return Providers.getProviders(serviceLocator, ViewableContext.class).iterator().next();
+        return Providers.getProviders(injectionManager, ViewableContext.class).iterator().next();
     }
 }

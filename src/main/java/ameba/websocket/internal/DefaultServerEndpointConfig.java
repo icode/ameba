@@ -4,7 +4,7 @@ import ameba.websocket.WebSocket;
 import ameba.websocket.WebSocketEndpointProvider;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.internal.inject.Injections;
 
 import javax.websocket.Decoder;
@@ -37,11 +37,11 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
     /**
      * <p>Constructor for DefaultServerEndpointConfig.</p>
      *
-     * @param serviceLocator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param manager a manager
      * @param endpointClass  a {@link java.lang.Class} endpoint class.
      * @param webSocketConf  a {@link ameba.websocket.WebSocket} object.
      */
-    public DefaultServerEndpointConfig(final ServiceLocator serviceLocator,
+    public DefaultServerEndpointConfig(final InjectionManager manager,
                                        Class endpointClass,
                                        final WebSocket webSocketConf) {
         path = webSocketConf.path();
@@ -49,14 +49,14 @@ public class DefaultServerEndpointConfig implements ServerEndpointConfig {
         encoders = Lists.newArrayList(webSocketConf.encoders());
         decoders = Lists.newArrayList(webSocketConf.decoders());
         for (Class<? extends Extension> extensionClass : webSocketConf.extensions()) {
-            extensions.add(Injections.getOrCreate(serviceLocator, extensionClass));
+            extensions.add(Injections.getOrCreate(manager, extensionClass));
         }
-        final WebSocketEndpointProvider provider = serviceLocator.getService(WebSocketEndpointProvider.class);
+        final WebSocketEndpointProvider provider = manager.getInstance(WebSocketEndpointProvider.class);
 
         final EndpointMeta endpointMeta = provider.parseMeta(endpointClass, webSocketConf);
 
         final ServerEndpointConfig.Configurator cfgr =
-                Injections.getOrCreate(serviceLocator, webSocketConf.configurator());
+                Injections.getOrCreate(manager, webSocketConf.configurator());
         serverEndpointConfigurator = new ServerEndpointConfig.Configurator() {
 
             @Override
