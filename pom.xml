@@ -530,7 +530,7 @@
         <jersey.version>2.26-b03</jersey.version>
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.2</logback.version>
-        <ebean.version>10.2.2</ebean.version>
+        <ebean.version>10.3.1</ebean.version>
         <ebean.support.version>10.2.1</ebean.support.version>
         <druid.version>1.0.29</druid.version>
         <groovy.version>2.4.11</groovy.version>

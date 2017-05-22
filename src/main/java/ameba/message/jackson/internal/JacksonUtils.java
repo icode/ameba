@@ -3,10 +3,7 @@ package ameba.message.jackson.internal;
 import ameba.core.Application;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
@@ -97,6 +94,7 @@ public class JacksonUtils {
         mapper.registerModule(new GuavaModule());
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
                 .enable(SerializationFeature.WRITE_ENUMS_USING_INDEX)
+                .enable(MapperFeature.PROPAGATE_TRANSIENT_MARKER)
                 .disable(
                         SerializationFeature.WRITE_NULL_MAP_VALUES,
                         SerializationFeature.FAIL_ON_EMPTY_BEANS
