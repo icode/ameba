@@ -414,7 +414,7 @@
         <dependency>
             <groupId>io.ebean</groupId>
             <artifactId>ebean-agent</artifactId>
-            <version>10.2.1</version>
+            <version>${ebean.agent.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -475,7 +475,7 @@
             <plugin>
                 <groupId>io.ebean</groupId>
                 <artifactId>ebean-maven-plugin</artifactId>
-                <version>${ebean.support.version}</version>
+                <version>${ebean.maven.version}</version>
                 <configuration>
                     <packages>ameba.db.migration.models.**</packages>
                     <transformArgs>debug=1</transformArgs>
@@ -549,7 +549,8 @@
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.2</logback.version>
         <ebean.version>10.3.1</ebean.version>
-        <ebean.support.version>10.2.1</ebean.support.version>
+        <ebean.maven.version>10.3.1</ebean.maven.version>
+        <ebean.agent.version>10.3.1</ebean.agent.version>
         <druid.version>1.0.29</druid.version>
         <groovy.version>2.4.11</groovy.version>
         <hk2.version>2.5.0-b36</hk2.version>
