@@ -548,7 +548,7 @@
         <jersey.version>2.26-b03</jersey.version>
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.2</logback.version>
-        <ebean.version>10.3.2</ebean.version>
+        <ebean.version>10.4.1</ebean.version>
         <ebean.maven.version>10.3.1</ebean.maven.version>
         <ebean.agent.version>10.3.1</ebean.agent.version>
         <druid.version>1.1.0</druid.version>
