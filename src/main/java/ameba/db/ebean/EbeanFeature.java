@@ -127,7 +127,7 @@ public class EbeanFeature implements Feature {
             config.setJsonInclude(JsonConfig.Include.NON_EMPTY);
             config.setPersistBatch(PersistBatch.ALL);
             config.setUpdateAllPropertiesInBatch(false);
-            config.setH2ProductionMode(true);
+            config.setAllQuotedIdentifiers(true);
             config.loadFromProperties(cp);
             config.setPackages(null);
             config.setDataSourceJndiName(null);
