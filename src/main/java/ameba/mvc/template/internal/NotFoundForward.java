@@ -1,8 +1,8 @@
 package ameba.mvc.template.internal;
 
 import ameba.exception.UnprocessableEntityException;
+import com.google.common.collect.Sets;
 import groovy.lang.Singleton;
-import jersey.repackaged.com.google.common.collect.Sets;
 import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.internal.inject.Providers;
 import org.glassfish.jersey.server.mvc.spi.TemplateProcessor;

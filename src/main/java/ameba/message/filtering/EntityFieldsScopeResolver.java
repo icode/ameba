@@ -1,6 +1,6 @@
 package ameba.message.filtering;
 
-import jersey.repackaged.com.google.common.collect.Sets;
+import com.google.common.collect.Sets;
 import org.glassfish.jersey.internal.util.Tokenizer;
 import org.glassfish.jersey.message.filtering.spi.ScopeResolver;
 

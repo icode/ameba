@@ -1,7 +1,7 @@
 package ameba.core.ws.rs;
 
 import ameba.core.ServiceLocators;
-import jersey.repackaged.com.google.common.collect.Lists;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.model.internal.RankedComparator;
