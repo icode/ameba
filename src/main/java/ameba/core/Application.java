@@ -522,15 +522,27 @@ public class Application {
     }
 
     private void registerBinder() {
-        register(Requests.BindRequest.class);
-        register(SysEventListener.class);
         register(new AbstractBinder() {
             @Override
             protected void configure() {
+                srcProperties.forEach((key, value) -> {
+                    Class clazz = Object.class;
+                    if (value != null) {
+                        if (value instanceof String) {
+                            clazz = String.class;
+                        } else {
+                            clazz = value.getClass();
+                        }
+                    }
+                    bind(value).to(clazz).named(key);
+                });
                 bind(Application.this).to(Application.class).proxy(false);
                 bind(mode).to(Mode.class).proxy(false);
             }
         });
+
+        register(Requests.BindRequest.class);
+        register(SysEventListener.class);
     }
 
     /**
