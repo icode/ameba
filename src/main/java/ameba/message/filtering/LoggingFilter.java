@@ -31,7 +31,6 @@ import java.util.logging.Logger;
  * @author Pavel Bucek (pavel.bucek at oracle.com)
  * @author Martin Matula
  * @author icode
- *
  */
 @PreMatching
 @Priority(Integer.MIN_VALUE)
@@ -210,14 +209,20 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void filter(final ClientRequestContext requestContext, final ClientResponseContext responseContext)
             throws IOException {
         final Object requestId = requestContext.getProperty(LOGGING_ID_PROPERTY);
         final long id = requestId != null ? (Long) requestId : _id.incrementAndGet();
 
-        final StringBuilder b = new StringBuilder();
+        StringBuilder b = (StringBuilder) requestContext.getProperty(LOGGER_BUFFER_PROPERTY);
+        if (b == null) {
+            b = new StringBuilder();
+            requestContext.setProperty(LOGGER_BUFFER_PROPERTY, b);
+        }
 
         printResponseLine(b, "Client response received", id, responseContext.getStatus());
         printPrefixedHeaders(b, id, RESPONSE_PREFIX, responseContext.getHeaders());
@@ -230,7 +235,9 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
         log(b);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void filter(final ContainerRequestContext context) throws IOException {
         final long id = _id.incrementAndGet();
@@ -249,7 +256,9 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
         log(b);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void filter(final ContainerRequestContext requestContext, final ContainerResponseContext responseContext)
             throws IOException {
@@ -269,7 +278,9 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void aroundWriteTo(final WriterInterceptorContext writerInterceptorContext)
             throws IOException, WebApplicationException {
@@ -278,7 +289,11 @@ public final class LoggingFilter implements ContainerRequestFilter, ClientReques
 
         final Object requestId = Requests.getProperty(LOGGING_ID_PROPERTY);
         final long id = requestId != null ? (Long) requestId : _id.incrementAndGet();
-        final StringBuilder b = (StringBuilder) writerInterceptorContext.getProperty(LOGGER_BUFFER_PROPERTY);
+        StringBuilder b = (StringBuilder) writerInterceptorContext.getProperty(LOGGER_BUFFER_PROPERTY);
+        if (b == null) {
+            b = new StringBuilder();
+            writerInterceptorContext.setProperty(LOGGER_BUFFER_PROPERTY, b);
+        }
         printPrefixedHeaders(b, id, RESPONSE_PREFIX, HeaderUtils.asStringHeaders(writerInterceptorContext.getHeaders()));
 
         if (stream != null) {
