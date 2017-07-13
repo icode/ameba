@@ -22,7 +22,10 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import javassist.CtClass;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -530,6 +533,23 @@ public class Application {
                     if (value != null) {
                         if (value instanceof String) {
                             clazz = String.class;
+                            Integer intValue = Ints.tryParse((String) value);
+                            if (intValue != null)
+                                bind(intValue).to(Integer.class).to(int.class).named(key);
+
+                            Long longValue = Longs.tryParse((String) value);
+                            if (longValue != null)
+                                bind(longValue).to(Long.class).to(long.class).named(key);
+
+                            Double doubleValue = Doubles.tryParse((String) value);
+                            if (doubleValue != null)
+                                bind(doubleValue).to(Double.class).to(double.class).named(key);
+
+                            Float floatValue = Floats.tryParse((String) value);
+                            if (floatValue != null)
+                                bind(floatValue).to(Float.class).to(float.class).named(key);
+
+                            bind(Boolean.parseBoolean((String) value)).to(Boolean.class).to(boolean.class).named(key);
                         } else {
                             clazz = value.getClass();
                         }
