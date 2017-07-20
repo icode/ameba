@@ -1,6 +1,5 @@
 package ameba.db.ebean.support;
 
-import ameba.core.ws.rs.PATCH;
 import io.ebean.Ebean;
 import io.ebeaninternal.api.SpiEbeanServer;
 
@@ -176,7 +175,7 @@ public abstract class ModelResource<URI_ID, MODEL_ID, MODEL>
      * find history as of timestamp
      */
     @GET
-    @Path("{id}/history/{asOf: " + DATE_REGEX + "}")//todo 正则匹配时间格式
+    @Path("{id}/history/{asOf: " + DATE_REGEX + "}")
     public Response fetchHistoryAsOf(@PathParam("id") URI_ID id, @PathParam("asOf") Timestamp asOf) throws Exception {
         return super.fetchHistoryAsOf(id, asOf);
     }
