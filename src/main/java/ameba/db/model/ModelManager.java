@@ -62,15 +62,18 @@ public class ModelManager extends Addon {
 
         for (String name : DataSourceManager.getDataSourceNames()) {
             String modelPackages = (String) config.get("db." + name + ".models");
+            final Set<String> pkgs = Sets.newHashSet();
             if (StringUtils.isNotBlank(modelPackages)) {
-                final Set<String> pkgs = Sets.newHashSet(StringUtils.deleteWhitespace(modelPackages).split(","));
+                Collections.addAll(pkgs, StringUtils.deleteWhitespace(modelPackages).split(","));
+            }
 
-                //db.default.models.pkg=
-                //db.default.models+=
-                if (DataSourceManager.getDefaultDataSourceName().equalsIgnoreCase(name)) {
-                    pkgs.addAll(defaultModelsPkg);
-                }
+            if (DataSourceManager.getDefaultDataSourceName().equalsIgnoreCase(name)) {
+                pkgs.addAll(defaultModelsPkg);
+            }
 
+            //db.default.models.pkg=
+            //db.default.models+=
+            if (!pkgs.isEmpty()) {
                 final String[] startsPackages = pkgs.toArray(new String[pkgs.size()]);
                 application.packages(startsPackages);
 
