@@ -333,7 +333,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @param model the model to update
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
-     * @see ameba.core.ws.rs.PATCH
+     * @see javax.ws.rs.PATCH
      * @see AbstractModelResource#patch
      */
     public Response patch(@PathParam("id") final URI_ID id, @NotNull final MODEL model) throws Exception {
