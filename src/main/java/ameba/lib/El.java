@@ -64,6 +64,17 @@ public class El {
         return parse(text, context);
     }
 
+    public static String parse(String text, ELContext context, Object root,
+                               String prefix, Map<String, Method> functions) {
+        addVariables(context, new BeanMap<>(root));
+        addFunctions(context, prefix, functions);
+        return parse(text, context);
+    }
+
+    public static String parse(String text, ELContext context, Object root, Map<String, Method> functions) {
+        return parse(text, context, root, "", functions);
+    }
+
     public static String parse(String text, ELContext context) {
         return (String) expressionFactory
                 .createValueExpression(context, text, String.class)
