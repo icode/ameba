@@ -139,7 +139,7 @@ public class CommonExprTransformer implements ExprTransformer<Expression, EbeanE
                     throw new QuerySyntaxException(Messages.get("dsl.arguments.error3", operator));
                 }
             }
-            EbeanUtils.checkQuery(q, invoker.getLocator());
+            EbeanUtils.checkQuery(q, invoker.getInjectionManager());
             return QueryExpression.of(q);
         }
         throw new QuerySyntaxException(Messages.get("dsl.arguments.error0", operator));

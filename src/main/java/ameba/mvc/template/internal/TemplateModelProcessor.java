@@ -306,7 +306,7 @@ class TemplateModelProcessor implements ModelProcessor {
          * <ul>
          * <li>{{@value #IMPLICIT_VIEW_PATH_PARAMETER}} value</li>
          * <li>{@link org.glassfish.jersey.server.mvc.Template#name()}</li>
-         * <li>last sub-resource locator path</li>
+         * <li>last sub-resource manager path</li>
          * <li>index</li>
          * </ul>
          *

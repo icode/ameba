@@ -15,7 +15,7 @@ import io.ebeaninternal.api.SpiQuery;
 import io.ebeaninternal.server.deploy.BeanDescriptor;
 import io.ebeaninternal.server.deploy.BeanProperty;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.internal.util.collection.Refs;
 
@@ -47,7 +47,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     @Context
     protected UriInfo uriInfo;
     @Inject
-    protected ServiceLocator locator;
+    protected InjectionManager manager;
     private TxScope txScope = null;
     private BeanDescriptor descriptor;
 
@@ -1009,10 +1009,10 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @param query        Query
      * @param needPageList need page list
      * @return page list count or null
-     * @see ModelInterceptor#applyUriQuery(MultivaluedMap, SpiQuery, ServiceLocator, boolean)
+     * @see ModelInterceptor#applyUriQuery(MultivaluedMap, SpiQuery, InjectionManager, boolean)
      */
     protected FutureRowCount applyUriQuery(final Query<MODEL> query, boolean needPageList) {
-        return ModelInterceptor.applyUriQuery(uriInfo.getQueryParameters(), (SpiQuery) query, locator, needPageList);
+        return ModelInterceptor.applyUriQuery(uriInfo.getQueryParameters(), (SpiQuery) query, manager, needPageList);
     }
 
     /**

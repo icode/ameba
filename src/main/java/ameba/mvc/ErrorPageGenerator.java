@@ -1,6 +1,5 @@
 package ameba.mvc;
 
-import ameba.core.ServiceLocators;
 import ameba.message.error.ErrorMessage;
 import ameba.mvc.template.internal.Viewables;
 import com.google.common.collect.Maps;
@@ -28,7 +27,6 @@ import java.util.Map;
  * 错误处理页面配置
  *
  * @author icode
- *
  */
 @Singleton
 public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
@@ -116,7 +114,9 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
         return Viewables.newDefaultViewable(tplName, error);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return ErrorMessage.class.isAssignableFrom(type)
@@ -124,7 +124,9 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
                 || mediaType.getSubtype().equals("xhtml+xml"));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long getSize(ErrorMessage errorMessage,
                         Class<?> type, Type genericType,
@@ -142,7 +144,9 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
         return errorTemplateMap.get(status);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeTo(ErrorMessage errorMessage,
                         Class<?> type,
@@ -189,9 +193,9 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
     /**
      * <p>writeViewable.</p>
      *
-     * @param viewable a {@link org.glassfish.jersey.server.mvc.Viewable} object.
-     * @param mediaType a {@link javax.ws.rs.core.MediaType} object.
-     * @param httpHeaders a {@link javax.ws.rs.core.MultivaluedMap} object.
+     * @param viewable     a {@link org.glassfish.jersey.server.mvc.Viewable} object.
+     * @param mediaType    a {@link javax.ws.rs.core.MediaType} object.
+     * @param httpHeaders  a {@link javax.ws.rs.core.MultivaluedMap} object.
      * @param entityStream a {@link java.io.OutputStream} object.
      * @throws java.io.IOException if any.
      */
@@ -199,7 +203,8 @@ public class ErrorPageGenerator implements MessageBodyWriter<ErrorMessage> {
                                  MediaType mediaType,
                                  MultivaluedMap<String, Object> httpHeaders,
                                  OutputStream entityStream) throws IOException {
-        MessageBodyWriter<Viewable> writer = ServiceLocators.getViewableMessageBodyWriter(workers.get());
+        MessageBodyWriter<Viewable> writer = workers.get().getMessageBodyWriter(Viewable.class, null,
+                new Annotation[]{}, null);
         if (writer != null) {
             writer.writeTo(viewable,
                     Viewable.class,

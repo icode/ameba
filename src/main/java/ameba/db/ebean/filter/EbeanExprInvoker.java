@@ -1,15 +1,13 @@
 package ameba.db.ebean.filter;
 
-import ameba.core.ServiceLocators;
 import ameba.db.dsl.*;
 import ameba.db.dsl.QueryExprMeta.Val;
 import ameba.i18n.Messages;
 import io.ebean.Expression;
 import io.ebeaninternal.api.SpiEbeanServer;
 import io.ebeaninternal.api.SpiQuery;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.model.internal.RankedComparator;
-import org.glassfish.jersey.model.internal.RankedProvider;
+import org.glassfish.jersey.internal.inject.InjectionManager;
+import org.glassfish.jersey.internal.inject.Providers;
 
 import java.util.Arrays;
 
@@ -17,22 +15,21 @@ import java.util.Arrays;
  * <p>EbeanExprInvoker class.</p>
  *
  * @author icode
- *
  */
 public class EbeanExprInvoker extends QueryExprInvoker<Expression> {
 
     private SpiEbeanServer server;
-    private ServiceLocator locator;
+    private InjectionManager manager;
     private SpiQuery<?> query;
 
     /**
      * <p>Constructor for EbeanExprInvoker.</p>
      *
      * @param query   a {@link io.ebeaninternal.api.SpiQuery} object.
-     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param manager a {@link InjectionManager} object.
      */
-    public EbeanExprInvoker(SpiQuery<?> query, ServiceLocator locator) {
-        this.locator = locator;
+    public EbeanExprInvoker(SpiQuery<?> query, InjectionManager manager) {
+        this.manager = manager;
         this.query = query;
         this.server = query.getBeanDescriptor().getEbeanServer();
     }
@@ -56,12 +53,12 @@ public class EbeanExprInvoker extends QueryExprInvoker<Expression> {
     }
 
     /**
-     * <p>Getter for the field <code>locator</code>.</p>
+     * <p>Getter for the field <code>manager</code>.</p>
      *
-     * @return a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @return a {@link InjectionManager} object.
      */
-    public ServiceLocator getLocator() {
-        return locator;
+    public InjectionManager getInjectionManager() {
+        return manager;
     }
 
     /**
@@ -92,10 +89,7 @@ public class EbeanExprInvoker extends QueryExprInvoker<Expression> {
      * @return a {@link java.lang.Iterable} object.
      */
     protected <R, T extends Transformer<Transformed<R>>> Iterable<T> getTransformer(Class<T> transformerClass) {
-        Iterable<RankedProvider<T>> rankedProviders =
-                ServiceLocators.getRankedProviders(locator, transformerClass);
-        return ServiceLocators
-                .sortRankedProviders(new RankedComparator<>(), rankedProviders);
+        return Providers.getAllRankedSortedProviders(manager, transformerClass);
     }
 
     /**

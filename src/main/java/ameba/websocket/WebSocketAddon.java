@@ -2,7 +2,6 @@ package ameba.websocket;
 
 import ameba.core.Addon;
 import ameba.core.Application;
-import ameba.core.ServiceLocators;
 import ameba.i18n.Messages;
 import ameba.scanner.ClassFoundEvent;
 import ameba.websocket.internal.DefaultServerEndpointConfig;
@@ -12,6 +11,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.jersey.internal.inject.Binding;
 import org.glassfish.jersey.internal.inject.Bindings;
 import org.glassfish.jersey.internal.inject.InjectionManager;
+import org.glassfish.jersey.internal.inject.Providers;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,7 +154,7 @@ public class WebSocketAddon extends Addon {
                 if (webSocket == null) continue;
                 Class<? extends Annotation> scope = getScope(endpointClass);
                 final Binding binding = Bindings.service(endpointClass).to(endpointClass).in(scope);
-                ServiceLocators.getProviderContracts(endpointClass).forEach(binding::to);
+                Providers.getProviderContracts(endpointClass).forEach(binding::to);
                 injectionManager.register(binding);
                 DefaultServerEndpointConfig endpointConfig = new DefaultServerEndpointConfig(
                         injectionManager,

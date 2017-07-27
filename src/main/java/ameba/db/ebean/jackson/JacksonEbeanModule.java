@@ -22,7 +22,7 @@ public class JacksonEbeanModule extends SimpleModule {
      * Construct with a JsonContext obtained from an EbeanServer.
      *
      * @param server ebean server
-     * @param locator  service locator
+     * @param locator  service manager
      */
     public JacksonEbeanModule(EbeanServer server, ServiceLocator locator) {
         this.server = server;

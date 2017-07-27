@@ -15,7 +15,7 @@ import io.ebeaninternal.api.SpiQuery;
 import io.ebeaninternal.server.querydefn.OrmQueryDetail;
 import io.ebeaninternal.server.querydefn.OrmQueryProperties;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Priority;
@@ -61,7 +61,7 @@ public class ModelInterceptor implements WriterInterceptor {
     @Context
     private Provider<UriInfo> uriInfoProvider;
     @Inject
-    private ServiceLocator locator;
+    private InjectionManager manager;
 
     /**
      * <p>getFieldsParamName.</p>
@@ -314,15 +314,15 @@ public class ModelInterceptor implements WriterInterceptor {
      *
      * @param queryParams uri query params
      * @param query       query
-     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param manager a {@link InjectionManager} object.
      * @param <T> a T object.
      */
     public static <T> void applyFilter(MultivaluedMap<String, String> queryParams,
                                        SpiQuery<T> query,
-                                       ServiceLocator locator) {
+                                       InjectionManager manager) {
         List<String> wheres = queryParams.get(FILTER_PARAM_NAME);
         if (wheres != null && wheres.size() > 0) {
-            EbeanExprInvoker invoker = new EbeanExprInvoker(query, locator);
+            EbeanExprInvoker invoker = new EbeanExprInvoker(query, manager);
             WhereExprApplier<T> applier = WhereExprApplier.create(query.where());
             for (String w : wheres) {
                 QueryDSL.invoke(
@@ -345,22 +345,22 @@ public class ModelInterceptor implements WriterInterceptor {
      * @see #applyFilter
      * @see #applyOrderBy
      * @see #applyPageList
-     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param manager a {@link InjectionManager} object.
      */
     @SuppressWarnings("unchecked")
     public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams,
                                                SpiQuery query,
-                                               ServiceLocator locator, boolean needPageList) {
+                                               InjectionManager manager, boolean needPageList) {
         Set<String> inv = query.validate();
         applyFetchProperties(queryParams, query);
-        applyFilter(queryParams, query, locator);
+        applyFilter(queryParams, query, manager);
         applyOrderBy(queryParams, query);
 
         EbeanUtils.checkQuery(
                 (SpiQuery<?>) query,
                 inv,
                 null,
-                locator
+                manager
         );
         if (needPageList)
             return applyPageList(queryParams, query);
@@ -373,12 +373,12 @@ public class ModelInterceptor implements WriterInterceptor {
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
      * @param query       a {@link io.ebean.Query} object.
      * @return a {@link io.ebean.FutureRowCount} object.
-     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param manager a {@link InjectionManager} object.
      */
     public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams,
                                                SpiQuery query,
-                                               ServiceLocator locator) {
-        return applyUriQuery(queryParams, query, locator, true);
+                                               InjectionManager manager) {
+        return applyUriQuery(queryParams, query, manager, true);
     }
 
     /**
@@ -471,7 +471,7 @@ public class ModelInterceptor implements WriterInterceptor {
             }
 
             if (query != null) {
-                FutureRowCount rowCount = applyUriQuery(queryParams, query, locator);
+                FutureRowCount rowCount = applyUriQuery(queryParams, query, manager);
                 BeanList list;
                 if (o instanceof FutureList) {
                     list = (BeanList) ((FutureList) o).getUnchecked();

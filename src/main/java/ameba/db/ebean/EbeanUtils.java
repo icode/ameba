@@ -24,7 +24,7 @@ import io.ebeaninternal.api.SpiExpressionList;
 import io.ebeaninternal.api.SpiQuery;
 import io.ebeaninternal.server.deploy.BeanDescriptor;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 
 import javax.ws.rs.container.ResourceInfo;
 import java.util.*;
@@ -36,7 +36,6 @@ import static io.ebean.OrderBy.Property;
  *
  * @author icode
  * @since 0.1.6e
- *
  */
 public class EbeanUtils {
     /**
@@ -104,9 +103,9 @@ public class EbeanUtils {
     /**
      * <p>appendOrder.</p>
      *
-     * @param orderBy a {@link io.ebean.OrderBy} object.
+     * @param orderBy       a {@link io.ebean.OrderBy} object.
      * @param orderByClause a {@link java.lang.String} object.
-     * @param <T> a T object.
+     * @param <T>           a T object.
      */
     public static <T> void appendOrder(OrderBy<T> orderBy, String orderByClause) {
 
@@ -127,24 +126,24 @@ public class EbeanUtils {
     /**
      * <p>checkQuery.</p>
      *
-     * @param query a {@link io.ebean.Query} object.
-     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param query   a {@link io.ebean.Query} object.
+     * @param manager a {@link InjectionManager} object.
      */
-    public static void checkQuery(Query<?> query, ServiceLocator locator) {
-        checkQuery(query, null, null, locator);
+    public static void checkQuery(Query<?> query, InjectionManager manager) {
+        checkQuery(query, null, null, manager);
     }
 
     /**
      * <p>checkQuery.</p>
      *
-     * @param query a {@link io.ebean.Query} object.
+     * @param query     a {@link io.ebean.Query} object.
      * @param whitelist a {@link java.util.Set} object.
      * @param blacklist a {@link java.util.Set} object.
-     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param manager   a {@link InjectionManager} object.
      */
     public static void checkQuery(Query<?> query, Set<String> whitelist,
-                                  Set<String> blacklist, ServiceLocator locator) {
-        ResourceInfo resource = locator.getService(ResourceInfo.class);
+                                  Set<String> blacklist, InjectionManager manager) {
+        ResourceInfo resource = manager.getInstance(ResourceInfo.class);
         Class<?> rc = resource.getResourceClass();
         Set<String> wl = null, bl = null;
         if (rc != null) {
@@ -175,15 +174,15 @@ public class EbeanUtils {
             }
             bl.addAll(blacklist);
         }
-        checkQuery((SpiQuery) query, wl, bl, locator.getService(Application.Mode.class).isProd());
+        checkQuery((SpiQuery) query, wl, bl, manager.getInstance(Application.Mode.class).isProd());
     }
 
     /**
      * <p>checkQuery.</p>
      *
-     * @param query a {@link io.ebeaninternal.api.SpiQuery} object.
-     * @param whitelist a {@link java.util.Set} object.
-     * @param blacklist a {@link java.util.Set} object.
+     * @param query         a {@link io.ebeaninternal.api.SpiQuery} object.
+     * @param whitelist     a {@link java.util.Set} object.
+     * @param blacklist     a {@link java.util.Set} object.
      * @param ignoreUnknown a boolean.
      */
     public static void checkQuery(SpiQuery<?> query, Set<String> whitelist,
@@ -200,8 +199,8 @@ public class EbeanUtils {
     /**
      * <p>checkQuery.</p>
      *
-     * @param query a {@link io.ebeaninternal.api.SpiQuery} object.
-     * @param validation a {@link ameba.db.ebean.internal.ListExpressionValidation} object.
+     * @param query         a {@link io.ebeaninternal.api.SpiQuery} object.
+     * @param validation    a {@link ameba.db.ebean.internal.ListExpressionValidation} object.
      * @param ignoreUnknown a boolean.
      */
     public static void checkQuery(SpiQuery<?> query, ListExpressionValidation validation, boolean ignoreUnknown) {
@@ -221,8 +220,8 @@ public class EbeanUtils {
     /**
      * <p>validate.</p>
      *
-     * @param expressions a {@link io.ebeaninternal.api.SpiExpressionList} object.
-     * @param validation a {@link ameba.db.ebean.internal.ListExpressionValidation} object.
+     * @param expressions   a {@link io.ebeaninternal.api.SpiExpressionList} object.
+     * @param validation    a {@link ameba.db.ebean.internal.ListExpressionValidation} object.
      * @param ignoreUnknown a boolean.
      */
     public static void validate(SpiExpressionList<?> expressions,
@@ -242,8 +241,8 @@ public class EbeanUtils {
     /**
      * <p>validate.</p>
      *
-     * @param orderBy a {@link io.ebean.OrderBy} object.
-     * @param validation a {@link ameba.db.ebean.internal.ListExpressionValidation} object.
+     * @param orderBy       a {@link io.ebean.OrderBy} object.
+     * @param validation    a {@link ameba.db.ebean.internal.ListExpressionValidation} object.
      * @param ignoreUnknown a boolean.
      */
     public static void validate(OrderBy<?> orderBy,

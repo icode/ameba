@@ -1,11 +1,9 @@
 package ameba.core.ws.rs;
 
-import ameba.core.ServiceLocators;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.model.internal.RankedComparator;
-import org.glassfish.jersey.model.internal.RankedProvider;
+import org.glassfish.jersey.internal.inject.InjectionManager;
+import org.glassfish.jersey.internal.inject.Providers;
 import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.glassfish.jersey.server.model.ModelProcessor;
@@ -32,7 +30,6 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
  *
  * @author icode
  * @since 0.1.6e
- *
  */
 @Priority(Integer.MAX_VALUE)
 @Singleton
@@ -45,20 +42,16 @@ public class OptionsMethodProcessor implements ModelProcessor {
     /**
      * Creates new instance.
      *
-     * @param locator a {@link org.glassfish.hk2.api.ServiceLocator} object.
+     * @param manager a {@link InjectionManager} object.
      */
     @Inject
-    public OptionsMethodProcessor(ServiceLocator locator) {
+    public OptionsMethodProcessor(InjectionManager manager) {
         methodList = Lists.newArrayList();
 
         methodList.add(new ModelProcessorUtil.Method(HttpMethod.OPTIONS, WILDCARD_TYPE, WILDCARD_TYPE,
                 GenericOptionsInflector.class));
 
-        final Iterable<RankedProvider<OptionsResponseGenerator>> rankedProviders =
-                ServiceLocators.getRankedProviders(locator, OptionsResponseGenerator.class);
-
-        generators = ServiceLocators
-                .sortRankedProviders(new RankedComparator<>(), rankedProviders);
+        generators = Providers.getAllRankedSortedProviders(manager, OptionsResponseGenerator.class);
     }
 
     /**
@@ -153,7 +146,9 @@ public class OptionsMethodProcessor implements ModelProcessor {
         return ModelProcessorUtil.enhanceResourceModel(resourceModel, false, methodList, true).build();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
         return ModelProcessorUtil.enhanceResourceModel(subResourceModel, true, methodList, true).build();
