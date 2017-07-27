@@ -2,6 +2,7 @@ package ameba.lib;
 
 import ameba.lib.el.MapBasedFunctionMapper;
 import ameba.lib.el.SimpleContext;
+import ameba.util.bean.BeanInvoker;
 import ameba.util.bean.BeanMap;
 
 import javax.el.*;
@@ -16,6 +17,12 @@ import java.util.stream.Stream;
  */
 public class El {
     private static final ExpressionFactory expressionFactory = ExpressionFactory.newInstance();
+
+    public static String parse(String text, ELContext context, Object root, String prefix, Class... funcClasses) {
+        addVariables(context, new PropBeanMap<>(root));
+        Stream.of(funcClasses).forEach(fn -> addFunctions(context, prefix, fn));
+        return parse(text, context);
+    }
 
     private El() {
     }
@@ -62,24 +69,29 @@ public class El {
         return parse(text, createContext(), root, null);
     }
 
-    public static String parse(String text, ELContext context, Object root, String prefix, Class... funcClasses) {
-        addVariables(context, new BeanMap<>(root));
-        Stream.of(funcClasses).forEach(fn -> addFunctions(context, prefix, fn));
-        return parse(text, context);
-    }
-
     public static String parse(String text, ELContext context, Object root,
                                String prefix, Map<String, Method> functions) {
-        addVariables(context, new BeanMap<>(root));
+        addVariables(context, new PropBeanMap<>(root));
         addFunctions(context, prefix, functions);
         return parse(text, context);
     }
 
     public static String parse(String text, Object root, String prefix, Map<String, Method> functions) {
         ELContext context = createContext();
-        addVariables(context, new BeanMap<>(root));
+        addVariables(context, new PropBeanMap<>(root));
         addFunctions(context, prefix, functions);
         return parse(text, context);
+    }
+
+    private static class PropBeanMap<T> extends BeanMap<T> {
+        public PropBeanMap(T bean) {
+            super(bean);
+        }
+
+        @Override
+        protected Object transform(BeanInvoker invoker) throws Throwable {
+            return invoker.invoke();
+        }
     }
 
     public static String parse(String text, Object root, Map<String, Method> functions) {
