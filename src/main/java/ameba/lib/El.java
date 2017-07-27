@@ -43,11 +43,15 @@ public class El {
             addFunctions(
                     elContext,
                     prefix,
-                    Stream.of(funcClass.getMethods())
-                            .filter(method -> Modifier.isStatic(method.getModifiers()))
-                            .collect(Collectors.toMap(Method::getName, m -> m))
+                    getFunctions(funcClass)
             );
         }
+    }
+
+    public static Map<String, Method> getFunctions(Class funcClass) {
+        return Stream.of(funcClass.getMethods())
+                .filter(method -> Modifier.isStatic(method.getModifiers()))
+                .collect(Collectors.toMap(Method::getName, m -> m));
     }
 
     public static String parse(String text, Object root, String prefix, Class... funcClasses) {
