@@ -22,7 +22,7 @@ public class El {
     }
 
     public static String parse(String text, ELContext context, Object root, String prefix, Class... funcClasses) {
-        addVariables(context, new PropBeanMap<>(root));
+        addVariables(context, toVariablesMap(root));
         Stream.of(funcClasses).forEach(fn -> addFunctions(context, prefix, fn));
         return parse(text, context);
     }
@@ -71,7 +71,7 @@ public class El {
 
     public static String parse(String text, ELContext context, Object root,
                                String prefix, Map<String, Method> functions) {
-        addVariables(context, new PropBeanMap<>(root));
+        addVariables(context, toVariablesMap(root));
         addFunctions(context, prefix, functions);
         return parse(text, context);
     }
@@ -82,7 +82,7 @@ public class El {
 
     public static String parse(String text, Object root, String prefix, Map<String, Method> functions) {
         ELContext context = createContext();
-        addVariables(context, new PropBeanMap<>(root));
+        addVariables(context, toVariablesMap(root));
         addFunctions(context, prefix, functions);
         return parse(text, context);
     }
@@ -99,6 +99,10 @@ public class El {
 
     public static ELContext createContext() {
         return new SimpleContext(expressionFactory);
+    }
+
+    public static Map<String, Object> toVariablesMap(Object o) {
+        return new PropBeanMap<>(o);
     }
 
     private static class PropBeanMap<T> extends BeanMap<T> {
