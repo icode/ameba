@@ -273,6 +273,7 @@ public class MigrationResource {
             Flyway flyway = locator.getService(Flyway.class, dbName);
             flyway.setBaselineDescription(info.getDescription());
             flyway.setBaselineVersionAsString(info.getRevision());
+            flyway.setValidateOnMigrate(false);
 
             try {
                 flyway.migrate();

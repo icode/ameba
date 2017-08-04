@@ -604,7 +604,7 @@
         <javax.websocket.version>1.1</javax.websocket.version>
         <jackson.core.version>2.8.8</jackson.core.version>
         <jackson.provider.version>2.8.8</jackson.provider.version>
-        <flyway.version>4.0.3</flyway.version>
+        <flyway.version>4.2.0</flyway.version>
         <antlr.version>4.6</antlr.version>
         <quasar.version>0.7.7</quasar.version>
         <bean.validator.version>5.4.1.Final</bean.validator.version>
