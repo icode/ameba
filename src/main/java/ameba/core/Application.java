@@ -29,7 +29,9 @@ import com.google.common.primitives.Longs;
 import javassist.CtClass;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.Injectee;
+import org.glassfish.hk2.api.InjectionResolver;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.model.ContractProvider;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -45,14 +47,18 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.ws.rs.Path;
 import javax.ws.rs.RuntimeType;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Feature;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.ext.Provider;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
@@ -528,39 +534,15 @@ public class Application {
         register(new AbstractBinder() {
             @Override
             protected void configure() {
-                srcProperties.forEach((key, value) -> {
-                    Class clazz = Object.class;
-                    if (value != null) {
-                        if (value instanceof String) {
-                            clazz = String.class;
-                            Integer intValue = Ints.tryParse((String) value);
-                            if (intValue != null)
-                                bind(intValue).to(Integer.class).to(int.class).named(key);
-
-                            Long longValue = Longs.tryParse((String) value);
-                            if (longValue != null)
-                                bind(longValue).to(Long.class).to(long.class).named(key);
-
-                            Double doubleValue = Doubles.tryParse((String) value);
-                            if (doubleValue != null)
-                                bind(doubleValue).to(Double.class).to(double.class).named(key);
-
-                            Float floatValue = Floats.tryParse((String) value);
-                            if (floatValue != null)
-                                bind(floatValue).to(Float.class).to(float.class).named(key);
-
-                            bind(Boolean.parseBoolean((String) value)).to(Boolean.class).to(boolean.class).named(key);
-                        } else {
-                            clazz = value.getClass();
-                        }
-                    }
-                    bind(value).to(clazz).named(key);
-                });
                 bind(Application.this).to(Application.class).proxy(false);
-                bind(mode).to(Mode.class).proxy(false);
+                bind(mode).to(Application.Mode.class).proxy(false);
+                bind(ConfigurationInjectionResolver.class)
+                        .to(new GenericType<InjectionResolver<Named>>() {
+                        })
+                        .to(new GenericType<InjectionResolver<Inject>>() {
+                        }).in(Singleton.class);
             }
         });
-
         register(Requests.BindRequest.class);
         register(SysEventListener.class);
     }
@@ -1605,9 +1587,6 @@ public class Application {
 
     @Provider
     protected static class SysEventListener implements ApplicationEventListener {
-        @Inject
-        protected ServiceLocator serviceLocator;
-
         @Override
         public void onEvent(ApplicationEvent event) {
             SystemEventBus.publish(new ameba.core.event.ApplicationEvent(event));
@@ -1617,6 +1596,59 @@ public class Application {
         public RequestEventListener onRequest(org.glassfish.jersey.server.monitoring.RequestEvent requestEvent) {
             AmebaFeature.publishEvent(new RequestEvent(requestEvent));
             return event -> AmebaFeature.publishEvent(new RequestEvent(event));
+        }
+    }
+
+    protected static class ConfigurationInjectionResolver implements InjectionResolver<Named> {
+        @Context
+        Application application;
+
+        @Override
+        public Object resolve(Injectee injectee, ServiceHandle<?> root) {
+            Named annotation = injectee.getParent().getAnnotation(Named.class);
+            Map<String, Object> props = application.getProperties();
+            String name = annotation.value();
+            Object value = props.get(name);
+            Type type = injectee.getRequiredType();
+            String typeName = type.getTypeName();
+            if (value instanceof String) {
+                if (typeName.equals(Integer.class.getTypeName())) {
+                    return Ints.tryParse((String) value);
+                } else if (typeName.equals(int.class.getTypeName())) {
+                    Integer v = Ints.tryParse((String) value);
+                    return v == null ? -1 : v;
+                } else if (typeName.equals(Long.class.getTypeName())) {
+                    return Longs.tryParse((String) value);
+                } else if (typeName.equals(long.class.getTypeName())) {
+                    Long v = Longs.tryParse((String) value);
+                    return v == null ? -1 : v;
+                } else if (typeName.equals(Double.class.getTypeName())) {
+                    return Doubles.tryParse((String) value);
+                } else if (typeName.equals(double.class.getTypeName())) {
+                    Double v = Doubles.tryParse((String) value);
+                    return v == null ? -1 : v;
+                } else if (typeName.equals(Float.class.getTypeName())) {
+                    return Floats.tryParse((String) value);
+                } else if (typeName.equals(float.class.getTypeName())) {
+                    Float v = Floats.tryParse((String) value);
+                    return v == null ? -1 : v;
+                } else if (typeName.equals(Boolean.class.getTypeName())
+                        || typeName.equals(boolean.class.getTypeName())) {
+                    return Boolean.parseBoolean((String) value);
+                }
+            }
+
+            return value;
+        }
+
+        @Override
+        public boolean isConstructorParameterIndicator() {
+            return true;
+        }
+
+        @Override
+        public boolean isMethodParameterIndicator() {
+            return true;
         }
     }
 
