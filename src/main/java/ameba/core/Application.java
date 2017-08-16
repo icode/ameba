@@ -46,7 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.ws.rs.Path;
@@ -538,8 +537,6 @@ public class Application {
                 bind(mode).to(Application.Mode.class).proxy(false);
                 bind(ConfigurationInjectionResolver.class)
                         .to(new GenericType<InjectionResolver<Named>>() {
-                        })
-                        .to(new GenericType<InjectionResolver<Inject>>() {
                         }).in(Singleton.class);
             }
         });
