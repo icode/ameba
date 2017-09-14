@@ -73,24 +73,25 @@ public class ModelMigration extends DbMigration {
      * {@inheritDoc}
      */
     @Override
-    public void generateMigration() throws IOException {
+    public String generateMigration() throws IOException {
         if (scriptInfo != null) {
-            return;
+            return null;
         }
         if (diff == null) {
             diff();
         }
 
         setOffline();
+        String version = null;
         try {
             if (diff.isEmpty()) {
                 logger.info("no changes detected - no migration written");
-                return;
+                return null;
             }
             // there were actually changes to write
             Migration dbMigration = diff.getMigration();
 
-            String version = getVersion(migrationModel);
+            version = getVersion(migrationModel);
             logger.info("generating migration:{}", version);
             if (!writeMigration(dbMigration, version)) {
                 logger.warn("migration already exists, not generating DDL");
@@ -108,6 +109,7 @@ public class ModelMigration extends DbMigration {
                 DbOffline.reset();
             }
         }
+        return null;
     }
 
     /**
