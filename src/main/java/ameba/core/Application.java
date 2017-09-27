@@ -1645,7 +1645,7 @@ public class Application {
 
         @Override
         public boolean isMethodParameterIndicator() {
-            return true;
+            return false;
         }
     }
 
