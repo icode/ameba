@@ -33,6 +33,7 @@ import org.glassfish.hk2.api.Injectee;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.internal.util.ReflectionHelper;
 import org.glassfish.jersey.model.ContractProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ResourceFinder;
@@ -1607,30 +1608,29 @@ public class Application {
             String name = annotation.value();
             Object value = props.get(name);
             Type type = injectee.getRequiredType();
-            String typeName = type.getTypeName();
             if (value instanceof String) {
-                if (typeName.equals(Integer.class.getTypeName())) {
+                if (ReflectionHelper.isSubClassOf(type, Integer.class)) {
                     return Ints.tryParse((String) value);
-                } else if (typeName.equals(int.class.getTypeName())) {
+                } else if (ReflectionHelper.isSubClassOf(type, int.class)) {
                     Integer v = Ints.tryParse((String) value);
                     return v == null ? -1 : v;
-                } else if (typeName.equals(Long.class.getTypeName())) {
+                } else if (ReflectionHelper.isSubClassOf(type, Long.class)) {
                     return Longs.tryParse((String) value);
-                } else if (typeName.equals(long.class.getTypeName())) {
+                } else if (ReflectionHelper.isSubClassOf(type, long.class)) {
                     Long v = Longs.tryParse((String) value);
                     return v == null ? -1 : v;
-                } else if (typeName.equals(Double.class.getTypeName())) {
+                } else if (ReflectionHelper.isSubClassOf(type, Double.class)) {
                     return Doubles.tryParse((String) value);
-                } else if (typeName.equals(double.class.getTypeName())) {
+                } else if (ReflectionHelper.isSubClassOf(type, double.class)) {
                     Double v = Doubles.tryParse((String) value);
                     return v == null ? -1 : v;
-                } else if (typeName.equals(Float.class.getTypeName())) {
+                } else if (ReflectionHelper.isSubClassOf(type, Float.class)) {
                     return Floats.tryParse((String) value);
-                } else if (typeName.equals(float.class.getTypeName())) {
+                } else if (ReflectionHelper.isSubClassOf(type, float.class)) {
                     Float v = Floats.tryParse((String) value);
                     return v == null ? -1 : v;
-                } else if (typeName.equals(Boolean.class.getTypeName())
-                        || typeName.equals(boolean.class.getTypeName())) {
+                } else if (ReflectionHelper.isSubClassOf(type, Boolean.class)
+                        || ReflectionHelper.isSubClassOf(type, boolean.class)) {
                     return Boolean.parseBoolean((String) value);
                 }
             }
