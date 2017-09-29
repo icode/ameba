@@ -460,12 +460,6 @@
             <version>${ebean.agent.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.avaje</groupId>
-            <artifactId>avaje-datasource</artifactId>
-            <version>2.1.1</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
