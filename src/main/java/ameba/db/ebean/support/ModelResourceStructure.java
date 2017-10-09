@@ -600,7 +600,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @throws java.lang.Exception if any.
      */
     protected void matchedFindByIds(MODEL_ID id, Set<MODEL_ID> ids, boolean includeDeleted) throws Exception {
-        switchToSupportsScope();
+
     }
 
     /**
@@ -692,7 +692,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @throws java.lang.Exception if any.
      */
     protected void matchedFind(boolean includeDeleted) throws Exception {
-        switchToSupportsScope();
+
     }
 
     /**
@@ -790,7 +790,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
     protected void matchedFetchHistory(final MODEL_ID id,
                                        final Timestamp start,
                                        final Timestamp end) throws Exception {
-        switchToSupportsScope();
+
     }
 
     /**
@@ -866,7 +866,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @throws java.lang.Exception if any.
      */
     protected void matchedFetchHistory(final MODEL_ID id) throws Exception {
-        switchToSupportsScope();
+
     }
 
     /**
@@ -932,7 +932,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @throws java.lang.Exception if any.
      */
     protected void matchedFetchHistoryAsOf(final MODEL_ID id, final Timestamp asOf) throws Exception {
-        switchToSupportsScope();
+
     }
 
     /**
