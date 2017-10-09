@@ -26,14 +26,14 @@ import ameba.websocket.WebSocketSession;
  * @author icode
  *
  */
-public interface NativeWebSocketSession extends WebSocketSession {
+public interface NativeWebSocketSession<N> extends WebSocketSession {
 
     /**
      * Return the underlying native WebSocketSession, if available.
      *
      * @return the native session or {@code null}
      */
-    Object getNativeSession();
+    N getNativeSession();
 
     /**
      * Return the underlying native WebSocketSession, if available.

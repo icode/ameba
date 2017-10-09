@@ -1,12 +1,14 @@
 package ameba.db.ebean.migration;
 
 import ameba.db.migration.models.ScriptInfo;
-import io.ebean.dbmigration.ddlgeneration.DdlHandler;
-import io.ebean.dbmigration.ddlgeneration.DdlWrite;
-import io.ebean.dbmigration.migration.ChangeSet;
-import io.ebean.dbmigration.migration.ChangeSetType;
-import io.ebean.dbmigration.migration.Migration;
 import io.ebean.plugin.SpiServer;
+import io.ebeaninternal.dbmigration.ddlgeneration.DdlHandler;
+import io.ebeaninternal.dbmigration.ddlgeneration.DdlWrite;
+import io.ebeaninternal.dbmigration.ddlgeneration.platform.PlatformDdl;
+import io.ebeaninternal.dbmigration.migration.ChangeSet;
+import io.ebeaninternal.dbmigration.migration.ChangeSetType;
+import io.ebeaninternal.dbmigration.migration.Migration;
+import io.ebeaninternal.server.core.PlatformDdlBuilder;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,12 +17,12 @@ import java.util.List;
  * <p>PlatformDdlWriter class.</p>
  *
  * @author icode
- *
  */
 public class PlatformDdlWriter {
 
     private final ScriptInfo scriptInfo;
     private final SpiServer server;
+    private final PlatformDdl platformDdl;
 
     /**
      * <p>Constructor for PlatformDdlWriter.</p>
@@ -31,13 +33,14 @@ public class PlatformDdlWriter {
     public PlatformDdlWriter(ScriptInfo scriptInfo, SpiServer server) {
         this.scriptInfo = scriptInfo;
         this.server = server;
+        this.platformDdl = PlatformDdlBuilder.create(server.getDatabasePlatform());
     }
 
     /**
      * <p>processMigration.</p>
      *
-     * @param dbMigration a {@link io.ebean.dbmigration.migration.Migration} object.
-     * @param write a {@link io.ebean.dbmigration.ddlgeneration.DdlWrite} object.
+     * @param dbMigration a {@link io.ebeaninternal.dbmigration.migration.Migration} object.
+     * @param write       a {@link io.ebeaninternal.dbmigration.ddlgeneration.DdlWrite} object.
      * @throws java.io.IOException if any.
      */
     public void processMigration(Migration dbMigration, DdlWrite write) throws IOException {
@@ -59,13 +62,14 @@ public class PlatformDdlWriter {
      */
     private boolean isApply(ChangeSet changeSet) {
         // 必须包含　PENDING_DROPS　不然无法在只删除列时产生变更脚本
-        return (changeSet.getType() == ChangeSetType.APPLY || changeSet.getType() == ChangeSetType.PENDING_DROPS) && !changeSet.getChangeSetChildren().isEmpty();
+        return (changeSet.getType() == ChangeSetType.APPLY || changeSet.getType() == ChangeSetType.PENDING_DROPS)
+                && !changeSet.getChangeSetChildren().isEmpty();
     }
 
     /**
      * <p>writePlatformDdl.</p>
      *
-     * @param write a {@link io.ebean.dbmigration.ddlgeneration.DdlWrite} object.
+     * @param write a {@link io.ebeaninternal.dbmigration.ddlgeneration.DdlWrite} object.
      * @throws java.io.IOException if any.
      */
     protected void writePlatformDdl(DdlWrite write) throws IOException {
@@ -77,7 +81,7 @@ public class PlatformDdlWriter {
     /**
      * Write the 'Apply' DDL buffers to the writer.
      *
-     * @param write a {@link io.ebean.dbmigration.ddlgeneration.DdlWrite} object.
+     * @param write a {@link io.ebeaninternal.dbmigration.ddlgeneration.DdlWrite} object.
      * @throws java.io.IOException if any.
      */
     protected void writeApplyDdl(DdlWrite write) throws IOException {
@@ -94,9 +98,9 @@ public class PlatformDdlWriter {
     /**
      * Return the platform specific DdlHandler (to generate DDL).
      *
-     * @return a {@link io.ebean.dbmigration.ddlgeneration.DdlHandler} object.
+     * @return a {@link io.ebeaninternal.dbmigration.ddlgeneration.DdlHandler} object.
      */
     protected DdlHandler handler() {
-        return server.getDatabasePlatform().createDdlHandler(server.getServerConfig());
+        return platformDdl.createDdlHandler(server.getServerConfig());
     }
 }

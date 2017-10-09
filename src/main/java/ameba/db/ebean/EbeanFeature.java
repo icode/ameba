@@ -19,7 +19,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.Lists;
 import io.ebean.EbeanServer;
 import io.ebean.EbeanServerFactory;
-import io.ebean.PersistBatch;
+import io.ebean.annotation.PersistBatch;
 import io.ebean.config.ContainerConfig;
 import io.ebean.config.JsonConfig;
 import io.ebean.config.PropertiesWrapper;

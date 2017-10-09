@@ -3,10 +3,10 @@ package ameba.db.ebean.migration;
 import ameba.db.migration.models.ScriptInfo;
 import com.google.common.collect.Lists;
 import io.ebean.Transaction;
-import io.ebean.TxIsolation;
-import io.ebean.dbmigration.model.MigrationVersion;
-import io.ebean.dbmigration.model.ModelContainer;
+import io.ebean.annotation.TxIsolation;
 import io.ebeaninternal.api.SpiEbeanServer;
+import io.ebeaninternal.dbmigration.model.MigrationVersion;
+import io.ebeaninternal.dbmigration.model.ModelContainer;
 import io.ebeaninternal.server.deploy.BeanDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ public class MigrationModel {
     /**
      * <p>read.</p>
      *
-     * @return a {@link io.ebean.dbmigration.model.ModelContainer} object.
+     * @return a {@link io.ebeaninternal.dbmigration.model.ModelContainer} object.
      */
     public ModelContainer read() {
         readMigrations();

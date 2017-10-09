@@ -3,6 +3,7 @@ package ameba.db.ebean;
 import ameba.db.model.Finder;
 import io.ebean.*;
 import io.ebean.text.PathProperties;
+import io.ebeaninternal.api.SpiQuery;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -15,7 +16,6 @@ import java.util.function.Predicate;
  * Base-class for model-mapped models that provides convenience methods.
  *
  * @author sulijuan
- *
  */
 public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
@@ -101,13 +101,17 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return server().createQuery(getModelType());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public UpdateQuery<T> createUpdateQuery() {
         return server().update(this.getModelType());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public SqlQuery createSqlQuery(String sql) {
         return server().createSqlQuery(sql);
     }
@@ -123,7 +127,9 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Query<T> setPersistenceContextScope(PersistenceContextScope persistenceContextScope) {
         return query().setPersistenceContextScope(persistenceContextScope);
     }
@@ -138,10 +144,10 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Additionally specifies a <code>JoinConfig</code> to specify a 'query join' and/or define the lazy loading query.
      *
-     * @param path a {@link java.lang.String} object.
+     * @param path       a {@link java.lang.String} object.
      * @param joinConfig a {@link io.ebean.FetchConfig} object.
      * @return a {@link io.ebean.Query} object.
      */
@@ -150,7 +156,9 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Query<T> apply(PathProperties pathProperties) {
         return query().apply(pathProperties);
     }
@@ -269,33 +277,43 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
      * @return a M object.
      */
     @SuppressWarnings("unchecked")
-    public <M extends T> M findUnique() {
-        return (M) query().findUnique();
+    public <M extends T> M findOne() {
+        return (M) query().findOne();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void findEach(Consumer<T> consumer) {
         query().findEach(consumer);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void findEachWhile(Predicate<T> predicate) {
         query().findEachWhile(predicate);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Version<T>> findVersions() {
         return query().findVersions();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Version<T>> findVersionsBetween(Timestamp start, Timestamp end) {
         return query().findVersionsBetween(start, end);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ExpressionList<T> text() {
         return query().text();
@@ -310,7 +328,9 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().getExpressionFactory();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isAutoTuned() {
         return query().isAutoTuned();
@@ -408,7 +428,9 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().select(fetchProperties);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Query<T> setAutoTune(boolean autoTune) {
         return query().setAutoTune(autoTune);
     }
@@ -425,7 +447,9 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().setLazyLoadBatchSize(lazyLoadBatchSize);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Query<T> setDisableReadAuditing() {
         return query().setDisableReadAuditing();
@@ -542,31 +566,41 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().setRawSql(rawSql);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public RawSql getRawSql() {
-        return query().getRawSql();
+        return ((SpiQuery) query()).getRawSql();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Query<T> asOf(Timestamp asOf) {
         return query().asOf(asOf);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void cancel() {
         query().cancel();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Query<T> copyQuery() {
         return query().copy();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Query<T> setUseDocStore(boolean use) {
         return query().setUseDocStore(use);
@@ -615,7 +649,7 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Adds a single <code>Expression</code> to the <code>where</code> clause and returns the query.
      */
     public Query<T> where(io.ebean.Expression expression) {
@@ -630,25 +664,33 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return query().setForUpdate(forUpdate);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isForUpdate() {
         return query().isForUpdate();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Query<T> alias(String alias) {
         return query().alias(alias);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Class<T> getBeanType() {
         return query.getBeanType();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Query<T> setDisableLazyLoading(boolean disableLazyLoading) {
         return query().setDisableLazyLoading(disableLazyLoading);

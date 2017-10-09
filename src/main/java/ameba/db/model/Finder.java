@@ -313,7 +313,7 @@ public abstract class Finder<ID, T> {
      * @return a M object.
      * @param <M> a M object.
      */
-    public abstract <M extends T> M findUnique();
+    public abstract <M extends T> M findOne();
 
     /**
      * <p>findCount.</p>

@@ -93,7 +93,7 @@ public class JacksonUtils {
     public static void configureMapper(ObjectMapper mapper, Application.Mode mode) {
         mapper.registerModule(new GuavaModule());
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-                .enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
+                .enable(SerializationFeature.WRITE_ENUMS_USING_INDEX)
                 .enable(MapperFeature.PROPAGATE_TRANSIENT_MARKER)
                 .disable(
                         SerializationFeature.WRITE_NULL_MAP_VALUES,

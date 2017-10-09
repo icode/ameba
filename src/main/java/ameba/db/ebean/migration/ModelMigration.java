@@ -1,15 +1,15 @@
 package ameba.db.ebean.migration;
 
 import ameba.db.migration.models.ScriptInfo;
-import io.ebean.dbmigration.DbMigration;
-import io.ebean.dbmigration.DbOffline;
-import io.ebean.dbmigration.ddlgeneration.DdlWrite;
-import io.ebean.dbmigration.migration.Migration;
-import io.ebean.dbmigration.model.CurrentModel;
-import io.ebean.dbmigration.model.MConfiguration;
-import io.ebean.dbmigration.model.ModelContainer;
-import io.ebean.dbmigration.model.ModelDiff;
 import io.ebean.plugin.SpiServer;
+import io.ebeaninternal.dbmigration.DbOffline;
+import io.ebeaninternal.dbmigration.DefaultDbMigration;
+import io.ebeaninternal.dbmigration.ddlgeneration.DdlWrite;
+import io.ebeaninternal.dbmigration.migration.Migration;
+import io.ebeaninternal.dbmigration.model.CurrentModel;
+import io.ebeaninternal.dbmigration.model.MConfiguration;
+import io.ebeaninternal.dbmigration.model.ModelContainer;
+import io.ebeaninternal.dbmigration.model.ModelDiff;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -23,7 +23,7 @@ import java.io.StringWriter;
  *
  * @author icode
  */
-public class ModelMigration extends DbMigration {
+public class ModelMigration extends DefaultDbMigration {
     private static final String initialVersion = "1.0";
     private ModelDiff diff;
     private MigrationModel migrationModel;
@@ -33,7 +33,7 @@ public class ModelMigration extends DbMigration {
     /**
      * <p>diff.</p>
      *
-     * @return a {@link io.ebean.dbmigration.model.ModelDiff} object.
+     * @return a {@link io.ebeaninternal.dbmigration.model.ModelDiff} object.
      */
     public ModelDiff diff() {
         if (diff != null) return diff;
@@ -131,7 +131,7 @@ public class ModelMigration extends DbMigration {
     /**
      * <p>writeMigration.</p>
      *
-     * @param dbMigration a {@link io.ebean.dbmigration.migration.Migration} object.
+     * @param dbMigration a {@link io.ebeaninternal.dbmigration.migration.Migration} object.
      * @param version     a {@link java.lang.String} object.
      * @return a boolean.
      */
@@ -182,7 +182,7 @@ public class ModelMigration extends DbMigration {
     /**
      * <p>rest.</p>
      *
-     * @return a {@link io.ebean.dbmigration.model.ModelDiff} object.
+     * @return a {@link io.ebeaninternal.dbmigration.model.ModelDiff} object.
      */
     public ModelDiff rest() {
         ModelDiff old = diff;

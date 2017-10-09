@@ -406,11 +406,6 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      *
      * @param id        The id use for path matching type
      * @param ids       The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
-     * @param ids       The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
-     * @param ids       The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
-     * @param ids       The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
-     * @param ids       The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
-     * @param ids       The ids in the form "/resource/id1" or "/resource/id1;id2;id3"
      * @param permanent a boolean.
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
@@ -549,11 +544,6 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      *
      * @param id             The id use for path matching type
      * @param ids            the id of the model.
-     * @param ids            the id of the model.
-     * @param ids            the id of the model.
-     * @param ids            the id of the model.
-     * @param ids            the id of the model.
-     * @param ids            the id of the model.
      * @param includeDeleted a boolean.
      * @return a {@link javax.ws.rs.core.Response} object.
      * @throws java.lang.Exception if any.
@@ -590,7 +580,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
         } else {
             model = executeTx(t -> {
                 configureQuery.run(t);
-                MODEL m = query.setId(firstId).findUnique();
+                MODEL m = query.setId(firstId).findOne();
                 return processFoundByIdModel(m, includeDeleted);
             });
         }
@@ -605,7 +595,6 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * <p>matchedFindByIds.</p>
      *
      * @param id             a MODEL_ID object.
-     * @param ids            a {@link java.util.Set} object.
      * @param ids            a {@link java.util.Set} object.
      * @param includeDeleted a boolean.
      * @throws java.lang.Exception if any.
@@ -925,7 +914,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
             configDefaultQuery(query);
             configFetchHistoryAsOfQuery(query, mId, asOf);
             applyUriQuery(query, false);
-            MODEL model = query.asOf(asOf).setId(mId).findUnique();
+            MODEL model = query.asOf(asOf).setId(mId).findOne();
             return processFetchedHistoryAsOfModel(mId, model, asOf);
         });
 

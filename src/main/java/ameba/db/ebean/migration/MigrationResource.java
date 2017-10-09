@@ -1,8 +1,8 @@
 package ameba.db.ebean.migration;
 
 import ameba.db.migration.models.ScriptInfo;
-import io.ebean.dbmigration.migration.Migration;
-import io.ebean.dbmigration.model.MigrationVersion;
+import io.ebeaninternal.dbmigration.migration.Migration;
+import io.ebeaninternal.dbmigration.model.MigrationVersion;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -42,7 +42,7 @@ public class MigrationResource implements Comparable<MigrationResource> {
     /**
      * Return the version associated with this resource.
      *
-     * @return a {@link io.ebean.dbmigration.model.MigrationVersion} object.
+     * @return a {@link io.ebeaninternal.dbmigration.model.MigrationVersion} object.
      */
     public MigrationVersion getVersion() {
         return version;
@@ -51,7 +51,7 @@ public class MigrationResource implements Comparable<MigrationResource> {
     /**
      * Read and return the migration from the resource.
      *
-     * @return a {@link io.ebean.dbmigration.migration.Migration} object.
+     * @return a {@link io.ebeaninternal.dbmigration.migration.Migration} object.
      */
     public Migration read() {
         try (StringReader reader = new StringReader(info.getModelDiff())) {

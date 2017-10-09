@@ -34,7 +34,7 @@ import java.util.concurrent.Future;
  * @author icode
  *
  */
-public abstract class AbstractWebSocketSession<T> implements NativeWebSocketSession {
+public abstract class AbstractWebSocketSession<T> implements NativeWebSocketSession<T> {
 
     /**
      * Constant <code>logger</code>
