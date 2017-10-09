@@ -176,7 +176,7 @@ public abstract class ModelResource<URI_ID, MODEL_ID, MODEL>
      */
     @GET
     @Path("{id}/history/{asOf: " + DATE_REGEX + "}")
-    public Response fetchHistoryAsOf(@PathParam("id") URI_ID id, @PathParam("asOf") Timestamp asOf) throws Exception {
+    public Response fetchHistoryAsOf(@PathParam("id") URI_ID id, @PathParam("asof") Timestamp asOf) throws Exception {
         return super.fetchHistoryAsOf(id, asOf);
     }
 }

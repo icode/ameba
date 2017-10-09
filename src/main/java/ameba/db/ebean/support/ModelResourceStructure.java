@@ -903,7 +903,7 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      * @throws java.lang.Exception any error
      */
     public Response fetchHistoryAsOf(@PathParam("id") URI_ID id,
-                                     @PathParam("asOf") final Timestamp asOf) throws Exception {
+                                     @PathParam("asof") final Timestamp asOf) throws Exception {
         final MODEL_ID mId = tryConvertId(id);
         matchedFetchHistoryAsOf(mId, asOf);
         final Query<MODEL> query = server.find(modelType);
