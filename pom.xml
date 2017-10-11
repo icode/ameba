@@ -577,7 +577,7 @@
         <ebean.version>11.2.1</ebean.version>
         <ebean.maven.version>11.1.2</ebean.maven.version>
         <ebean.agent.version>11.1.2</ebean.agent.version>
-        <druid.version>1.1.2</druid.version>
+        <druid.version>1.1.4</druid.version>
         <groovy.version>2.4.11</groovy.version>
         <hk2.version>2.5.0-b43</hk2.version>
         <javax.websocket.version>1.1</javax.websocket.version>
