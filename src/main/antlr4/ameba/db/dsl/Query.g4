@@ -11,14 +11,17 @@ arguments
  ;
 
 argumentList
- : sourceElement+
- | ('!'? (literal | identifierVal)+ '!'?)+
- | literal (COMMA? literal)*
+ : (COMMA? (literal | identifierVal)+ COMMA?)+
+ | sourceElement+
+ ;
+
+method
+ : identifierName arguments
  ;
 
 expression
-  : identifierName arguments                        # CallExpression
-  | Identifier (('.' Identifier)+)?                 # FieldExpression
+  : method                              # CallExpression
+  | Identifier (('.' Identifier)+)?     # FieldExpression
   ;
 
 identifierName : Identifier;
@@ -34,11 +37,12 @@ literal
 NullLiteral
  : 'null'
  | 'nil'
+ | 'N'
  ;
 
 BooleanLiteral
- : 'true'
- | 'false'
+ : 'true' | 'T'
+ | 'false' | 'F'
  ;
 
 StringLiteral
@@ -70,7 +74,5 @@ fragment Letter : [a-zA-Z$_];
 fragment LetterOrDigit : [a-zA-Z0-9$_];
 
 
-COMMA : '!';
+COMMA : '!'|',';
 QUOTE : '\'';
-
-WS :  (' '|'\r'|'\t'|'\u000C'|'\n')+ -> skip;
