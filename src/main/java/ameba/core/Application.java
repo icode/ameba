@@ -19,6 +19,7 @@ import ameba.util.*;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.gaffer.GafferUtil;
 import com.google.common.base.Charsets;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -315,17 +316,16 @@ public class Application {
         URL url = null;
         if (urls.hasMoreElements()) {
             InputStream in = null;
-            url = urls.nextElement();
+            Set<URL> urlSet = Sets.newHashSet(Iterators.forEnumeration(urls));
 
-            if (urls.hasMoreElements()) {
-                List<String> urlList = Lists.newArrayList(toExternalForm(url));
-                while (urls.hasMoreElements()) {
-                    urlList.add(urls.nextElement().toExternalForm());
-                }
-                String errorMsg = Messages.get("info.load.config.multi.error", StringUtils.join(urlList, LINE_SEPARATOR));
+            if (urlSet.size() > 1) {
+                String errorMsg = Messages.get("info.load.config.multi.error",
+                        StringUtils.join(urlSet.stream().map(Application::toExternalForm), LINE_SEPARATOR));
                 logger.error(errorMsg);
                 throw new ConfigErrorException(errorMsg);
             }
+
+            url = urlSet.iterator().next();
 
             try {
                 logger.trace(Messages.get("info.load", toExternalForm(url)));
