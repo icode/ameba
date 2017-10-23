@@ -11,17 +11,19 @@ import org.apache.commons.lang3.StringUtils
 
 import static ch.qos.logback.classic.Level.*
 
+String PATTERN = "%d{HH:mm:ss.SSS} %boldYellow([%thread]) %highlight(%-5level) %boldGreen(%logger{36}) - %msg%n"
+
 appender("CONSOLE", ConsoleAppender) {
     encoder(PatternLayoutEncoder) {
-        pattern = "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+        pattern = PATTERN
     }
 }
-Properties properties = context.getObject("properties");
-String appName = properties.getProperty("app.name");
+Properties properties = context.getObject("properties")
+String appName = properties.getProperty("app.name")
 if (StringUtils.isBlank(appName)) {
-    appName = Application.DEFAULT_APP_NAME;
+    appName = Application.DEFAULT_APP_NAME
 }
-String appPackage = properties.getProperty("app.package");
+String appPackage = properties.getProperty("app.package")
 
 appender("FILE", RollingFileAppender) {
     rollingPolicy(TimeBasedRollingPolicy) {
@@ -32,7 +34,7 @@ appender("FILE", RollingFileAppender) {
         }
     }
     encoder(PatternLayoutEncoder) {
-        pattern = "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+        pattern = PATTERN
     }
 }
 

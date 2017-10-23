@@ -26,7 +26,6 @@ import java.util.Map;
  *
  * @author ICode
  * @since 13-8-17 下午2:55
- *
  */
 @ConstrainedTo(RuntimeType.SERVER)
 public class AssetsFeature implements Feature {
@@ -136,37 +135,44 @@ public class AssetsFeature implements Feature {
         return url;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean configure(FeatureContext context) {
 
         Configuration configuration = context.getConfiguration();
+        if (!configuration.isRegistered(FaviconResource.class)) {
+            context.register(FaviconResource.class);
 
-        assetsMap.putAll(getAssetMap(configuration));
+            assetsMap.putAll(getAssetMap(configuration));
 
-        context.register(new ModelProcessor() {
-            @Override
-            public ResourceModel processResourceModel(ResourceModel resourceModel, Configuration configuration) {
-                ResourceModel.Builder resourceModelBuilder = new ResourceModel.Builder(resourceModel, false);
+            context.register(new ModelProcessor() {
+                @Override
+                public ResourceModel processResourceModel(ResourceModel resourceModel, Configuration configuration) {
+                    ResourceModel.Builder resourceModelBuilder =
+                            new ResourceModel.Builder(resourceModel, false);
 
-                for (String routePath : assetsMap.keySet()) {
-                    Resource.Builder resourceBuilder = Resource.builder(AssetsResource.class);
-                    if (routePath.equals(ROOT_MAPPING_PATH)) {
-                        routePath = "/";
+                    for (String routePath : assetsMap.keySet()) {
+                        Resource.Builder resourceBuilder = Resource.builder(AssetsResource.class);
+                        if (routePath.equals(ROOT_MAPPING_PATH)) {
+                            routePath = "/";
+                        }
+                        resourceBuilder.path(routePath);
+                        Resource resource = resourceBuilder.build();
+                        resourceModelBuilder.addResource(resource);
                     }
-                    resourceBuilder.path(routePath);
-                    Resource resource = resourceBuilder.build();
-                    resourceModelBuilder.addResource(resource);
+
+                    return resourceModelBuilder.build();
                 }
 
-                return resourceModelBuilder.build();
-            }
-
-            @Override
-            public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
-                return subResourceModel;
-            }
-        });
-        return true;
+                @Override
+                public ResourceModel processSubResource(ResourceModel subResourceModel, Configuration configuration) {
+                    return subResourceModel;
+                }
+            });
+            return true;
+        }
+        return false;
     }
 }

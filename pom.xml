@@ -472,8 +472,8 @@
                         <id>run</id>
                         <!-- id is optional -->
                         <configuration>
-                            <sourceDirectory>${project.build.sourceDirectory}/${ebean.support.dir}</sourceDirectory>
-                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                            <sourceDirectory>${build.sourceDirectory}/${ebean.support.dir}</sourceDirectory>
+                            <outputDirectory>${build.outputDirectory}</outputDirectory>
                         </configuration>
                         <goals>
                             <goal>generate</goal>
@@ -490,11 +490,15 @@
                         <addMavenDescriptor>true</addMavenDescriptor>
                         <index>true</index>
                         <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <mainClass>
                                 ameba.Ameba
                             </mainClass>
                         </manifest>
+                        <manifestEntries>
+                            <Ameba-Version>${version}</Ameba-Version>
+                            <Ameba-Built>${maven.build.timestamp}</Ameba-Built>
+                            <Ameba-URL>${url}</Ameba-URL>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>

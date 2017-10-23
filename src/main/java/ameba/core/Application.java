@@ -69,6 +69,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.stream.Stream;
 
+import static ameba.util.AmebaInfo.INFO_SEPARATOR;
 import static ameba.util.IOUtils.*;
 
 /**
@@ -93,10 +94,8 @@ public class Application {
     private static final String DEFAULT_LOGBACK_CONF = "log.groovy";
     private static final String EXCLUDES_KEY = "exclude.classes";
     private static final String EXCLUDES_KEY_PREFIX = EXCLUDES_KEY + ".";
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
     private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static String SCAN_CLASSES_CACHE_FILE;
-    private static String INFO_SPLITTER = "---------------------------------------------------";
     protected boolean jmxEnabled;
     private String[] configFiles;
     private long timestamp = System.currentTimeMillis();
@@ -978,7 +977,7 @@ public class Application {
 
                     final String startUsedTime = Times.toDuration(System.currentTimeMillis() - timestamp);
                     builder.append(LINE_SEPARATOR)
-                            .append(INFO_SPLITTER)
+                            .append(INFO_SEPARATOR)
                             .append(LINE_SEPARATOR);
                     appendInfo("info.ameba.version", Ameba.getVersion());
                     appendInfo("info.http.container", StringUtils.defaultString(container.getType(), "Unknown"));
@@ -1006,7 +1005,7 @@ public class Application {
                         logger.warn(Messages.get("info.connector.none"));
                     }
                     builder.append(LINE_SEPARATOR)
-                            .append(INFO_SPLITTER);
+                            .append(INFO_SEPARATOR);
                     logger.info(Messages.get("info.started"));
                     logger.info(builder.toString());
                 }

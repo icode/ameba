@@ -4,7 +4,7 @@ import ameba.container.Container;
 import ameba.core.Application;
 import ameba.exception.AmebaException;
 import ameba.i18n.Messages;
-import ameba.util.IOUtils;
+import ameba.util.AmebaInfo;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.internal.inject.InjectionManager;
@@ -17,27 +17,11 @@ import java.util.List;
  * <p>Ameba class.</p>
  *
  * @author icode
- *
  */
 public class Ameba {
-    private static final String LINE = System.getProperty("line.separator", "/n");
-
-    /**
-     * Constant <code>LOGO="LINE + LINE +    _                   _ "{trunked}</code>
-     */
-    public static final String LOGO = LINE + LINE +
-            "    _                   _           " + LINE +
-            "   / \\   _ __ ___   ___| |__   __ _ " + LINE +
-            "  / _ \\ | '_ ` _ \\ / _ \\ '_ \\ / _` |" + LINE +
-            " / ___ \\| | | | | |  __/ |_) | (_| |" + LINE +
-            "/_/   \\_\\_| |_| |_|\\___|_.__/ \\__,_|   {}" + LINE + LINE;
-    /**
-     * Constant <code>logger</code>
-     */
     private static final Logger logger = LoggerFactory.getLogger(Ameba.class);
     private static Application app;
     private static Container container;
-    private static String version;
 
     private Ameba() {
     }
@@ -70,19 +54,8 @@ public class Ameba {
         return app;
     }
 
-    /**
-     * <p>Getter for the field <code>version</code>.</p>
-     *
-     * @return a {@link java.lang.String} object.
-     * @since 0.1.6e
-     */
     public static String getVersion() {
-
-        if (version == null) {
-            version = IOUtils.getJarImplVersion(Ameba.class);
-        }
-
-        return version;
+        return AmebaInfo.getVersion();
     }
 
     /**
@@ -91,7 +64,7 @@ public class Ameba {
      * @since 0.1.6e
      */
     public static void printInfo() {
-        logger.info(LOGO, getVersion());
+        logger.info(AmebaInfo.getBanner(), getVersion());
     }
 
     /**
