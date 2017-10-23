@@ -6,11 +6,9 @@ import org.apache.commons.lang3.StringUtils
 
 import static ch.qos.logback.classic.Level.*
 
-String PATTERN = "%d{HH:mm:ss.SSS} %boldYellow([%thread]) %highlight(%-5level) %boldGreen(%logger{36}) - %msg%n"
-
 appender("CONSOLE", ConsoleAppender) {
     encoder(PatternLayoutEncoder) {
-        pattern = PATTERN
+        pattern = "%d{HH:mm:ss.SSS} %boldYellow([%thread]) %highlight(%-5level) %boldGreen(%logger{36}) - %msg%n"
     }
 }
 Properties properties = context.getObject("properties")
