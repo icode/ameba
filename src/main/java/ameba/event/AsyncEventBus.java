@@ -68,7 +68,6 @@ public class AsyncEventBus<Event extends ameba.event.Event> implements EventBus<
     }
 
     @Override
-    @Suspendable
     public <E extends Event> void unsubscribe(Class<E> event) {
         EventSource eventSource = eventSourceMap.remove(event);
         if (eventSource != null) {
