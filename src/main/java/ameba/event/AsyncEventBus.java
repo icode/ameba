@@ -6,6 +6,7 @@ import co.paralleluniverse.actors.behaviors.EventSource;
 import co.paralleluniverse.actors.behaviors.EventSourceActor;
 import co.paralleluniverse.fibers.RuntimeSuspendExecution;
 import co.paralleluniverse.fibers.SuspendExecution;
+import co.paralleluniverse.fibers.Suspendable;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ public class AsyncEventBus<Event extends ameba.event.Event> implements EventBus<
     }
 
     @Override
+    @Suspendable
     @SuppressWarnings("unchecked")
     public <E extends Event> void subscribe(Class<E> event, Listener<E> listener) {
         try {
@@ -50,6 +52,7 @@ public class AsyncEventBus<Event extends ameba.event.Event> implements EventBus<
     }
 
     @Override
+    @Suspendable
     @SuppressWarnings("unchecked")
     public <E extends Event> void unsubscribe(Class<E> event, Listener<E> listener) {
         EventSource<? extends Event> eventSource = eventSourceMap.get(event);
@@ -65,6 +68,7 @@ public class AsyncEventBus<Event extends ameba.event.Event> implements EventBus<
     }
 
     @Override
+    @Suspendable
     public <E extends Event> void unsubscribe(Class<E> event) {
         EventSource eventSource = eventSourceMap.remove(event);
         if (eventSource != null) {
@@ -73,7 +77,8 @@ public class AsyncEventBus<Event extends ameba.event.Event> implements EventBus<
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @Suspendable
+    @SuppressWarnings("all")
     public <E extends Event> void publish(E event) {
         if (event != null) {
             EventSource<Event> eventSource = (EventSource<Event>) eventSourceMap.get(event.getClass());
