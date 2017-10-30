@@ -1,8 +1,6 @@
 package ameba.event;
 
-import co.paralleluniverse.fibers.Fiber;
-import co.paralleluniverse.fibers.RuntimeSuspendExecution;
-import co.paralleluniverse.fibers.SuspendExecution;
+import ameba.lib.Fibers;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +27,7 @@ public class EventTest {
                 @Override
                 public void onReceive(TestEvent event) {
                     try {
-                        Fiber.sleep(100);
-                    } catch (SuspendExecution e) {
-                        throw RuntimeSuspendExecution.of(e);
+                        Fibers.sleep(100);
                     } catch (InterruptedException e) {
                         logger.error("error", e);
                     }

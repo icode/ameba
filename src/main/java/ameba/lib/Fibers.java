@@ -1,9 +1,8 @@
 package ameba.lib;
 
-import co.paralleluniverse.fibers.DefaultFiberScheduler;
-import co.paralleluniverse.fibers.Fiber;
-import co.paralleluniverse.fibers.FiberScheduler;
-import co.paralleluniverse.fibers.FiberUtil;
+import co.paralleluniverse.fibers.*;
+import co.paralleluniverse.io.serialization.ByteArraySerializer;
+import co.paralleluniverse.strands.Strand;
 import co.paralleluniverse.strands.SuspendableCallable;
 import co.paralleluniverse.strands.SuspendableRunnable;
 
@@ -19,6 +18,209 @@ import java.util.concurrent.TimeoutException;
 @SuppressWarnings("ALL")
 public class Fibers {
     private Fibers() {
+    }
+
+    /**
+     * Returns the active Fiber on this thread or NULL if no Fiber is running.
+     *
+     * @return the active Fiber on this thread or NULL if no Fiber is running.
+     */
+    public static Fiber currentFiber() {
+        return Fiber.currentFiber();
+    }
+
+    /**
+     * Tests whether current code is executing in a fiber.
+     * This method <i>might</i> be faster than {@code Fiber.currentFiber() != null}.
+     *
+     * @return {@code true} if called in a fiber; {@code false} otherwise.
+     */
+    public static boolean isCurrentFiber() {
+        return Fiber.isCurrentFiber();
+    }
+
+    public static long getCurrentRun() {
+        return Fiber.getCurrentRun();
+    }
+
+    public static boolean park(Object blocker, long timeout, TimeUnit unit) {
+        try {
+            return Fiber.park(blocker, timeout, unit);
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        }
+    }
+
+    public static void park(Object blocker) {
+        try {
+            Fiber.park(blocker);
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        }
+    }
+
+    public static void park(long timeout, TimeUnit unit) {
+        try {
+            Fiber.park(timeout, unit);
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        }
+    }
+
+    public static void park() {
+        try {
+            Fiber.park();
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        }
+    }
+
+    public static void yield() {
+        try {
+            Fiber.yield();
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        }
+    }
+
+    public static void parkAndUnpark(Fiber other) {
+        try {
+            Fiber.parkAndUnpark(other);
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        }
+    }
+
+    public static void parkAndUnpark(Fiber other, Object blocker) {
+        try {
+            Fiber.parkAndUnpark(other, blocker);
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        }
+    }
+
+    public static void yieldAndUnpark(Fiber other, Object blocker) {
+        try {
+            Fiber.yieldAndUnpark(other, blocker);
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        }
+    }
+
+    public static void yieldAndUnpark(Fiber other) {
+        try {
+            Fiber.yieldAndUnpark(other);
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        }
+    }
+
+    public static void sleep(long millis) throws InterruptedException {
+        try {
+            Fiber.sleep(millis);
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        }
+    }
+
+    public static void sleep(long millis, int nanos) throws InterruptedException {
+        try {
+            Fiber.sleep(millis, nanos);
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        }
+    }
+
+    public static void sleep(long duration, TimeUnit unit) throws InterruptedException {
+        try {
+            Fiber.sleep(duration, unit);
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        }
+    }
+
+    public static boolean interrupted() {
+        return Fiber.interrupted();
+    }
+
+    /**
+     * Returns the default handler invoked when a fiber abruptly terminates
+     * due to an uncaught exception. If the returned value is {@code null},
+     * there is no default.
+     *
+     * @see #setDefaultUncaughtExceptionHandler
+     */
+    public static Strand.UncaughtExceptionHandler getDefaultUncaughtExceptionHandler() {
+        return Fiber.getDefaultUncaughtExceptionHandler();
+    }
+
+    /**
+     * Set the default handler invoked when a fiber abruptly terminates
+     * due to an uncaught exception, and no other handler has been defined
+     * for that fiber.
+     *
+     * @param eh the object to use as the default uncaught exception handler.
+     *           If {@code null} then there is no default handler.
+     * @see #setUncaughtExceptionHandler
+     * @see #getUncaughtExceptionHandler
+     */
+    public static void setDefaultUncaughtExceptionHandler(Strand.UncaughtExceptionHandler eh) {
+        Fiber.setDefaultUncaughtExceptionHandler(eh);
+    }
+
+    public static void dumpStack() {
+        Fiber.dumpStack();
+    }
+
+    /**
+     * Parks the fiber and allows the given callback to serialize it.
+     *
+     * @param writer a callback that can serialize the fiber.
+     * @throws SuspendExecution
+     */
+    public static void parkAndSerialize(final FiberWriter writer) throws SuspendExecution {
+        Fiber.parkAndSerialize(writer);
+    }
+
+    /**
+     * Deserializes a fiber from the given byte array and unparks it.
+     *
+     * @param serFiber  The byte array containing a fiber's serialized form.
+     * @param scheduler The {@link FiberScheduler} to use for scheduling the fiber.
+     * @return The deserialized, running fiber.
+     */
+    public static <V> Fiber<V> unparkSerialized(byte[] serFiber, FiberScheduler scheduler) {
+        return Fiber.unparkSerialized(serFiber, scheduler);
+    }
+
+    /**
+     * Unparks a fiber that's been deserialized (with the help of {@link #getFiberSerializer()}
+     *
+     * @param f         The deserialized fiber
+     * @param scheduler The {@link FiberScheduler} to use for scheduling the fiber.
+     * @return The fiber
+     */
+    public static <V> Fiber<V> unparkDeserialized(Fiber<V> f, FiberScheduler scheduler) {
+        return Fiber.unparkDeserialized(f, scheduler);
+    }
+
+    /**
+     * Returns a {@link ByteArraySerializer} capable of serializing an object graph containing fibers.
+     */
+    public static ByteArraySerializer getFiberSerializer() {
+        return Fiber.getFiberSerializer();
+    }
+
+    /**
+     * Returns a {@link ByteArraySerializer} capable of serializing an object graph containing fibers.
+     *
+     * @param includeThreadLocals if true, thread/fiber local storage slots will also be serialised.
+     *                            You may want to set this to false if you are using frameworks that put
+     *                            things that cannot be properly serialised into TLS slots, or if the feature
+     *                            causes other issues.
+     */
+    public static ByteArraySerializer getFiberSerializer(boolean includeThreadLocals) {
+        return Fiber.getFiberSerializer(includeThreadLocals);
     }
 
     /**
