@@ -453,7 +453,6 @@ public abstract class ModelResourceStructure<URI_ID, MODEL_ID, MODEL> extends Lo
      *
      * @param id        a MODEL_ID object.
      * @param idSet     a {@link java.util.Set} object.
-     * @param idSet     a {@link java.util.Set} object.
      * @param permanent a boolean.
      * @throws java.lang.Exception if any.
      */
