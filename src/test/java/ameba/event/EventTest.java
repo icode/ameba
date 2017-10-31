@@ -23,40 +23,22 @@ public class EventTest {
 
         for (int i = 0; i < 10; i++) {
             final int finalI = i;
-            eventBus.subscribe(TestEvent.class, new AsyncListener<TestEvent>() {
-                @Override
-                public void onReceive(TestEvent event) {
-                    try {
-                        Fibers.sleep(100);
-                    } catch (InterruptedException e) {
-                        logger.error("error", e);
-                    }
-                    logger.info("async receive message {} : {}", finalI, event.message);
+            eventBus.subscribe(TestEvent.class, (AsyncListener<TestEvent>) event -> {
+                try {
+                    Fibers.sleep(100);
+                } catch (InterruptedException e) {
+                    logger.error("error", e);
                 }
+                logger.info("async receive message {} : {}", finalI, event.message);
             });
 
-            eventBus.subscribe(TestEvent1.class, new AsyncListener<TestEvent1>() {
-                @Override
-                public void onReceive(TestEvent1 event) {
-                    logger.info("TestEvent1 async receive message {} : {}", finalI, event.message);
-                }
-            });
+            eventBus.subscribe(TestEvent1.class, (AsyncListener<TestEvent1>) event -> logger.info("TestEvent1 async receive message {} : {}", finalI, event.message));
         }
         for (int i = 0; i < 5; i++) {
             final int finalI = i;
-            eventBus.subscribe(TestEvent.class, new Listener<TestEvent>() {
-                @Override
-                public void onReceive(TestEvent event) {
-                    logger.info("receive message {} : {}", finalI, event.message);
-                }
-            });
+            eventBus.subscribe(TestEvent.class, (Listener<TestEvent>) event -> logger.info("receive message {} : {}", finalI, event.message));
 
-            eventBus.subscribe(TestEvent1.class, new Listener<TestEvent1>() {
-                @Override
-                public void onReceive(TestEvent1 event) {
-                    logger.info("TestEvent1 receive message {} : {}", finalI, event.message);
-                }
-            });
+            eventBus.subscribe(TestEvent1.class, (Listener<TestEvent1>) event -> logger.info("TestEvent1 receive message {} : {}", finalI, event.message));
         }
 
         logger.info("publish message ..");

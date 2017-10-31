@@ -1,10 +1,12 @@
 package ameba.event;
 
+import co.paralleluniverse.fibers.Suspendable;
+
 /**
- * <p>Abstract AsyncListener class.</p>
- *
  * @author icode
  */
-public abstract class AsyncListener<E extends Event> implements Listener<E> {
-
+@Suspendable
+public interface AsyncListener<E extends Event> extends Listener<E> {
+    @Suspendable
+    void onReceive(E event);
 }

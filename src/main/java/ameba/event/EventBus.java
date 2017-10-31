@@ -125,12 +125,7 @@ public interface EventBus<Event extends ameba.event.Event> {
                             throw new AmebaException("handle " + method.getName() + " event error. ", e);
                         }
                     };
-                    subscribe(event, subscribe.async() ? new AsyncListener<Event>() {
-                        @Override
-                        public void onReceive(Event event) {
-                            listener.onReceive(event);
-                        }
-                    } : listener);
+                    subscribe(event, subscribe.async() ? (AsyncListener<Event>) listener::onReceive : listener);
                 }
             }
         }

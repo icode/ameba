@@ -176,10 +176,13 @@ public class Fibers {
      * Parks the fiber and allows the given callback to serialize it.
      *
      * @param writer a callback that can serialize the fiber.
-     * @throws SuspendExecution
      */
-    public static void parkAndSerialize(final FiberWriter writer) throws SuspendExecution {
-        Fiber.parkAndSerialize(writer);
+    public static void parkAndSerialize(final FiberWriter writer) {
+        try {
+            Fiber.parkAndSerialize(writer);
+        } catch (SuspendExecution e) {
+            throw RuntimeSuspendExecution.of(e);
+        }
     }
 
     /**
