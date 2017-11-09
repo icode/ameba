@@ -630,8 +630,8 @@
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <ebean.version>11.4.1</ebean.version>
-        <ebean.maven.version>11.4.1</ebean.maven.version>
-        <ebean.agent.version>11.4.1</ebean.agent.version>
+        <ebean.maven.version>11.5.1</ebean.maven.version>
+        <ebean.agent.version>11.5.1</ebean.agent.version>
         <druid.version>1.1.5</druid.version>
         <groovy.version>2.4.12</groovy.version>
         <hk2.version>2.5.0-b59</hk2.version>
