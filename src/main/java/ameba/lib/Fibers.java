@@ -161,8 +161,6 @@ public class Fibers {
      *
      * @param eh the object to use as the default uncaught exception handler.
      *           If {@code null} then there is no default handler.
-     * @see #setUncaughtExceptionHandler
-     * @see #getUncaughtExceptionHandler
      */
     public static void setDefaultUncaughtExceptionHandler(Strand.UncaughtExceptionHandler eh) {
         Fiber.setDefaultUncaughtExceptionHandler(eh);
