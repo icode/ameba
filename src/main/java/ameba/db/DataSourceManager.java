@@ -72,10 +72,15 @@ public class DataSourceManager extends Addon {
         }
 
         Map<String, Map<String, String>> map = Maps.newHashMap();
+        Map<String, String> druidMap = Maps.newHashMap();
         for (String key : config.keySet()) {
             key = StringUtils.deleteWhitespace(key);
             key = key.replaceAll("\\.{2,}", ".");
             if (key.startsWith(ModelManager.MODULE_MODELS_KEY_PREFIX)) continue;
+            if (key.startsWith("druid.")) {
+                druidMap.put(key, String.valueOf(config.get(key)));
+                continue;
+            }
             //db.[DataSourceName].[ConfigKey]
             String[] keys = key.split("\\.");
             if (keys.length > 2 && "db".equals(keys[0])) {
@@ -93,6 +98,7 @@ public class DataSourceManager extends Addon {
                 if (StringUtils.isBlank(value)) {
                     conf.put("init", "true");
                 }
+                config.putAll(druidMap);
                 DruidDataSource ds = (DruidDataSource) DruidDataSourceFactory.createDataSource(conf);
                 ds.setName(name);
                 ds.setDefaultAutoCommit(false);
