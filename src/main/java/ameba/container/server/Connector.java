@@ -584,9 +584,8 @@ public class Connector {
                                 + connector.getHost()
                                 + ":" + connector.port + "/");
             }
-            if (connector.secureEnabled && connector.sslKeyStoreFile != null &&
-                    StringUtils.isNotBlank(connector.sslKeyPassword) &&
-                    StringUtils.isNotBlank(connector.sslKeyStorePassword)) {
+            if (connector.secureEnabled && connector.sslKeyStoreFile != null
+                    && connector.sslTrustStoreFile != null) {
                 connector.sslConfigReady = true;
             }
             return connector;
