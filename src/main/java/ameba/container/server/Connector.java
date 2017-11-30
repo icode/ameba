@@ -83,7 +83,7 @@ public class Connector {
                 .sslKeyStoreProvider(properties.get("ssl.key.store.provider"))
                 .sslKeyStoreType(properties.get("ssl.key.store.type"))
                 .sslKeyStorePassword(properties.get("ssl.key.store.password"))
-                .sslTrustManagerFactoryAlgorithm(properties.get("ssl.Trust.manager.factory.algorithm"))
+                .sslTrustManagerFactoryAlgorithm(properties.get("ssl.trust.manager.factory.algorithm"))
                 .sslTrustPassword(properties.get("ssl.trust.password"))
                 .sslTrustStoreProvider(properties.get("ssl.trust.store.provider"))
                 .sslTrustStoreType(properties.get("ssl.trust.store.type"))
