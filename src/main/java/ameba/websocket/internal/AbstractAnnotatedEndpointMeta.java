@@ -41,14 +41,16 @@ public abstract class AbstractAnnotatedEndpointMeta extends EndpointMeta {
     private ParameterExtractor[] onErrorParameters;
     private EndpointConfig configuration;
 
-    public AbstractAnnotatedEndpointMeta(Class endpointClass, WebSocket webSocket,
-                                         Integer incomingBufferSize,
-                                         InjectionManager manager) {
+    public AbstractAnnotatedEndpointMeta(Class endpointClass, InjectionManager manager) {
         super(endpointClass);
         this.manager = manager;
+    }
+
+    public void parse(WebSocket webSocket, Integer incomingBufferSize) {
         if (incomingBufferSize == null) {
             incomingBufferSize = INCOMING_BUFFER_SIZE;
         }
+        Class endpointClass = getEndpointClass();
         final ErrorCollector collector = new ErrorCollector();
         configuration = createEndpointConfig(endpointClass, webSocket);
 
