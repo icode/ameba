@@ -173,7 +173,7 @@ public abstract class AbstractAnnotatedEndpointMeta extends EndpointMeta {
         }
 
         if (!collector.isEmpty()) {
-            collector.composeComprehensiveException();
+            throw new WebSocketException(collector.composeComprehensiveException());
         }
 
         try {
