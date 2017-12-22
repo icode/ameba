@@ -2,6 +2,8 @@ package ameba.websocket.codec;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.websocket.DecodeException;
@@ -17,6 +19,8 @@ import java.nio.ByteBuffer;
  * @author icode
  */
 public abstract class JacksonDecoder implements Decoder {
+    private static final Logger logger = LoggerFactory.getLogger(JacksonDecoder.class);
+
     @Inject
     ObjectMapper mapper;
 
@@ -51,6 +55,7 @@ public abstract class JacksonDecoder implements Decoder {
             try {
                 mapper.readTree(s);
             } catch (IOException e) {
+                logger.warn("invalidate json", e);
                 return false;
             }
             return true;
@@ -91,6 +96,7 @@ public abstract class JacksonDecoder implements Decoder {
             try {
                 mapper.readTree(new ByteBufferBackedInputStream(bytes));
             } catch (IOException e) {
+                logger.warn("invalidate json", e);
                 return false;
             }
             return true;
