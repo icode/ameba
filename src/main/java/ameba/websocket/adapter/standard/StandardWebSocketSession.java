@@ -49,10 +49,6 @@ public class StandardWebSocketSession extends AbstractWebSocketSession<Session> 
     private final MultivaluedMap<String, String> handshakeHeaders;
     private final InetSocketAddress localAddress;
     private final InetSocketAddress remoteAddress;
-    private String id;
-    private URI uri;
-    private String negotiatedProtocol;
-    private List<Extension> extensions;
     private Principal user;
 
 
@@ -97,14 +93,14 @@ public class StandardWebSocketSession extends AbstractWebSocketSession<Session> 
     @Override
     public String getId() {
         checkNativeSessionInitialized();
-        return this.id;
+        return getNativeSession().getId();
     }
 
     /** {@inheritDoc} */
     @Override
     public URI getUri() {
         checkNativeSessionInitialized();
-        return this.uri;
+        return getNativeSession().getRequestURI();
     }
 
     /** {@inheritDoc} */
@@ -130,7 +126,7 @@ public class StandardWebSocketSession extends AbstractWebSocketSession<Session> 
     @Override
     public List<Extension> getExtensions() {
         checkNativeSessionInitialized();
-        return this.extensions;
+        return getNativeSession().getNegotiatedExtensions();
     }
 
     /**
@@ -158,7 +154,7 @@ public class StandardWebSocketSession extends AbstractWebSocketSession<Session> 
     @Override
     public String getNegotiatedProtocol() {
         checkNativeSessionInitialized();
-        return this.negotiatedProtocol;
+        return getNativeSession().getNegotiatedSubprotocol();
     }
 
     /** {@inheritDoc} */
@@ -206,13 +202,6 @@ public class StandardWebSocketSession extends AbstractWebSocketSession<Session> 
     @Override
     public void initializeNativeSession(Session session) {
         super.initializeNativeSession(session);
-
-        this.id = session.getId();
-        this.uri = session.getRequestURI();
-
-        this.negotiatedProtocol = session.getNegotiatedSubprotocol();
-
-        this.extensions = session.getNegotiatedExtensions();
 
         if (this.user == null) {
             this.user = session.getUserPrincipal();
