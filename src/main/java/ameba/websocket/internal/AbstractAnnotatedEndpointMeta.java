@@ -11,8 +11,6 @@ import com.google.common.collect.Maps;
 import com.google.common.primitives.Primitives;
 import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.internal.inject.Injections;
-import org.glassfish.jersey.internal.util.collection.Ref;
-import org.glassfish.jersey.internal.util.collection.Refs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +30,7 @@ import java.util.*;
 public abstract class AbstractAnnotatedEndpointMeta extends EndpointMeta {
     private static final Logger logger = LoggerFactory.getLogger(AbstractAnnotatedEndpointMeta.class);
     private static final int INCOMING_BUFFER_SIZE = 4194315; // 4M (payload) + 11 (frame overhead)
+    private static final String SESSION_INJECT_KEY = "ameba.websocket.session";
     protected InjectionManager manager;
     private MethodHandle onOpenMethodHandle;
     private MethodHandle onErrorMethodHandle;
@@ -331,7 +330,6 @@ public abstract class AbstractAnnotatedEndpointMeta extends EndpointMeta {
         ParameterExtractor[] result = new ParameterExtractor[method.getParameterTypes().length];
         boolean sessionPresent = false;
         unknownParams.clear();
-        final Ref<WebSocketSession> sessionRef = Refs.emptyRef();
 
         for (int i = 0; i < method.getParameterTypes().length; i++) {
             final Class<?> type = method.getParameterTypes()[i];
@@ -376,19 +374,20 @@ public abstract class AbstractAnnotatedEndpointMeta extends EndpointMeta {
                     sessionPresent = true;
                 }
                 result[i] = (session, values) -> {
-                    if (sessionRef.get() == null) {
-                        StandardWebSocketSession standard =
-                                new StandardWebSocketSession(
-                                        Requests.getHeaders(),
-                                        session.getUserProperties(),
-                                        new InetSocketAddress(Requests.getLocalName(), Requests.getLocalPort()),
-                                        new InetSocketAddress(Requests.getRemoteHost(), Requests.getRemotePort()),
-                                        null
-                                );
+                    Map<String, Object> props = session.getUserProperties();
+                    StandardWebSocketSession standard = (StandardWebSocketSession) props.get(SESSION_INJECT_KEY);
+                    if (standard == null) {
+                        standard = new StandardWebSocketSession(
+                                Requests.getHeaders(),
+                                session.getUserProperties(),
+                                new InetSocketAddress(Requests.getLocalName(), Requests.getLocalPort()),
+                                new InetSocketAddress(Requests.getRemoteHost(), Requests.getRemotePort()),
+                                null
+                        );
                         standard.initializeNativeSession(session);
-                        sessionRef.set(standard);
+                        props.put(SESSION_INJECT_KEY, standard);
                     }
-                    return sessionRef.get();
+                    return standard;
                 };
             } else if (type == EndpointConfig.class) {
                 result[i] = (session, values) -> getEndpointConfig();
