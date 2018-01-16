@@ -18,7 +18,9 @@
 
 <div id="detail">
     <div class="uri">
-        ${model.request.UriInfo.absolutePath.toString.unescapeUrl}
+        <script>
+            document.write(location.href)
+        </script>
     </div>
     <div class="main-description">
         ${model.errorMessage.description}
