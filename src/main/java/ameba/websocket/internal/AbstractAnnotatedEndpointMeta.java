@@ -208,11 +208,7 @@ public abstract class AbstractAnnotatedEndpointMeta extends EndpointMeta {
     @Override
     @SuppressWarnings("unchecked")
     public Object getEndpoint() {
-        try {
-            return getEndpointInstance(getEndpointClass());
-        } catch (InstantiationException e) {
-            throw new WebSocketException(e);
-        }
+        return getEndpointInstance(getEndpointClass());
     }
 
     @Override
