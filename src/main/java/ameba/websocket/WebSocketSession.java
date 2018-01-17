@@ -2,7 +2,6 @@ package ameba.websocket;
 
 import javax.websocket.CloseReason;
 import javax.websocket.Extension;
-import javax.websocket.Session;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.Closeable;
 import java.io.IOException;
@@ -11,7 +10,6 @@ import java.net.URI;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Future;
 
 /**
@@ -42,6 +40,23 @@ public interface WebSocketSession extends Closeable {
      * @return a {@link javax.ws.rs.core.MultivaluedMap} object.
      */
     MultivaluedMap<String, String> getHandshakeHeaders();
+
+    /**
+     * Return the request parameters associated with the request this session
+     * was opened under.
+     *
+     * @return the unmodifiable map of the request parameters.
+     */
+    Map<String, List<String>> getRequestParameterMap();
+
+    /**
+     * Return a map of the path parameter names and values used associated with the
+     * request this session was opened under.
+     *
+     * @return the unmodifiable map of path parameters. The key of the map is the parameter name,
+     * the values in the map are the parameter values.
+     */
+    Map<String, String> getPathParameters();
 
     /**
      * Return the map with attributes associated with the WebSocket session.
@@ -168,16 +183,4 @@ public interface WebSocketSession extends Closeable {
      * @throws java.io.IOException if any.
      */
     void close(CloseReason reason) throws IOException;
-
-    /**
-     * Return a copy of the Set of all the open web socket sessions that represent
-     * connections to the same endpoint to which this session represents a connection.
-     * The Set includes the session this method is called on. These
-     * sessions may not still be open at any point after the return of this method. For
-     * example, iterating over the set at a later time may yield one or more closed sessions. Developers
-     * should use session.isOpen() to check.
-     *
-     * @return the set of sessions, open at the time of return.
-     */
-    Set<Session> getOpenSessions();
 }

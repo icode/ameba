@@ -18,13 +18,14 @@ package ameba.websocket.adapter;
 
 import ameba.util.Assert;
 import ameba.websocket.*;
+import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.websocket.CloseReason;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 /**
@@ -32,7 +33,6 @@ import java.util.concurrent.Future;
  *
  * @author Rossen Stoyanchev
  * @author icode
- *
  */
 public abstract class AbstractWebSocketSession<T> implements NativeWebSocketSession<T> {
 
@@ -40,36 +40,63 @@ public abstract class AbstractWebSocketSession<T> implements NativeWebSocketSess
      * Constant <code>logger</code>
      */
     protected static final Logger logger = LoggerFactory.getLogger(NativeWebSocketSession.class);
-    private final Map<String, Object> attributes = new ConcurrentHashMap<>();
+    private final Map<String, Object> attributes = Maps.newConcurrentMap();
+    private final Map<String, List<String>> requestParameters = Maps.newConcurrentMap();
+    private final Map<String, String> pathParameters = Maps.newConcurrentMap();
     private T nativeSession;
 
 
     /**
      * Create a new instance and associate the given attributes with it.
      *
-     * @param attributes attributes from the HTTP handshake to associate with the WebSocket
-     *                   session; the provided attributes are copied, the original map is not used.
+     * @param attributes        attributes from the HTTP handshake to associate with the WebSocket
+     *                          session; the provided attributes are copied, the original map is not used.
+     * @param requestParameters query param
+     * @param pathParameters    path param
      */
-    public AbstractWebSocketSession(Map<String, Object> attributes) {
+    public AbstractWebSocketSession(Map<String, Object> attributes,
+                                    Map<String, List<String>> requestParameters,
+                                    Map<String, String> pathParameters) {
         if (attributes != null) {
             this.attributes.putAll(attributes);
         }
+        if (requestParameters != null) {
+            this.requestParameters.putAll(requestParameters);
+        }
+        if (pathParameters != null) {
+            this.pathParameters.putAll(pathParameters);
+        }
     }
 
+    @Override
+    public Map<String, List<String>> getRequestParameterMap() {
+        return requestParameters;
+    }
 
-    /** {@inheritDoc} */
+    @Override
+    public Map<String, String> getPathParameters() {
+        return pathParameters;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Object> getAttributes() {
         return this.attributes;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public T getNativeSession() {
         return this.nativeSession;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings("unchecked")
     @Override
     public <R> R getNativeSession(Class<R> requiredType) {
@@ -98,7 +125,9 @@ public abstract class AbstractWebSocketSession<T> implements NativeWebSocketSess
         Assert.state(this.nativeSession != null, "WebSocket session is not yet initialized");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final Future<Void> sendMessage(Object message) throws IOException {
 
@@ -165,13 +194,17 @@ public abstract class AbstractWebSocketSession<T> implements NativeWebSocketSess
      */
     protected abstract Future<Void> sendObjectMessage(Object message) throws IOException;
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final void close() throws IOException {
         close(CloseReasons.NORMAL_CLOSURE.getCloseReason());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final void close(CloseReason status) throws IOException {
         checkNativeSessionInitialized();
@@ -190,7 +223,9 @@ public abstract class AbstractWebSocketSession<T> implements NativeWebSocketSess
     protected abstract void closeInternal(CloseReason status) throws IOException;
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         if (this.nativeSession != null) {

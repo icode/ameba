@@ -249,7 +249,7 @@ public abstract class AbstractAnnotatedEndpointMeta extends EndpointMeta {
         return method;
     }
 
-    protected <T> Object getEndpointInstance(Class<T> endpointClass) throws InstantiationException {
+    protected <T> Object getEndpointInstance(Class<T> endpointClass) {
         return Injections.getOrCreate(manager, endpointClass);
     }
 
@@ -379,10 +379,11 @@ public abstract class AbstractAnnotatedEndpointMeta extends EndpointMeta {
                     if (standard == null) {
                         standard = new StandardWebSocketSession(
                                 Requests.getHeaders(),
+                                session.getRequestParameterMap(),
+                                session.getPathParameters(),
                                 session.getUserProperties(),
                                 new InetSocketAddress(Requests.getLocalName(), Requests.getLocalPort()),
-                                new InetSocketAddress(Requests.getRemoteHost(), Requests.getRemotePort()),
-                                null
+                                new InetSocketAddress(Requests.getRemoteHost(), Requests.getRemotePort())
                         );
                         standard.initializeNativeSession(session);
                         props.put(SESSION_INJECT_KEY, standard);

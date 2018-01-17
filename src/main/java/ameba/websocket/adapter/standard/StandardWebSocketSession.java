@@ -42,7 +42,6 @@ import java.util.concurrent.Future;
  *
  * @author Rossen Stoyanchev
  * @author icode
- *
  */
 public class StandardWebSocketSession extends AbstractWebSocketSession<Session> {
 
@@ -61,10 +60,12 @@ public class StandardWebSocketSession extends AbstractWebSocketSession<Session> 
      * @param localAddress  the address on which the request was received
      * @param remoteAddress the address of the remote client
      */
-    public StandardWebSocketSession(MultivaluedMap<String, String> headers, Map<String, Object> attributes,
+    public StandardWebSocketSession(MultivaluedMap<String, String> headers,
+                                    Map<String, List<String>> requestParameters,
+                                    Map<String, String> pathParameters, Map<String, Object> attributes,
                                     InetSocketAddress localAddress, InetSocketAddress remoteAddress) {
 
-        this(headers, attributes, localAddress, remoteAddress, null);
+        this(headers, requestParameters, pathParameters, attributes, localAddress, remoteAddress, null);
     }
 
     /**
@@ -77,9 +78,11 @@ public class StandardWebSocketSession extends AbstractWebSocketSession<Session> 
      * @param user          the user associated with the session; if {@code null} we'll
      *                      fallback on the user available in the underlying WebSocket session
      */
-    public StandardWebSocketSession(MultivaluedMap<String, String> headers, Map<String, Object> attributes,
+    public StandardWebSocketSession(MultivaluedMap<String, String> headers,
+                                    Map<String, List<String>> requestParameters,
+                                    Map<String, String> pathParameters, Map<String, Object> attributes,
                                     InetSocketAddress localAddress, InetSocketAddress remoteAddress, Principal user) {
-        super(attributes);
+        super(attributes, requestParameters, pathParameters);
         this.handshakeHeaders = (headers != null) ? headers : new MultivaluedStringMap();
         this.user = user;
         this.localAddress = localAddress;
@@ -96,33 +99,43 @@ public class StandardWebSocketSession extends AbstractWebSocketSession<Session> 
         return getNativeSession().getId();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public URI getUri() {
         checkNativeSessionInitialized();
         return getNativeSession().getRequestURI();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public MultivaluedMap<String, String> getHandshakeHeaders() {
         return this.handshakeHeaders;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getAttribute(String key) {
         return (T) getAttributes().get(key);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setAttribute(String key, Object value) {
         getAttributes().put(key, value);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Extension> getExtensions() {
         checkNativeSessionInitialized();
@@ -138,67 +151,87 @@ public class StandardWebSocketSession extends AbstractWebSocketSession<Session> 
         return this.user;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public InetSocketAddress getLocalAddress() {
         return this.localAddress;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public InetSocketAddress getRemoteAddress() {
         return this.remoteAddress;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getNegotiatedProtocol() {
         checkNativeSessionInitialized();
         return getNativeSession().getNegotiatedSubprotocol();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getTextMessageSizeLimit() {
         checkNativeSessionInitialized();
         return getNativeSession().getMaxTextMessageBufferSize();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setTextMessageSizeLimit(int messageSizeLimit) {
         checkNativeSessionInitialized();
         getNativeSession().setMaxTextMessageBufferSize(messageSizeLimit);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getBinaryMessageSizeLimit() {
         checkNativeSessionInitialized();
         return getNativeSession().getMaxBinaryMessageBufferSize();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setBinaryMessageSizeLimit(int messageSizeLimit) {
         checkNativeSessionInitialized();
         getNativeSession().setMaxBinaryMessageBufferSize(messageSizeLimit);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isOpen() {
         return (getNativeSession() != null && getNativeSession().isOpen());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<Session> getOpenSessions() {
         checkNativeSessionInitialized();
         return getNativeSession().getOpenSessions();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initializeNativeSession(Session session) {
         super.initializeNativeSession(session);
@@ -208,39 +241,51 @@ public class StandardWebSocketSession extends AbstractWebSocketSession<Session> 
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected Future<Void> sendTextMessage(TextMessage message) {
         return getNativeSession().getAsyncRemote().sendText(message.getPayload());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected Future<Void> sendBinaryMessage(BinaryMessage message) {
         return getNativeSession().getAsyncRemote().sendBinary(message.getPayload());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected Future<Void> sendPingMessage(PingMessage message) throws IOException {
         getNativeSession().getAsyncRemote().sendPing(message.getPayload());
         return Futures.immediateFuture(null);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected Future<Void> sendPongMessage(PongMessage message) throws IOException {
         getNativeSession().getAsyncRemote().sendPong(message.getPayload());
         return Futures.immediateFuture(null);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected Future<Void> sendObjectMessage(Object message) {
         return getNativeSession().getAsyncRemote().sendObject(message);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void closeInternal(CloseReason status) throws IOException {
         checkNativeSessionInitialized();
