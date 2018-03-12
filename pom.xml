@@ -162,10 +162,6 @@
                     <groupId>org.slf4j</groupId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.avaje</groupId>
-                    <artifactId>avaje-classpath-scanner</artifactId>
-                </exclusion>
-                <exclusion>
                     <artifactId>annotations</artifactId>
                     <groupId>org.jetbrains</groupId>
                 </exclusion>

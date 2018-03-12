@@ -128,6 +128,7 @@ public class EbeanFeature implements Feature {
             config.setPersistBatch(PersistBatch.ALL);
             config.setUpdateAllPropertiesInBatch(false);
             config.setAllQuotedIdentifiers(true);
+            config.getMigrationConfig().setStrictMode(false);
             config.loadFromProperties(cp);
             config.setPackages(null);
             config.setDataSourceJndiName(null);
