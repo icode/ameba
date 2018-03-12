@@ -11,6 +11,7 @@ import ameba.exception.AmebaException;
 import ameba.exception.ConfigErrorException;
 import ameba.feature.AmebaFeature;
 import ameba.i18n.Messages;
+import ameba.inject.Value;
 import ameba.scanner.Acceptable;
 import ameba.scanner.ClassFoundEvent;
 import ameba.scanner.ClassInfo;
@@ -537,6 +538,9 @@ public class Application {
                 bind(mode).to(Application.Mode.class).proxy(false);
                 bind(ConfigurationInjectionResolver.class)
                         .to(new GenericType<InjectionResolver<Named>>() {
+                        }).in(Singleton.class);
+                bind(ValueConfigurationInjectionResolver.class)
+                        .to(new GenericType<InjectionResolver<Value>>() {
                         }).in(Singleton.class);
             }
         });
@@ -1596,15 +1600,16 @@ public class Application {
         }
     }
 
-    protected static class ConfigurationInjectionResolver implements InjectionResolver<Named> {
+    protected static abstract class BaseConfigurationInjectionResolver<T> implements InjectionResolver<T> {
         @Context
         Application application;
 
+        protected abstract String getName(Injectee injectee);
+
         @Override
         public Object resolve(Injectee injectee, ServiceHandle<?> root) {
-            Named annotation = injectee.getParent().getAnnotation(Named.class);
             Map<String, Object> props = application.getProperties();
-            String name = annotation.value();
+            String name = getName(injectee);
             Object value = props.get(name);
             Type type = injectee.getRequiredType();
             if (value instanceof String) {
@@ -1645,6 +1650,20 @@ public class Application {
         @Override
         public boolean isMethodParameterIndicator() {
             return false;
+        }
+    }
+
+    protected static class ConfigurationInjectionResolver extends BaseConfigurationInjectionResolver<Named> {
+        @Override
+        protected String getName(Injectee injectee) {
+            return injectee.getParent().getAnnotation(Named.class).value();
+        }
+    }
+
+    protected static class ValueConfigurationInjectionResolver extends BaseConfigurationInjectionResolver<Value> {
+        @Override
+        protected String getName(Injectee injectee) {
+            return injectee.getParent().getAnnotation(Value.class).name();
         }
     }
 
