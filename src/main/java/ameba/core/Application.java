@@ -1663,7 +1663,7 @@ public class Application {
     protected static class ValueConfigurationInjectionResolver extends BaseConfigurationInjectionResolver<Value> {
         @Override
         protected String getName(Injectee injectee) {
-            return injectee.getParent().getAnnotation(Value.class).name();
+            return injectee.getParent().getAnnotation(Value.class).value();
         }
     }
 
