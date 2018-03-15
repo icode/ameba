@@ -120,7 +120,7 @@ public class EbeanFeature implements Feature {
             final ServerConfig config = new ServerConfig() {
                 @Override
                 public void loadFromProperties(Properties properties) {
-                    loadSettings(new PropertiesWrapper("db", name, properties));
+                    loadSettings(new PropertiesWrapper("db", name, properties, this.getClassLoadConfig()));
                 }
             };
             config.setName(name);

@@ -45,14 +45,14 @@ public class PlatformDdlWriter {
      */
     public void processMigration(Migration dbMigration, DdlWrite write) throws IOException {
         DdlHandler handler = handler();
-
+        handler.generateProlog(write);
         List<ChangeSet> changeSets = dbMigration.getChangeSet();
         for (ChangeSet changeSet : changeSets) {
             if (isApply(changeSet)) {
                 handler.generate(write, changeSet);
             }
         }
-        handler.generateExtra(write);
+        handler.generateEpilog(write);
 
         writePlatformDdl(write);
     }
@@ -84,7 +84,7 @@ public class PlatformDdlWriter {
      * @param write a {@link io.ebeaninternal.dbmigration.ddlgeneration.DdlWrite} object.
      * @throws java.io.IOException if any.
      */
-    protected void writeApplyDdl(DdlWrite write) throws IOException {
+    protected void writeApplyDdl(DdlWrite write) {
         scriptInfo.setApplyDdl(
                 "-- drop dependencies\n"
                         + write.applyDropDependencies().getBuffer() + "\n"
