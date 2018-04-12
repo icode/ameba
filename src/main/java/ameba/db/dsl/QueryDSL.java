@@ -10,7 +10,6 @@ import java.util.List;
  * <p>QueryDSL class.</p>
  *
  * @author icode
- *
  */
 public class QueryDSL {
 
@@ -109,13 +108,7 @@ public class QueryDSL {
      * @return a {@link org.antlr.v4.runtime.CharStream} object.
      */
     public static CharStream input(String expression) {
-        ANTLRInputStream input;
-        if (expression == null) {
-            input = new ANTLRInputStream();
-        } else {
-            input = new ANTLRInputStream(expression);
-        }
-        return input;
+        return CharStreams.fromString(expression == null ? "" : expression, "db_query");
     }
 
     /**
