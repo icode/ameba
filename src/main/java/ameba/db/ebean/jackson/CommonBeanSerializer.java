@@ -11,8 +11,6 @@ import io.ebean.FetchPath;
 import io.ebean.text.PathProperties;
 import io.ebean.text.json.JsonContext;
 
-import java.io.IOException;
-
 /**
  * Serialise entity beans or collections.
  * <p>
@@ -20,7 +18,6 @@ import java.io.IOException;
  * </p>
  *
  * @author icode
- *
  */
 public class CommonBeanSerializer<T> extends JsonSerializer<T> {
 
@@ -63,10 +60,12 @@ public class CommonBeanSerializer<T> extends JsonSerializer<T> {
             String cp = fp + ".";
             for (BeanPathProperties.Props prop : src.getPathProps()) {
                 String pp = prop.getPath();
-                if (pp.equals(fp)) {
-                    addToFetchPath(fetch, null, prop);
-                } else if (pp.startsWith(cp)) {
-                    addToFetchPath(fetch, pp.substring(cp.length()), prop);
+                if (pp != null) {
+                    if (pp.equals(fp)) {
+                        addToFetchPath(fetch, null, prop);
+                    } else if (pp.startsWith(cp)) {
+                        addToFetchPath(fetch, pp.substring(cp.length()), prop);
+                    }
                 }
             }
 
@@ -83,11 +82,11 @@ public class CommonBeanSerializer<T> extends JsonSerializer<T> {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Serialize entity beans or collections.
      */
     @Override
-    public void serialize(T o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(T o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) {
         final FetchPath pathProperties = getPathProperties(jsonGenerator);
 
         if (pathProperties != null) {
