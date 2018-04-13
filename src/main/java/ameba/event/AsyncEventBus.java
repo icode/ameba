@@ -42,7 +42,7 @@ public class AsyncEventBus<Event extends ameba.event.Event> implements EventBus<
             ).addHandler(handler(event, listener));
         } catch (SuspendExecution e) {
             throw RuntimeSuspendExecution.of(e);
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             logger.error("subscribe event has error", e);
         }
     }
@@ -114,7 +114,7 @@ public class AsyncEventBus<Event extends ameba.event.Event> implements EventBus<
         }
 
         @Override
-        public void handleEvent(E event) throws SuspendExecution, InterruptedException {
+        public void handleEvent(E event) {
             listener.onReceive(event);
         }
 
