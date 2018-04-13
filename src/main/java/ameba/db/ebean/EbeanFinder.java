@@ -101,6 +101,16 @@ public class EbeanFinder<ID, T> extends Finder<ID, T> {
         return server().createQuery(getModelType());
     }
 
+    @Override
+    public Query<T> createNamedQuery(String name) {
+        return server().createNamedQuery(getModelType(), name);
+    }
+
+    @Override
+    public Query<T> named(String name) {
+        return createNamedQuery(name);
+    }
+
     /**
      * {@inheritDoc}
      */

@@ -125,6 +125,10 @@ public abstract class Finder<ID, T> {
      */
     public abstract Query<T> createQuery();
 
+    public abstract Query<T> createNamedQuery(String name);
+
+    public abstract Query<T> named(String name);
+
     /**
      * <p>createUpdateQuery.</p>
      *
