@@ -128,10 +128,9 @@ public class ParamConverters {
                     try {
                         return rawType.getEnumConstants()[Integer.parseInt(value)];
                     } catch (NumberFormatException e) {
-                        String eName = value.toUpperCase();
                         Enum[] result = (Enum[]) rawType.getEnumConstants();
                         for (Enum r : result) {
-                            if (r.name().equals(eName)) {
+                            if (r.name().equalsIgnoreCase(value)) {
                                 return rawType.cast(r);
                             }
                         }
