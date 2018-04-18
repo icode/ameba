@@ -176,7 +176,12 @@ public abstract class Persister<M extends Model> {
     /**
      * Refreshes this entity from the database.
      */
-    public abstract void refresh();
+    public abstract M refresh();
+
+    /**
+     * Refresh a many property of an entity bean.
+     */
+    public abstract M refreshMany(String propertyName);
 
     /**
      * Marks the entity bean as dirty.
