@@ -10,7 +10,6 @@ import ameba.message.filtering.EntityFieldsFilteringFeature;
 import ameba.message.internal.BeanPathProperties;
 import io.ebean.*;
 import io.ebean.bean.BeanCollection;
-import io.ebean.common.BeanList;
 import io.ebeaninternal.api.SpiQuery;
 import io.ebeaninternal.server.querydefn.OrmQueryDetail;
 import io.ebeaninternal.server.querydefn.OrmQueryProperties;
@@ -22,6 +21,7 @@ import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import javax.persistence.PersistenceException;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Configuration;
@@ -40,7 +40,6 @@ import java.util.concurrent.ExecutionException;
  *
  * @author icode
  * @since 0.1.6e
- *
  */
 @Singleton
 @Priority(Priorities.ENTITY_CODER)
@@ -279,7 +278,7 @@ public class ModelInterceptor implements WriterInterceptor {
      * <p>applyPageConfig.</p>
      *
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
-     * @param query a {@link io.ebean.Query} object.
+     * @param query       a {@link io.ebean.Query} object.
      */
     public static void applyPageConfig(MultivaluedMap<String, String> queryParams, Query query) {
         Integer maxRows = getSingleIntegerParam(queryParams.get(PER_PAGE_PARAM_NAME));
@@ -314,8 +313,8 @@ public class ModelInterceptor implements WriterInterceptor {
      *
      * @param queryParams uri query params
      * @param query       query
-     * @param manager a {@link InjectionManager} object.
-     * @param <T> a T object.
+     * @param manager     a {@link InjectionManager} object.
+     * @param <T>         a T object.
      */
     public static <T> void applyFilter(MultivaluedMap<String, String> queryParams,
                                        SpiQuery<T> query,
@@ -340,12 +339,12 @@ public class ModelInterceptor implements WriterInterceptor {
      * @param queryParams  uri query params
      * @param query        Query
      * @param needPageList need page list
+     * @param manager      a {@link InjectionManager} object.
      * @return page list count or null
      * @see #applyFetchProperties
      * @see #applyFilter
      * @see #applyOrderBy
      * @see #applyPageList
-     * @param manager a {@link InjectionManager} object.
      */
     @SuppressWarnings("unchecked")
     public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams,
@@ -372,8 +371,8 @@ public class ModelInterceptor implements WriterInterceptor {
      *
      * @param queryParams a {@link javax.ws.rs.core.MultivaluedMap} object.
      * @param query       a {@link io.ebean.Query} object.
+     * @param manager     a {@link InjectionManager} object.
      * @return a {@link io.ebean.FutureRowCount} object.
-     * @param manager a {@link InjectionManager} object.
      */
     public static FutureRowCount applyUriQuery(MultivaluedMap<String, String> queryParams,
                                                SpiQuery query,
@@ -454,7 +453,9 @@ public class ModelInterceptor implements WriterInterceptor {
                 || FutureList.class.isAssignableFrom(type);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException, WebApplicationException {
         Object o = context.getEntity();
@@ -468,26 +469,37 @@ public class ModelInterceptor implements WriterInterceptor {
                 query = (SpiQuery) o;
             } else if (o instanceof ExpressionList) {
                 query = (SpiQuery) ((ExpressionList) o).query();
+            } else if (o instanceof FutureList) {
+                query = (SpiQuery) ((FutureList) o).getQuery();
+            } else if (o instanceof FutureIds) {
+                query = (SpiQuery) ((FutureIds) o).getQuery();
             }
 
             if (query != null) {
                 FutureRowCount rowCount = applyUriQuery(queryParams, query, manager);
-                BeanList list;
+                Object result;
                 if (o instanceof FutureList) {
-                    list = (BeanList) ((FutureList) o).getUnchecked();
+                    result = ((FutureList) o).getUnchecked();
+                } else if (o instanceof FutureIds) {
+                    try {
+                        result = ((FutureIds) o).get();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new PersistenceException(e);
+
+                    } catch (ExecutionException e) {
+                        throw new PersistenceException(e);
+                    }
                 } else {
-                    list = (BeanList) query.findList();
+                    result = query.findList();
                 }
 
                 applyRowCountHeader(context.getHeaders(), query, rowCount);
 
-                List result = list.getActualList();
-
                 context.setEntity(result);
 
-                Class clazz = result.getClass();
-
-                context.setType(clazz);
+                if (result != null)
+                    context.setType(result.getClass());
 
                 context.setGenericType(query.getBeanType());
             }
