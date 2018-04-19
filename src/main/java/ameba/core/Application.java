@@ -58,9 +58,8 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.ext.Provider;
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
@@ -1600,16 +1599,28 @@ public class Application {
         }
     }
 
-    protected static abstract class BaseConfigurationInjectionResolver<T> implements InjectionResolver<T> {
+    protected static abstract class BaseConfigurationInjectionResolver<T extends Annotation> implements InjectionResolver<T> {
         @Context
         Application application;
+        Class<T> aType;
 
-        protected abstract String getName(Injectee injectee);
+        protected BaseConfigurationInjectionResolver(Class<T> aType) {
+            this.aType = aType;
+        }
+
+        protected abstract String getName(Annotation annotation);
 
         @Override
         public Object resolve(Injectee injectee, ServiceHandle<?> root) {
             Map<String, Object> props = application.getProperties();
-            String name = getName(injectee);
+            AnnotatedElement element = injectee.getParent();
+            Annotation annotation;
+            if (injectee.getPosition() == -1) {
+                annotation = element.getAnnotation(aType);
+            } else {
+                annotation = ((Executable) element).getParameters()[injectee.getPosition()].getAnnotation(aType);
+            }
+            String name = getName(annotation);
             Object value = props.get(name);
             Type type = injectee.getRequiredType();
             if (value instanceof String) {
@@ -1654,16 +1665,24 @@ public class Application {
     }
 
     protected static class ConfigurationInjectionResolver extends BaseConfigurationInjectionResolver<Named> {
+        protected ConfigurationInjectionResolver() {
+            super(Named.class);
+        }
+
         @Override
-        protected String getName(Injectee injectee) {
-            return injectee.getParent().getAnnotation(Named.class).value();
+        protected String getName(Annotation annotation) {
+            return ((Named) annotation).value();
         }
     }
 
     protected static class ValueConfigurationInjectionResolver extends BaseConfigurationInjectionResolver<Value> {
+        protected ValueConfigurationInjectionResolver() {
+            super(Value.class);
+        }
+
         @Override
-        protected String getName(Injectee injectee) {
-            return injectee.getParent().getAnnotation(Value.class).value();
+        protected String getName(Annotation annotation) {
+            return ((Value) annotation).value();
         }
     }
 
