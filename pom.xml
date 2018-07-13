@@ -622,21 +622,21 @@
         <ameba.utils.version>0.1.11</ameba.utils.version>
         <osgi.version>4.2.0</osgi.version>
         <paranamer.version>2.8</paranamer.version>
-        <jersey.version>2.26</jersey.version>
+        <jersey.version>2.27</jersey.version>
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.3</logback.version>
-        <ebean.version>11.15.4</ebean.version>
-        <ebean.maven.version>11.11.1</ebean.maven.version>
+        <ebean.version>11.18.4</ebean.version>
+        <ebean.maven.version>11.11.2</ebean.maven.version>
         <ebean.agent.version>11.11.1</ebean.agent.version>
-        <druid.version>1.1.5</druid.version>
+        <druid.version>1.1.10</druid.version>
         <groovy.version>2.4.12</groovy.version>
-        <hk2.version>2.5.0-b59</hk2.version>
+        <hk2.version>2.5.0-b61</hk2.version>
         <javax.websocket.version>1.1</javax.websocket.version>
-        <jackson.core.version>2.9.2</jackson.core.version>
-        <jackson.provider.version>2.9.2</jackson.provider.version>
+        <jackson.core.version>2.9.6</jackson.core.version>
+        <jackson.provider.version>2.9.6</jackson.provider.version>
         <flyway.version>4.2.0</flyway.version>
         <antlr.version>4.7</antlr.version>
-        <quasar.version>0.7.9</quasar.version>
+        <quasar.version>0.7.10</quasar.version>
         <bean.validator.version>5.4.1.Final</bean.validator.version>
         <ebean.support.dir>ameba/db/ebean/support</ebean.support.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

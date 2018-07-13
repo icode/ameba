@@ -70,9 +70,8 @@ public class PlatformDdlWriter {
      * <p>writePlatformDdl.</p>
      *
      * @param write a {@link io.ebeaninternal.dbmigration.ddlgeneration.DdlWrite} object.
-     * @throws java.io.IOException if any.
      */
-    protected void writePlatformDdl(DdlWrite write) throws IOException {
+    protected void writePlatformDdl(DdlWrite write) {
         if (!write.isApplyEmpty()) {
             writeApplyDdl(write);
         }
@@ -91,7 +90,8 @@ public class PlatformDdlWriter {
                         + "-- apply changes\n"
                         + write.apply().getBuffer()
                         + write.applyForeignKeys().getBuffer()
-                        + write.applyHistory().getBuffer()
+                        + write.applyHistoryView().getBuffer()
+                        + write.applyHistoryTrigger().getBuffer()
         );
     }
 
